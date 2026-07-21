@@ -89,10 +89,12 @@ namespace planlama_app.Themes
                 Application.Current.Resources.Remove("MaterialDesignBackground");
                 Application.Current.Resources.Remove("MaterialDesignPaper");
                 Application.Current.Resources.Remove("MaterialDesignCardBackground");
+                Application.Current.Resources.Remove("MaterialDesignDivider");
                 Application.Current.Resources.Remove("MaterialDesign.Brush.Background");
                 Application.Current.Resources.Remove("MaterialDesign.Brush.Paper");
                 Application.Current.Resources.Remove("MaterialDesign.Brush.Surface");
                 Application.Current.Resources.Remove("MaterialDesign.Brush.Card.Background");
+                Application.Current.Resources.Remove("MaterialDesign.Brush.Divider");
 
                 if (Application.Current.MainWindow != null)
                 {
@@ -104,17 +106,20 @@ namespace planlama_app.Themes
             var bgBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(bgHex));
             var paperBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(paperHex));
             var cardBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(cardHex));
+            var dividerBrush = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255));
 
             // MDT v3 / v4 keys
             Application.Current.Resources["MaterialDesignBackground"] = bgBrush;
             Application.Current.Resources["MaterialDesignPaper"] = paperBrush;
             Application.Current.Resources["MaterialDesignCardBackground"] = cardBrush;
+            Application.Current.Resources["MaterialDesignDivider"] = dividerBrush;
 
             // MDT v5 keys
             Application.Current.Resources["MaterialDesign.Brush.Background"] = bgBrush;
             Application.Current.Resources["MaterialDesign.Brush.Paper"] = paperBrush;
             Application.Current.Resources["MaterialDesign.Brush.Surface"] = paperBrush;
             Application.Current.Resources["MaterialDesign.Brush.Card.Background"] = cardBrush;
+            Application.Current.Resources["MaterialDesign.Brush.Divider"] = dividerBrush;
 
             // Force window background update
             if (Application.Current.MainWindow != null)

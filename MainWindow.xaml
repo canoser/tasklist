@@ -11,8 +11,8 @@
         Height="760" Width="1180"
         MinHeight="550" MinWidth="800"
         WindowStartupLocation="CenterScreen"
-        Background="{DynamicResource MaterialDesign.Brush.Background}"
-        TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+        Background="{DynamicResource MaterialDesignPaper}"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         FontFamily="{materialDesign:MaterialDesignFont}"
         Style="{StaticResource MaterialDesignWindow}"
         KeyDown="Window_KeyDown">
@@ -174,13 +174,13 @@
         <!-- ═══════════════════════════════════════════════════════════
              KATEGORİ SEKMELERİ (Görev Grupları)
         ═══════════════════════════════════════════════════════════ -->
-        <Grid Grid.Row="1" Background="{DynamicResource MaterialDesign.Brush.Background}">
+        <Grid Grid.Row="1" Background="{DynamicResource MaterialDesignPaper}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.ColumnSpan="2" BorderBrush="{DynamicResource MaterialDesign.Brush.Divider}" BorderThickness="0,0,0,1" VerticalAlignment="Bottom"/>
+            <Border Grid.ColumnSpan="2" BorderBrush="{DynamicResource MaterialDesignDivider}" BorderThickness="0,0,0,1" VerticalAlignment="Bottom"/>
             <TabControl x:Name="TabCategories"
                         Grid.Column="0"
                         Style="{StaticResource MaterialDesignTabControl}"
@@ -202,9 +202,9 @@
              FİLTRE ÇUBUĞU & GÖRÜNÜM MODLARI
         ═══════════════════════════════════════════════════════════ -->
         <Border Grid.Row="2"
-                Background="{DynamicResource MaterialDesign.Brush.Background}"
+                Background="{DynamicResource MaterialDesignPaper}"
                 Padding="16,8"
-                BorderBrush="{DynamicResource MaterialDesign.Brush.DataGrid.RowHoverBackground}"
+                BorderBrush="{DynamicResource MaterialDesignDivider}"
                 BorderThickness="0,0,0,1">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -266,7 +266,7 @@
                     <TextBlock x:Name="TxtCount"
                                Text="0 görev"
                                Style="{StaticResource MaterialDesignBody2TextBlock}"
-                               Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+                               Foreground="{DynamicResource MaterialDesignBody}"
                                Opacity="0.6"
                                VerticalAlignment="Center"
                                Margin="16,0,0,0"/>
@@ -277,7 +277,7 @@
                     <TextBlock Text="Görünüm:" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="Medium" Opacity="0.7"/>
                     
                     <!-- Mode Switcher Buttons -->
-                    <Border CornerRadius="6" Background="{DynamicResource MaterialDesign.Brush.ToolBar.Background}" Padding="2">
+                    <Border CornerRadius="6" Background="{DynamicResource MaterialDesignCardBackground}" Padding="2">
                         <StackPanel Orientation="Horizontal">
                             <RadioButton x:Name="RbViewCalendar" Content="📅 Takvim" 
                                          GroupName="ViewModeGroup" Style="{StaticResource MaterialDesignTabRadioButton}" 
@@ -321,7 +321,7 @@
 
                 <!-- SPLITTER -->
                 <GridSplitter x:Name="ViewSplitter" Grid.Column="1" Width="5" HorizontalAlignment="Stretch" 
-                              Background="{DynamicResource MaterialDesign.Brush.Divider}" Margin="0,4"/>
+                              Background="{DynamicResource MaterialDesignDivider}" Margin="0,4"/>
 
                 <!-- GÖREV LİSTESİ ALANI -->
                 <Grid x:Name="GridTaskListArea" Grid.Column="2">
@@ -381,7 +381,7 @@
                                                                         Background="{Binding Name, Converter={StaticResource GroupColorConverter}}" 
                                                                         Margin="0,0,8,0" VerticalAlignment="Center"/>
                                                                 <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="13" VerticalAlignment="Center"/>
-                                                                <Border Background="{DynamicResource MaterialDesign.Brush.ToolBar.Background}" CornerRadius="10" Padding="6,1" Margin="8,0,0,0" VerticalAlignment="Center">
+                                                                <Border Background="{DynamicResource MaterialDesignCardBackground}" CornerRadius="10" Padding="6,1" Margin="8,0,0,0" VerticalAlignment="Center">
                                                                     <TextBlock Text="{Binding ItemCount, StringFormat='{}{0} görev'}" FontSize="11" Opacity="0.7"/>
                                                                 </Border>
                                                                 
@@ -401,7 +401,7 @@
 
                         <ListView.ItemTemplate>
                             <DataTemplate DataType="{x:Type models:TaskItem}" xmlns:models="clr-namespace:planlama_app.Models">
-                                <Border BorderBrush="{DynamicResource MaterialDesign.Brush.Divider}" BorderThickness="0,0,0,1" Padding="8,8,8,8">
+                                <Border BorderBrush="{DynamicResource MaterialDesignDivider}" BorderThickness="0,0,0,1" Padding="8,8,8,8">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto"/>
@@ -431,8 +431,8 @@
                                                     </TextBlock.Style>
                                                 </TextBlock>
 
-                                                <Border Visibility="{Binding CategoryName, Converter={StaticResource GroupExpandedConverter}}" Background="{DynamicResource MaterialDesign.Brush.Primary.Light}" CornerRadius="4" Padding="4,1" Margin="8,0,0,0" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding CategoryName}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource MaterialDesign.Brush.Primary.Foreground}"/>
+                                                <Border Visibility="{Binding CategoryName, Converter={StaticResource GroupExpandedConverter}}" Background="{DynamicResource MaterialDesignSelection}" CornerRadius="4" Padding="4,1" Margin="8,0,0,0" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding CategoryName}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource MaterialDesignBody}"/>
                                                 </Border>
                                             </StackPanel>
 
@@ -477,8 +477,8 @@
                     Grid.Column="1"
                     Visibility="Collapsed"
                     Width="300"
-                    Background="{DynamicResource MaterialDesign.Brush.CardBackground}"
-                    BorderBrush="{DynamicResource MaterialDesign.Brush.Divider}"
+                    Background="{DynamicResource MaterialDesignCardBackground}"
+                    BorderBrush="{DynamicResource MaterialDesignDivider}"
                     BorderThickness="1,0,0,0">
                 <Grid Margin="12">
                     <Grid.RowDefinitions>
@@ -499,7 +499,7 @@
                             <DataTemplate>
                                 <StackPanel Margin="0,4">
                                     <TextBlock Text="{Binding Title}" FontWeight="SemiBold"/>
-                                    <TextBlock Text="{Binding Content}" TextWrapping="Wrap" Opacity="0.7" FontSize="11"/>
+                                    <TextBlock Text="{Binding Url}" TextWrapping="Wrap" Opacity="0.7" FontSize="11"/>
                                 </StackPanel>
                             </DataTemplate>
                         </ListView.ItemTemplate>
@@ -519,9 +519,9 @@
              DURUM ÇUBUĞU & YÜKLENİYOR SİMGESİ
         ═══════════════════════════════════════════════════════════ -->
         <Border Grid.Row="4"
-                Background="{DynamicResource MaterialDesign.Brush.ToolBar.Background}"
+                Background="{DynamicResource MaterialDesignCardBackground}"
                 Padding="12,4"
-                BorderBrush="{DynamicResource MaterialDesign.Brush.Divider}"
+                BorderBrush="{DynamicResource MaterialDesignDivider}"
                 BorderThickness="0,1,0,0">
             <Grid>
                 <Grid.ColumnDefinitions>

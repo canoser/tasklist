@@ -13,11 +13,11 @@
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Margin" Value="0,6"/>
-            <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+            <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}"/>
         </Style>
     </UserControl.Resources>
 
-    <Grid Background="{DynamicResource MaterialDesign.Brush.Background}">
+    <Grid Background="{DynamicResource MaterialDesignPaper}">
         <Grid.RowDefinitions>
             <!-- Header: Ay/Yıl ve Navigasyon -->
             <RowDefinition Height="Auto"/>
@@ -31,7 +31,7 @@
              ÜST NAVİGASYON (Ay Seçimi)
         ═══════════════════════════════════════════════════════════ -->
         <Border Grid.Row="0" Padding="16,12" 
-                BorderBrush="{DynamicResource MaterialDesign.Brush.Divider}" 
+                BorderBrush="{DynamicResource MaterialDesignDivider}" 
                 BorderThickness="0,0,0,1">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -73,8 +73,8 @@
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <materialDesign:Chip Content="Bu Ayki Görevler"
                                          Icon="{materialDesign:PackIcon Kind=CalendarTask}"
-                                         Background="{DynamicResource MaterialDesign.Brush.Primary.Light}"
-                                         Foreground="{DynamicResource MaterialDesign.Brush.Primary.Foreground}"/>
+                                         Background="{DynamicResource MaterialDesignSelection}"
+                                         Foreground="{DynamicResource MaterialDesignBody}"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -83,7 +83,7 @@
              HAFTA GÜNLERİ BAŞLIĞI
         ═══════════════════════════════════════════════════════════ -->
         <UniformGrid Grid.Row="1" Columns="7" 
-                     Background="{DynamicResource MaterialDesign.Brush.ToolBar.Background}">
+                     Background="{DynamicResource MaterialDesignCardBackground}">
             <TextBlock Text="Pzt" Style="{StaticResource CalendarDayHeaderStyle}"/>
             <TextBlock Text="Sal" Style="{StaticResource CalendarDayHeaderStyle}"/>
             <TextBlock Text="Çar" Style="{StaticResource CalendarDayHeaderStyle}"/>

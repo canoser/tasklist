@@ -41,6 +41,16 @@ namespace planlama_app.Views
             RenderCalendar();
         }
 
+        private Brush GetSafeBrush(string key, Brush fallback)
+        {
+            try
+            {
+                if (TryFindResource(key) is Brush brush) return brush;
+            }
+            catch { }
+            return fallback;
+        }
+
         private void RenderCalendar()
         {
             if (GridCalendarDays == null) return;
@@ -92,7 +102,7 @@ namespace planlama_app.Views
 
             // Render Next Month Padding Days
             int totalCells = GridCalendarDays.Children.Count;
-            int remainingCells = (42 - totalCells % 42) % 42; // Always fill 6 rows (42 cells) or 5 rows
+            int remainingCells = (42 - totalCells % 42) % 42;
             if (totalCells <= 35 && remainingCells > 7) remainingCells -= 7;
 
             DateTime nextMonth = firstDayOfMonth.AddMonths(1);
@@ -108,6 +118,9 @@ namespace planlama_app.Views
             bool isToday = date.Date == DateTime.Today;
             bool isSelected = _selectedDate.HasValue && date.Date == _selectedDate.Value.Date;
 
+            Brush defaultBorderBrush = GetSafeBrush("MaterialDesignDivider", GetSafeBrush("MaterialDesign.Brush.Divider", Brushes.DimGray));
+            Brush foregroundBrush = GetSafeBrush("MaterialDesign.Brush.Foreground", GetSafeBrush("MaterialDesignBody", Brushes.White));
+
             Border border = new Border
             {
                 Margin = new Thickness(2),
@@ -118,7 +131,7 @@ namespace planlama_app.Views
                     : (isToday ? new SolidColorBrush(Color.FromArgb(25, 76, 175, 80)) : Brushes.Transparent),
                 BorderBrush = isToday 
                     ? Brushes.MediumSeaGreen 
-                    : (isSelected ? Brushes.DodgerBlue : (SolidColorBrush)FindResource("MaterialDesign.Brush.Divider")),
+                    : (isSelected ? Brushes.DodgerBlue : defaultBorderBrush),
                 Padding = new Thickness(4),
                 MinHeight = 85,
                 Cursor = Cursors.Hand
@@ -130,10 +143,9 @@ namespace planlama_app.Views
             }
 
             Grid cellGrid = new Grid();
-            cellGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); // Header (Day Number + Add btn)
-            cellGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); // Tasks list
+            cellGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            cellGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
-            // Top Header: Date number & Add Button
             Grid topGrid = new Grid();
             topGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             topGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -143,7 +155,7 @@ namespace planlama_app.Views
                 Text = date.Day.ToString(),
                 FontWeight = isToday ? FontWeights.Bold : FontWeights.SemiBold,
                 FontSize = 13,
-                Foreground = isToday ? Brushes.MediumSeaGreen : (SolidColorBrush)FindResource("MaterialDesign.Brush.Foreground"),
+                Foreground = isToday ? Brushes.MediumSeaGreen : foregroundBrush,
                 Margin = new Thickness(4, 2, 0, 2)
             };
             Grid.SetColumn(txtDayNum, 0);
@@ -174,7 +186,6 @@ namespace planlama_app.Views
             Grid.SetRow(topGrid, 0);
             cellGrid.Children.Add(topGrid);
 
-            // Tasks Container
             ScrollViewer scrollViewer = new ScrollViewer
             {
                 VerticalScrollBarVisibility = ScrollBarVisibility.Hidden,
@@ -186,9 +197,9 @@ namespace planlama_app.Views
 
             if (tasksByDate.TryGetValue(date.Date, out var dayTasks) && dayTasks.Count > 0)
             {
-                foreach (var task in dayTasks.Take(4)) // Max 4 chips per cell
+                foreach (var task in dayTasks.Take(4))
                 {
-                    Border taskChip = CreateTaskChip(task);
+                    Border taskChip = CreateTaskChip(task, foregroundBrush);
                     tasksPanel.Children.Add(taskChip);
                 }
 
@@ -213,7 +224,6 @@ namespace planlama_app.Views
 
             border.Child = cellGrid;
 
-            // Click Handler
             border.MouseLeftButtonDown += (s, e) =>
             {
                 _selectedDate = date;
@@ -224,7 +234,7 @@ namespace planlama_app.Views
             return border;
         }
 
-        private Border CreateTaskChip(TaskItem task)
+        private Border CreateTaskChip(TaskItem task, Brush foregroundBrush)
         {
             Color catColor = GetCategoryColor(task.CategoryName);
             
@@ -247,9 +257,7 @@ namespace planlama_app.Views
                 Text = (task.IsCompleted ? "✓ " : "") + task.Title,
                 FontSize = 10.5,
                 TextTrimming = TextTrimming.CharacterEllipsis,
-                Foreground = task.IsCompleted 
-                    ? Brushes.Gray 
-                    : (SolidColorBrush)FindResource("MaterialDesign.Brush.Foreground"),
+                Foreground = task.IsCompleted ? Brushes.Gray : foregroundBrush,
                 TextDecorations = task.IsCompleted ? TextDecorations.Strikethrough : null
             };
 
