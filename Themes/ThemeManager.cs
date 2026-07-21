@@ -35,6 +35,7 @@ namespace planlama_app.Themes
             string? bgHex = null;
             string? paperHex = null;
             string? cardHex = null;
+            string? dividerHex = null;
 
             switch (themeName)
             {
@@ -44,6 +45,7 @@ namespace planlama_app.Themes
                     bgHex = "#272822";
                     paperHex = "#1E1F1C";
                     cardHex = "#3E3D32";
+                    dividerHex = "#555544";
                     break;
                 case "Monokai Dimmed":
                     theme.SetPrimaryColor((Color)ColorConverter.ConvertFromString("#4EC9B0")); // Dimmed Cyan/Green
@@ -51,6 +53,7 @@ namespace planlama_app.Themes
                     bgHex = "#1E1E1E";
                     paperHex = "#252526";
                     cardHex = "#2D2D30";
+                    dividerHex = "#444444";
                     break;
                 case "Abyss":
                     theme.SetPrimaryColor((Color)ColorConverter.ConvertFromString("#007ACC")); // Bright Blue
@@ -58,6 +61,7 @@ namespace planlama_app.Themes
                     bgHex = "#000C18";
                     paperHex = "#001122";
                     cardHex = "#002244";
+                    dividerHex = "#003366";
                     break;
                 case "Tokyo Night Light":
                     theme.SetBaseTheme(BaseTheme.Light);
@@ -66,22 +70,24 @@ namespace planlama_app.Themes
                     bgHex = "#D5D6DB";
                     paperHex = "#E1E2E7";
                     cardHex = "#CFD0D5";
+                    dividerHex = "#2A2B36"; // Net, belirgin siyah/koyu gri çizgiler
                     break;
                 default: // Default Dark
                     theme.SetBaseTheme(BaseTheme.Dark);
                     theme.SetPrimaryColor((Color)ColorConverter.ConvertFromString("#673AB7"));
                     theme.SetSecondaryColor((Color)ColorConverter.ConvertFromString("#009688"));
                     bgHex = null; // Reset custom brushes to fallback to MDT defaults
+                    dividerHex = "#555555";
                     break;
             }
 
             paletteHelper.SetTheme(theme);
             
             // Apply custom brushes AFTER SetTheme so they are not overwritten!
-            SetCustomBrushes(bgHex, paperHex, cardHex);
+            SetCustomBrushes(bgHex, paperHex, cardHex, dividerHex);
         }
 
-        private static void SetCustomBrushes(string? bgHex, string? paperHex, string? cardHex)
+        private static void SetCustomBrushes(string? bgHex, string? paperHex, string? cardHex, string? dividerHex)
         {
             if (bgHex == null || paperHex == null || cardHex == null)
             {
@@ -106,7 +112,7 @@ namespace planlama_app.Themes
             var bgBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(bgHex));
             var paperBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(paperHex));
             var cardBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(cardHex));
-            var dividerBrush = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255));
+            var dividerBrush = new SolidColorBrush(dividerHex != null ? (Color)ColorConverter.ConvertFromString(dividerHex) : Color.FromRgb(80, 80, 80));
 
             // MDT v3 / v4 keys
             Application.Current.Resources["MaterialDesignBackground"] = bgBrush;
