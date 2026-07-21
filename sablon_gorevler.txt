@@ -1,0 +1,96 @@
+﻿# ==============================================================================
+# ROMENCE 11-120 VİDEO ZİNCİRLEME (CASCADE) ÇALIŞMA PLANI
+# ==============================================================================
+
+# --- İSTİSNAİ GÜNLER (Başlangıç) ---
+2026-07-12 | Z | ROMENCE_KURS | 1 | 180 | Romence Video 11, 12 İzle
+2026-07-12 | Z | ROMENCE_KURS | 2 | 15 | Ölü Zaman: Zihinden önceki 10 videonun A1/A2 kelime tekrarını yap
+2026-07-13 | Z | ROMENCE_KURS | 3 | 270 | Romence Video 13, 14, 15 İzle
+2026-07-14 | Z | ROMENCE_KURS | 4 | 90 | Romence Video 16 İzle
+2026-07-15 | Z | ROMENCE_KURS | 5 | 90 | Romence Video 17 İzle
+2026-07-15 | Z | ROMENCE_KURS | 6 | 15 | Günlük Mikro-Tekrar: Dünün kelimelerine hızlıca göz at
+2026-07-16 | Z | ROMENCE_KURS | 7 | 90 | Romence Video 18 İzle
+2026-07-17 | Z | ROMENCE_KURS | 8 | 90 | Romence Video 19 İzle
+2026-07-18 | Z | ROMENCE_KURS | 9 | 90 | Romence Video 20 İzle
+2026-07-19 | Z | ROMENCE_KURS | 10 | 90 | Romence Video 21 İzle
+2026-07-19 | Z | ROMENCE_KURS | 11 | 45 | Haftalık Hata Analizi: Bu haftanın zorlanılan yapılarını çıkar
+
+# --- YOĞUN HAFTA (Her Gün 3 Video) ---
+2026-07-20 | Z | ROMENCE_KURS | 12 | 270 | Romence Video 22, 23, 24 İzle
+2026-07-21 | Z | ROMENCE_KURS | 13 | 270 | Romence Video 25, 26, 27 İzle
+2026-07-22 | Z | ROMENCE_KURS | 14 | 270 | Romence Video 28, 29, 30 İzle
+2026-07-23 | Z | ROMENCE_KURS | 15 | 270 | Romence Video 31, 32, 33 İzle
+2026-07-24 | Z | ROMENCE_KURS | 16 | 270 | Romence Video 34, 35, 36 İzle
+2026-07-25 | Z | ROMENCE_KURS | 17 | 270 | Romence Video 37, 38, 39 İzle
+2026-07-26 | Z | ROMENCE_KURS | 18 | 270 | Romence Video 40, 41, 42 İzle
+2026-07-26 | Z | ROMENCE_KURS | 19 | 45 | Haftalık Genel Tekrar ve Hata Analizi
+
+# --- STANDART HAFTA 1 (Haftada 4 Gün, 10 Video) ---
+2026-07-27 | Z | ROMENCE_KURS | 20 | 270 | Romence Video 43, 44, 45 İzle
+2026-07-28 | Z | ROMENCE_KURS | 21 | 180 | Romence Video 46, 47 İzle
+2026-07-29 | Z | ROMENCE_KURS | 22 | 45 | Aktif Hatırlama: Cümle yapıları ve kelime tekrarı
+2026-07-30 | Z | ROMENCE_KURS | 23 | 270 | Romence Video 48, 49, 50 İzle
+2026-07-31 | Z | ROMENCE_KURS | 24 | 180 | Romence Video 51, 52 İzle
+2026-08-01 | Z | ROMENCE_KURS | 25 | 45 | Pratik: Cooljugator üzerinden temel fiil çekimleri kontrolü ve yazımı
+2026-08-02 | Z | ROMENCE_KURS | 26 | 45 | Haftalık Hata Analizi: Unutulan kelimeleri ayıkla
+
+# --- STANDART HAFTA 2 ---
+2026-08-03 | Z | ROMENCE_KURS | 27 | 270 | Romence Video 53, 54, 55 İzle
+2026-08-04 | Z | ROMENCE_KURS | 28 | 180 | Romence Video 56, 57 İzle
+2026-08-05 | Z | ROMENCE_KURS | 29 | 30 | Aktif Hatırlama: Ölü zamanı değerlendir, etrafındaki nesneleri Romence isimlendir
+2026-08-06 | Z | ROMENCE_KURS | 30 | 270 | Romence Video 58, 59, 60 İzle
+2026-08-07 | Z | ROMENCE_KURS | 31 | 180 | Romence Video 61, 62 İzle
+2026-08-08 | Z | ROMENCE_KURS | 32 | 45 | Pratik: Ladaniva / Folk müzik dinleyip sözlerindeki kelimeleri analiz et
+2026-08-09 | Z | ROMENCE_KURS | 33 | 45 | Haftalık Genel Tekrar ve Hata Analizi
+
+# --- STANDART HAFTA 3 ---
+2026-08-10 | Z | ROMENCE_KURS | 34 | 270 | Romence Video 63, 64, 65 İzle
+2026-08-11 | Z | ROMENCE_KURS | 35 | 180 | Romence Video 66, 67 İzle
+2026-08-12 | Z | ROMENCE_KURS | 36 | 45 | Aktif Hatırlama: Cümle yapıları ve basit diyalog kurma
+2026-08-13 | Z | ROMENCE_KURS | 37 | 270 | Romence Video 68, 69, 70 İzle
+2026-08-14 | Z | ROMENCE_KURS | 38 | 180 | Romence Video 71, 72 İzle
+2026-08-15 | Z | ROMENCE_KURS | 39 | 45 | Pratik: Cooljugator üzerinden geçmiş zaman fiil çekimleri yazma
+2026-08-16 | Z | ROMENCE_KURS | 40 | 45 | Haftalık Genel Tekrar ve Hata Analizi
+
+# --- STANDART HAFTA 4 ---
+2026-08-17 | Z | ROMENCE_KURS | 41 | 270 | Romence Video 73, 74, 75 İzle
+2026-08-18 | Z | ROMENCE_KURS | 42 | 180 | Romence Video 76, 77 İzle
+2026-08-19 | Z | ROMENCE_KURS | 43 | 30 | Aktif Hatırlama: Günlük Mikro-Tekrar ve sesli okuma
+2026-08-20 | Z | ROMENCE_KURS | 44 | 270 | Romence Video 78, 79, 80 İzle
+2026-08-21 | Z | ROMENCE_KURS | 45 | 180 | Romence Video 81, 82 İzle
+2026-08-22 | Z | ROMENCE_KURS | 46 | 60 | Pratik: Öğrenilen dilbilgisi kurallarıyla kendi paragrafını yaz
+2026-08-23 | Z | ROMENCE_KURS | 47 | 45 | Haftalık Genel Tekrar ve Hata Analizi
+
+# --- STANDART HAFTA 5 ---
+2026-08-24 | Z | ROMENCE_KURS | 48 | 270 | Romence Video 83, 84, 85 İzle
+2026-08-25 | Z | ROMENCE_KURS | 49 | 180 | Romence Video 86, 87 İzle
+2026-08-26 | Z | ROMENCE_KURS | 50 | 45 | Aktif Hatırlama: Yeni kelimeleri cümle içinde kullanma
+2026-08-27 | Z | ROMENCE_KURS | 51 | 270 | Romence Video 88, 89, 90 İzle
+2026-08-28 | Z | ROMENCE_KURS | 52 | 180 | Romence Video 91, 92 İzle
+2026-08-29 | Z | ROMENCE_KURS | 53 | 45 | Pratik: Cooljugator üzerinden gelecek zaman fiil çekimleri yazma
+2026-08-30 | Z | ROMENCE_KURS | 54 | 45 | Haftalık Genel Tekrar ve Hata Analizi
+
+# --- STANDART HAFTA 6 ---
+2026-08-31 | Z | ROMENCE_KURS | 55 | 270 | Romence Video 93, 94, 95 İzle
+2026-09-01 | Z | ROMENCE_KURS | 56 | 180 | Romence Video 96, 97 İzle
+2026-09-02 | Z | ROMENCE_KURS | 57 | 30 | Aktif Hatırlama: Ölü zamanı değerlendir, yolda içinden Romence düşün
+2026-09-03 | Z | ROMENCE_KURS | 58 | 270 | Romence Video 98, 99, 100 İzle
+2026-09-04 | Z | ROMENCE_KURS | 59 | 180 | Romence Video 101, 102 İzle
+2026-09-05 | Z | ROMENCE_KURS | 60 | 45 | Pratik: Geleneksel Romence folk dinleyerek telaffuz/şarkı sözü çalış
+2026-09-06 | Z | ROMENCE_KURS | 61 | 45 | Haftalık Genel Tekrar ve Hata Analizi
+
+# --- STANDART HAFTA 7 ---
+2026-09-07 | Z | ROMENCE_KURS | 62 | 270 | Romence Video 103, 104, 105 İzle
+2026-09-08 | Z | ROMENCE_KURS | 63 | 180 | Romence Video 106, 107 İzle
+2026-09-09 | Z | ROMENCE_KURS | 64 | 45 | Aktif Hatırlama: Cümle yapıları ve kelime tekrarı
+2026-09-10 | Z | ROMENCE_KURS | 65 | 270 | Romence Video 108, 109, 110 İzle
+2026-09-11 | Z | ROMENCE_KURS | 66 | 180 | Romence Video 111, 112 İzle
+2026-09-12 | Z | ROMENCE_KURS | 67 | 45 | Pratik: Cooljugator ile düzensiz fiillerin genel revizyonu
+2026-09-13 | Z | ROMENCE_KURS | 68 | 45 | Haftalık Genel Tekrar ve Hata Analizi
+
+# --- SON HAFTA (Kalan 8 Video) ---
+2026-09-14 | Z | ROMENCE_KURS | 69 | 270 | Romence Video 113, 114, 115 İzle
+2026-09-15 | Z | ROMENCE_KURS | 70 | 180 | Romence Video 116, 117 İzle
+2026-09-16 | Z | ROMENCE_KURS | 71 | 30 | Aktif Hatırlama: Son eksikleri tespit et
+2026-09-17 | Z | ROMENCE_KURS | 72 | 270 | Romence Video 118, 119, 120 İzle
+2026-09-18 | Z | ROMENCE_KURS | 73 | 60 | Kutlama: Tüm notları toparla ve A1/A2 seviye genel değerlendirmesi yap

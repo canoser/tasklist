@@ -1,0 +1,13 @@
+# Visual Studio & .NET ignored files
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Logs & temp files
+crash.txt
+error.txt
+*.log

@@ -1,0 +1,27 @@
+using System;
+using System.Globalization;
+using System.Windows.Data;
+
+namespace planlama_app.Converters
+{
+    public class GroupExpandedConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is string groupName)
+            {
+                // Gecikmiş ve Bugün grupları varsayılan olarak açık
+                if (groupName.Contains("Gecikmiş") || groupName.Contains("Bugün"))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}
