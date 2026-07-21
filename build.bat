@@ -1,7 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
 echo ===================================================
-echo   Planlama App - WPF Single EXE Builder
+echo   TaskList - WPF Single EXE Builder
 echo ===================================================
 echo.
 set "OUTPUT_DIR=%~dp0Dist"
@@ -22,7 +22,7 @@ echo [3/4] Creating distribution directories...
 mkdir "!OUTPUT_DIR!"
 mkdir "!OUTPUT_DIR!\Data"
 echo [4/4] Copying files and cleaning up...
-copy "!TEMP_DIR!\planlama_app.exe" "!OUTPUT_DIR!\" > nul
+copy "!TEMP_DIR!\TaskList.exe" "!OUTPUT_DIR!\" > nul
 copy "!TEMP_DIR!\*.dll" "!OUTPUT_DIR!\Data\" > nul
 rmdir /s /q "!TEMP_DIR!"
 echo.
@@ -31,7 +31,7 @@ echo   Process completed successfully!
 echo ===================================================
 echo   Output Directory: !OUTPUT_DIR!
 echo   Contents:
-echo     - planlama_app.exe
+echo     - TaskList.exe
 echo     - Data/ (Contains tasks.db and e_sqlite3.dll)
 echo ===================================================
 echo.

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -6,6 +6,10 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <AssemblyName>TaskList</AssemblyName>
+    <Title>TaskList</Title>
+    <Product>TaskList - Görev &amp; Planlama Yönetimi</Product>
+    <AssemblyTitle>TaskList</AssemblyTitle>
   </PropertyGroup>
 
   <ItemGroup>
