@@ -11,3 +11,7 @@ obj/
 crash.txt
 error.txt
 *.log
+
+# Local AI / Antigravity Agent configurations (not committed to GitHub)
+.agents/
+AGENTS.md
