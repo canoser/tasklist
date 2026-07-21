@@ -1,18 +1,20 @@
-# 📋 Planlama App - Görev & Kaynak Yönetimi
+# 📋 TaskList - Görev, Takvim & Planlama Yönetimi
 
-**Planlama App**, modern WPF (.NET 9) mimarisi kullanılarak geliştirilmiş; günlük görevlerinizi, projelerinizi, kategorilerinizi ve kaynaklarınızı organize etmenizi sağlayan masaüstü planlama uygulamasıdır.
+**TaskList**, modern WPF (.NET 9) mimarisi ve Material Design ile geliştirilmiş; görevlerinizi, projelerinizi, kategorilerinizi ve takviminizi tek bir yerden yönetmenizi sağlayan masaüstü planlama uygulamasıdır.
 
 ---
 
-## ✨ Özellikler
+## ✨ Yeni Özellikler & Yenilikler (v1.1)
 
-- **📋 Detaylı Görev Takibi:** Görev ekleme, güncelleme, silme, durum (Tamamlandı/Bekliyor) ve önem derecesi takibi.
-- **🏷️ Kategori Yönetimi:** Görevleri farklı renk ve gruplarla kategorize edebilme.
-- **📁 Kaynak Takibi:** Görevlerle ilişkili kaynak ve materyalleri yönetme.
-- **🎨 Modern Material Design Arayüzü:** `MaterialDesignThemes` kütüphanesi ve özel tema yöneticisi ile göz yormayan, şık tasarım.
-- **💾 SQLite & Dapper Altyapısı:** Hızlı, güvenilir ve yerel veritabanı performanslı veri depolama.
-- **↩️ Geri Al / İleri Al (Undo/Redo):** Yapılan işlemleri kolayca geri alma veya yineleme imkanı.
-- **📥 Şablon İçe/Dışa Aktarım:** Hazır şablon görevleri hızlıca içe aktarma desteği.
+- **📅 Entegre Takvim Görünümü (Calendar View):** Görevlerinizi ay ve gün bazında takvim gridi üzerinde görüntüleme, tarihe özel hızlı görev ekleme ve filtreneme.
+- **🔀 Görünüm Seçenekleri (Modlar):**
+  - **📅 Takvim Görünümü:** Tam ekran takvim matrisi.
+  - **📋 Liste Görünümü:** Filtrelenebilir ve gruplanabilir detaylı görev listesi.
+  - **🔀 Bölünmüş Görünüm (Split View):** Sol tarafta takvim gridi, sağ tarafta seçili güne/gruba ait görev listesi.
+- **🏷️ Profesyonel Sekme & Görev Grubu Kurgusu:**
+  - Sekmelerde aktif görev sayıları rozet (badge) olarak gösterilir (örn: `İş (5)`, `Kişisel (3)`).
+  - Sekme değiştiğinde hem Takvim hem de Liste görünümü anında filtrelenir.
+  - Sağ tık menüsü ile kategori yeniden adlandırma ve silme yönetimi.
 
 ---
 
@@ -47,7 +49,6 @@
    dotnet build
    dotnet run
    ```
-   *Alternatif olarak kök dizindeki `build.bat` dosyasını çalıştırabilirsiniz.*
 
 ---
 
@@ -60,6 +61,7 @@ planlama_app/
 ├── Models/              # TaskItem, Category, ResourceItem modelleri
 ├── Services/            # ImportService, UndoManager servisleri
 ├── Themes/              # ThemeManager ve özel stil/tema dosyaları
+├── Views/               # CalendarView takvim modülü
 ├── Windows/             # Özel diyalog ve seçim pencereleri
 ├── App.xaml             # Uygulama başlangıcı ve kaynaklar
 └── MainWindow.xaml      # Ana uygulama arayüzü

@@ -5,10 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:conv="clr-namespace:planlama_app.Converters"
+        xmlns:views="clr-namespace:planlama_app.Views"
         mc:Ignorable="d"
-        Title="Görev Takip"
-        Height="720" Width="1100"
-        MinHeight="500" MinWidth="750"
+        Title="TaskList - Görev &amp; Planlama Yönetimi"
+        Height="760" Width="1180"
+        MinHeight="550" MinWidth="800"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource MaterialDesign.Brush.Background}"
         TextElement.Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
@@ -25,11 +26,11 @@
         <Grid.RowDefinitions>
             <!-- Üst Bar -->
             <RowDefinition Height="Auto"/>
-            <!-- Sekmeler -->
+            <!-- Sekmeler (Görev Grupları) -->
             <RowDefinition Height="Auto"/>
-            <!-- Filtre Çubuğu -->
+            <!-- Görünüm Seçici & Filtre Çubuğu -->
             <RowDefinition Height="Auto"/>
-            <!-- İçerik -->
+            <!-- İçerik (Takvim / Liste / Bölünmüş) -->
             <RowDefinition Height="*"/>
             <!-- Durum Çubuğu -->
             <RowDefinition Height="Auto"/>
@@ -51,13 +52,19 @@
                 <StackPanel Grid.Column="0"
                             Orientation="Horizontal"
                             VerticalAlignment="Center">
-                    <materialDesign:PackIcon Kind="CheckboxMarkedCircleOutline"
-                                            Width="28" Height="28"
-                                            VerticalAlignment="Center"
-                                            Margin="0,0,10,0"/>
-                    <TextBlock Text="Görev Takip"
+                    <materialDesign:PackIcon Kind="CalendarCheck"
+                                             Width="28" Height="28"
+                                             VerticalAlignment="Center"
+                                             Margin="0,0,10,0"/>
+                    <TextBlock Text="TaskList"
                                Style="{StaticResource MaterialDesignHeadline5TextBlock}"
+                               FontWeight="Bold"
                                VerticalAlignment="Center"/>
+                    <TextBlock Text="Planlama &amp; Görev Yönetimi"
+                               FontSize="12"
+                               Opacity="0.8"
+                               VerticalAlignment="Bottom"
+                               Margin="12,0,0,3"/>
                 </StackPanel>
 
                 <!-- Sağ: Butonlar -->
@@ -116,7 +123,7 @@
                                                     Width="20" Height="20"
                                                     VerticalAlignment="Center"
                                                     Margin="0,0,8,0"/>
-                            <TextBlock Text="Txt'den İçe Aktar"
+                            <TextBlock Text="İçe Aktar"
                                        VerticalAlignment="Center"
                                        FontWeight="Medium"/>
                         </StackPanel>
@@ -165,7 +172,7 @@
         </materialDesign:ColorZone>
 
         <!-- ═══════════════════════════════════════════════════════════
-             KATEGORİ SEKMELERİ (TABS)
+             KATEGORİ SEKMELERİ (Görev Grupları)
         ═══════════════════════════════════════════════════════════ -->
         <Grid Grid.Row="1" Background="{DynamicResource MaterialDesign.Brush.Background}">
             <Grid.ColumnDefinitions>
@@ -185,80 +192,110 @@
                     Grid.Column="1"
                     Style="{StaticResource MaterialDesignIconButton}"
                     Click="BtnAddCategory_Click"
-                    ToolTip="Yeni Kategori Ekle"
+                    ToolTip="Yeni Görev Grubu / Kategori Ekle"
                     Margin="8,0">
                 <materialDesign:PackIcon Kind="Plus" Width="24" Height="24"/>
             </Button>
         </Grid>
 
         <!-- ═══════════════════════════════════════════════════════════
-             FİLTRE ÇUBUĞU
+             FİLTRE ÇUBUĞU & GÖRÜNÜM MODLARI
         ═══════════════════════════════════════════════════════════ -->
         <Border Grid.Row="2"
                 Background="{DynamicResource MaterialDesign.Brush.Background}"
-                Padding="16,10"
+                Padding="16,8"
                 BorderBrush="{DynamicResource MaterialDesign.Brush.DataGrid.RowHoverBackground}"
                 BorderThickness="0,0,0,1">
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-                <!-- Arama Kutusu -->
-                <TextBox x:Name="TxtSearch"
-                         Width="280"
-                         materialDesign:HintAssist.Hint="Görev ara..."
-                         materialDesign:HintAssist.IsFloating="True"
-                         Style="{StaticResource MaterialDesignOutlinedTextBox}"
-                         TextChanged="TxtSearch_TextChanged"
-                         Margin="0,0,16,0"/>
+                <!-- Sol: Arama ve Filtreler -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
 
-                <!-- Tür Filtresi -->
-                <ComboBox x:Name="CmbFilter"
-                          Width="170"
-                          materialDesign:HintAssist.Hint="Görev Türü"
-                          materialDesign:HintAssist.IsFloating="True"
-                          Style="{StaticResource MaterialDesignOutlinedComboBox}"
-                          SelectionChanged="CmbFilter_SelectionChanged"
-                          Margin="0,0,16,0">
-                    <ComboBoxItem Content="Tümü" IsSelected="True"/>
-                    <ComboBoxItem Content="Bağımsız"/>
-                    <ComboBoxItem Content="Zincirleme"/>
-                </ComboBox>
+                    <!-- Arama Kutusu -->
+                    <TextBox x:Name="TxtSearch"
+                             Width="240"
+                             materialDesign:HintAssist.Hint="Görev ara..."
+                             materialDesign:HintAssist.IsFloating="False"
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                             Padding="8,6"
+                             TextChanged="TxtSearch_TextChanged"
+                             Margin="0,0,12,0"/>
 
-                <!-- Tamamlananları Gizle -->
-                <CheckBox x:Name="ChkHideCompleted"
-                          Content="Tamamlananları Gizle"
-                          Style="{StaticResource MaterialDesignCheckBox}"
-                          Checked="Filter_Changed"
-                          Unchecked="Filter_Changed"
-                          VerticalAlignment="Center"/>
+                    <!-- Tür Filtresi -->
+                    <ComboBox x:Name="CmbFilter"
+                              Width="140"
+                              materialDesign:HintAssist.Hint="Görev Türü"
+                              materialDesign:HintAssist.IsFloating="False"
+                              Style="{StaticResource MaterialDesignOutlinedComboBox}"
+                              Padding="8,6"
+                              SelectionChanged="CmbFilter_SelectionChanged"
+                              Margin="0,0,12,0">
+                        <ComboBoxItem Content="Tüm Türler" IsSelected="True"/>
+                        <ComboBoxItem Content="Bağımsız"/>
+                        <ComboBoxItem Content="Zincirleme"/>
+                    </ComboBox>
 
-                <!-- Seçilenleri Sil (Çoklu Silme) -->
-                <Button x:Name="BtnDeleteSelected"
-                        Click="BtnDeleteSelected_Click"
-                        Style="{StaticResource MaterialDesignFlatButton}"
-                        Foreground="Red"
-                        Margin="16,0,0,0"
-                        VerticalAlignment="Center"
-                        IsEnabled="False"
-                        ToolTip="Seçili görevleri toplu sil">
-                    <StackPanel Orientation="Horizontal">
-                        <materialDesign:PackIcon Kind="TrashCanOutline" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                        <TextBlock Text="Seçilenleri Sil" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                    </StackPanel>
-                </Button>
+                    <!-- Tamamlananları Gizle -->
+                    <CheckBox x:Name="ChkHideCompleted"
+                              Content="Tamamlananları Gizle"
+                              Style="{StaticResource MaterialDesignCheckBox}"
+                              Checked="Filter_Changed"
+                              Unchecked="Filter_Changed"
+                              VerticalAlignment="Center"/>
 
-                <!-- Toplam Sayaç -->
-                <TextBlock x:Name="TxtCount"
-                           Text="0 görev"
-                           Style="{StaticResource MaterialDesignBody2TextBlock}"
-                           Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
-                           Opacity="0.6"
-                           VerticalAlignment="Center"
-                           Margin="20,0,0,0"/>
-            </StackPanel>
+                    <!-- Seçilenleri Sil -->
+                    <Button x:Name="BtnDeleteSelected"
+                            Click="BtnDeleteSelected_Click"
+                            Style="{StaticResource MaterialDesignFlatButton}"
+                            Foreground="Red"
+                            Margin="12,0,0,0"
+                            VerticalAlignment="Center"
+                            IsEnabled="False"
+                            ToolTip="Seçili görevleri toplu sil">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="TrashCanOutline" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="Seçilenleri Sil" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                        </StackPanel>
+                    </Button>
+
+                    <!-- Toplam Sayaç -->
+                    <TextBlock x:Name="TxtCount"
+                               Text="0 görev"
+                               Style="{StaticResource MaterialDesignBody2TextBlock}"
+                               Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+                               Opacity="0.6"
+                               VerticalAlignment="Center"
+                               Margin="16,0,0,0"/>
+                </StackPanel>
+
+                <!-- Sağ: Görünüm Modu Değiştirici (Takvim / Liste / Bölünmüş) -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Görünüm:" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="Medium" Opacity="0.7"/>
+                    
+                    <!-- Mode Switcher Buttons -->
+                    <Border CornerRadius="6" Background="{DynamicResource MaterialDesign.Brush.ToolBar.Background}" Padding="2">
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton x:Name="RbViewCalendar" Content="📅 Takvim" 
+                                         GroupName="ViewModeGroup" Style="{StaticResource MaterialDesignTabRadioButton}" 
+                                         Click="ViewMode_Click" Tag="Calendar" Margin="2,0"/>
+                            <RadioButton x:Name="RbViewSplit" Content="🔀 Bölünmüş" 
+                                         GroupName="ViewModeGroup" Style="{StaticResource MaterialDesignTabRadioButton}" 
+                                         Click="ViewMode_Click" Tag="Split" IsChecked="True" Margin="2,0"/>
+                            <RadioButton x:Name="RbViewList" Content="📋 Liste" 
+                                         GroupName="ViewModeGroup" Style="{StaticResource MaterialDesignTabRadioButton}" 
+                                         Click="ViewMode_Click" Tag="List" Margin="2,0"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
         </Border>
 
         <!-- ═══════════════════════════════════════════════════════════
-             GÖREV LİSTESİ
+             İÇERİK (Takvim & Liste Görünümleri)
         ═══════════════════════════════════════════════════════════ -->
         <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
@@ -266,463 +303,246 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Görev Listesi (Sol Taraf) -->
+            <!-- Ana Görünüm Alanı (Grid for Calendar + List split) -->
             <Grid Grid.Column="0">
-                <!-- Boş durum mesajı -->
-                <StackPanel x:Name="PanelEmpty"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Center"
-                        Visibility="Collapsed">
-                <materialDesign:PackIcon Kind="ClipboardTextOutline"
-                                        Width="72" Height="72"
-                                        HorizontalAlignment="Center"
-                                        Opacity="0.25"/>
-                <TextBlock Text="Henüz görev yok"
-                           Style="{StaticResource MaterialDesignHeadline6TextBlock}"
-                           HorizontalAlignment="Center"
-                           Opacity="0.4"
-                           Margin="0,12,0,4"/>
-                <TextBlock Text="Aşağıdaki butona tıklayarak görevlerinizi TXT dosyasından içe aktarabilirsiniz."
-                           Style="{StaticResource MaterialDesignBody2TextBlock}"
-                           HorizontalAlignment="Center"
-                           Opacity="0.3"
-                           TextAlignment="Center"
-                           Margin="0,0,0,16"/>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <!-- Dosya Seç ve İçe Aktar -->
-                    <Button x:Name="BtnEmptyImport"
-                            Click="BtnImport_Click"
-                            Style="{StaticResource MaterialDesignFlatMidBgButton}"
-                            Width="220"
-                            Margin="0,0,12,0"
-                            ToolTip="Dosya seçerek görevleri içe aktar">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="FileImport"
-                                                    Width="20" Height="20"
-                                                    VerticalAlignment="Center"
-                                                    Margin="0,0,8,0"/>
-                            <TextBlock Text="Dosya Seç ve İçe Aktar"
-                                       VerticalAlignment="Center"
-                                       FontWeight="Medium"/>
-                        </StackPanel>
-                    </Button>
+                <Grid.ColumnDefinitions>
+                    <!-- Column 0: Takvim -->
+                    <ColumnDefinition x:Name="ColCalendar" Width="1.2*"/>
+                    <!-- GridSplitter -->
+                    <ColumnDefinition x:Name="ColSplitter" Width="Auto"/>
+                    <!-- Column 2: Liste -->
+                    <ColumnDefinition x:Name="ColList" Width="1*"/>
+                </Grid.ColumnDefinitions>
 
-                    <!-- Şablon Dosyası Oluştur ve Göster (AI/LLM) -->
-                    <Button x:Name="BtnEmptyTemplate"
-                            Click="BtnTemplate_Click"
-                            Style="{StaticResource MaterialDesignOutlinedButton}"
-                            Width="220"
-                            ToolTip="AI/LLM için örnek dosya şablonu oluştur ve göster">
-                        <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="FileDocumentEditOutline"
-                                                    Width="20" Height="20"
-                                                    VerticalAlignment="Center"
-                                                    Margin="0,0,8,0"/>
-                            <TextBlock Text="Şablon Dosyası Göster"
-                                       VerticalAlignment="Center"
-                                       FontWeight="Medium"/>
-                        </StackPanel>
-                    </Button>
-                </StackPanel>
-            </StackPanel>
+                <!-- TAKVİM KONTROLÜ -->
+                <Border x:Name="BorderCalendar" Grid.Column="0" Margin="4">
+                    <views:CalendarView x:Name="CalendarControl"/>
+                </Border>
 
-            <!-- ListView -->
-            <ListView x:Name="LvTasks"
-                      ItemsSource="{Binding}"
-                      SelectionMode="Single"
-                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                      ScrollViewer.VerticalScrollBarVisibility="Auto"
-                      Margin="16,8,16,8"
-                      VirtualizingPanel.IsVirtualizing="True"
-                      VirtualizingPanel.ScrollUnit="Pixel"
-                      VirtualizingPanel.VirtualizationMode="Recycling"
-                      VirtualizingPanel.IsVirtualizingWhenGrouping="True">
-                <ListView.GroupStyle>
-                    <GroupStyle>
-                        <GroupStyle.ContainerStyle>
-                            <Style TargetType="{x:Type GroupItem}">
-                                <Setter Property="Margin" Value="0,8,0,4"/>
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="{x:Type GroupItem}">
-                                            <Expander IsExpanded="{Binding Name, Converter={StaticResource GroupExpandedConverter}, Mode=OneWay}"
-                                                      Margin="4,4,4,4">
-                                                <Expander.Header>
-                                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                                        <CheckBox Margin="0,0,8,0"
-                                                                  Tag="{Binding Name}"
-                                                                  Checked="ChkSelectGroup_Checked"
-                                                                  Unchecked="ChkSelectGroup_Unchecked"
-                                                                  ToolTip="Bu gruptaki tüm görevleri seç"/>
-                                                        <TextBlock Text="{Binding Name}" 
-                                                                   FontWeight="Bold" 
-                                                                   FontSize="15" 
-                                                                   VerticalAlignment="Center"
-                                                                   Foreground="{Binding Name, Converter={StaticResource GroupColorConverter}}" />
-                                                    </StackPanel>
-                                                </Expander.Header>
-                                                <ItemsPresenter Margin="0,4,0,0"/>
-                                            </Expander>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </GroupStyle.ContainerStyle>
-                    </GroupStyle>
-                </ListView.GroupStyle>
+                <!-- SPLITTER -->
+                <GridSplitter x:Name="ViewSplitter" Grid.Column="1" Width="5" HorizontalAlignment="Stretch" 
+                              Background="{DynamicResource MaterialDesign.Brush.Divider}" Margin="0,4"/>
 
-                <ListView.View>
-                    <GridView>
-
-                        <!-- Çoklu Seçim Sütunu -->
-                        <GridViewColumn Width="45">
-                            <GridViewColumn.HeaderTemplate>
-                                <DataTemplate>
-                                    <CheckBox x:Name="ChkSelectAll"
-                                              Checked="ChkSelectAll_Checked"
-                                              Unchecked="ChkSelectAll_Unchecked"
-                                              Style="{StaticResource MaterialDesignCheckBox}"
-                                              HorizontalAlignment="Center"/>
-                                </DataTemplate>
-                            </GridViewColumn.HeaderTemplate>
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                              Checked="ChkItem_Changed"
-                                              Unchecked="ChkItem_Changed"
-                                              Style="{StaticResource MaterialDesignCheckBox}"
-                                              HorizontalAlignment="Center"/>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-
-                        <!-- Tamamlandı Göstergesi -->
-                        <GridViewColumn Header="" Width="45">
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <materialDesign:PackIcon
-                                        Kind="{Binding IsCompleted,
-                                               Converter={StaticResource BoolToCheckIconConverter}}"
-                                        Width="22" Height="22"
-                                        HorizontalAlignment="Center"
-                                        Foreground="{Binding IsCompleted,
-                                                    Converter={StaticResource BoolToGreenGrayConverter}}"/>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-
-                        <!-- Görev Adı -->
-                        <GridViewColumn Header="Görev" Width="340">
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding Title}"
-                                               TextWrapping="NoWrap"
-                                               TextTrimming="CharacterEllipsis"
-                                               FontWeight="Medium"
-                                               Opacity="{Binding IsCompleted,
-                                                         Converter={StaticResource BoolToOpacityConverter}}"
-                                               ToolTip="{Binding Title}">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock">
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsCompleted}" Value="True">
-                                                        <Setter Property="TextDecorations" Value="Strikethrough"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-
-                        <!-- Son Tarih -->
-                        <GridViewColumn Header="Son Tarih" Width="130">
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Border CornerRadius="12"
-                                            Padding="8,3"
-                                            Background="{Binding DueDate,
-                                                         Converter={StaticResource DueDateToColorConverter}}"
-                                            HorizontalAlignment="Left">
-                                        <TextBlock Text="{Binding DueDate, StringFormat='dd MMM yyyy',
-                                                          TargetNullValue='—'}"
-                                                   FontSize="12"
-                                                   Foreground="White"/>
-                                    </Border>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-
-                        <!-- Tür Rozeti -->
-                        <GridViewColumn Header="Tür" Width="120">
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Border CornerRadius="10"
-                                            Padding="8,3"
-                                            Background="{Binding TaskType,
-                                                         Converter={StaticResource TaskTypeToBrushConverter}}"
-                                            HorizontalAlignment="Left">
-                                        <TextBlock Text="{Binding TaskType}"
-                                                   FontSize="11"
-                                                   Foreground="White"
-                                                   FontWeight="SemiBold"/>
-                                    </Border>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-
-                        <!-- Kategori -->
-                        <GridViewColumn Header="Kategori" Width="110">
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding CategoryName, TargetNullValue='Genel'}"
-                                               FontSize="12"
-                                               FontWeight="SemiBold"
-                                               Opacity="0.8"
-                                               HorizontalAlignment="Left"/>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-
-                        <!-- Yaklaşık Süre -->
-                        <GridViewColumn Header="Süre" Width="100">
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding EstimatedTime, StringFormat='{}{0} dk',
-                                                      TargetNullValue='—'}"
-                                               FontSize="12"
-                                               FontWeight="Medium"
-                                               Opacity="0.8"
-                                               HorizontalAlignment="Left"/>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-
-                        <!-- ChainId -->
-                        <GridViewColumn Header="Zincir / Sıra" Width="140">
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock
-                                        Opacity="0.7"
-                                        FontSize="12"
-                                        FontFamily="Consolas">
-                                        <TextBlock.Text>
-                                            <MultiBinding StringFormat="{}{0} #{1}">
-                                                <Binding Path="ChainId" TargetNullValue="—"/>
-                                                <Binding Path="OrderIndex"/>
-                                            </MultiBinding>
-                                        </TextBlock.Text>
-                                    </TextBlock>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-
-                        <!-- Aksiyonlar -->
-                        <GridViewColumn Header="Aksiyonlar" Width="340">
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
-
-                                        <!-- Tamamlandı Butonu -->
-                                        <Button x:Name="BtnComplete"
-                                                Tag="{Binding}"
-                                                Click="BtnComplete_Click"
-                                                Style="{StaticResource MaterialDesignFlatButton}"
-                                                Padding="6,4"
-                                                Margin="0,0,4,0"
-                                                ToolTip="Tamamlandı olarak işaretle">
-                                            <StackPanel Orientation="Horizontal">
-                                                <materialDesign:PackIcon Kind="CheckCircleOutline"
-                                                                        Width="16" Height="16"
-                                                                        VerticalAlignment="Center"
-                                                                        Margin="0,0,4,0"/>
-                                                <TextBlock Text="Tamamlandı" FontSize="11"/>
-                                            </StackPanel>
-                                        </Button>
-
-                                        <!-- Ertele Butonu -->
-                                        <Button x:Name="BtnPostpone"
-                                                Tag="{Binding}"
-                                                Click="BtnPostpone_Click"
-                                                Style="{StaticResource MaterialDesignFlatButton}"
-                                                Foreground="{DynamicResource MaterialDesign.Brush.Secondary}"
-                                                Padding="6,4"
-                                                Margin="0,0,4,0"
-                                                ToolTip="Son tarihi 1 gün ertele">
-                                            <StackPanel Orientation="Horizontal">
-                                                <materialDesign:PackIcon Kind="CalendarArrowRight"
-                                                                        Width="16" Height="16"
-                                                                        VerticalAlignment="Center"
-                                                                        Margin="0,0,4,0"/>
-                                                <TextBlock Text="Ertele" FontSize="11"/>
-                                            </StackPanel>
-                                        </Button>
-                                         <!-- Düzenle Butonu -->
-                                         <Button x:Name="BtnEdit"
-                                                 Tag="{Binding}"
-                                                 Click="BtnEdit_Click"
-                                                 Style="{StaticResource MaterialDesignFlatButton}"
-                                                 Padding="6,4"
-                                                 Margin="0,0,4,0"
-                                                 ToolTip="Görevi düzenle">
-                                             <StackPanel Orientation="Horizontal">
-                                                 <materialDesign:PackIcon Kind="PencilOutline"
-                                                                         Width="16" Height="16"
-                                                                         VerticalAlignment="Center"
-                                                                         Margin="0,0,4,0"/>
-                                                 <TextBlock Text="Düzenle" FontSize="11"/>
-                                             </StackPanel>
-                                         </Button>
-
-                                         <!-- Sil Butonu -->
-                                         <Button x:Name="BtnDelete"
-                                                 Tag="{Binding}"
-                                                 Click="BtnDelete_Click"
-                                                 Style="{StaticResource MaterialDesignFlatButton}"
-                                                 Foreground="Red"
-                                                 Padding="6,4"
-                                                 ToolTip="Görevi sil">
-                                             <StackPanel Orientation="Horizontal">
-                                                 <materialDesign:PackIcon Kind="TrashCanOutline"
-                                                                         Width="16" Height="16"
-                                                                         VerticalAlignment="Center"
-                                                                         Margin="0,0,4,0"/>
-                                                 <TextBlock Text="Sil" FontSize="11"/>
-                                             </StackPanel>
-                                         </Button>
-                                     </StackPanel>
-                                 </DataTemplate>
-                             </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-
-                    </GridView>
-                </ListView.View>
-
-                <!-- Satır Stili: zebra + hover efekti -->
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem"
-                           BasedOn="{StaticResource MaterialDesignGridViewItem}">
-                        <Setter Property="Padding" Value="4,8"/>
-                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                    </Style>
-                </ListView.ItemContainerStyle>
-            </ListView>
-
-            <!-- GÖREV EKLE BUTONU (FAB) -->
-            <Button x:Name="BtnAddTask"
-                    Style="{StaticResource MaterialDesignFloatingActionSecondaryButton}"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Bottom"
-                    Margin="0,0,32,32"
-                    ToolTip="Yeni Görev Ekle"
-                    Click="BtnAddTask_Click">
-                <materialDesign:PackIcon Kind="Plus" Width="24" Height="24" />
-            </Button>
-            </Grid>
-
-            <!-- KAYNAKLAR KENAR ÇUBUĞU (SIDEBAR) -->
-            <Border x:Name="SidebarBorder" Grid.Column="1" Width="300" Visibility="Collapsed"
-                    Background="{DynamicResource MaterialDesign.Brush.Surface}"
-                    BorderBrush="{DynamicResource MaterialDesign.Brush.Divider}" BorderThickness="1,0,0,0">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-                    
-                    <Grid Grid.Row="0" Margin="16">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Kaynaklar" Style="{StaticResource MaterialDesignHeadline6TextBlock}" VerticalAlignment="Center"/>
-                        <Button Grid.Column="1" Style="{StaticResource MaterialDesignIconButton}" Click="BtnCloseSidebar_Click" Width="32" Height="32" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,-8,0">
-                            <materialDesign:PackIcon Kind="Close" />
+                <!-- GÖREV LİSTESİ ALANI -->
+                <Grid x:Name="GridTaskListArea" Grid.Column="2">
+                    <!-- Boş durum mesajı -->
+                    <StackPanel x:Name="PanelEmpty"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Center"
+                                Visibility="Collapsed">
+                        <materialDesign:PackIcon Kind="ClipboardTextOutline"
+                                                Width="64" Height="64"
+                                                HorizontalAlignment="Center"
+                                                Opacity="0.25"/>
+                        <TextBlock Text="Görev bulunamadı"
+                                   Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                                   HorizontalAlignment="Center"
+                                   Opacity="0.4"
+                                   Margin="0,8,0,4"/>
+                        <TextBlock Text="Aşağıdaki buton ile yeni görev veya içe aktarma yapabilirsiniz."
+                                   Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                   HorizontalAlignment="Center"
+                                   Opacity="0.3"
+                                   TextAlignment="Center"
+                                   Margin="0,0,0,12"/>
+                        <Button x:Name="BtnEmptyImport" Click="BtnImport_Click"
+                                Style="{StaticResource MaterialDesignFlatMidBgButton}">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Kind="FileImport" Width="18" Height="18" Margin="0,0,6,0"/>
+                                <TextBlock Text="İçe Aktar"/>
+                            </StackPanel>
                         </Button>
-                    </Grid>
+                    </StackPanel>
 
-                    <Button x:Name="BtnAddResource" Grid.Row="1" Content="Yeni Kaynak Ekle" 
-                            Style="{StaticResource MaterialDesignOutlinedButton}" 
-                            Margin="16,0,16,12" Click="BtnAddResource_Click"/>
+                    <!-- ListView -->
+                    <ListView x:Name="LvTasks"
+                              ItemsSource="{Binding}"
+                              SelectionMode="Single"
+                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                              ScrollViewer.VerticalScrollBarVisibility="Auto"
+                              Margin="8,4,8,4"
+                              VirtualizingPanel.IsVirtualizing="True"
+                              VirtualizingPanel.ScrollUnit="Pixel"
+                              VirtualizingPanel.VirtualizationMode="Recycling"
+                              VirtualizingPanel.IsVirtualizingWhenGrouping="True">
+                        <ListView.GroupStyle>
+                            <GroupStyle>
+                                <GroupStyle.ContainerStyle>
+                                    <Style TargetType="{x:Type GroupItem}">
+                                        <Setter Property="Margin" Value="0,6,0,4"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="{x:Type GroupItem}">
+                                                    <Expander IsExpanded="{Binding Name, Converter={StaticResource GroupExpandedConverter}, Mode=OneWay}"
+                                                              Margin="2,2,2,2">
+                                                        <Expander.Header>
+                                                            <StackPanel Orientation="Horizontal" Margin="4,2">
+                                                                <Border Width="12" Height="12" CornerRadius="6" 
+                                                                        Background="{Binding Name, Converter={StaticResource GroupColorConverter}}" 
+                                                                        Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                                                <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="13" VerticalAlignment="Center"/>
+                                                                <Border Background="{DynamicResource MaterialDesign.Brush.ToolBar.Background}" CornerRadius="10" Padding="6,1" Margin="8,0,0,0" VerticalAlignment="Center">
+                                                                    <TextBlock Text="{Binding ItemCount, StringFormat='{}{0} görev'}" FontSize="11" Opacity="0.7"/>
+                                                                </Border>
+                                                                
+                                                                <CheckBox Style="{StaticResource MaterialDesignCheckBox}" Margin="16,0,0,0" VerticalAlignment="Center"
+                                                                          Tag="{Binding Name}" Checked="ChkSelectGroup_Checked" Unchecked="ChkSelectGroup_Unchecked" ToolTip="Grubun tümünü seç"/>
+                                                            </StackPanel>
+                                                        </Expander.Header>
+                                                        <ItemsPresenter />
+                                                    </Expander>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </GroupStyle.ContainerStyle>
+                            </GroupStyle>
+                        </ListView.GroupStyle>
 
-                    <ListView x:Name="LvResources" Grid.Row="2" Margin="8,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <ListView.ItemTemplate>
-                            <DataTemplate>
-                                <Border Padding="8" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource MaterialDesign.Brush.Divider}" Margin="0,0,0,4">
+                            <DataTemplate DataType="{x:Type models:TaskItem}" xmlns:models="clr-namespace:planlama_app.Models">
+                                <Border BorderBrush="{DynamicResource MaterialDesign.Brush.Divider}" BorderThickness="0,0,0,1" Padding="8,8,8,8">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        
-                                        <!-- İkon DataTrigger ile -->
-                                        <materialDesign:PackIcon x:Name="IconPlatform" Grid.Column="0" Kind="Web" Width="24" Height="24" VerticalAlignment="Center" Margin="0,0,12,0" Foreground="{DynamicResource MaterialDesign.Brush.Primary}"/>
-                                        
-                                        <!-- Tıklanabilir Link -->
-                                        <TextBlock Grid.Column="1" Text="{Binding Title}" TextTrimming="CharacterEllipsis" 
-                                                   VerticalAlignment="Center" Cursor="Hand" MouseLeftButtonDown="ResourceItem_Click"
-                                                   FontWeight="Medium" ToolTip="{Binding Url}" />
-                                        
-                                        <Button Grid.Column="2" Style="{StaticResource MaterialDesignIconButton}" Width="28" Height="28" 
-                                                Tag="{Binding Id}" Click="BtnDeleteResource_Click" ToolTip="Sil" Foreground="Red" Opacity="0.8">
-                                            <materialDesign:PackIcon Kind="TrashCanOutline" Width="18" Height="18"/>
-                                        </Button>
+
+                                        <!-- Seçim ve Durum Checkbox -->
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,8,0">
+                                            <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" Style="{StaticResource MaterialDesignCheckBox}" Checked="ChkItem_Changed" Unchecked="ChkItem_Changed" ToolTip="Seç" Margin="0,0,4,0"/>
+                                            <CheckBox IsChecked="{Binding IsCompleted, Mode=TwoWay}" Style="{StaticResource MaterialDesignCheckBox}" Click="ChkCompleted_Click" ToolTip="Tamamlandı olarak işaretle"/>
+                                        </StackPanel>
+
+                                        <!-- Detaylar -->
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="4,0,8,0">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{Binding Title}" FontWeight="Medium" FontSize="13">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsCompleted}" Value="True">
+                                                                    <Setter Property="TextDecorations" Value="Strikethrough"/>
+                                                                    <Setter Property="Opacity" Value="0.5"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+
+                                                <Border Visibility="{Binding CategoryName, Converter={StaticResource GroupExpandedConverter}}" Background="{DynamicResource MaterialDesign.Brush.Primary.Light}" CornerRadius="4" Padding="4,1" Margin="8,0,0,0" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding CategoryName}" FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource MaterialDesign.Brush.Primary.Foreground}"/>
+                                                </Border>
+                                            </StackPanel>
+
+                                            <!-- Ek bilgiler: Tarih, Süre, Zincir -->
+                                            <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+                                                <TextBlock Text="{Binding DueDate, StringFormat='📅 {0:dd.MM.yyyy}'}" FontSize="11" Opacity="0.7" Margin="0,0,12,0"/>
+                                                
+                                                <TextBlock Visibility="{Binding EstimatedTime, Converter={StaticResource GroupExpandedConverter}}"
+                                                           Text="{Binding EstimatedTime, StringFormat='⏱ {0} dk'}" FontSize="11" Opacity="0.7" Margin="0,0,12,0"/>
+
+                                                <TextBlock Visibility="{Binding ChainId, Converter={StaticResource GroupExpandedConverter}}"
+                                                           Text="{Binding ChainId, StringFormat='⛓ {0}'}" FontSize="11" Foreground="DodgerBlue" Margin="0,0,12,0"/>
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <!-- İşlem Butonları -->
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Button Click="BtnPostpone_Click" Tag="{Binding}" Style="{StaticResource MaterialDesignIconButton}" Width="28" Height="28" ToolTip="1 Gün Ertele" Margin="0,0,4,0">
+                                                <materialDesign:PackIcon Kind="ClockPlusOutline" Width="16" Height="16"/>
+                                            </Button>
+
+                                            <Button Click="BtnEdit_Click" Tag="{Binding}" Style="{StaticResource MaterialDesignIconButton}" Width="28" Height="28" ToolTip="Düzenle" Margin="0,0,4,0">
+                                                <materialDesign:PackIcon Kind="Pencil" Width="16" Height="16"/>
+                                            </Button>
+
+                                            <Button Click="BtnDelete_Click" Tag="{Binding}" Style="{StaticResource MaterialDesignIconButton}" Foreground="Red" Width="28" Height="28" ToolTip="Sil">
+                                                <materialDesign:PackIcon Kind="TrashCanOutline" Width="16" Height="16"/>
+                                            </Button>
+                                        </StackPanel>
                                     </Grid>
                                 </Border>
-                                <DataTemplate.Triggers>
-                                    <DataTrigger Binding="{Binding Platform}" Value="YouTube">
-                                        <Setter TargetName="IconPlatform" Property="Kind" Value="Youtube" />
-                                        <Setter TargetName="IconPlatform" Property="Foreground" Value="Red" />
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Platform}" Value="Udemy">
-                                        <Setter TargetName="IconPlatform" Property="Kind" Value="LetterU" />
-                                        <Setter TargetName="IconPlatform" Property="Foreground" Value="DarkOrchid" />
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Platform}" Value="GitHub">
-                                        <Setter TargetName="IconPlatform" Property="Kind" Value="Github" />
-                                        <Setter TargetName="IconPlatform" Property="Foreground" Value="Black" />
-                                    </DataTrigger>
-                                </DataTemplate.Triggers>
                             </DataTemplate>
                         </ListView.ItemTemplate>
-                        <ListView.ItemContainerStyle>
-                            <Style TargetType="ListViewItem" BasedOn="{StaticResource MaterialDesignGridViewItem}">
-                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                                <Setter Property="Padding" Value="0"/>
-                            </Style>
-                        </ListView.ItemContainerStyle>
                     </ListView>
                 </Grid>
-            </Border>
+            </Grid>
 
+            <!-- ═══════════════════════════════════════════════════════════
+                 SAĞ YAN PANEL (Kaynaklar / Sidebar)
+            ═══════════════════════════════════════════════════════════ -->
+            <Border x:Name="SidebarBorder"
+                    Grid.Column="1"
+                    Visibility="Collapsed"
+                    Width="300"
+                    Background="{DynamicResource MaterialDesign.Brush.CardBackground}"
+                    BorderBrush="{DynamicResource MaterialDesign.Brush.Divider}"
+                    BorderThickness="1,0,0,0">
+                <Grid Margin="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="0,0,0,8">
+                        <TextBlock Text="🔖 Kaynaklar &amp; Notlar" Style="{StaticResource MaterialDesignSubtitle1TextBlock}" FontWeight="Bold" VerticalAlignment="Center"/>
+                        <Button Click="BtnCloseSidebar_Click" Style="{StaticResource MaterialDesignIconButton}" HorizontalAlignment="Right" Width="24" Height="24">
+                            <materialDesign:PackIcon Kind="Close" Width="16" Height="16"/>
+                        </Button>
+                    </Grid>
+
+                    <ListView x:Name="LvResources" Grid.Row="1" SelectionMode="Single" Margin="0,4">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0,4">
+                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding Content}" TextWrapping="Wrap" Opacity="0.7" FontSize="11"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
+                    <Button Grid.Row="2" Click="BtnAddResource_Click" Style="{StaticResource MaterialDesignOutlinedButton}" Margin="0,8,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Plus" Width="16" Height="16" Margin="0,0,6,0"/>
+                            <TextBlock Text="Yeni Kaynak Ekle"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Border>
         </Grid>
 
         <!-- ═══════════════════════════════════════════════════════════
-             DURUM ÇUBUĞU (Status Bar)
+             DURUM ÇUBUĞU & YÜKLENİYOR SİMGESİ
         ═══════════════════════════════════════════════════════════ -->
         <Border Grid.Row="4"
-                Background="{DynamicResource MaterialDesign.Brush.Primary}"
-                Padding="16,6">
+                Background="{DynamicResource MaterialDesign.Brush.ToolBar.Background}"
+                Padding="12,4"
+                BorderBrush="{DynamicResource MaterialDesign.Brush.Divider}"
+                BorderThickness="0,1,0,0">
             <Grid>
-                <TextBlock x:Name="TxtStatus"
-                           Text="Hazır"
-                           Style="{StaticResource MaterialDesignBody2TextBlock}"
-                           Foreground="White"
-                           Opacity="0.9"
-                           HorizontalAlignment="Left"
-                           VerticalAlignment="Center"/>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-                <!-- Yükleniyor Spinner -->
-                <ProgressBar x:Name="LoadingSpinner"
-                             Style="{StaticResource MaterialDesignCircularProgressBar}"
-                             Width="20" Height="20"
-                             IsIndeterminate="True"
-                             Visibility="Collapsed"
-                             HorizontalAlignment="Right"
-                             VerticalAlignment="Center"/>
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <ProgressBar x:Name="LoadingSpinner"
+                                 Style="{StaticResource MaterialDesignCircularProgressBar}"
+                                 Value="0" IsIndeterminate="True"
+                                 Width="14" Height="14"
+                                 Visibility="Collapsed"
+                                 Margin="0,0,8,0"/>
+                    <TextBlock x:Name="TxtStatus"
+                               Text="Hazır."
+                               FontSize="12"
+                               Opacity="0.8"/>
+                </StackPanel>
+
+                <TextBlock Grid.Column="1" Text="TaskList v1.1" FontSize="11" Opacity="0.5"/>
             </Grid>
         </Border>
     </Grid>

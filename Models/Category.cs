@@ -7,6 +7,8 @@ namespace planlama_app.Models
     {
         private int _id;
         private string _name = string.Empty;
+        private int _taskCount;
+        private string? _colorHex;
 
         public int Id
         {
@@ -17,8 +19,22 @@ namespace planlama_app.Models
         public string Name
         {
             get => _name;
-            set { _name = value; OnPropertyChanged(); }
+            set { _name = value; OnPropertyChanged(); OnPropertyChanged(nameof(DisplayName)); }
         }
+
+        public int TaskCount
+        {
+            get => _taskCount;
+            set { _taskCount = value; OnPropertyChanged(); OnPropertyChanged(nameof(DisplayName)); }
+        }
+
+        public string? ColorHex
+        {
+            get => _colorHex;
+            set { _colorHex = value; OnPropertyChanged(); }
+        }
+
+        public string DisplayName => TaskCount > 0 ? $"{Name} ({TaskCount})" : Name;
 
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
