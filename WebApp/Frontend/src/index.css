@@ -1,0 +1,62 @@
+@import './styles/variables.css';
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent; /* Remove blue tap highlight on mobile */
+  scrollbar-width: none; /* Firefox için scrollbar gizleme */
+  -ms-overflow-style: none; /* IE/Edge için scrollbar gizleme */
+}
+
+/* Chrome, Safari ve Opera için scrollbar gizleme (kaydırma çalışmaya devam eder) */
+::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+html, body {
+  height: 100dvh; /* Dynamic viewport height to fix mobile browser bar issue */
+  width: 100%;
+  overflow: hidden; /* Prevent bounce / overscroll on the body */
+  overscroll-behavior-y: none; /* iOS Safari bounce prevention */
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+  
+  /* Native App Hissiyatı: Global Metin Seçimini ve İmleci (I-Beam) İptal Et */
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+button, input, textarea, a {
+  font-family: inherit;
+  touch-action: manipulation; /* Prevent double-tap to zoom */
+}
+
+/* Input ve Textarea'larda seçim yapılabilmesi ve imlecin çıkması gerekir */
+input, textarea {
+  user-select: auto;
+  -webkit-user-select: auto;
+  cursor: text;
+}
+
+/* Özel olarak metnin kopyalanmasına/seçilmesine izin vermek istediğimiz yerler için */
+.allow-select {
+  user-select: auto;
+  -webkit-user-select: auto;
+  cursor: text;
+}

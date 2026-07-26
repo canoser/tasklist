@@ -1,0 +1,264 @@
+/* ── SmartAssistant.module.css ──────────────────────────────────────────────── */
+
+/* FAB sarmalayıcısı — hem FAB hem mini X butonu için konum referansı (Sürüklenebilir) */
+.fabWrapper {
+  position: fixed;
+  right: 20px;
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px) + 12px);
+  z-index: 100;
+  width: 56px;
+  height: 56px;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* FAB Butonu */
+.fab {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.45),
+              0 2px 8px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Mini X butonu — FAB'ın sağ üst köşesinde */
+.fabClose {
+  position: absolute;
+  top: -10px;
+  right: -4px;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 101;
+  transition: color var(--transition-fast), transform var(--transition-fast);
+  /* Belirgin görünmesi için güçlendirilmiş soft gölge */
+  filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.4)) drop-shadow(0px 0px 2px rgba(255, 255, 255, 0.2));
+}
+
+.fabClose:hover {
+  color: var(--danger);
+  transform: scale(1.15);
+}
+
+
+/* Sihirbaz arka plan overlay */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 200;
+}
+
+/* Sihirbaz kart konteyner (konumlandırma için) */
+.wizardContainer {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 201;
+  pointer-events: none; /* Tıklamaları backdrop'a geç */
+}
+
+/* Sihirbaz Kartı */
+.wizardCard {
+  width: 100%;
+  max-width: 400px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6),
+              0 8px 24px rgba(99, 102, 241, 0.2);
+  pointer-events: all; /* Kartın kendi tıklamalarını al */
+}
+
+/* Kart başlık alanı */
+.wizardHeader {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  padding: 24px;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.wizardHeaderLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wizardEmoji {
+  font-size: 32px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.wizardTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.wizardSubtitle {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.closeBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--transition-fast);
+}
+
+.closeBtn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* İlerleme çubuğu */
+.progressBar {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 2px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Kart gövdesi */
+.wizardBody {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wizardStep {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+
+.wizardQuestion {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+/* Seçenek butonları */
+.optionGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.optionBtn {
+  padding: 14px 12px;
+  border-radius: var(--border-radius-md);
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color var(--transition-fast),
+              background var(--transition-fast),
+              transform var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.optionBtn:hover {
+  border-color: var(--accent-primary);
+  background: var(--accent-light);
+  transform: translateY(-1px);
+}
+
+.optionBtn.selected {
+  border-color: var(--accent-primary);
+  background: var(--accent-light);
+  color: var(--accent-primary);
+}
+
+.optionEmoji {
+  font-size: 22px;
+  line-height: 1;
+}
+
+/* Kart altı */
+.wizardFooter {
+  padding: 16px 24px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--border-color);
+}
+
+.stepIndicator {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.nextBtn {
+  padding: 10px 24px;
+  border-radius: 20px;
+  border: none;
+  background: var(--accent-primary);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+
+.nextBtn:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.nextBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}

@@ -1,0 +1,120 @@
+.navContainer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--bg-secondary, #1e293b);
+  border-top: 1px solid var(--border-color, #334155);
+  /* Use safe-area variable defined in index.css */
+  padding-bottom: var(--safe-area-bottom);
+  z-index: 40;
+}
+
+.navBar {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 60px;
+  position: relative;
+}
+
+.navItem {
+  background: none;
+  border: none;
+  color: var(--text-secondary, #94a3b8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 20%;
+  height: 100%;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.navItem svg {
+  margin-bottom: 4px;
+}
+
+.navItem span {
+  font-size: 0.65rem;
+  font-weight: 500;
+}
+
+.navItem.active {
+  color: var(--primary-color, #3b82f6);
+}
+
+.actionButtonContainer {
+  width: 20%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  /* Push it slightly up */
+  top: -15px;
+}
+
+.actionButton {
+  width: 50px;
+  height: 50px;
+  border-radius: 20px;
+  background-color: var(--primary-color, #3b82f6);
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+}
+
+/* Expanded Menu Overlay */
+.overlayContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.expandedMenu {
+  width: 100%;
+  max-width: 400px;
+  height: 60vh;
+  background-color: var(--bg-secondary, #1e293b);
+  border-radius: 30px;
+  position: relative;
+  z-index: 51;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.expandedMenuContent {
+  padding: 30px;
+  color: var(--text-primary, #f8fafc);
+}
+
+.closeButton {
+  padding: 10px 20px;
+  border-radius: 12px;
+  background-color: var(--bg-primary, #0f172a);
+  color: white;
+  border: 1px solid var(--border-color, #334155);
+  cursor: pointer;
+}

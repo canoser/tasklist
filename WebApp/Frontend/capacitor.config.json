@@ -1,0 +1,8 @@
+{
+  "appId": "com.planlamaapp.saas",
+  "appName": "PlanlamaApp",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}

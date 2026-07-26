@@ -1,0 +1,85 @@
+:root, 
+:root[data-theme="classic"][data-appearance="dark"] {
+  /* Color Palette - Classic Dark Mode Default (Sleek SaaS Aesthetics) */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-card: #1e293b;
+  --bg-input: #334155;
+  
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  
+  --accent-primary: #6366f1;
+  --accent-hover: #4f46e5;
+  --accent-light: rgba(99, 102, 241, 0.15);
+  
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  
+  --border-color: #334155;
+  --border-radius-sm: 6px;
+  --border-radius-md: 10px;
+  --border-radius-lg: 16px;
+  
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+  
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:root[data-theme="classic"][data-appearance="light"] {
+  /* Classic Light Mode */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --bg-input: #f1f5f9;
+  
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  
+  --accent-primary: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-light: rgba(79, 70, 229, 0.1);
+  
+  --border-color: #e2e8f0;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.12);
+}
+
+/* =========================================
+   Gelecek Temalar İçin Hazırlık (Placeholder)
+   ========================================= */
+
+/* DOĞA (NATURE) TEMASI */
+:root[data-theme="nature"][data-appearance="dark"] {
+  --bg-primary: #0f1f14;
+  --bg-card: #182e1d;
+  --accent-primary: #10b981;
+  /* İleride yeşil tonları, ağaç ikonları, yaprak desenleri eklenecek */
+}
+:root[data-theme="nature"][data-appearance="light"] {
+  --bg-primary: #f0fdf4;
+  --bg-card: #ffffff;
+  --accent-primary: #059669;
+  /* Açık yeşil tonları, güneşli hava hissi */
+}
+
+/* SEVECEN (LOVELY) TEMASI */
+:root[data-theme="lovely"][data-appearance="dark"] {
+  --bg-primary: #2e1021;
+  --bg-card: #451a32;
+  --accent-primary: #f43f5e;
+  /* Koyu lila/mor çizgiler, pembe vurgular */
+}
+:root[data-theme="lovely"][data-appearance="light"] {
+  --bg-primary: #fff1f2;
+  --bg-card: #ffffff;
+  --accent-primary: #fb7185;
+  /* Pembe, yumuşak lila, kalpli konseptler */
+}

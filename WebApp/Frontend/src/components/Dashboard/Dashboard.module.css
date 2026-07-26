@@ -1,0 +1,69 @@
+/* ── Dashboard.module.css ────────────────────────────────────────────────────── */
+
+/* Dashboard tüm scrollable içeriği */
+.dashboard {
+  width: 100%;
+  min-height: 100%;
+  padding: 20px 18px 8px 18px;
+  will-change: transform, scroll-position;
+  transform: translateZ(0); /* Donanım hızlandırmayı zorlar */
+  -webkit-overflow-scrolling: touch; /* iOS Safari için akıcı kaydırma */
+}
+
+/* Üst selamlama alanı */
+.greeting {
+  margin-bottom: 24px;
+}
+
+.greetingSub {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+
+.greetingTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.greetingTitle span {
+  color: var(--accent-primary);
+}
+
+/* Görev sayacı satırı */
+.statsRow {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.statPill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.statPill.active {
+  background: var(--accent-light);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.statDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
