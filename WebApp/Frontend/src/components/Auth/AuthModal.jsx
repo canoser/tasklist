@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import styles from './AuthModal.module.css';
 import { loginWithGoogle, loginWithEmail, registerWithEmail } from '../../services/authService';
+import { useTranslation } from 'react-i18next';
 
-export default function AuthModal({ isOpen, onClose }) {
+export default function AuthModal({ isOpen, onClose, tone }) {
+  const { t } = useTranslation('auth');
   const [isRegister, setIsRegister] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -48,10 +50,10 @@ export default function AuthModal({ isOpen, onClose }) {
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
           <h2 className={styles.title}>
-            {isRegister ? 'Hesap Oluştur' : 'Giriş Yap'}
+            {isRegister ? t('register_title', { context: tone, defaultValue: 'Hesap Oluştur' }) : t('login_title', { context: tone, defaultValue: 'Giriş Yap' })}
           </h2>
           <p className={styles.subtitle}>
-            PlanlamaApp SaaS Platformuna Hoş Geldiniz
+            {t('auth_subtitle', { context: tone, defaultValue: 'PlanlamaApp SaaS Platformuna Hoş Geldiniz' })}
           </p>
         </div>
 
@@ -64,16 +66,16 @@ export default function AuthModal({ isOpen, onClose }) {
             <path fill="#FBBC05" d="M5.28 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.61H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.39l3.99-3.15z"/>
             <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.61l3.99 3.15c.95-2.85 3.6-4.96 6.72-4.96z"/>
           </svg>
-          Google ile Devam Et
+          {t('btn_google', { context: tone, defaultValue: 'Google ile Devam Et' })}
         </button>
 
         <div className={styles.divider}>
-          <span>veya e-posta ile</span>
+          <span>{t('or_with_email', { context: tone, defaultValue: 'veya e-posta ile' })}</span>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div className={styles.formGroup}>
-            <label className={styles.label}>E-Posta Adresi</label>
+            <label className={styles.label}>{t('email_label', { context: tone, defaultValue: 'E-Posta Adresi' })}</label>
             <input 
               type="email" 
               className={styles.input} 
@@ -85,7 +87,7 @@ export default function AuthModal({ isOpen, onClose }) {
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.label}>Şifre</label>
+            <label className={styles.label}>{t('password_label', { context: tone, defaultValue: 'Şifre' })}</label>
             <input 
               type="password" 
               className={styles.input} 
@@ -97,17 +99,16 @@ export default function AuthModal({ isOpen, onClose }) {
           </div>
 
           <button type="submit" className={styles.submitBtn} disabled={loading}>
-            {loading ? 'İşleniyor...' : (isRegister ? 'Kayıt Ol' : 'Giriş Yap')}
+            {loading ? t('loading', { ns: 'common', defaultValue: 'İşleniyor...' }) : (isRegister ? t('btn_register', { context: tone, defaultValue: 'Kayıt Ol' }) : t('btn_login', { context: tone, defaultValue: 'Giriş Yap' }))}
           </button>
         </form>
 
         <div className={styles.toggleMode}>
-          {isRegister ? 'Zaten hesabınız var mı?' : 'Hesabınız yok mu?'}
           <span 
             className={styles.toggleLink} 
             onClick={() => { setIsRegister(!isRegister); setError(null); }}
           >
-            {isRegister ? 'Giriş Yap' : 'Kayıt Ol'}
+            {isRegister ? t('switch_to_login', { context: tone, defaultValue: 'Zaten hesabınız var mı? Giriş Yap' }) : t('switch_to_register', { context: tone, defaultValue: 'Hesabınız yok mu? Kayıt Ol' })}
           </span>
         </div>
       </div>

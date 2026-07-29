@@ -3,8 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import { CloseIcon } from '../Common/Icons';
 import styles from './PerformanceEntryModal.module.css';
+import { useTranslation } from 'react-i18next';
 
 export default function PerformanceEntryModal({ task, isOpen, onClose, onSavePerformance }) {
+  const { t } = useTranslation('tasks');
   const [correct, setCorrect] = useState('');
   const [wrong, setWrong] = useState('');
   const [blank, setBlank] = useState('');
@@ -78,7 +80,7 @@ export default function PerformanceEntryModal({ task, isOpen, onClose, onSavePer
               {/* Input Fields */}
               <div className={styles.inputsGrid}>
                 <div className={styles.inputGroup}>
-                  <label className={`${styles.inputLabel} ${styles.correctLabel}`}>Doğru</label>
+                  <label className={`${styles.inputLabel} ${styles.correctLabel}`}>{t('label_correct', { defaultValue: 'Doğru' })}</label>
                   <input
                     type="number"
                     min="0"
@@ -90,7 +92,7 @@ export default function PerformanceEntryModal({ task, isOpen, onClose, onSavePer
                 </div>
 
                 <div className={styles.inputGroup}>
-                  <label className={`${styles.inputLabel} ${styles.wrongLabel}`}>Yanlış</label>
+                  <label className={`${styles.inputLabel} ${styles.wrongLabel}`}>{t('label_wrong', { defaultValue: 'Yanlış' })}</label>
                   <input
                     type="number"
                     min="0"
@@ -102,7 +104,7 @@ export default function PerformanceEntryModal({ task, isOpen, onClose, onSavePer
                 </div>
 
                 <div className={styles.inputGroup}>
-                  <label className={`${styles.inputLabel} ${styles.blankLabel}`}>Boş</label>
+                  <label className={`${styles.inputLabel} ${styles.blankLabel}`}>{t('label_blank', { defaultValue: 'Boş' })}</label>
                   <input
                     type="number"
                     min="0"

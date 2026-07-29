@@ -2,8 +2,10 @@ import { useState } from 'react';
 import BaseModal from '../Common/BaseModal';
 import { CloseIcon, AlertIcon } from '../Common/Icons';
 import styles from './TaskActionModal.module.css';
+import { useTranslation } from 'react-i18next';
 
 const TaskActionModal = ({ isOpen, onClose, task, onComplete, onPartialComplete, onPostpone }) => {
+  const { t } = useTranslation('common');
   const [mode, setMode] = useState('menu'); // 'menu' | 'partial' | 'postpone'
   const [doneAmount, setDoneAmount] = useState('');
   const [targetDate, setTargetDate] = useState('');
@@ -97,7 +99,7 @@ const TaskActionModal = ({ isOpen, onClose, task, onComplete, onPartialComplete,
             )}
 
             <div className={styles.formActions}>
-              <button className={styles.cancelBtn} onClick={() => setMode('menu')}>Geri</button>
+              <button className={styles.cancelBtn} onClick={() => setMode('menu')}>{t('btn_cancel', { defaultValue: 'Geri' })}</button>
               <button 
                 className={styles.submitBtn} 
                 onClick={submitPartial}
@@ -133,7 +135,7 @@ const TaskActionModal = ({ isOpen, onClose, task, onComplete, onPartialComplete,
             </div>
 
             <div className={styles.formActions}>
-              <button className={styles.cancelBtn} onClick={() => setMode('menu')}>Geri</button>
+              <button className={styles.cancelBtn} onClick={() => setMode('menu')}>{t('btn_cancel', { defaultValue: 'Geri' })}</button>
               <button 
                 className={styles.submitBtn} 
                 onClick={submitPostpone}

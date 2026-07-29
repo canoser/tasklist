@@ -23,13 +23,22 @@ namespace PlanlamaApp.Api.Controllers
             _taskRepository = taskRepository;
         }
 
+        private string? GetCurrentUserId()
+        {
+            return User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        }
+
         // ── GET ──────────────────────────────────────────────────────────────────
 
-        /// <summary>Belirli bir kullanıcının tüm görevlerini listeler.</summary>
+        /// <summary>Belirli bir kullanıcının tüm görevlerini listeler. URL'deki userId ezilir.</summary>
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetByUser(string userId)
         {
-            var tasks = await _taskRepository.GetByUserIdAsync(userId);
+            var currentUserId = GetCurrentUserId();
+            if (currentUserId == null) return Unauthorized();
+
+            // Sadece kendi görevlerini alabilir
+            var tasks = await _taskRepository.GetByUserIdAsync(currentUserId);
             return Ok(tasks);
         }
 
@@ -37,8 +46,14 @@ namespace PlanlamaApp.Api.Controllers
         [HttpGet("category/{categoryId:int}")]
         public async Task<IActionResult> GetByCategory(int categoryId)
         {
+            var currentUserId = GetCurrentUserId();
+            if (currentUserId == null) return Unauthorized();
+
             var tasks = await _taskRepository.GetByCategoryIdAsync(categoryId);
-            return Ok(tasks);
+            // Kendi görevleri olmayanları filtrele
+            var userTasks = tasks.Where(t => t.UserId == currentUserId).ToList();
+            
+            return Ok(userTasks);
         }
 
         /// <summary>
@@ -47,10 +62,14 @@ namespace PlanlamaApp.Api.Controllers
         [HttpGet("user/{userId}/timeline")]
         public async Task<IActionResult> GetTimeline(string userId, [FromQuery] DateTime start, [FromQuery] DateTime end)
         {
+            var currentUserId = GetCurrentUserId();
+            if (currentUserId == null) return Unauthorized();
+
             if (start >= end)
                 return BadRequest("Başlangıç tarihi bitiş tarihinden önce olmalıdır.");
 
-            var tasks = await _taskRepository.GetByDateRangeAsync(userId, start, end);
+            // Sadece kendi timeline'ını görebilir
+            var tasks = await _taskRepository.GetByDateRangeAsync(currentUserId, start, end);
             return Ok(tasks);
         }
 
@@ -60,7 +79,12 @@ namespace PlanlamaApp.Api.Controllers
         {
             var task = await _taskRepository.GetByIdAsync(id);
             if (task is null)
-                return NotFound($"Id={id} olan görev bulunamadı.");
+                return NotFound(); // IDOR protection: Avoid exposing existence if not owned? Actually NotFound is standard.
+                
+            var currentUserId = GetCurrentUserId();
+            if (task.UserId != currentUserId)
+                return NotFound(); // Sahiplik kontrolü - IDOR koruması
+
             return Ok(task);
         }
 
@@ -71,6 +95,10 @@ namespace PlanlamaApp.Api.Controllers
         [ServiceFilter(typeof(IdempotencyFilter))]
         public async Task<IActionResult> Create([FromBody] TaskItem task)
         {
+            var currentUserId = GetCurrentUserId();
+            if (currentUserId == null) return Unauthorized();
+
+            task.UserId = currentUserId; // Her zaman JWT'den alır
             task.CreatedAt = DateTime.UtcNow;
             task.UpdatedAt = DateTime.UtcNow;
             var newId = await _taskRepository.CreateAsync(task);
@@ -82,11 +110,19 @@ namespace PlanlamaApp.Api.Controllers
         [ServiceFilter(typeof(IdempotencyFilter))]
         public async Task<IActionResult> Update(int id, [FromBody] TaskItem task)
         {
+            var existingTask = await _taskRepository.GetByIdAsync(id);
+            if (existingTask == null) return NotFound();
+
+            var currentUserId = GetCurrentUserId();
+            if (existingTask.UserId != currentUserId) return NotFound(); // IDOR koruması
+
             task.Id = id;
+            task.UserId = currentUserId; // Kimliği manipüle edememesi için sabitliyoruz
             task.UpdatedAt = DateTime.UtcNow;
+            
             var success = await _taskRepository.UpdateAsync(task);
             if (!success)
-                return NotFound($"Id={id} olan görev bulunamadı veya güncellenemedi.");
+                return NotFound();
             return NoContent();
         }
 
@@ -97,9 +133,15 @@ namespace PlanlamaApp.Api.Controllers
         [ServiceFilter(typeof(IdempotencyFilter))]
         public async Task<IActionResult> MarkComplete(int id)
         {
+            var existingTask = await _taskRepository.GetByIdAsync(id);
+            if (existingTask == null) return NotFound();
+
+            var currentUserId = GetCurrentUserId();
+            if (existingTask.UserId != currentUserId) return NotFound(); // IDOR koruması
+
             var success = await _taskRepository.MarkAsCompletedAsync(id, DateTime.UtcNow);
             if (!success)
-                return NotFound($"Id={id} olan görev bulunamadı.");
+                return NotFound();
             return NoContent();
         }
 
@@ -109,9 +151,15 @@ namespace PlanlamaApp.Api.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
+            var existingTask = await _taskRepository.GetByIdAsync(id);
+            if (existingTask == null) return NotFound();
+
+            var currentUserId = GetCurrentUserId();
+            if (existingTask.UserId != currentUserId) return NotFound(); // IDOR koruması
+
             var success = await _taskRepository.DeleteAsync(id);
             if (!success)
-                return NotFound($"Id={id} olan görev bulunamadı.");
+                return NotFound();
             return NoContent();
         }
     }

@@ -1,134 +1,223 @@
 import apiClient from './apiClient';
-import roleService from './roleService';
+import { getCache, setCache, addToOfflineQueue } from '../utils/indexedDB';
+import { subscribeToAuthChanges } from './authService';
+import storage from '../utils/storage';
 
-// ── Mock Yardımcı (Tek Tanım — DRY) ─────────────────────────────────────────
-const _buildMockDay = (year, month, day, userRoles = []) => {
-  const dateStr = new Date(year, month, day, 12, 0).toISOString();
-  
-  // Eğer kullanıcı rol tanımlamadıysa varsayılan roller uyduralım ki takvim boş kalmasın
-  const roles = userRoles.length > 0 ? userRoles : [
-    { roleName: 'Öğrenci' },
-    { roleName: 'Öğretmen' },
-    { roleName: 'Diğer / Kişisel' }
-  ];
-  
-  const getRandRole = () => roles[Math.floor(Math.random() * roles.length)].roleName;
+let currentUser = null;
+subscribeToAuthChanges((user) => {
+  currentUser = user;
+});
 
-  return [
-    { id: `m${day}_1`, title: `${day} - Test Çözümü`, subject: 'Matematik', targetCount: 40, deadline: dateStr, isCompleted: false, count: '40 Soru', roleName: getRandRole() },
-    { id: `m${day}_2`, title: `${day} - Konu Anlatımı`, subject: 'Fizik', targetCount: 1, deadline: dateStr, isCompleted: false, count: '1 Ünite', roleName: getRandRole() },
-    { id: `m${day}_3`, title: `${day} - Okuma`, subject: 'Diğer', targetCount: 20, deadline: dateStr, isCompleted: false, count: '20 Sayfa', roleName: getRandRole() }
-  ];
-};
-
-const _getMockTasks = (roles = []) => {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = d.getMonth();
-  return [1, 8, 15, 22].flatMap(day => _buildMockDay(y, m, day, roles));
-};
+const generateId = () => `local_${Date.now()}`;
 
 export const taskService = {
-  /**
-   * Kullanıcının Timeline görevlerini tarih aralığına göre getirir.
-   * Backend: GET /api/tasks/user/{userId}/timeline?start={start}&end={end}
-   */
   getTimeline: async (userId, start, end) => {
+    if (!currentUser && !userId) {
+      return storage.get('guest_tasks') || [];
+    }
+    
     try {
       const params = {};
       if (start) params.start = start.toISOString();
       if (end) params.end = end.toISOString();
 
-      const [response, roles] = await Promise.all([
-        apiClient.get(`/tasks/user/${userId}/timeline`, { params }),
-        roleService.getActive(userId)
-      ]);
-      const apiData = response.data || [];
-      return [...apiData, ..._getMockTasks(roles)];
+      const response = await apiClient.get(`/tasks/user/${userId}/timeline`, { params });
+      
+      // Update Cache (Network-First)
+      await setCache(`timeline_${userId}`, response.data);
+      
+      return response.data || [];
     } catch (err) {
-      console.warn('Timeline API başarısız, sadece mock veri dönülüyor.', err);
-      // Fallback için de rolleri almayı deneriz
-      try {
-        const roles = await roleService.getActive(userId);
-        return _getMockTasks(roles);
-      } catch (e) {
-        return _getMockTasks([]);
+      // If network error, fallback to IDB cache
+      if (!err.response) {
+        console.warn('Network error, fetching from IDB Cache');
+        const cached = await getCache(`timeline_${userId}`);
+        return cached || [];
       }
+      console.warn('Timeline API Error:', err);
+      return [];
     }
   },
 
-  /**
-   * Kullanıcının tüm görevlerini getirir.
-   * Backend: GET /api/tasks/user/{userId}
-   */
   getByUserId: async (userId) => {
-    const response = await apiClient.get(`/tasks/user/${userId}`);
-    return response.data;
+    if (!currentUser && !userId) return storage.get('guest_tasks') || [];
+    
+    try {
+      const response = await apiClient.get(`/tasks/user/${userId}`);
+      await setCache(`tasks_${userId}`, response.data);
+      return response.data;
+    } catch (err) {
+      if (!err.response) {
+        const cached = await getCache(`tasks_${userId}`);
+        return cached || [];
+      }
+      return [];
+    }
   },
 
-  /**
-   * Görevi Id ile getirir.
-   * Backend: GET /api/tasks/{id}
-   */
   getById: async (id) => {
-    const response = await apiClient.get(`/tasks/${id}`);
-    return response.data;
+    if (!currentUser) {
+      const localTasks = storage.get('guest_tasks') || [];
+      return localTasks.find(t => t.id === id) || null;
+    }
+    try {
+      const response = await apiClient.get(`/tasks/${id}`);
+      return response.data;
+    } catch (err) {
+      if (!err.response) {
+        return null;
+      }
+      return null;
+    }
   },
 
-  /**
-   * Yeni görev oluşturur (Idempotency korumalı).
-   * Backend: POST /api/tasks
-   */
   create: async (taskData) => {
-    const response = await apiClient.post('/tasks', taskData);
-    return response.data;
-  },
-
-  /**
-   * Mevcut görevi günceller (Idempotency korumalı).
-   * Backend: PUT /api/tasks/{id}
-   */
-  update: async (id, taskData) => {
-    const response = await apiClient.put(`/tasks/${id}`, taskData);
-    return response.data;
-  },
-
-  /**
-   * Görevi tamamlandı olarak işaretler ve performans skorunu kaydeder (Idempotency korumalı).
-   * Backend: PATCH /api/tasks/{id}/complete & POST /api/performance
-   */
-  completeTask: async (id, performanceData, userId) => {
-    // 1. Görevi tamamlandı işaretle
-    const completeResponse = await apiClient.patch(`/tasks/${id}/complete`);
-
-    // 2. Performans kaydı verisi varsa kaydet
-    let performanceResponse = null;
-    if (performanceData) {
-      performanceResponse = await apiClient.post('/performance', {
-        taskItemId: id,
-        userId: userId || performanceData.userId || '',
-        correctCount: performanceData.correct || 0,
-        wrongCount: performanceData.wrong || 0,
-        blankCount: performanceData.blank || 0,
-        netScore: performanceData.net || 0,
-        notes: performanceData.notes || '',
-      });
+    if (!currentUser) {
+      const localTasks = storage.get('guest_tasks') || [];
+      const newTask = { ...taskData, id: generateId(), isCompleted: false };
+      localTasks.push(newTask);
+      storage.set('guest_tasks', localTasks);
+      return newTask;
     }
 
-    return {
-      success: true,
-      completeData: completeResponse.data,
-      performanceData: performanceResponse?.data,
-    };
+    try {
+      const response = await apiClient.post('/tasks', taskData);
+      return response.data;
+    } catch (err) {
+      if (!err.response) {
+        // Offline: Queue the action
+        const fakeId = generateId();
+        const action = {
+          type: 'POST',
+          url: '/tasks',
+          data: taskData,
+          fakeId,
+          timestamp: Date.now()
+        };
+        await addToOfflineQueue(action);
+        
+        // Optimistic return
+        return { ...taskData, id: fakeId, isCompleted: false, isOffline: true };
+      }
+      throw err;
+    }
   },
 
-  /**
-   * Görevi siler.
-   * Backend: DELETE /api/tasks/{id}
-   */
+  update: async (id, taskData) => {
+    if (!currentUser) {
+      const localTasks = storage.get('guest_tasks') || [];
+      const index = localTasks.findIndex(t => t.id === id);
+      if (index !== -1) {
+        localTasks[index] = { ...localTasks[index], ...taskData };
+        storage.set('guest_tasks', localTasks);
+        return localTasks[index];
+      }
+      return null;
+    }
+
+    try {
+      const response = await apiClient.put(`/tasks/${id}`, taskData);
+      return response.data;
+    } catch (err) {
+      if (!err.response) {
+        await addToOfflineQueue({
+          type: 'PUT',
+          url: `/tasks/${id}`,
+          data: taskData,
+          timestamp: Date.now()
+        });
+        return { ...taskData, id, isOffline: true };
+      }
+      throw err;
+    }
+  },
+
+  completeTask: async (id, performanceData, userId) => {
+    if (!currentUser) {
+      const localTasks = storage.get('guest_tasks') || [];
+      const index = localTasks.findIndex(t => t.id === id);
+      if (index !== -1) {
+        localTasks[index].isCompleted = true;
+        storage.set('guest_tasks', localTasks);
+        return { success: true, completeData: localTasks[index], performanceData };
+      }
+      return { success: false };
+    }
+    
+    try {
+      const completeResponse = await apiClient.patch(`/tasks/${id}/complete`);
+      let performanceResponse = null;
+      if (performanceData) {
+        performanceResponse = await apiClient.post('/performance', {
+          taskItemId: id,
+          userId: userId || performanceData.userId || '',
+          correctCount: performanceData.correct || 0,
+          wrongCount: performanceData.wrong || 0,
+          blankCount: performanceData.blank || 0,
+          netScore: performanceData.net || 0,
+          notes: performanceData.notes || '',
+        });
+      }
+
+      return {
+        success: true,
+        completeData: completeResponse.data,
+        performanceData: performanceResponse?.data,
+      };
+    } catch (err) {
+      if (!err.response) {
+        // Queue the completion
+        await addToOfflineQueue({
+          type: 'PATCH',
+          url: `/tasks/${id}/complete`,
+          timestamp: Date.now()
+        });
+        
+        if (performanceData) {
+          await addToOfflineQueue({
+            type: 'POST',
+            url: '/performance',
+            data: {
+              taskItemId: id,
+              userId: userId || performanceData.userId || '',
+              correctCount: performanceData.correct || 0,
+              wrongCount: performanceData.wrong || 0,
+              blankCount: performanceData.blank || 0,
+              netScore: performanceData.net || 0,
+              notes: performanceData.notes || '',
+            },
+            timestamp: Date.now()
+          });
+        }
+
+        return { success: true, completeData: { id, isCompleted: true, isOffline: true }, performanceData };
+      }
+      return { success: false };
+    }
+  },
+
   delete: async (id) => {
-    const response = await apiClient.delete(`/tasks/${id}`);
-    return response.data;
+    if (!currentUser) {
+      let localTasks = storage.get('guest_tasks') || [];
+      localTasks = localTasks.filter(t => t.id !== id);
+      storage.set('guest_tasks', localTasks);
+      return { success: true };
+    }
+
+    try {
+      const response = await apiClient.delete(`/tasks/${id}`);
+      return response.data;
+    } catch (err) {
+      if (!err.response) {
+        await addToOfflineQueue({
+          type: 'DELETE',
+          url: `/tasks/${id}`,
+          timestamp: Date.now()
+        });
+        return { success: true, isOffline: true };
+      }
+      throw err;
+    }
   },
 };
 

@@ -4,6 +4,9 @@ import styles from './Profile.module.css';
 import RoleTagSelect from './RoleTagSelect';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n';
+import storage from '../../utils/storage';
+import { logoutUser } from '../../services/authService';
+import AccountModal from './AccountModal';
 
 const ChevronIcon = ({ isOpen }) => (
   <svg 
@@ -14,13 +17,37 @@ const ChevronIcon = ({ isOpen }) => (
   </svg>
 );
 
-const Profile = ({ user, appearance, onToggleAppearance, theme, setTheme, tone, onToneChange }) => {
+const PRESET_AVATARS = ['🎓', '🦊', '🚀', '⚡', '🌟', '🎯', '🦁', '💡'];
+
+const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTheme, tone, onToneChange, openAuth }) => {
   const { t } = useTranslation('profile');
   const [openSections, setOpenSections] = useState({ theme: false, settings: false, roles: false });
+  const [customAvatar, setCustomAvatar] = useState(storage.getString('user_avatar') || '');
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+  const [localGuestName, setLocalGuestName] = useState(guestName || storage.getString('guest_name') || '');
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+
   const toggleSection = (sec) => setOpenSections(prev => ({ ...prev, [sec]: !prev[sec] }));
 
-  const displayName = user?.displayName || user?.email?.split('@')[0] || t('default_username');
+  const displayName = user?.displayName || user?.email?.split('@')[0] || localGuestName || t('default_username');
   const initial = displayName.charAt(0).toUpperCase();
+
+  const handleEditName = () => {
+    const promptMsg = t('edit_name_prompt', { context: tone, defaultValue: 'Lütfen yeni isminizi girin:' });
+    const newName = window.prompt(promptMsg, displayName);
+    if (newName && newName.trim()) {
+      const trimmed = newName.trim();
+      storage.setString('guest_name', trimmed);
+      setLocalGuestName(trimmed);
+      window.dispatchEvent(new Event('storage'));
+    }
+  };
+
+  const handleSelectAvatar = (emoji) => {
+    setCustomAvatar(emoji);
+    storage.setString('user_avatar', emoji);
+    setShowAvatarPicker(false);
+  };
 
   return (
     <motion.div
@@ -31,13 +58,95 @@ const Profile = ({ user, appearance, onToggleAppearance, theme, setTheme, tone, 
     >
       {/* ── Kullanıcı Kartı ─────────────────────────────────────────────────── */}
       <div className={styles.userCard}>
-        <div className={styles.avatar}>{initial}</div>
+        {user?.photoURL ? (
+          <img src={user.photoURL} className={styles.avatarImg} alt={displayName} />
+        ) : (
+          <div 
+            className={`${styles.avatar} ${styles.avatarClickable}`}
+            onClick={() => setShowAvatarPicker(!showAvatarPicker)}
+            title={t('avatar_picker_title', { context: tone, defaultValue: 'Profil Avatarı Seçin' })}
+          >
+            {customAvatar || initial}
+            <span className={styles.avatarBadge}>✏️</span>
+          </div>
+        )}
+
         <div className={styles.userInfo}>
-          <h2 className={styles.userName}>{displayName}</h2>
+          <div className={styles.userNameRow}>
+            <h2 className={styles.userName}>{displayName}</h2>
+            {!user && (
+              <button 
+                className={styles.editNameBtn} 
+                onClick={handleEditName}
+                title="İsmi Düzenle"
+              >
+                ✏️
+              </button>
+            )}
+          </div>
+
           <span className={styles.userEmail}>{user?.email || t('default_email')}</span>
-          <span className={styles.roleBadge}>{t('role_badge', { context: tone })}</span>
+
+          <div className={styles.userBadgeRow}>
+            {user ? (
+              <span className={styles.roleBadge}>{t('role_badge', { context: tone })}</span>
+            ) : (
+              <span className={styles.guestBadge}>{t('badge_guest', { context: tone })}</span>
+            )}
+            <button className={styles.accountBtn} onClick={() => setIsAccountModalOpen(true)}>
+              ⚙️ {t('account_title', { defaultValue: 'Hesabım' })}
+            </button>
+            {user && (
+              <button className={styles.logoutCardBtn} onClick={logoutUser}>
+                🚪 {t('logout', { ns: 'common', context: tone, defaultValue: 'Çıkış Yap' })}
+              </button>
+            )}
+          </div>
         </div>
       </div>
+
+      <AccountModal 
+        isOpen={isAccountModalOpen} 
+        onClose={() => setIsAccountModalOpen(false)} 
+        user={user} 
+        openAuth={openAuth} 
+      />
+
+      {/* Avatar Seçim Paneli */}
+      {showAvatarPicker && !user?.photoURL && (
+        <motion.div 
+          className={styles.sectionCard}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <span className={styles.settingLabel}>{t('avatar_picker_title', { context: tone, defaultValue: 'Profil Avatarı Seçin' })}</span>
+          <div className={styles.avatarPickerGrid}>
+            {PRESET_AVATARS.map((emoji) => (
+              <div 
+                key={emoji} 
+                className={styles.avatarOption} 
+                onClick={() => handleSelectAvatar(emoji)}
+              >
+                {emoji}
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
+      {/* ── Kayıt Teşvik Kartı (Cloud Sync Banner - Sadece Misafirler İçin) ───── */}
+      {!user && (
+        <div className={styles.cloudBanner}>
+          <div className={styles.cloudBannerHeader}>
+            <span className={styles.cloudBannerText}>
+              ☁️ {t('cloud_banner_text', { context: tone })}
+            </span>
+          </div>
+          <button className={styles.cloudBannerBtn} onClick={openAuth}>
+            {t('cloud_banner_btn', { context: tone, defaultValue: 'Kayıt Ol / Giriş Yap' })}
+          </button>
+        </div>
+      )}
 
       {/* ── TEMA BÖLÜMÜ ─────────────────── */}
       <div className={styles.sectionCard}>
@@ -155,7 +264,11 @@ const Profile = ({ user, appearance, onToggleAppearance, theme, setTheme, tone, 
                   <select 
                     style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
                     value={i18n.language} 
-                    onChange={e => i18n.changeLanguage(e.target.value)}
+                    onChange={e => {
+                      const newLang = e.target.value;
+                      storage.setString('planlama_lang', newLang);
+                      i18n.changeLanguage(newLang);
+                    }}
                   >
                     <option value="tr">Türkçe</option>
                     <option value="en">English</option>

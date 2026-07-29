@@ -1,10 +1,12 @@
 import axios from 'axios';
 import { auth } from '../config/firebase';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:5000/api`;
+// Native apps require an absolute URL. Dev mode can use localhost or specific IP via .env
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: true, // ZORUNLU KURAL: HttpOnly çerezlerin backend'e gönderilmesi için
   headers: {
     'Content-Type': 'application/json',
   },
@@ -12,23 +14,12 @@ const apiClient = axios.create({
 
 /**
  * Request Interceptor:
- * 1. Firebase kullanıcısının JWT token'ını otomatik olarak Authorization Header'a ekler.
- * 2. Kritik POST ve PUT isteklerinde benzersiz bir UUID (Idempotency-Key) üretip Header'a koyar.
+ * 1. Kritik POST ve PUT isteklerinde benzersiz bir UUID (Idempotency-Key) üretip Header'a koyar.
+ * Not: JWT artık Cookie üzerinden taşındığı için Bearer token eklenmez (Sıfır Güven & XSS koruması).
  */
 apiClient.interceptors.request.use(
   async (config) => {
-    // 1. JWT Bearer Token ekleme
-    const currentUser = auth.currentUser;
-    if (currentUser) {
-      try {
-        const token = await currentUser.getIdToken();
-        config.headers.Authorization = `Bearer ${token}`;
-      } catch (err) {
-        console.error('Firebase token alınırken hata oluştu:', err);
-      }
-    }
-
-    // 2. Otomatik Idempotency-Key Üretimi
+    // Otomatik Idempotency-Key Üretimi
     const method = config.method ? config.method.toUpperCase() : '';
     if ((method === 'POST' || method === 'PUT' || method === 'PATCH') && !config.headers['Idempotency-Key']) {
       // Tarayıcı destekli standart crypto.randomUUID()

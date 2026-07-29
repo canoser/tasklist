@@ -118,3 +118,76 @@
   border: 1px solid var(--border-color, #334155);
   cursor: pointer;
 }
+
+.guestModalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 1rem;
+}
+
+.guestModal {
+  background-color: var(--bg-card);
+  border-radius: var(--border-radius-lg);
+  padding: 2rem;
+  width: 100%;
+  max-width: 340px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+  text-align: center;
+  animation: modalPop 0.3s ease-out forwards;
+}
+
+@keyframes modalPop {
+  0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.guestModal h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.guestModal p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 1.75rem;
+}
+
+.guestModalActions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.btnSecondary {
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  border: 1px solid var(--border-color);
+  background: var(--surface-2);
+  color: var(--text-primary);
+  cursor: pointer;
+  flex: 1;
+}
+
+.btnPrimary {
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  background: var(--brand-primary);
+  color: white;
+  cursor: pointer;
+  flex: 1;
+}

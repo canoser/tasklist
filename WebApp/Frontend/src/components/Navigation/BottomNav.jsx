@@ -33,8 +33,9 @@ const PlusIcon = () => (
   </svg>
 );
 
-const BottomNav = ({ activeTab = 'home', onTabChange = () => {}, tone }) => {
+const BottomNav = ({ activeTab = 'home', onTabChange = () => {}, tone, user, openAuth }) => {
   const [isMenuExpanded, setIsMenuExpanded] = useState(false);
+  const [showGuestAlert, setShowGuestAlert] = useState(false);
   const { t } = useTranslation('common');
 
   return (
@@ -51,7 +52,13 @@ const BottomNav = ({ activeTab = 'home', onTabChange = () => {}, tone }) => {
           
           <button 
             className={`${styles.navItem} ${activeTab === 'search' ? styles.active : ''}`}
-            onClick={() => onTabChange('search')}
+            onClick={() => {
+              if (!user) {
+                setShowGuestAlert(true);
+              } else {
+                onTabChange('search');
+              }
+            }}
           >
             <SearchIcon />
             <span>{t('nav_workspace', { context: tone })}</span>
@@ -93,6 +100,20 @@ const BottomNav = ({ activeTab = 'home', onTabChange = () => {}, tone }) => {
       </div>
 
       <AddTaskModal isOpen={isMenuExpanded} onClose={() => setIsMenuExpanded(false)} tone={tone} />
+
+      {/* Misafir Uyarı Modalı */}
+      {showGuestAlert && (
+        <div className={styles.guestModalOverlay} onClick={() => setShowGuestAlert(false)}>
+          <div className={styles.guestModal} onClick={e => e.stopPropagation()}>
+            <h3>{t('ws_guest_title', { context: tone, defaultValue: 'Kayıt Gerekli' })}</h3>
+            <p>{t('ws_guest_desc', { context: tone, defaultValue: 'Alanlarım (Workspace) özelliği ile kendi ekiplerinizi kurabilir veya takım arkadaşlarınızın çalışma alanlarına katılabilirsiniz. Bu bulut tabanlı bir özellik olduğu için lütfen giriş yapın veya kayıt olun.' })}</p>
+            <div className={styles.guestModalActions}>
+              <button className={styles.btnSecondary} onClick={() => setShowGuestAlert(false)}>{t('cancel', { context: tone, defaultValue: 'İptal' })}</button>
+              <button className={styles.btnPrimary} onClick={() => { setShowGuestAlert(false); openAuth(); }}>{t('login', { context: tone, defaultValue: 'Kayıt Ol / Giriş Yap' })}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

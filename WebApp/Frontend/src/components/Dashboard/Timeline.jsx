@@ -7,74 +7,7 @@ import { taskService } from '../../services/taskService';
 import { getTaskColor } from '../../utils/taskUtils';
 import { useTranslation } from 'react-i18next';
 
-// ── Mock Veri (API Çevrimdışı / Çatıda test verisi olarak tutulur) ────────────
-const INITIAL_TASKS = [
-  {
-    id: 1,
-    time: '09:00',
-    title: 'Matematik: Türev ve Uygulamaları',
-    subject: 'Matematik',
-    type: 'Soru Çözme',
-    count: '30 Soru',
-    isTeacherAssigned: false,
-    isCompleted: true,
-    color: 'Green',
-    deadline: '26 Tem',
-    teacherNote: 'Lütfen çözülemeyen soruları kutuya not edin.',
-  },
-  {
-    id: 2,
-    time: '11:30',
-    title: 'Taylan Hoca: Limit Etüdü',
-    subject: 'Matematik',
-    type: 'Etüt',
-    count: '45 dk',
-    isTeacherAssigned: true,
-    isCompleted: false,
-    color: 'Orange',
-    deadline: '26 Tem',
-    teacherNote: 'Etüt öncesi 0. adım sorularını çözüp gelin.',
-  },
-  {
-    id: 3,
-    time: '14:00',
-    title: 'Fizik: Dinamik',
-    subject: 'Fizik',
-    type: 'Soru Çözme',
-    count: '50 Soru',
-    isTeacherAssigned: false,
-    isCompleted: false,
-    color: 'Blue',
-    deadline: '26 Tem',
-    teacherNote: 'Newton kanunları 2. test tamamlanacak.',
-  },
-  {
-    id: 4,
-    time: '16:30',
-    title: 'Taylan Hoca: Matematik Etüdü',
-    subject: 'Matematik',
-    type: 'Etüt',
-    count: '60 dk',
-    isTeacherAssigned: true,
-    isCompleted: false,
-    color: 'Orange',
-    deadline: '26 Tem',
-    teacherNote: 'Geometri çember tekrarı yapılacak.',
-  },
-  {
-    id: 5,
-    time: '19:00',
-    title: 'TYT Deneme Sınavı',
-    subject: 'Deneme',
-    type: 'Deneme',
-    count: '120 dk',
-    isTeacherAssigned: false,
-    isCompleted: false,
-    color: 'Purple',
-    deadline: '26 Tem',
-    teacherNote: 'Süre tutularak çözülmelidir.',
-  },
-];
+const INITIAL_TASKS = [];
 
 // ── Framer Motion Varyantlar ──────────────────────────────────────────────────
 const containerVariants = {
@@ -167,16 +100,22 @@ const TaskCard = ({ task, onClick, currentLang }) => {
 };
 
 // ── Ana Timeline Bileşeni ─────────────────────────────────────────────────────
-const Timeline = ({ user, tasks: initialPropsTasks }) => {
+const Timeline = ({ user, tasks: initialPropsTasks, onStatsChange }) => {
   const [taskList, setTaskList] = useState(initialPropsTasks || INITIAL_TASKS);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const completed = taskList.filter(t => t.isCompleted).length;
+    const remaining = taskList.length - completed;
+    onStatsChange?.({ completed, remaining });
+  }, [taskList, onStatsChange]);
 
   const [selectedTask, setSelectedTask] = useState(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isPerformanceOpen, setIsPerformanceOpen] = useState(false);
 
-  const { i18n } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
   const currentLang = i18n.language || 'tr-TR';
 
   const today = new Date().toLocaleDateString(currentLang, {
@@ -271,7 +210,7 @@ const Timeline = ({ user, tasks: initialPropsTasks }) => {
       {/* Sayfa başlığı */}
       <div className={styles.pageHeader}>
         <span className={styles.dateLabel}>{today}</span>
-        <span className={styles.todayBadge}>Bugün</span>
+        <span className={styles.todayBadge}>{t('today_badge', { defaultValue: 'Bugün' })}</span>
       </div>
 
       {loading ? (

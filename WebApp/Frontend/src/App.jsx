@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import styles from './App.module.css';
 import AuthModal from './components/Auth/AuthModal';
 import { subscribeToAuthChanges, logoutUser } from './services/authService';
+import { startSyncListener } from './services/syncService';
 import MobileLayout from './components/Layout/MobileLayout';
 import BottomNav from './components/Navigation/BottomNav';
 import Dashboard from './components/Dashboard/Dashboard';
@@ -16,18 +17,25 @@ import { useAppNavigation } from './hooks/useAppNavigation';
 import { useTranslation } from 'react-i18next';
 import { DEFAULT_TONE } from './config/featureFlags';
 import { setTone as setI18nTone } from './i18n';
+import storage from './utils/storage';
+import GuestWelcomeModal from './components/Auth/GuestWelcomeModal';
+
+// Çevrimdışı işlem kuyruğunu ve senkronizasyonu başlat
+startSyncListener();
+
 export default function App() {
   const [theme, setTheme] = useState('classic'); // 'classic', 'nature', 'lovely' vb.
   const [appearance, setAppearance] = useState('dark'); // 'light', 'dark'
   const [user, setUser] = useState(null);
+  const [guestName, setGuestName] = useState(storage.getString('guest_name') || '');
   
   const [tone, setTone] = useState(
-    localStorage.getItem('planlama_tone') || DEFAULT_TONE
+    storage.getString('planlama_tone') || DEFAULT_TONE
   );
   
   const handleToneChange = (newTone) => {
     setTone(newTone);
-    localStorage.setItem('planlama_tone', newTone);
+    storage.setString('planlama_tone', newTone);
     setI18nTone(newTone);
   };
 
@@ -83,7 +91,7 @@ export default function App() {
 
           {/* ── Ana İçerik Alanı ────────────────────────────────────────────── */}
           <main className={styles.main}>
-            {activeTab === 'home' && <Dashboard user={user} tone={tone} />}
+            {activeTab === 'home' && <Dashboard user={user} guestName={guestName} tone={tone} />}
 
             {activeTab === 'search' && (
               <WorkspaceScreen user={user} tone={tone} />
@@ -100,22 +108,31 @@ export default function App() {
             {activeTab === 'profile' && (
               <Profile 
                 user={user} 
+                guestName={guestName}
                 appearance={appearance} 
                 onToggleAppearance={toggleAppearance} 
                 theme={theme}
                 setTheme={setTheme}
                 tone={tone}
                 onToneChange={handleToneChange}
+                openAuth={() => openModal('auth')}
               />
             )}
           </main>
 
-          <AuthModal isOpen={isModalOpen('auth')} onClose={() => closeModal('auth')} />
+          <AuthModal isOpen={isModalOpen('auth')} onClose={() => closeModal('auth')} tone={tone} />
+          {!user && <GuestWelcomeModal tone={tone} onToneChange={handleToneChange} onComplete={(name) => setGuestName(name)} />}
         </div>
       </MobileLayout>
 
       {/* BottomNav, tab seçimini App'e bildirir */}
-      <BottomNav activeTab={activeTab} onTabChange={setTab} tone={tone} />
+      <BottomNav 
+        activeTab={activeTab} 
+        onTabChange={setTab} 
+        tone={tone} 
+        user={user} 
+        openAuth={() => openModal('auth')} 
+      />
       </UndoProvider>
     </BrowserRouter>
   );

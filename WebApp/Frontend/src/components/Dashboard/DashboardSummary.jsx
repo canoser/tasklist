@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import styles from './DashboardSummary.module.css';
+import { useTranslation } from 'react-i18next';
 
 // ── Mock Veri ─────────────────────────────────────────────────────────────────
 const DAILY_PROGRESS = 80;
@@ -81,11 +82,12 @@ const cardVariants = {
 
 // ── Ana DashboardSummary Bileşeni ─────────────────────────────────────────────
 const DashboardSummary = ({ netScores = NET_SCORES }) => {
+  const { t } = useTranslation('tasks');
   return (
     <div className={styles.summarySection}>
       {/* Bölüm başlığı + Düzenle ikonu */}
       <div className={styles.sectionHeader}>
-        <span className={styles.sectionTitle}>Özet</span>
+        <span className={styles.sectionTitle}>{t('summary_title', { defaultValue: 'Özet' })}</span>
         <button className={styles.editBtn} aria-label="Özeti Özelleştir" title="Gelecekte özelleştirme menüsü buraya gelecek">
           <EditIcon />
         </button>

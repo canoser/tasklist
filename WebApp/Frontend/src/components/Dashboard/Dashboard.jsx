@@ -13,15 +13,11 @@ const greetingVariants = {
 };
 
 // ── Dashboard Sayfası ─────────────────────────────────────────────────────────
-const Dashboard = ({ user, tone }) => {
+const Dashboard = ({ user, guestName, tone }) => {
   const { t } = useTranslation('tasks');
-  const displayName = user?.displayName || user?.email?.split('@')[0] || t('default_username', { ns: 'profile' });
+  const displayName = user?.displayName || user?.email?.split('@')[0] || guestName || t('default_username', { ns: 'profile' });
   const [isAssistantVisible, setIsAssistantVisible] = useState(true);
-
-  // Mock: Görev istatistikleri (ileride API'den gelecek)
-  const totalTasks = 5;
-  const completedTasks = 1;
-  const remainingTasks = totalTasks - completedTasks;
+  const [taskStats, setTaskStats] = useState({ remaining: 3, completed: 1 });
 
   return (
     <>
@@ -43,17 +39,17 @@ const Dashboard = ({ user, tone }) => {
           <div className={styles.statsRow}>
             <span className={`${styles.statPill} ${styles.active}`}>
               <span className={styles.statDot} />
-              {t('stat_remaining', { count: remainingTasks, context: tone })}
+              {t('stat_remaining', { count: taskStats.remaining, context: tone })}
             </span>
             <span className={styles.statPill}>
               <span className={styles.statDot} />
-              {t('stat_completed', { count: completedTasks, context: tone })}
+              {t('stat_completed', { count: taskStats.completed, context: tone })}
             </span>
           </div>
         </motion.div>
 
         {/* Dikey Zaman Çizelgesi */}
-        <Timeline user={user} />
+        <Timeline user={user} onStatsChange={setTaskStats} />
 
         {/* Alt Özet Kartları — scroll ile görünür */}
         <DashboardSummary />

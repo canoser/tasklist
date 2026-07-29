@@ -14,7 +14,7 @@ const DayDetailModal = ({ isOpen, onClose, date, tasks = [], roles = [], tone, o
   };
 
   const groupedTasks = useMemo(() => {
-    if (!date) return { Teacher: {}, Student: {}, Other: {} };
+    if (!date || !Array.isArray(tasks)) return { Teacher: {}, Student: {}, Other: {} };
 
     const dayTasks = tasks.filter(t => {
       if (!t.deadline) return false;
@@ -51,7 +51,14 @@ const DayDetailModal = ({ isOpen, onClose, date, tasks = [], roles = [], tone, o
         </div>
         <div className={styles.treeBranch}>
           {taskList.map(task => (
-            <div key={task.id} className={styles.taskLeaf} onClick={() => onTaskClick && onTaskClick(task)}>
+            <div 
+              key={task.id} 
+              className={styles.taskLeaf} 
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onTaskClick) onTaskClick(task);
+              }}
+            >
               <div className={styles.taskInfo}>
                 <span className={styles.taskTitle}>{task.title}</span>
                 <span className={styles.taskMeta}>

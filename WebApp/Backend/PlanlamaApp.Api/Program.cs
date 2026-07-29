@@ -11,30 +11,45 @@ using PlanlamaApp.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. JWT Authentication (Firebase)
+// 1. JWT Authentication (Local Cookie tabanlı)
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        // Örnek Firebase Auth Authority (Kendi proje ID'nizle değişecektir)
-        options.Authority = "https://securetoken.google.com/planlamaapp-demo";
+        var secretKey = builder.Configuration["Jwt:SecretKey"] ?? "BU_COK_GIZLI_GECICI_BIR_ANAHTARDIR_HICBIR_ZAMAN_PRODUCTIONDA_KULLANILMAMALIDIR_12345!!!";
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = "https://securetoken.google.com/planlamaapp-demo",
+            ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "planlama_app",
             ValidateAudience = true,
-            ValidAudience = "planlamaapp-demo",
-            ValidateLifetime = true
+            ValidAudience = builder.Configuration["Jwt:Audience"] ?? "planlama_app_users",
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(secretKey))
+        };
+        
+        // Token'ı Authorization header yerine Cookie'den okuma
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                if (context.Request.Cookies.ContainsKey("auth_token"))
+                {
+                    context.Token = context.Request.Cookies["auth_token"];
+                }
+                return Task.CompletedTask;
+            }
         };
     });
 
-// 2. CORS Politikası (Aynı Wi-Fi ve yerel ağ erişimi için)
+// 2. CORS Politikası (Strict DevSecOps)
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("AllowStrict", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("http://localhost:5173", "http://127.0.0.1:5173") // Frontend domainleri
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .AllowCredentials(); // ZORUNLU KURAL: Çerez (Cookie) gönderimi için şarttır.
     });
 });
 
@@ -68,6 +83,7 @@ builder.Services.AddScoped<IPerformanceRepository, PerformanceRepository>();
 builder.Services.AddScoped<IUserRoleRepository, UserRoleRepository>();
 builder.Services.AddScoped<ITaskAssignmentRepository, TaskAssignmentRepository>();
 builder.Services.AddScoped<IWorkspaceRepository, WorkspaceRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // IdempotencyFilter'ı DI container'a kaydet (Controller'larda [ServiceFilter] ile kullanım için zorunludur)
 builder.Services.AddScoped<IdempotencyFilter>();
@@ -94,7 +110,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors("AllowAll");
+app.UseCors("AllowStrict");
 
 // Sıralama önemlidir: CORS -> Rate Limiting -> Auth -> Authorization
 app.UseRateLimiter();

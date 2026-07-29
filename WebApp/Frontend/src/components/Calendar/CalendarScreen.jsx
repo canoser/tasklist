@@ -28,8 +28,8 @@ const CalendarScreen = ({ user, navigation, tone }) => {
       
       try {
         const [taskData, roleData] = await Promise.all([
-          taskService.getTimeline(user?.uid || 'mock', start, end),
-          roleService.getActive(user?.uid || 'mock-user-demo')
+          taskService.getTimeline(user?.uid || null, start, end),
+          roleService.getActive(user?.uid || null)
         ]);
         if (isMounted) {
           setTasks(taskData || []);
@@ -54,12 +54,16 @@ const CalendarScreen = ({ user, navigation, tone }) => {
 
   const handleDayClick = (date) => {
     setSelectedDay(date);
-    navigation.openModal('dayDetail');
+    setTimeout(() => {
+      navigation.openModal('dayDetail');
+    }, 0);
   };
 
   const handleTaskClick = (task) => {
     setActionTask(task);
-    setIsActionModalOpen(true);
+    setTimeout(() => {
+      setIsActionModalOpen(true);
+    }, 0);
   };
 
   const handleComplete = (task) => {

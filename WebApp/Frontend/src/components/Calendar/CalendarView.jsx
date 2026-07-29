@@ -23,6 +23,7 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
   // Görevleri günlere göre grupla ve her gün için rol isimlerine göre sayıları belirle
   const dayDataMap = useMemo(() => {
     const map = {};
+    if (!Array.isArray(tasks)) return map;
     tasks.forEach(task => {
       if (!task.deadline) return;
       const tDate = new Date(task.deadline);
@@ -64,7 +65,10 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
         <div 
           key={`day-${d}`} 
           className={`${styles.dayCell} ${isToday ? styles.today : ''}`}
-          onClick={() => onDayClick && onDayClick(new Date(year, month, d))}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (onDayClick) onDayClick(new Date(year, month, d));
+          }}
         >
           <span className={styles.dayNumber}>{d}</span>
           {dayData && (
