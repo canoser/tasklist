@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './BottomNav.module.css';
 import AddTaskModal from '../Task/AddTaskModal';
+import { useTranslation } from 'react-i18next';
 
 // Placeholder icons, ideally use lucide-react or similar
 const HomeIcon = () => (
@@ -32,8 +33,9 @@ const PlusIcon = () => (
   </svg>
 );
 
-const BottomNav = ({ activeTab = 'home', onTabChange = () => {} }) => {
+const BottomNav = ({ activeTab = 'home', onTabChange = () => {}, tone }) => {
   const [isMenuExpanded, setIsMenuExpanded] = useState(false);
+  const { t } = useTranslation('common');
 
   return (
     <>
@@ -44,7 +46,7 @@ const BottomNav = ({ activeTab = 'home', onTabChange = () => {} }) => {
             onClick={() => onTabChange('home')}
           >
             <HomeIcon />
-            <span>Ana Sayfa</span>
+            <span>{t('nav_home', { context: tone })}</span>
           </button>
           
           <button 
@@ -52,7 +54,7 @@ const BottomNav = ({ activeTab = 'home', onTabChange = () => {} }) => {
             onClick={() => onTabChange('search')}
           >
             <SearchIcon />
-            <span>Keşfet</span>
+            <span>{t('nav_workspace', { context: tone })}</span>
           </button>
 
           {/* Action Button that expands */}
@@ -77,7 +79,7 @@ const BottomNav = ({ activeTab = 'home', onTabChange = () => {} }) => {
               <line x1="8" y1="2" x2="8" y2="6"></line>
               <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
-            <span>Takvim</span>
+            <span>{t('nav_calendar', { context: tone })}</span>
           </button>
 
           <button 
@@ -85,12 +87,12 @@ const BottomNav = ({ activeTab = 'home', onTabChange = () => {} }) => {
             onClick={() => onTabChange('profile')}
           >
             <UserIcon />
-            <span>Profil</span>
+            <span>{t('nav_profile', { context: tone })}</span>
           </button>
         </div>
       </div>
 
-      <AddTaskModal isOpen={isMenuExpanded} onClose={() => setIsMenuExpanded(false)} />
+      <AddTaskModal isOpen={isMenuExpanded} onClose={() => setIsMenuExpanded(false)} tone={tone} />
     </>
   );
 };

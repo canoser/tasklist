@@ -6,6 +6,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.IdentityModel.Tokens;
 using PlanlamaApp.Api.Filters;
 using PlanlamaApp.Application.Interfaces;
+using PlanlamaApp.Infrastructure;
 using PlanlamaApp.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -63,6 +64,11 @@ builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IPerformanceRepository, PerformanceRepository>();
 
+// Rol Yönetimi — UserRole + TaskAssignment Repository kayıtları
+builder.Services.AddScoped<IUserRoleRepository, UserRoleRepository>();
+builder.Services.AddScoped<ITaskAssignmentRepository, TaskAssignmentRepository>();
+builder.Services.AddScoped<IWorkspaceRepository, WorkspaceRepository>();
+
 // IdempotencyFilter'ı DI container'a kaydet (Controller'larda [ServiceFilter] ile kullanım için zorunludur)
 builder.Services.AddScoped<IdempotencyFilter>();
 
@@ -97,5 +103,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers().RequireRateLimiting("FixedPolicy");
+
+// Veritabanı migration: UserRoles ve TaskAssignments tablolarını oluştur (idempotentten)
+var dbConnectionString = builder.Configuration.GetConnectionString("Default") ?? "Data Source=planlama_app.db";
+DatabaseMigration.Run(dbConnectionString);
 
 app.Run();

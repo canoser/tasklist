@@ -1,20 +1,31 @@
 import apiClient from './apiClient';
+import roleService from './roleService';
 
 // ── Mock Yardımcı (Tek Tanım — DRY) ─────────────────────────────────────────
-const _buildMockDay = (year, month, day) => {
+const _buildMockDay = (year, month, day, userRoles = []) => {
   const dateStr = new Date(year, month, day, 12, 0).toISOString();
+  
+  // Eğer kullanıcı rol tanımlamadıysa varsayılan roller uyduralım ki takvim boş kalmasın
+  const roles = userRoles.length > 0 ? userRoles : [
+    { roleName: 'Öğrenci' },
+    { roleName: 'Öğretmen' },
+    { roleName: 'Diğer / Kişisel' }
+  ];
+  
+  const getRandRole = () => roles[Math.floor(Math.random() * roles.length)].roleName;
+
   return [
-    { id: `m${day}_1`, title: `${day} - Öğrenci`, subject: 'Matematik', targetCount: 40, isTeacherAssigned: false, deadline: dateStr, isCompleted: false, count: '40 Soru' },
-    { id: `m${day}_2`, title: `${day} - Öğretmen`, subject: 'Fizik', targetCount: 1, isTeacherAssigned: true, deadline: dateStr, isCompleted: false, count: '1 Ünite' },
-    { id: `m${day}_3`, title: `${day} - Kişisel`, subject: 'Diğer', targetCount: 20, isTeacherAssigned: false, deadline: dateStr, isCompleted: false, count: '20 Sayfa' }
+    { id: `m${day}_1`, title: `${day} - Test Çözümü`, subject: 'Matematik', targetCount: 40, deadline: dateStr, isCompleted: false, count: '40 Soru', roleName: getRandRole() },
+    { id: `m${day}_2`, title: `${day} - Konu Anlatımı`, subject: 'Fizik', targetCount: 1, deadline: dateStr, isCompleted: false, count: '1 Ünite', roleName: getRandRole() },
+    { id: `m${day}_3`, title: `${day} - Okuma`, subject: 'Diğer', targetCount: 20, deadline: dateStr, isCompleted: false, count: '20 Sayfa', roleName: getRandRole() }
   ];
 };
 
-const _getMockTasks = () => {
+const _getMockTasks = (roles = []) => {
   const d = new Date();
   const y = d.getFullYear();
   const m = d.getMonth();
-  return [1, 8, 15, 22].flatMap(day => _buildMockDay(y, m, day));
+  return [1, 8, 15, 22].flatMap(day => _buildMockDay(y, m, day, roles));
 };
 
 export const taskService = {
@@ -28,12 +39,21 @@ export const taskService = {
       if (start) params.start = start.toISOString();
       if (end) params.end = end.toISOString();
 
-      const response = await apiClient.get(`/tasks/user/${userId}/timeline`, { params });
+      const [response, roles] = await Promise.all([
+        apiClient.get(`/tasks/user/${userId}/timeline`, { params }),
+        roleService.getActive(userId)
+      ]);
       const apiData = response.data || [];
-      return [...apiData, ..._getMockTasks()];
+      return [...apiData, ..._getMockTasks(roles)];
     } catch (err) {
       console.warn('Timeline API başarısız, sadece mock veri dönülüyor.', err);
-      return _getMockTasks();
+      // Fallback için de rolleri almayı deneriz
+      try {
+        const roles = await roleService.getActive(userId);
+        return _getMockTasks(roles);
+      } catch (e) {
+        return _getMockTasks([]);
+      }
     }
   },
 

@@ -4,6 +4,7 @@ import styles from './Dashboard.module.css';
 import Timeline from './Timeline';
 import DashboardSummary from './DashboardSummary';
 import SmartAssistant from './SmartAssistant';
+import { useTranslation } from 'react-i18next';
 
 // ── Animasyon varyantları ─────────────────────────────────────────────────────
 const greetingVariants = {
@@ -12,8 +13,9 @@ const greetingVariants = {
 };
 
 // ── Dashboard Sayfası ─────────────────────────────────────────────────────────
-const Dashboard = ({ user }) => {
-  const displayName = user?.displayName || user?.email?.split('@')[0] || 'Öğrenci';
+const Dashboard = ({ user, tone }) => {
+  const { t } = useTranslation('tasks');
+  const displayName = user?.displayName || user?.email?.split('@')[0] || t('default_username', { ns: 'profile' });
   const [isAssistantVisible, setIsAssistantVisible] = useState(true);
 
   // Mock: Görev istatistikleri (ileride API'den gelecek)
@@ -32,20 +34,20 @@ const Dashboard = ({ user }) => {
           initial="hidden"
           animate="visible"
         >
-          <p className={styles.greetingSub}>Günaydın 🌤️</p>
+          <p className={styles.greetingSub}>{t('greeting_morning', { context: tone })}</p>
           <h1 className={styles.greetingTitle}>
-            Merhaba, <span>{displayName}</span>!
+            {t('greeting_hello', { name: displayName, context: tone })}
           </h1>
 
           {/* Görev istatistik pilleri */}
           <div className={styles.statsRow}>
             <span className={`${styles.statPill} ${styles.active}`}>
               <span className={styles.statDot} />
-              {remainingTasks} Görev kaldı
+              {t('stat_remaining', { count: remainingTasks, context: tone })}
             </span>
             <span className={styles.statPill}>
               <span className={styles.statDot} />
-              {completedTasks} Tamamlandı
+              {t('stat_completed', { count: completedTasks, context: tone })}
             </span>
           </div>
         </motion.div>

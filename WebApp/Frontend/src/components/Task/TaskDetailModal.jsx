@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createPortal } from 'react-dom';
 import { CloseIcon } from '../Common/Icons';
 import styles from './TaskDetailModal.module.css';
 
@@ -23,7 +24,7 @@ export default function TaskDetailModal({ task, isOpen, onClose, onCompleteTask 
 
   if (!task) return null;
 
-  return (
+  const modalContent = (
     <AnimatePresence>
       {isOpen && (
         <>
@@ -37,13 +38,11 @@ export default function TaskDetailModal({ task, isOpen, onClose, onCompleteTask 
           <div className={styles.sheetContainer}>
             <motion.div
               className={styles.sheet}
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             >
-              <div className={styles.dragHandle} />
-
               <div className={styles.header}>
                 <div className={styles.titleGroup}>
                   <div className={styles.badgeRow}>
@@ -112,4 +111,6 @@ export default function TaskDetailModal({ task, isOpen, onClose, onCompleteTask 
       )}
     </AnimatePresence>
   );
+
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
 }

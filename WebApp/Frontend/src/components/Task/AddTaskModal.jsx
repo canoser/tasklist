@@ -3,10 +3,12 @@ import BaseModal from '../Common/BaseModal';
 import { CloseIcon } from '../Common/Icons';
 import styles from './AddTaskModal.module.css';
 import { taskService } from '../../services/taskService';
+import { useTranslation } from 'react-i18next';
 
-const AddTaskModal = ({ isOpen, onClose }) => {
+const AddTaskModal = ({ isOpen, onClose, tone }) => {
+  const { t } = useTranslation('tasks');
   const [title, setTitle] = useState('');
-  const [subject, setSubject] = useState('Matematik');
+  const [subject, setSubject] = useState(t('cat_math'));
   const [targetCount, setTargetCount] = useState('');
   const [deadline, setDeadline] = useState('');
   const [isTeacherAssigned, setIsTeacherAssigned] = useState(false);
@@ -41,7 +43,7 @@ const AddTaskModal = ({ isOpen, onClose }) => {
       
       // Formu temizle ve kapat
       setTitle('');
-      setSubject('Matematik');
+      setSubject(t('cat_math'));
       setTargetCount('');
       setDeadline('');
       setIsTeacherAssigned(false);
@@ -52,37 +54,37 @@ const AddTaskModal = ({ isOpen, onClose }) => {
   return (
     <BaseModal isOpen={isOpen} onClose={onClose}>
       <div className={styles.header}>
-        <span className={styles.title}>Yeni Görev Ekle</span>
+        <span className={styles.title}>{t('modal_title', { context: tone })}</span>
         <button className={styles.closeBtn} onClick={onClose}><CloseIcon /></button>
       </div>
 
       <div className={styles.body}>
         <div className={styles.formGroup}>
-          <label className={styles.label}>Görev Başlığı *</label>
+          <label className={styles.label}>{t('field_title', { context: tone })}</label>
           <input 
             type="text" 
             className={styles.input} 
             value={title} 
             onChange={e => setTitle(e.target.value)} 
-            placeholder="Örn: Türev Soru Çözümü" 
+            placeholder={t('field_title_placeholder', { context: tone })} 
             autoFocus
           />
         </div>
 
         <div className={styles.formGroup}>
-          <label className={styles.label}>Ders / Kategori</label>
+          <label className={styles.label}>{t('field_category', { context: tone })}</label>
           <select className={styles.select} value={subject} onChange={e => setSubject(e.target.value)}>
-            <option value="Matematik">Matematik</option>
-            <option value="Fizik">Fizik</option>
-            <option value="Kimya">Kimya</option>
-            <option value="Biyoloji">Biyoloji</option>
-            <option value="Deneme">Deneme / Sınav</option>
-            <option value="Diğer">Diğer / Kişisel</option>
+            <option value={t('cat_math')}>{t('cat_math')}</option>
+            <option value={t('cat_physics')}>{t('cat_physics')}</option>
+            <option value={t('cat_chemistry')}>{t('cat_chemistry')}</option>
+            <option value={t('cat_biology')}>{t('cat_biology')}</option>
+            <option value={t('cat_exam')}>{t('cat_exam')}</option>
+            <option value={t('cat_other')}>{t('cat_other')}</option>
           </select>
         </div>
 
         <div className={styles.formGroup}>
-          <label className={styles.label}>Tarih *</label>
+          <label className={styles.label}>{t('field_date', { context: tone })}</label>
           <input 
             type="date" 
             className={styles.input} 
@@ -92,13 +94,13 @@ const AddTaskModal = ({ isOpen, onClose }) => {
         </div>
 
         <div className={styles.formGroup}>
-          <label className={styles.label}>Hedef Miktar (Opsiyonel)</label>
+          <label className={styles.label}>{t('field_target', { context: tone })}</label>
           <input 
             type="number" 
             className={styles.input} 
             value={targetCount} 
             onChange={e => setTargetCount(e.target.value)} 
-            placeholder="Örn: 50" 
+            placeholder={t('field_target_placeholder', { context: tone })} 
           />
         </div>
 
@@ -108,7 +110,7 @@ const AddTaskModal = ({ isOpen, onClose }) => {
             checked={isTeacherAssigned}
             onChange={e => setIsTeacherAssigned(e.target.checked)}
           />
-          <span className={styles.label}>Bu görev öğretmen tarafından verildi</span>
+          <span className={styles.label}>{t('field_teacher_assigned', { context: tone })}</span>
         </label>
 
         <button 
@@ -116,7 +118,7 @@ const AddTaskModal = ({ isOpen, onClose }) => {
           onClick={handleSave}
           disabled={!title || !deadline || loading}
         >
-          {loading ? 'Kaydediliyor...' : 'Görev Ekle'}
+          {loading ? t('btn_saving', { context: tone }) : t('btn_submit', { context: tone })}
         </button>
       </div>
     </BaseModal>

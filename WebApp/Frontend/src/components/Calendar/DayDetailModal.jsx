@@ -1,10 +1,12 @@
 import { useEffect, useState, useMemo } from 'react';
 import BaseModal from '../Common/BaseModal';
 import { CloseIcon, FolderIcon } from '../Common/Icons';
-import { groupTasksByRole, buildCategoryTree } from '../../utils/taskUtils';
+import { groupTasksByRole, buildCategoryTree, getTagColors } from '../../utils/taskUtils';
 import styles from './DayDetailModal.module.css';
+import { useTranslation } from 'react-i18next';
 
-const DayDetailModal = ({ isOpen, onClose, date, tasks = [], onTaskClick }) => {
+const DayDetailModal = ({ isOpen, onClose, date, tasks = [], roles = [], tone, onTaskClick }) => {
+  const { t, i18n } = useTranslation('common');
   
   // Manuel kapatma (Çarpı veya dışarı tıklama)
   const handleManualClose = () => {
@@ -22,16 +24,19 @@ const DayDetailModal = ({ isOpen, onClose, date, tasks = [], onTaskClick }) => {
              tDate.getFullYear() === date.getFullYear();
     });
 
-    // Rol + Kategori gruplama — taskUtils'ten gelen ortak fonksiyonlar
+    // Rol + Kategori gruplama
     const byRole = groupTasksByRole(dayTasks);
-    return {
-      Teacher: buildCategoryTree(byRole.Teacher),
-      Student: buildCategoryTree(byRole.Student),
-      Other: buildCategoryTree(byRole.Other),
-    };
+    
+    // Ağaç yapısını oluştur
+    const result = {};
+    for (const roleName in byRole) {
+      result[roleName] = buildCategoryTree(byRole[roleName]);
+    }
+    return result;
   }, [date, tasks]);
 
-  const dateStr = date ? date.toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' }) : '';
+  const currentLang = i18n.language || 'tr-TR';
+  const dateStr = date ? date.toLocaleDateString(currentLang, { weekday: 'long', day: 'numeric', month: 'long' }) : '';
   const totalTasksCount = Object.values(groupedTasks).reduce((sum, roleGroup) => {
     return sum + Object.values(roleGroup).reduce((s, arr) => s + arr.length, 0);
   }, 0);
@@ -57,8 +62,9 @@ const DayDetailModal = ({ isOpen, onClose, date, tasks = [], onTaskClick }) => {
                 task.isCompleted ? styles.statusCompleted : 
                 task.partialPercent ? styles.statusPartial : styles.statusPending
               }`}>
-                {task.isCompleted ? 'Tamamlandı' : 
-                 task.partialPercent ? `%${task.partialPercent} Bitti` : 'Bekliyor'}
+                {task.isCompleted ? t('task_status_completed', { context: tone }) : 
+                 task.partialPercent ? t('task_status_partial', { context: tone, percent: task.partialPercent }) : 
+                 t('task_status_pending', { context: tone })}
               </span>
             </div>
           ))}
@@ -74,7 +80,7 @@ const DayDetailModal = ({ isOpen, onClose, date, tasks = [], onTaskClick }) => {
           <div className={styles.modalHeader}>
             <div className={styles.headerLeft}>
               <span className={styles.dateTitle}>{dateStr}</span>
-              <span className={styles.taskCount}>{totalTasksCount} Görev</span>
+              <span className={styles.taskCount}>{t('day_detail_tasks_count', { context: tone, count: totalTasksCount })}</span>
             </div>
             <button className={styles.closeBtn} onClick={handleManualClose}>
               <CloseIcon />
@@ -83,35 +89,24 @@ const DayDetailModal = ({ isOpen, onClose, date, tasks = [], onTaskClick }) => {
 
           <div className={styles.modalBody}>
         {totalTasksCount === 0 ? (
-          <div className={styles.emptyState}>Bu güne ait görev bulunmuyor.</div>
+          <div className={styles.emptyState}>{t('day_detail_empty', { context: tone })}</div>
         ) : (
           <>
-            {Object.keys(groupedTasks.Teacher).length > 0 && (
-              <div className={styles.roleGroup}>
-                <div className={styles.roleHeader}>
-                  <div className={`${styles.roleIcon} ${styles.Teacher}`} /> Öğretmen Rolü
+            {Object.entries(groupedTasks).map(([roleName, treeData]) => {
+              const colors = getTagColors(roleName);
+              return (
+                <div key={roleName} className={styles.roleGroup}>
+                  <div className={styles.roleHeader}>
+                    <div 
+                      className={styles.roleIcon} 
+                      style={{ backgroundColor: colors.background }} 
+                    /> 
+                    {roleName}
+                  </div>
+                  {renderTree(treeData)}
                 </div>
-                {renderTree(groupedTasks.Teacher)}
-              </div>
-            )}
-            
-            {Object.keys(groupedTasks.Student).length > 0 && (
-              <div className={styles.roleGroup}>
-                <div className={styles.roleHeader}>
-                  <div className={`${styles.roleIcon} ${styles.Student}`} /> Öğrenci Rolü
-                </div>
-                {renderTree(groupedTasks.Student)}
-              </div>
-            )}
-
-            {Object.keys(groupedTasks.Other).length > 0 && (
-              <div className={styles.roleGroup}>
-                <div className={styles.roleHeader}>
-                  <div className={`${styles.roleIcon} ${styles.Other}`} /> Diğer / Kişisel
-                </div>
-                {renderTree(groupedTasks.Other)}
-              </div>
-            )}
+              );
+            })}
           </>
         )}
       </div>

@@ -5,11 +5,16 @@
  * bileşen aynı mantığa ihtiyaç duyduğundan tek yerden yönetilir.
  */
 
-/** Öğrenci rolüne ait ders listesi */
+/**
+ * String hash'inden deterministik, tema uyumlu bir HSL renk kümesi üretir.
+ * Aynı isim her zaman aynı rengi verir. TagSelect ve Calendar ortak kullanır.
+ */
+
+/** Öğrenci rolüne ait ders listesi (Geriye uyumluluk için) */
 export const STUDENT_SUBJECTS = ['Matematik', 'Fizik', 'Kimya', 'Biyoloji', 'Türkçe', 'Tarih', 'Coğrafya', 'Felsefe'];
 
 /**
- * Görevin rolünü döndürür.
+ * Görevin statik rolünü döndürür (Geriye uyumluluk için, Timeline.jsx kullanır).
  * @param {object} task
  * @returns {'Teacher' | 'Student' | 'Other'}
  */
@@ -20,7 +25,7 @@ export function getTaskRole(task) {
 }
 
 /**
- * Görevin renk kodunu döndürür.
+ * Görevin statik renk kodunu döndürür (Geriye uyumluluk için, Timeline.jsx kullanır).
  * @param {object} task
  * @returns {'Orange' | 'Blue' | 'Green' | 'Purple'}
  */
@@ -33,15 +38,33 @@ export function getTaskColor(task) {
   return 'Purple';
 }
 
+export const getTagColors = (str = '') => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue = Math.abs(hash) % 360;
+  return {
+    background: `hsla(${hue}, 65%, 16%, 0.85)`,
+    border: `hsla(${hue}, 70%, 48%, 0.5)`,
+    color: `hsl(${hue}, 80%, 78%)`,
+    removeColor: `hsla(${hue}, 80%, 78%, 0.7)`,
+  };
+};
+
 /**
- * Görev listesini rol bazında gruplar (Öğretmen > Öğrenci > Diğer).
+ * Görev listesini rol bazında gruplar.
+ * Dinamik UserRole objelerine göre çalışır.
  * @param {Array} tasks
- * @returns {{ Teacher: object[], Student: object[], Other: object[] }}
+ * @returns {object} { 'Rol Adı': [task1, task2], ... }
  */
 export function groupTasksByRole(tasks) {
-  const groups = { Teacher: [], Student: [], Other: [] };
+  const groups = {};
   tasks.forEach(task => {
-    groups[getTaskRole(task)].push(task);
+    // Backend tam entegre olmadığında mock fallback "Diğer"
+    const rName = task.roleName || 'Diğer / Kişisel';
+    if (!groups[rName]) groups[rName] = [];
+    groups[rName].push(task);
   });
   return groups;
 }

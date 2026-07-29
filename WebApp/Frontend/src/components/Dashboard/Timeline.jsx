@@ -5,6 +5,7 @@ import TaskDetailModal from '../Task/TaskDetailModal';
 import PerformanceEntryModal from '../Task/PerformanceEntryModal';
 import { taskService } from '../../services/taskService';
 import { getTaskColor } from '../../utils/taskUtils';
+import { useTranslation } from 'react-i18next';
 
 // ── Mock Veri (API Çevrimdışı / Çatıda test verisi olarak tutulur) ────────────
 const INITIAL_TASKS = [
@@ -111,7 +112,7 @@ const TeacherIcon = () => (
 );
 
 // ── Görev Kartı Bileşeni ──────────────────────────────────────────────────────
-const TaskCard = ({ task, onClick }) => {
+const TaskCard = ({ task, onClick, currentLang }) => {
   const colorSuffix = getTaskColor(task);
 
   return (
@@ -155,7 +156,7 @@ const TaskCard = ({ task, onClick }) => {
             }
             const d = new Date(raw);
             if (!isNaN(d.getTime())) {
-              return <span className={styles.metaItem}>📅 {d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}</span>;
+              return <span className={styles.metaItem}>📅 {d.toLocaleDateString(currentLang, { day: 'numeric', month: 'short' })}</span>;
             }
             return null;
           })()}
@@ -175,7 +176,10 @@ const Timeline = ({ user, tasks: initialPropsTasks }) => {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isPerformanceOpen, setIsPerformanceOpen] = useState(false);
 
-  const today = new Date().toLocaleDateString('tr-TR', {
+  const { i18n } = useTranslation('common');
+  const currentLang = i18n.language || 'tr-TR';
+
+  const today = new Date().toLocaleDateString(currentLang, {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -200,7 +204,7 @@ const Timeline = ({ user, tasks: initialPropsTasks }) => {
           // Backend modellerini UI formatına dönüştür
           const mappedTasks = data.map((item) => ({
             ...item,
-            time: item.deadline ? new Date(item.deadline).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '12:00',
+            time: item.deadline ? new Date(item.deadline).toLocaleTimeString(currentLang, { hour: '2-digit', minute: '2-digit' }) : '12:00',
             type: item.taskType || 'Görev',
             count: item.targetCount ? `${item.targetCount} Soru` : '-',
             color: getTaskColor(item),
@@ -299,7 +303,7 @@ const Timeline = ({ user, tasks: initialPropsTasks }) => {
           style={{ touchAction: 'pan-y' }}
         >
           {taskList.map((task) => (
-            <TaskCard key={task.id} task={task} onClick={handleCardClick} />
+            <TaskCard key={task.id} task={task} onClick={handleCardClick} currentLang={currentLang} />
           ))}
         </motion.div>
       )}

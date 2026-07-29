@@ -1,9 +1,11 @@
 import { useState, useMemo } from 'react';
 import { ChevronLeftIcon, ChevronRightIcon } from '../Common/Icons';
-import { getTaskRole } from '../../utils/taskUtils';
+import { groupTasksByRole, getTagColors } from '../../utils/taskUtils';
 import styles from './CalendarView.module.css';
+import { useTranslation } from 'react-i18next';
 
-const CalendarView = ({ tasks = [], onDayClick }) => {
+const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
+  const { t, i18n } = useTranslation('common');
   const [currentDate, setCurrentDate] = useState(new Date());
 
   // Ayın başını ve sonunu bul
@@ -15,9 +17,10 @@ const CalendarView = ({ tasks = [], onDayClick }) => {
   // JS'de Pazar 0'dır. Takvimi Pazartesi'den (1) başlatmak için kaydırma yapalım.
   const emptyDaysBefore = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
 
-  const monthName = currentDate.toLocaleString('tr-TR', { month: 'long', year: 'numeric' });
+  const currentLang = i18n.language || 'tr-TR';
+  const monthName = currentDate.toLocaleString(currentLang, { month: 'long', year: 'numeric' });
 
-  // Görevleri günlere göre grupla ve her gün için rol noktalarını belirle
+  // Görevleri günlere göre grupla ve her gün için rol isimlerine göre sayıları belirle
   const dayDataMap = useMemo(() => {
     const map = {};
     tasks.forEach(task => {
@@ -26,12 +29,11 @@ const CalendarView = ({ tasks = [], onDayClick }) => {
       // Sadece bu aya ait olanları alalım
       if (tDate.getFullYear() === year && tDate.getMonth() === month) {
         const day = tDate.getDate();
-        if (!map[day]) map[day] = { counts: { Orange: 0, Blue: 0, Purple: 0 } };
+        if (!map[day]) map[day] = { counts: {} };
 
-        const role = getTaskRole(task);
-        if (role === 'Teacher') map[day].counts.Orange++;
-        else if (role === 'Student') map[day].counts.Blue++;
-        else map[day].counts.Purple++;
+        const rName = task.roleName || 'Diğer / Kişisel';
+        if (!map[day].counts[rName]) map[day].counts[rName] = 0;
+        map[day].counts[rName]++;
       }
     });
     return map;
@@ -67,10 +69,15 @@ const CalendarView = ({ tasks = [], onDayClick }) => {
           <span className={styles.dayNumber}>{d}</span>
           {dayData && (
             <div className={styles.dotsRow}>
-              {Object.entries(dayData.counts).map(([color, count]) => {
+              {Object.entries(dayData.counts).map(([roleName, count]) => {
                 if (count === 0) return null;
+                const colors = getTagColors(roleName);
                 return (
-                  <div key={color} className={`${styles.countBadge} ${styles[`badge${color}`]}`}>
+                  <div 
+                    key={roleName} 
+                    className={styles.countBadge}
+                    style={{ backgroundColor: colors.background, color: colors.color, borderColor: colors.border }}
+                  >
                     {count}
                   </div>
                 );
@@ -86,7 +93,7 @@ const CalendarView = ({ tasks = [], onDayClick }) => {
   return (
     <div className={styles.calendarSection}>
       <div className={styles.header}>
-        <span className={styles.title}>Takvim</span>
+        <span className={styles.title}>{t('cal_title', { context: tone })}</span>
         <div className={styles.monthNav}>
           <button className={styles.navBtn} onClick={handlePrevMonth}><ChevronLeftIcon /></button>
           <span className={styles.currentMonth}>{monthName}</span>
@@ -95,13 +102,13 @@ const CalendarView = ({ tasks = [], onDayClick }) => {
       </div>
 
       <div className={styles.weekdays}>
-        <span className={styles.weekday}>Pzt</span>
-        <span className={styles.weekday}>Sal</span>
-        <span className={styles.weekday}>Çar</span>
-        <span className={styles.weekday}>Per</span>
-        <span className={styles.weekday}>Cum</span>
-        <span className={styles.weekday}>Cmt</span>
-        <span className={styles.weekday}>Paz</span>
+        <span className={styles.weekday}>{t('cal_day_mon', { context: tone })}</span>
+        <span className={styles.weekday}>{t('cal_day_tue', { context: tone })}</span>
+        <span className={styles.weekday}>{t('cal_day_wed', { context: tone })}</span>
+        <span className={styles.weekday}>{t('cal_day_thu', { context: tone })}</span>
+        <span className={styles.weekday}>{t('cal_day_fri', { context: tone })}</span>
+        <span className={styles.weekday}>{t('cal_day_sat', { context: tone })}</span>
+        <span className={styles.weekday}>{t('cal_day_sun', { context: tone })}</span>
       </div>
 
       <div className={styles.daysGrid}>
@@ -109,18 +116,19 @@ const CalendarView = ({ tasks = [], onDayClick }) => {
       </div>
 
       <div className={styles.legend}>
-        <div className={styles.legendItem}>
-          <div className={`${styles.legendColor} ${styles.badgeOrange}`} />
-          Öğretmen
-        </div>
-        <div className={styles.legendItem}>
-          <div className={`${styles.legendColor} ${styles.badgeBlue}`} />
-          Öğrenci
-        </div>
-        <div className={styles.legendItem}>
-          <div className={`${styles.legendColor} ${styles.badgePurple}`} />
-          Kişisel / Diğer
-        </div>
+        {roles.length === 0 ? (
+          <div className={styles.legendItem}>
+            <div className={styles.legendColor} style={{ backgroundColor: getTagColors('Diğer / Kişisel').background }} />
+            {t('cal_legend_other', { context: tone })}
+          </div>
+        ) : (
+          roles.map(r => (
+            <div key={r.id} className={styles.legendItem}>
+              <div className={styles.legendColor} style={{ backgroundColor: getTagColors(r.roleName).background }} />
+              {r.roleName}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

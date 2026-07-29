@@ -6,29 +6,28 @@
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  z-index: 200;
+  z-index: 9998;
 }
 
 .sheetContainer {
   position: fixed;
   inset: 0;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
-  z-index: 201;
+  z-index: 9999;
   pointer-events: none;
+  padding: 20px;
 }
 
 .sheet {
   width: 100%;
   max-width: 500px;
   background: var(--bg-secondary);
-  border-top-left-radius: 24px;
-  border-top-right-radius: 24px;
+  border-radius: 24px;
   border: 1px solid var(--border-color);
-  border-bottom: none;
-  padding: 20px 24px calc(24px + env(safe-area-inset-bottom, 0px));
-  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+  padding: 24px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
   pointer-events: all;
   display: flex;
   flex-direction: column;
@@ -38,12 +37,7 @@
 }
 
 .dragHandle {
-  width: 36px;
-  height: 4px;
-  background: var(--border-color);
-  border-radius: 2px;
-  align-self: center;
-  margin-bottom: 4px;
+  display: none;
 }
 
 .header {

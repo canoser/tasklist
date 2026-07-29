@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createPortal } from 'react-dom';
 import { CloseIcon } from '../Common/Icons';
 import styles from './PerformanceEntryModal.module.css';
 
@@ -39,7 +40,7 @@ export default function PerformanceEntryModal({ task, isOpen, onClose, onSavePer
     onClose();
   };
 
-  return (
+  const modalContent = (
     <AnimatePresence>
       {isOpen && (
         <>
@@ -122,4 +123,6 @@ export default function PerformanceEntryModal({ task, isOpen, onClose, onSavePer
       )}
     </AnimatePresence>
   );
+
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
 }

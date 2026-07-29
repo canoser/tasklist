@@ -3,11 +3,13 @@ import CalendarView from './CalendarView';
 import DayDetailModal from './DayDetailModal';
 import TaskActionModal from '../Task/TaskActionModal';
 import { taskService } from '../../services/taskService';
+import roleService from '../../services/roleService';
 import { useUndo } from '../Common/UndoContext';
 import styles from '../Dashboard/Dashboard.module.css';
 
-const CalendarScreen = ({ user, navigation }) => {
+const CalendarScreen = ({ user, navigation, tone }) => {
   const [tasks, setTasks] = useState([]);
+  const [userRoles, setUserRoles] = useState([]);
   const [selectedDay, setSelectedDay] = useState(null);
   
   const [actionTask, setActionTask] = useState(null);
@@ -25,10 +27,16 @@ const CalendarScreen = ({ user, navigation }) => {
       end.setMonth(end.getMonth() + 1); // Bir sonraki ay
       
       try {
-        const data = await taskService.getTimeline(user?.uid || 'mock', start, end);
-        if (isMounted && data) setTasks(data);
+        const [taskData, roleData] = await Promise.all([
+          taskService.getTimeline(user?.uid || 'mock', start, end),
+          roleService.getActive(user?.uid || 'mock-user-demo')
+        ]);
+        if (isMounted) {
+          setTasks(taskData || []);
+          setUserRoles(roleData || []);
+        }
       } catch (err) {
-        console.error('Takvim görevleri çekilemedi:', err);
+        console.error('Takvim verileri çekilemedi:', err);
       }
     };
     fetchTasks();
@@ -121,13 +129,15 @@ const CalendarScreen = ({ user, navigation }) => {
 
   return (
     <div className={styles.dashboard}>
-      <CalendarView tasks={tasks} onDayClick={handleDayClick} />
+      <CalendarView tasks={tasks} roles={userRoles} onDayClick={handleDayClick} tone={tone} />
       
       <DayDetailModal 
         isOpen={navigation.isModalOpen('dayDetail')} 
         onClose={() => navigation.closeModal('dayDetail')} 
         date={selectedDay} 
         tasks={tasks}
+        roles={userRoles}
+        tone={tone}
         onTaskClick={handleTaskClick}
       />
 
