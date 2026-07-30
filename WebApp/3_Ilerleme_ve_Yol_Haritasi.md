@@ -159,11 +159,24 @@ Bu dosya, projenin başından itibaren tamamlanan adımları ve gelecekte yapıl
 - [ ] **Adım 3: Canlı Veri İzolasyonu Testi:**
   - Eklenen yeni kullanıcılarla birlikte sistemde kısa bir canlı test yapılıp, her kullanıcının sadece kendi verisini gördüğü doğrulanacak (Multi-tenant izolasyonu).
 
-### Faz 4: Sarmalayıcılar ve Paketleme (Cross-Platform Deployment)
+### Faz 4: İş Mantığı, Görev Detayları ve Rol Tabanlı Özellikler (Domain Logic)
+- [ ] **Görev (Task) Yönetimi ve Detaylandırma:** 
+  - Görev ekleme/çıkarma detaylarının geliştirilmesi.
+  - Görev erteleme, öteleme, süre uzatma gibi aksiyonların kodlanması.
+  - "Ödev" tipi görevler için özel yapılar: Soru sayısı bazlı doğru, yanlış, boş durumlarının girilmesi ve takibi.
+- [ ] **Rol ve Ekip (Team) Altyapısı:** 
+  - Öğretmen - Öğrenci - Veli ekiplerinin (bağlantılarının) nasıl kurulacağının kodlanması.
+  - Rollerin tam yetki (Authorization) detaylarının belirlenmesi.
+- [ ] **Performans Hesaplama:**
+  - Öğrencilerin ana sayfada gösterilen başarı/performans istatistiklerinin (Örn: net hesaplama, bitirme oranı) arka plan algoritmalarının yazılması.
+- [ ] **Öğretmen Finans / Ödeme Paneli (Premium Özellik):**
+  - Öğretmenlerin aldıkları veya alacakları ödemeleri girebilecekleri, takip edebilecekleri finansal bir dashboard oluşturulması.
+
+### Faz 5: Sarmalayıcılar ve Paketleme (Cross-Platform Deployment)
 - [ ] **Masaüstü (PC) Uygulaması (WPF):** *(Değişiklik: Orijinal plandaki Tauri wrapper iptal edildi).* Sıfırdan .NET 9.0 ve C# ile MVVM mimarisine uygun native Windows uygulaması geliştirilecek.
 - [ ] **Mobil Paketleme & Senkronizasyon (Capacitor):** iOS ve Android projelerini senkronize etmek (`npm run cap:sync`) ve cihaz testlerini gerçekleştirmek.
 
-### Faz 5: İleri Düzey SaaS Özellikleri
+### Faz 6: İleri Düzey SaaS Özellikleri
 - [ ] **İleri Düzey Analitik & Gelişim Grafikleri:** Öğrencilerin haftalık net değişimlerini, konu bazlı başarı oranlarını ve hedef sapmalarını gösteren grafiksel analizler.
 - [ ] **Ödeme Altyapısı Entegrasyonu (Iyzico / Stripe):** Abonelik modeli ve ödeme altyapısı entegrasyonu hazırlıkları.
 
