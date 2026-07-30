@@ -3,6 +3,9 @@ import { useState, useEffect, useCallback } from 'react';
 /**
  * Merkezi Navigasyon ve Modal Yöneticisi (DRY Prensibi)
  * Tarayıcı Geri Tuşu (Back Button) ile uyumlu çalışır.
+ * // [MOBILE_PORT_TODO]: window.location.hash ve window.history.pushState gibi Web History API 
+ * // çağrıları Capacitor (özellikle Android) donanımsal geri tuşu ile çakışabilir.
+ * // Mobil uygulamaya geçerken React Router (MemoryRouter) veya @capacitor/router kullanılmalı.
  */
 export function useAppNavigation(defaultTab = 'home') {
   const [activeTab, setActiveTabState] = useState(defaultTab);

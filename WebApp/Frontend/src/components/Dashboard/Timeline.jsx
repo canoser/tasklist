@@ -6,6 +6,7 @@ import PerformanceEntryModal from '../Task/PerformanceEntryModal';
 import { taskService } from '../../services/taskService';
 import { getTaskColor } from '../../utils/taskUtils';
 import { useTranslation } from 'react-i18next';
+import { useTaskContext } from '../../context/TaskContext';
 
 const INITIAL_TASKS = [];
 
@@ -101,6 +102,7 @@ const TaskCard = ({ task, onClick, currentLang }) => {
 
 // ── Ana Timeline Bileşeni ─────────────────────────────────────────────────────
 const Timeline = ({ user, tasks: initialPropsTasks, onStatsChange }) => {
+  const { lastAddedTask } = useTaskContext();
   const [taskList, setTaskList] = useState(initialPropsTasks || INITIAL_TASKS);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -166,12 +168,14 @@ const Timeline = ({ user, tasks: initialPropsTasks, onStatsChange }) => {
 
   // Yeni görev eklenirse Timeline'a da dahil et
   useEffect(() => {
-    const handleTaskAdded = (e) => {
-      setTaskList(prev => [...prev, e.detail]);
-    };
-    window.addEventListener('taskAdded', handleTaskAdded);
-    return () => window.removeEventListener('taskAdded', handleTaskAdded);
-  }, []);
+    if (lastAddedTask) {
+      // Çift eklemeyi önlemek için ID kontrolü yap
+      setTaskList(prev => {
+        if (prev.some(t => t.id === lastAddedTask.id)) return prev;
+        return [...prev, lastAddedTask];
+      });
+    }
+  }, [lastAddedTask]);
 
   const handleCardClick = (task) => {
     setSelectedTask(task);

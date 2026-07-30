@@ -23,6 +23,9 @@ export const checkAuthStatus = async () => {
 
 export const loginWithGoogle = async () => {
   try {
+    // [MOBILE_PORT_TODO]: Mobil uygulamalarda (Capacitor/React Native) `signInWithPopup` web görünümü yüzünden çalışmayabilir.
+    // Native Google Sign-In eklentisi (örn. @capacitor-firebase/authentication veya @react-native-google-signin/google-signin)
+    // kullanarak cihazın kendi güvenli OAuth akışını çağırmanız gerekir.
     const result = await signInWithPopup(auth, googleProvider);
     const token = await result.user.getIdToken();
     

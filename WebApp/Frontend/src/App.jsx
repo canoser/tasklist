@@ -11,6 +11,7 @@ import Profile from './components/Profile/Profile';
 import WorkspaceScreen from './components/Workspace/WorkspaceScreen';
 import { BrowserRouter } from 'react-router-dom';
 import { UndoProvider } from './components/Common/UndoContext';
+import { TaskProvider } from './context/TaskContext';
 import CalendarScreen from './components/Calendar/CalendarScreen';
 import AdminPanel from './components/Admin/AdminPanel';
 
@@ -63,6 +64,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <UndoProvider>
+        <TaskProvider>
         <MobileLayout>
           <div className={styles.container}>
           {/* ── Üst Bar ─────────────────────────────────────────────────────── */}
@@ -139,6 +141,7 @@ export default function App() {
         user={user} 
         openAuth={() => openModal('auth')} 
       />
+        </TaskProvider>
       </UndoProvider>
     </BrowserRouter>
   );

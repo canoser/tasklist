@@ -6,6 +6,8 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
+  // [MOBILE_PORT_TODO]: Mobil uygulamada (Capacitor/React Native) Cookie tabanlı auth çalışmayacaktır.
+  // withCredentials: true satırını kaldırıp, bunun yerine Authorization: Bearer <token> header'ı eklemeniz gerekecek.
   withCredentials: true, // ZORUNLU KURAL: HttpOnly çerezlerin backend'e gönderilmesi için
   headers: {
     'Content-Type': 'application/json',
@@ -16,6 +18,8 @@ const apiClient = axios.create({
  * Request Interceptor:
  * 1. Kritik POST ve PUT isteklerinde benzersiz bir UUID (Idempotency-Key) üretip Header'a koyar.
  * Not: JWT artık Cookie üzerinden taşındığı için Bearer token eklenmez (Sıfır Güven & XSS koruması).
+ * // [MOBILE_PORT_TODO]: Mobil uygulamada buraya cihazdaki güvenli depolamadan (Secure Storage) 
+ * // okunan JWT token'ını Authorization header olarak ekleyen kod parçasını dahil etmeniz gerekir.
  */
 apiClient.interceptors.request.use(
   async (config) => {

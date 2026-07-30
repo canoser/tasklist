@@ -5,6 +5,7 @@ import TaskActionModal from '../Task/TaskActionModal';
 import { taskService } from '../../services/taskService';
 import roleService from '../../services/roleService';
 import { useUndo } from '../Common/UndoContext';
+import { useTaskContext } from '../../context/TaskContext';
 import styles from '../Dashboard/Dashboard.module.css';
 
 const CalendarScreen = ({ user, navigation, tone }) => {
@@ -16,6 +17,7 @@ const CalendarScreen = ({ user, navigation, tone }) => {
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   
   const { triggerUndoableAction } = useUndo();
+  const { lastAddedTask } = useTaskContext();
 
   useEffect(() => {
     let isMounted = true;
@@ -45,12 +47,13 @@ const CalendarScreen = ({ user, navigation, tone }) => {
 
   // Yeni görev eklenirse takvime dahil et
   useEffect(() => {
-    const handleTaskAdded = (e) => {
-      setTasks(prev => [...prev, e.detail]);
-    };
-    window.addEventListener('taskAdded', handleTaskAdded);
-    return () => window.removeEventListener('taskAdded', handleTaskAdded);
-  }, []);
+    if (lastAddedTask) {
+      setTasks(prev => {
+        if (prev.some(t => t.id === lastAddedTask.id)) return prev;
+        return [...prev, lastAddedTask];
+      });
+    }
+  }, [lastAddedTask]);
 
   const handleDayClick = (date) => {
     setSelectedDay(date);

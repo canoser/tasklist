@@ -27,6 +27,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(secretKey))
         };
         
+        // [MOBILE_PORT_TODO]: Native mobil uygulamalarda Cookie mekanizması stabil çalışmaz.
+        // Mobil istemciler için token'ı Authorization: Bearer header'ı üzerinden okumayı etkinleştirmeniz gerekebilir.
         // Token'ı Authorization header yerine Cookie'den okuma
         options.Events = new JwtBearerEvents
         {
@@ -46,9 +48,15 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowStrict", policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://127.0.0.1:5173") // Frontend domainleri
+        policy.SetIsOriginAllowed(origin => 
+                {
+                    var host = new Uri(origin).Host;
+                    return host == "localhost" || host == "127.0.0.1" || host.StartsWith("192.168.");
+                })
               .AllowAnyMethod()
               .AllowAnyHeader()
+              // [MOBILE_PORT_TODO]: Capacitor/Mobil için origin'in file:// veya capacitor:// localhost 
+              // olmasına izin vermeniz (ya da wildcard) ve CORS'u buna göre esnetmeniz gerekebilir.
               .AllowCredentials(); // ZORUNLU KURAL: Çerez (Cookie) gönderimi için şarttır.
     });
 });

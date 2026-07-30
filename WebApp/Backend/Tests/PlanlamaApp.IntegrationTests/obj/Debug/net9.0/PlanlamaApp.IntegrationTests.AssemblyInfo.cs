@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PlanlamaApp.IntegrationTests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d9b666335ae631d68c217af593193546e1124a61")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+17d1b65dcea16f9b790474dcbcf538c891abdd03")]
 [assembly: System.Reflection.AssemblyProductAttribute("PlanlamaApp.IntegrationTests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PlanlamaApp.IntegrationTests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

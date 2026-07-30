@@ -34,6 +34,8 @@ const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTh
 
   const handleEditName = () => {
     const promptMsg = t('edit_name_prompt', { context: tone, defaultValue: 'Lütfen yeni isminizi girin:' });
+    // [MOBILE_PORT_TODO]: Native mobil uygulamalarda window.prompt arayüzü dondurur ve ekranda görünmez.
+    // Bunun yerine uygulama içinde özel bir Modal veya Dialog (örn. <EditNameModal>) bileşeni kullanılmalıdır.
     const newName = window.prompt(promptMsg, displayName);
     if (newName && newName.trim()) {
       const trimmed = newName.trim();

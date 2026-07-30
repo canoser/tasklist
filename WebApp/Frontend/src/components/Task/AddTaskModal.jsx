@@ -4,9 +4,11 @@ import { CloseIcon } from '../Common/Icons';
 import styles from './AddTaskModal.module.css';
 import { taskService } from '../../services/taskService';
 import { useTranslation } from 'react-i18next';
+import { useTaskContext } from '../../context/TaskContext';
 
 const AddTaskModal = ({ isOpen, onClose, tone }) => {
   const { t } = useTranslation('tasks');
+  const { notifyTaskAdded } = useTaskContext();
   const [title, setTitle] = useState('');
   const [subject, setSubject] = useState(t('cat_math'));
   const [targetCount, setTargetCount] = useState('');
@@ -38,8 +40,8 @@ const AddTaskModal = ({ isOpen, onClose, tone }) => {
       console.warn('API isteği başarısız oldu, offline (sanal) görev olarak ekleniyor:', err);
     } finally {
       setLoading(false);
-      // Takvim ve Timeline güncellensin diye Custom Event fırlatıyoruz
-      window.dispatchEvent(new CustomEvent('taskAdded', { detail: newTask }));
+      // Takvim ve Timeline güncellensin diye Context üzerinden bildiriyoruz
+      notifyTaskAdded(newTask);
       
       // Formu temizle ve kapat
       setTitle('');
