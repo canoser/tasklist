@@ -10,6 +10,8 @@ namespace PlanlamaApp.Api.Filters
         private readonly IIdempotencyRepository _repository;
         private readonly ITenantProvider _tenantProvider;
 
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, System.Threading.SemaphoreSlim> _locks = new();
+
         public IdempotencyFilter(IIdempotencyRepository repository, ITenantProvider tenantProvider)
         {
             _repository = repository;
@@ -33,29 +35,40 @@ namespace PlanlamaApp.Api.Filters
             }
 
             var idempotencyKey = extractedKey.ToString();
+            var semaphore = _locks.GetOrAdd(idempotencyKey, _ => new System.Threading.SemaphoreSlim(1, 1));
 
-            // Mükerrer istek kontrolü
-            if (await _repository.ExistsAsync(idempotencyKey))
+            await semaphore.WaitAsync();
+            try
             {
-                context.Result = new ConflictObjectResult("Bu istek daha önce başarıyla işlenmiş. Çift işlem engellendi.");
-                return;
-            }
-
-            // İşlemi gerçekleştir
-            var executedContext = await next();
-
-            // İşlem başarılıysa anahtarı kaydet (Hata aldıysa tekrar denenebilmesi için kaydetmiyoruz)
-            if (executedContext.Exception == null)
-            {
-                var newKey = new IdempotencyKey
+                // Mükerrer istek kontrolü
+                if (await _repository.ExistsAsync(idempotencyKey))
                 {
-                    Key = idempotencyKey,
-                    TenantId = _tenantProvider.GetTenantId(),
-                    RequestPath = context.HttpContext.Request.Path,
-                    CreatedAt = DateTime.UtcNow
-                };
+                    context.Result = new ConflictObjectResult("Bu istek daha önce başarıyla işlenmiş. Çift işlem engellendi.");
+                    return;
+                }
 
-                await _repository.SaveAsync(newKey);
+                // İşlemi gerçekleştir
+                var executedContext = await next();
+
+                // İşlem başarılıysa anahtarı kaydet (Hata aldıysa tekrar denenebilmesi için kaydetmiyoruz)
+                if (executedContext.Exception == null && executedContext.Result is not BadRequestObjectResult)
+                {
+                    var newKey = new IdempotencyKey
+                    {
+                        Key = idempotencyKey,
+                        TenantId = _tenantProvider.GetTenantId(),
+                        RequestPath = context.HttpContext.Request.Path,
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    await _repository.SaveAsync(newKey);
+                }
+            }
+            finally
+            {
+                semaphore.Release();
+                // Optionally, we could remove the semaphore from the dictionary to free memory, 
+                // but removing from a ConcurrentDictionary safely is tricky and memory footprint is small.
             }
         }
     }
