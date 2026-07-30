@@ -163,14 +163,19 @@ Bu dosya, projenin başından itibaren tamamlanan adımları ve gelecekte yapıl
 - [ ] **Görev (Task) Yönetimi ve Detaylandırma:** 
   - Görev ekleme/çıkarma detaylarının geliştirilmesi.
   - Görev erteleme, öteleme, süre uzatma gibi aksiyonların kodlanması.
+    - *(Mimari Fikir: Görevlere sadece `DueDate` değil, `OriginalDueDate` alanı da koyularak ertelemeler takip edilebilir. Sürekli erteleme yapan öğrenci için öğretmene giden bir "Disiplin Puanı" alarmı üretilebilir.)*
   - "Ödev" tipi görevler için özel yapılar: Soru sayısı bazlı doğru, yanlış, boş durumlarının girilmesi ve takibi.
+    - *(Mimari Fikir: Görev tablosuna bir `TaskType` kolonu ekleyip, "Ödev" seçildiğinde doğru/yanlış sayılarını ayrı bir JSON sütununda (`TaskDetails`) veya `HomeworkDetails` tablosunda tutarak ana tabloyu temiz bırakabiliriz.)*
 - [ ] **Rol ve Ekip (Team) Altyapısı:** 
   - Öğretmen - Öğrenci - Veli ekiplerinin (bağlantılarının) nasıl kurulacağının kodlanması.
   - Rollerin tam yetki (Authorization) detaylarının belirlenmesi.
+    - *(Mimari Fikir: Tenant = Sınıf/Kurum yapısı kurularak; Öğretmen (Admin), Öğrenci (User), Veli (Salt-Okunur Gözlemci) yapılabilir. Veliler bir davet koduyla `StudentTeacherRelation` tablosu üzerinden öğrenciye düğümlenebilir.)*
 - [ ] **Performans Hesaplama:**
   - Öğrencilerin ana sayfada gösterilen başarı/performans istatistiklerinin (Örn: net hesaplama, bitirme oranı) arka plan algoritmalarının yazılması.
+    - *(Mimari Fikir: Performans hesaplamaları sunucuyu yormamak için "Olay Güdümlü (Event-Driven)" kurgulanabilir. Öğrenci görev kaydettiğinde arka plan servisi tetiklenir, `StudentPerformance` (Karne) tablosu güncellenir. Ana sayfa sadece hazır hesaplanmış bu tabloyu okur.)*
 - [ ] **Öğretmen Finans / Ödeme Paneli (Premium Özellik):**
   - Öğretmenlerin aldıkları veya alacakları ödemeleri girebilecekleri, takip edebilecekleri finansal bir dashboard oluşturulması.
+    - *(Mimari Fikir: Bu özellik ticari SaaS dönüşümü için çok değerlidir. Ayrı bir `PlanlamaApp.Finance` modülü ile ödeme yaklaşınca veliye/öğrenciye otomatik "Ödemeniz yaklaşıyor" bildirimi atacak altyapı kurgulanırsa öğretmenlerin premium paket alma olasılığı ciddi şekilde artar.)*
 
 ### Faz 5: Sarmalayıcılar ve Paketleme (Cross-Platform Deployment)
 - [ ] **Masaüstü (PC) Uygulaması (WPF):** *(Değişiklik: Orijinal plandaki Tauri wrapper iptal edildi).* Sıfırdan .NET 9.0 ve C# ile MVVM mimarisine uygun native Windows uygulaması geliştirilecek.
