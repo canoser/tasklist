@@ -17,10 +17,12 @@ namespace PlanlamaApp.Api.Controllers
     public class TasksController : ControllerBase
     {
         private readonly ITaskRepository _taskRepository;
+        private readonly IQuotaManager _quotaManager;
 
-        public TasksController(ITaskRepository taskRepository)
+        public TasksController(ITaskRepository taskRepository, IQuotaManager quotaManager)
         {
             _taskRepository = taskRepository;
+            _quotaManager = quotaManager;
         }
 
         private string? GetCurrentUserId()
@@ -96,12 +98,14 @@ namespace PlanlamaApp.Api.Controllers
         public async Task<IActionResult> Create([FromBody] TaskItem task)
         {
             var currentUserId = GetCurrentUserId();
+            var subscriptionPlan = User.FindFirst("subscription_plan")?.Value ?? "free";
             if (currentUserId == null) return Unauthorized();
 
             task.UserId = currentUserId; // Her zaman JWT'den alır
             task.CreatedAt = DateTime.UtcNow;
             task.UpdatedAt = DateTime.UtcNow;
             var newId = await _taskRepository.CreateAsync(task);
+            
             return CreatedAtAction(nameof(GetById), new { id = newId }, new { Id = newId });
         }
 

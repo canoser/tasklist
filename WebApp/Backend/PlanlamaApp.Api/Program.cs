@@ -65,7 +65,19 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
-// 3. Dependency Injection (DI) - Katmanlar Arası Bağımlılıklar
+// 4. MemoryCache (Settings Cache için)
+builder.Services.AddMemoryCache();
+
+// 5. Authorization (Admin Policy)
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy =>
+        policy.RequireAssertion(context =>
+            context.User.HasClaim(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress" && c.Value == "canoser@gmail.com") ||
+            context.User.HasClaim(c => c.Type == "email" && c.Value == "canoser@gmail.com")));
+});
+
+// 6. Dependency Injection (DI) - Katmanlar Arası Bağımlılıklar
 // Geliştirme ortamı için geçici bir SQLite bağlantısı ve TenantProvider
 builder.Services.AddScoped<IDbConnection>(sp => new SqliteConnection("Data Source=planlama_app.db"));
 // Gerçek projede ITenantProvider HTTP Context üzerinden (örneğin Claims'ten) okuyan bir sınıfla doldurulacak.
@@ -84,17 +96,17 @@ builder.Services.AddScoped<IUserRoleRepository, UserRoleRepository>();
 builder.Services.AddScoped<ITaskAssignmentRepository, TaskAssignmentRepository>();
 builder.Services.AddScoped<IWorkspaceRepository, WorkspaceRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUsageTrackingRepository, UsageTrackingRepository>();
+builder.Services.AddScoped<ISystemSettingsRepository, SystemSettingsRepository>();
+builder.Services.AddScoped<ISettingsService, PlanlamaApp.Infrastructure.Services.SettingsService>();
+builder.Services.AddScoped<IQuotaManager, PlanlamaApp.Infrastructure.Services.QuotaManager>();
+builder.Services.AddScoped<IRewardValidator, PlanlamaApp.Infrastructure.Services.MockRewardValidator>();
 
 // IdempotencyFilter'ı DI container'a kaydet (Controller'larda [ServiceFilter] ile kullanım için zorunludur)
 builder.Services.AddScoped<IdempotencyFilter>();
 
 // 4. Controller ve IdempotencyFilter (Global veya Controller bazlı eklenebilir, şimdilik servislere ekledik)
-builder.Services.AddControllers(options =>
-{
-    // Idempotency filtreyi global olarak tüm endpointlere de uygulayabilirsiniz, 
-    // veya sadece [ServiceFilter(typeof(IdempotencyFilter))] etiketi ile spesifik Controller/Action'larda kullanabilirsiniz.
-    options.Filters.Add<IdempotencyFilter>();
-});
+builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -125,3 +137,5 @@ var dbConnectionString = builder.Configuration.GetConnectionString("Default") ??
 DatabaseMigration.Run(dbConnectionString);
 
 app.Run();
+
+public partial class Program { }

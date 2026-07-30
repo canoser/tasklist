@@ -19,7 +19,7 @@ const ChevronIcon = ({ isOpen }) => (
 
 const PRESET_AVATARS = ['🎓', '🦊', '🚀', '⚡', '🌟', '🎯', '🦁', '💡'];
 
-const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTheme, tone, onToneChange, openAuth }) => {
+const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTheme, tone, onToneChange, openAuth, navigateToAdmin }) => {
   const { t } = useTranslation('profile');
   const [openSections, setOpenSections] = useState({ theme: false, settings: false, roles: false });
   const [customAvatar, setCustomAvatar] = useState(storage.getString('user_avatar') || '');
@@ -96,6 +96,15 @@ const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTh
             <button className={styles.accountBtn} onClick={() => setIsAccountModalOpen(true)}>
               ⚙️ {t('account_title', { defaultValue: 'Hesabım' })}
             </button>
+            {user?.email === 'canoser@gmail.com' && (
+              <button 
+                className={styles.accountBtn} 
+                onClick={navigateToAdmin}
+                style={{ background: 'var(--accent-color, #ff3366)', color: 'white' }}
+              >
+                🔐 Yönetim Paneli
+              </button>
+            )}
             {user && (
               <button className={styles.logoutCardBtn} onClick={logoutUser}>
                 🚪 {t('logout', { ns: 'common', context: tone, defaultValue: 'Çıkış Yap' })}

@@ -7,7 +7,7 @@ Bu dosya, projenin başından itibaren tamamlanan adımları ve gelecekte yapıl
 ## 🟢 Tamamlanan Aşamalar
 
 ### 1. Planlama, Risk Analizi ve Mimari Kararlar
-- [x] WPF Masaüstü uygulamasının **Modern SaaS (Web + Masaüstü + Mobil)** yapısına dönüştürülmesi kararlaştırıldı (YOL A: React + ASP.NET Core API + Tauri + Capacitor).
+- [x] WPF Masaüstü uygulamasının **Modern SaaS (Web + Masaüstü + Mobil)** yapısına dönüştürülmesi kararlaştırıldı (YOL A: React + ASP.NET Core API + Tauri + Capacitor). *(Not: İlerleyen süreçte Tauri'den vazgeçilip sıfırdan yerel WPF .NET 9.0 uygulaması geliştirilmesine karar verilmiştir.)*
 - [x] `1_Fikir_Gelisimi_ve_Notlar.md` belgesi oluşturuldu (Vizyon, alternatif teknolojiler, risk analizleri, beyin fırtınaları).
 - [x] `2_Netlesmis_Isterler.md` belgesi oluşturuldu (Mimari kurallar, güvenlik standartları, Tech Stack).
 - [x] Otonom yapay zeka ajanlarının hata yapmasını sıfırlayan **"Pragmatik Sentez Kararları"** alındı:
@@ -113,6 +113,12 @@ Bu dosya, projenin başından itibaren tamamlanan adımları ve gelecekte yapıl
   - `TaskRepository`, `CategoryRepository`, `PerformanceRepository` → `AddScoped` ile `Program.cs`'e kaydedildi.
   - `IdempotencyFilter` → `AddScoped<IdempotencyFilter>()` ile DI container'a eklendi.
   - ✅ `dotnet build` → **0 Hata, 0 Uyarı** ile doğrulandı.
+- [x] **Adım 7: SaaS İş Modeli - Telemetry ve Geo-IP Kota Altyapısı**
+  - `UsageTracking.cs` Entity ve veritabanı tablosu `EarnedLimit` ve `EarnedLimitExpiration` alanları ile güçlendirildi.
+  - Olası eşzamanlı limit aşımı (Race Condition) saldırılarına karşı atomik SQLite UPSERT sorgusu ile `IUsageTrackingRepository.cs` metodları kurgulandı.
+  - Global Action Filter yerine "Hizmet İçi (In-Service)" çalışan `IQuotaManager` arayüzü kuruldu. Başarısız isteklerde "Refund" (Kotayı iade etme) telafi sistemi kodlandı.
+  - `QuotaController.cs` yazılarak Geo-IP (TR vs US/EU) bazlı reklam gösterimi (`AdsEnabled`) ve "Rewarded Video" üzerinden `+5` kredi kazandıran uç (Endpoint) oluşturuldu.
+  - ✅ `dotnet build` → **0 Hata, 0 Uyarı** ile doğrulandı.
 
 ### Faz 2: Frontend İleri Entegrasyon
 - [x] **Adım 6: Görev ve Kategori Yönetimi Arayüzleri (Mobile-First Dashboard)**
@@ -126,15 +132,21 @@ Bu dosya, projenin başından itibaren tamamlanan adımları ve gelecekte yapıl
   - `apiClient.js` → Interceptor `PATCH` isteklerine otomatik `Idempotency-Key` üretecek şekilde güncellendi.
   - `Timeline.jsx` → `useEffect` ile gerçek API verilerini çekme, yüklenme/hata durum takibi, tamamlama sonrası Optimistic UI güncellemesi sağlandı.
   - ✅ `npm run build` → **0 Hata, 0 Uyarı**, 665ms derleme hızı.
+- [x] **Adım 9: Çevrimdışı (Offline-First) IndexedDB Entegrasyonu**
+  - Kısıtlı `localStorage` mimarisi tamamen asenkron `localforage` (IndexedDB) yapısına geçirildi.
+  - `src/utils/indexedDB.js` oluşturularak `cache_data` (okuma yedeği) ve `offline_queue` (çevrimdışı işlem kuyruğu) depoları kuruldu.
+  - `taskService.js` yeniden yazılarak "Network-First (Fallback to Cache)" okuma stratejisi ve "Queue & Optimistic UI" yazma stratejisi entegre edildi.
+  - `syncService.js` ile internet geldiğinde (online event) kuyruğun arka planda otomatik senkronize edilmesi (Background Sync) sağlandı.
+  - Eski Firebase `auth.currentUser` bağımlılığı sökülerek, yeni kurulan Local JWT ve State (subscribeToAuthChanges) yapısına geçildi.
 
 ---
 
 ## 🟡 Sıradaki Aşamalar (Yol Haritası)
 
 ### Faz 3: Sarmalayıcılar ve Paketleme (Cross-Platform Deployment)
-- [ ] **Masaüstü Paketleme (Tauri):** Windows `.exe` çıktısı alıp yerel performansı test etmek (`npm run tauri build`).
+- [ ] **Masaüstü (PC) Uygulaması (WPF):** *(Değişiklik: Orijinal plandaki Tauri wrapper iptal edildi).* Sıfırdan .NET 9.0 ve C# ile MVVM mimarisine uygun native Windows uygulaması geliştirilecek.
 - [ ] **Mobil Paketleme & Senkronizasyon (Capacitor):** iOS ve Android projelerini senkronize etmek (`npm run cap:sync`) ve cihaz testlerini gerçekleştirmek.
-- [ ] **PWA Canlı Testleri:** Service Worker önbellekleme ve çevrimdışı (offline) kullanım yeteneklerini canlı ortamda sınamak.
+- [ ] **PWA Canlı Testleri:** Uygulamanın offline-first yeteneklerini, IndexedDB kuyruk sistemini ve Service Worker performansını canlı ortamlarda test etmek.
 
 ### Faz 4: Premium ve Yönetim Özellikleri (SaaS Genişleme Vizyonu)
 - [ ] **Eğitmen & Kurum Yönetim Paneli:** Öğretmenlerin öğrencilere toplu görev atayabileceği, finans ve tahsilat durumlarını takip edebileceği yönetim ekranları.
@@ -142,4 +154,4 @@ Bu dosya, projenin başından itibaren tamamlanan adımları ve gelecekte yapıl
 - [ ] **Ödeme Altyapısı Entegrasyonu (Iyzico / Stripe):** Abonelik modeli ve ödeme altyapısı entegrasyonu hazırlıkları.
 
 ---
-*Son Güncelleme Tarihi: 26 Temmuz 2026*
+*Son Güncelleme Tarihi: 29 Temmuz 2026*

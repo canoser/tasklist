@@ -12,6 +12,7 @@ import WorkspaceScreen from './components/Workspace/WorkspaceScreen';
 import { BrowserRouter } from 'react-router-dom';
 import { UndoProvider } from './components/Common/UndoContext';
 import CalendarScreen from './components/Calendar/CalendarScreen';
+import AdminPanel from './components/Admin/AdminPanel';
 
 import { useAppNavigation } from './hooks/useAppNavigation';
 import { useTranslation } from 'react-i18next';
@@ -116,7 +117,12 @@ export default function App() {
                 tone={tone}
                 onToneChange={handleToneChange}
                 openAuth={() => openModal('auth')}
+                navigateToAdmin={() => setTab('admin')}
               />
+            )}
+
+            {activeTab === 'admin' && user?.email === 'canoser@gmail.com' && (
+              <AdminPanel />
             )}
           </main>
 

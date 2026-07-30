@@ -45,6 +45,11 @@ Web uygulaması Capacitor ile iOS ve Android için derleneceği zaman, mağaza k
 *   **CORS ve Origin İzinleri:** C# Backend CORS politikası, mobil uygulamaların sorunsuz iletişim kurabilmesi için Capacitor'un yerel origin'lerine (`capacitor://localhost` ve `http://localhost`) kesinlikle izin verecektir.
 *   **Kullanıcı Arayüzü (UI) Native Hissiyatı:** Mobil arayüzde ekran çentikleri ve dinamik adalar (Dynamic Island) için CSS `env(safe-area-inset-top)` ve `safe-area-inset-bottom` kuralları eksiksiz uygulanacaktır. Tarayıcı esnemesi (bounce), metin seçimi ve dokunma vurgusu (tap-highlight) sistem genelinde kilitli (disabled) kalmaya devam edecektir.
 
+### 7. SaaS İş Modeli ve Telemetri (Geo-IP Tabanlı Dinamik Kota)
+- **Kural:** Müşterilerin (özellikle öğretmenlerin) bulunduğu coğrafyaya göre "Zaman vs. Para" değerleri değiştiği için sistem Geo-IP bazlı asenkron bir kota yönetimi (Quota Management) kullanacaktır.
+- **Geo-IP Reklam Stratejisi:** Türkiye (TR) gibi gelişmekte olan pazarlarda, kotası dolan kullanıcılara "Ödüllü Reklam" (Rewarded Video) seçeneği sunularak ekstra kazanılmış kredi (Earned Limit) sağlanacaktır. ABD ve Avrupa gibi zamanın değerli olduğu pazarlarda ise reklam tamamen devre dışı bırakılıp doğrudan "Premium Aboneliğe Geç" teklifi (Upsell) yapılacaktır. (Bölge tespiti Cloudflare veya IP başlıkları üzerinden yapılacaktır.)
+- **Hizmet İçi (In-Service) Kota Kontrolü:** Olası "Race Condition" (Eşzamanlı 50 istek atarak kotayı eksiye düşürme) saldırılarını engellemek ve gereksiz kota düşüşünü önlemek adına; kota işlemleri Global Action Filter üzerinden DEĞİL, ilgili servisin (Örn: AI Servisi) hemen öncesinde `IQuotaManager` arayüzü ile atomik olarak yapılacaktır. Hata durumunda kotanın iade edilmesi (Refund) zorunludur.
+
 ---
 *Projenin mimari ve vizyon kararları tamamlanmıştır. Uygulama aşamasının (Implementation) planına geçilebilir.*
 
