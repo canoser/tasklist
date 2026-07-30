@@ -139,19 +139,33 @@ Bu dosya, projenin başından itibaren tamamlanan adımları ve gelecekte yapıl
   - `syncService.js` ile internet geldiğinde (online event) kuyruğun arka planda otomatik senkronize edilmesi (Background Sync) sağlandı.
   - Eski Firebase `auth.currentUser` bağımlılığı sökülerek, yeni kurulan Local JWT ve State (subscribeToAuthChanges) yapısına geçildi.
 
+- [x] **Adım 10: Güvenlik Sıkılaştırma, Wi-Fi Host ve Portability İyileştirmeleri (30 Temmuz)**
+  - `start-wifi-host.ps1` native PowerShell scripti stabilize edildi, IP algılama ve `.env` oto-güncelleme sorunsuz hale getirildi.
+  - `IdempotencyFilter.cs` üzerinde **Race Condition (Milisaniyelik Çift Tıklama)** testi (Mutation Testing) yapıldı. Ciddi bir güvenlik/veri çakışması açığı (500 Error) tespit edildi.
+  - Filtre içerisine `SemaphoreSlim` ile "In-Memory Lock (Bellek İçi Kilitleme)" kurgulandı. Aynı saniyede gelen mükerrer istekler %100 başarıyla `409 Conflict` dönerek durduruldu.
+  - `AGENTS.md` içerisine "Proactive Portability Check" kuralı eklendi. Geliştirilen her yeni özelliğin Native (Capacitor/iOS/Android) uyumlu olması güvenceye alındı, değilse koda `// [MOBILE_PORT_TODO]` yazılması zorunlu kılındı.
+
 ---
 
 ## 🟡 Sıradaki Aşamalar (Yol Haritası)
 
-### Faz 3: Sarmalayıcılar ve Paketleme (Cross-Platform Deployment)
+### Faz 3: Çoklu Kullanıcı (Multi-Tenant) ve Yönetim Paneli
+- [ ] **Adım 1: Firebase Authentication Entegrasyonu:**
+  - Firebase projeye dahil edilecek, kullanıcı kayıt ve giriş mekanizması kurulacak.
+- [ ] **Adım 2: Admin Paneli ve Rol Yönetimi:**
+  - Ana kullanıcı (Siz) sisteme "Admin" rolüyle ekleneceksiniz.
+  - Diğer normal kullanıcıların (öğrenciler/veliler) sisteme eklenebileceği form ve altyapı hazırlanacak.
+  - Admin için, tüm kullanıcıların özet verilerini / kayıtlarını yönetebileceği temel bir Yönetici (Dashboard) paneli tasarlanacak.
+- [ ] **Adım 3: Canlı Veri İzolasyonu Testi:**
+  - Eklenen yeni kullanıcılarla birlikte sistemde kısa bir canlı test yapılıp, her kullanıcının sadece kendi verisini gördüğü doğrulanacak (Multi-tenant izolasyonu).
+
+### Faz 4: Sarmalayıcılar ve Paketleme (Cross-Platform Deployment)
 - [ ] **Masaüstü (PC) Uygulaması (WPF):** *(Değişiklik: Orijinal plandaki Tauri wrapper iptal edildi).* Sıfırdan .NET 9.0 ve C# ile MVVM mimarisine uygun native Windows uygulaması geliştirilecek.
 - [ ] **Mobil Paketleme & Senkronizasyon (Capacitor):** iOS ve Android projelerini senkronize etmek (`npm run cap:sync`) ve cihaz testlerini gerçekleştirmek.
-- [ ] **PWA Canlı Testleri:** Uygulamanın offline-first yeteneklerini, IndexedDB kuyruk sistemini ve Service Worker performansını canlı ortamlarda test etmek.
 
-### Faz 4: Premium ve Yönetim Özellikleri (SaaS Genişleme Vizyonu)
-- [ ] **Eğitmen & Kurum Yönetim Paneli:** Öğretmenlerin öğrencilere toplu görev atayabileceği, finans ve tahsilat durumlarını takip edebileceği yönetim ekranları.
+### Faz 5: İleri Düzey SaaS Özellikleri
 - [ ] **İleri Düzey Analitik & Gelişim Grafikleri:** Öğrencilerin haftalık net değişimlerini, konu bazlı başarı oranlarını ve hedef sapmalarını gösteren grafiksel analizler.
 - [ ] **Ödeme Altyapısı Entegrasyonu (Iyzico / Stripe):** Abonelik modeli ve ödeme altyapısı entegrasyonu hazırlıkları.
 
 ---
-*Son Güncelleme Tarihi: 29 Temmuz 2026*
+*Son Güncelleme Tarihi: 30 Temmuz 2026*
