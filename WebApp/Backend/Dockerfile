@@ -2,14 +2,12 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
 # Sadece projeleri kopyalayıp bağımlılıkları yüklüyoruz (Cache için)
-COPY ["PlanlamaApp.sln", "./"]
 COPY ["PlanlamaApp.Api/PlanlamaApp.Api.csproj", "PlanlamaApp.Api/"]
 COPY ["PlanlamaApp.Application/PlanlamaApp.Application.csproj", "PlanlamaApp.Application/"]
 COPY ["PlanlamaApp.Domain/PlanlamaApp.Domain.csproj", "PlanlamaApp.Domain/"]
 COPY ["PlanlamaApp.Infrastructure/PlanlamaApp.Infrastructure.csproj", "PlanlamaApp.Infrastructure/"]
-COPY ["Tests/PlanlamaApp.IntegrationTests/PlanlamaApp.IntegrationTests.csproj", "Tests/PlanlamaApp.IntegrationTests/"]
 
-RUN dotnet restore "PlanlamaApp.sln"
+RUN dotnet restore "PlanlamaApp.Api/PlanlamaApp.Api.csproj"
 
 # Tüm kodları kopyala ve yayınla
 COPY . .
