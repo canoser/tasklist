@@ -89,6 +89,25 @@ builder.Services.AddAuthorization(options =>
 // 6. Dependency Injection (DI) - Katmanlar Arası Bağımlılıklar
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection bulunamadı! appsettings.json kontrol edin.");
+
+// Neon.tech ve Fly.io ortamlarında gelen "postgres://..." formatını Npgsql formatına çevir
+if (connectionString.StartsWith("postgres://") || connectionString.StartsWith("postgresql://"))
+{
+    var uri = new Uri(connectionString);
+    var userInfo = uri.UserInfo.Split(':');
+    var csBuilder = new Npgsql.NpgsqlConnectionStringBuilder
+    {
+        Host = uri.Host,
+        Port = uri.Port > 0 ? uri.Port : 5432,
+        Username = userInfo.Length > 0 ? userInfo[0] : "",
+        Password = userInfo.Length > 1 ? userInfo[1] : "",
+        Database = uri.LocalPath.TrimStart('/'),
+        SslMode = Npgsql.SslMode.Require,
+        Pooling = true
+    };
+    connectionString = csBuilder.ToString();
+}
+
 builder.Services.AddScoped<IDbConnection>(sp => new NpgsqlConnection(connectionString));
 // Gerçek projede ITenantProvider HTTP Context üzerinden (örneğin Claims'ten) okuyan bir sınıfla doldurulacak.
 // Şimdilik derlenmesi adına sahte bir servis kaydediyoruz:
