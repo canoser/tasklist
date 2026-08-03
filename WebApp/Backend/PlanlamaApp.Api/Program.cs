@@ -87,7 +87,6 @@ builder.Services.AddAuthorization(options =>
 });
 
 // 6. Dependency Injection (DI) - Katmanlar Arası Bağımlılıklar
-// Geliştirme ortamı için geçici bir SQLite bağlantısı ve TenantProvider
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection bulunamadı! appsettings.json kontrol edin.");
 builder.Services.AddScoped<IDbConnection>(sp => new NpgsqlConnection(connectionString));

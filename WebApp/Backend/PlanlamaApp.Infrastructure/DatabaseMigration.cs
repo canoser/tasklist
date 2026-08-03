@@ -1,6 +1,6 @@
+using System;
 using Dapper;
 using Npgsql;
-using System;
 
 namespace PlanlamaApp.Infrastructure
 {
@@ -48,7 +48,6 @@ namespace PlanlamaApp.Infrastructure
                 );
             ");
 
-            // EarnedLimit sütunları eklenmemişse ekle
             connection.Execute(@"ALTER TABLE UsageTracking ADD COLUMN IF NOT EXISTS EarnedLimit INTEGER NOT NULL DEFAULT 0;");
             connection.Execute(@"ALTER TABLE UsageTracking ADD COLUMN IF NOT EXISTS EarnedLimitExpiration TIMESTAMPTZ;");
 
@@ -91,8 +90,6 @@ namespace PlanlamaApp.Infrastructure
                     Name        TEXT    NOT NULL,
                     Description TEXT,
                     InviteCode  TEXT    NOT NULL UNIQUE,
-                    Type        TEXT    NOT NULL DEFAULT 'Group',
-                    Settings    TEXT,
                     IsActive    BOOLEAN NOT NULL DEFAULT TRUE,
                     CreatedAt   TIMESTAMPTZ NOT NULL,
                     UpdatedAt   TIMESTAMPTZ NOT NULL
@@ -107,8 +104,6 @@ namespace PlanlamaApp.Infrastructure
                     WorkspaceId INTEGER NOT NULL,
                     UserId      TEXT    NOT NULL,
                     DisplayName TEXT    NOT NULL,
-                    Role        TEXT    NOT NULL DEFAULT 'Member',
-                    ObserverLinkedUserId TEXT,
                     JoinedAt    TIMESTAMPTZ NOT NULL,
                     UNIQUE(WorkspaceId, UserId)
                 );
@@ -141,27 +136,12 @@ namespace PlanlamaApp.Infrastructure
                     CompletedAt       TIMESTAMPTZ,
                     TargetCount       INTEGER,
                     Metadata          TEXT,
-                    WorkspaceId       INTEGER,
-                    ChainId           TEXT,
-                    ChainOrder        INTEGER,
-                    OriginalDeadline  TIMESTAMPTZ,
-                    IsHomework        BOOLEAN NOT NULL DEFAULT FALSE,
-                    AssignedBy        TEXT,
                     CreatedAt         TIMESTAMPTZ NOT NULL,
                     UpdatedAt         TIMESTAMPTZ NOT NULL
                 );
             ");
 
-            // TaskItems tablosuna sonradan eklenen iptal edilmiş sütunları düşür (PostgreSQL uyumlu)
-            try
-            {
-                connection.Execute(@"ALTER TABLE TaskItems DROP COLUMN IF EXISTS IsDeleted;");
-                connection.Execute(@"ALTER TABLE TaskItems DROP COLUMN IF EXISTS DeletedAt;");
-            }
-            catch { /* SQLite veya eski DB sürümlerinde hata verirse yoksay */ }
-
             // ── Categories ─────────────────────────────────────────────────
-            // (DatabaseMigration'da mevcut değildi ama repository kullanıyor)
             connection.Execute(@"
                 CREATE TABLE IF NOT EXISTS Categories (
                     Id             SERIAL  PRIMARY KEY,
@@ -187,25 +167,10 @@ namespace PlanlamaApp.Infrastructure
                     WrongCount   INTEGER NOT NULL DEFAULT 0,
                     EmptyCount   INTEGER NOT NULL DEFAULT 0,
                     NetScore     REAL    NOT NULL DEFAULT 0,
-                    StudyDurationMinutes INTEGER,
-                    ExpectedDurationMinutes INTEGER,
-                    RecordedAt   TIMESTAMPTZ NOT NULL,
-                    Notes        TEXT,
-                    TeacherFeedback TEXT,
+                    RecordDate   TIMESTAMPTZ NOT NULL,
                     CreatedAt    TIMESTAMPTZ NOT NULL
                 );
             ");
-
-            // Performans tablosu sonradan güncellenmişse yeni sütunları ekle
-            connection.Execute(@"ALTER TABLE PerformanceRecords ADD COLUMN IF NOT EXISTS TeacherFeedback TEXT;");
-            
-            // Performans tablosuna sonradan eklenen iptal edilmiş sütunları düşür (PostgreSQL uyumlu)
-            try
-            {
-                connection.Execute(@"ALTER TABLE PerformanceRecords DROP COLUMN IF EXISTS IsDeleted;");
-                connection.Execute(@"ALTER TABLE PerformanceRecords DROP COLUMN IF EXISTS DeletedAt;");
-            }
-            catch { /* SQLite veya eski DB sürümlerinde hata verirse yoksay */ }
 
             // ── SystemSettings ─────────────────────────────────────────────
             connection.Execute(@"
