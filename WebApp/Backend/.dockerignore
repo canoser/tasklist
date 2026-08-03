@@ -1,0 +1,21 @@
+**/.vs/
+**/.idea/
+**/.git/
+
+# Build results
+**/bin/
+**/obj/
+
+# Test projects
+**/Tests/
+**/*Tests/
+**/*Test/
+**/*.Tests.csproj
+
+# Other
+**/.vscode/
+**/*.user
+**/*.suo
+*.md
+.gitignore
+.dockerignore
