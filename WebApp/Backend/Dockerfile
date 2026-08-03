@@ -21,7 +21,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 
-# Render genelde 80 veya 8080 portunu dinler
+# Fly.io varsayılan HTTP portu olarak 8080'i bekler
 EXPOSE 8080
 ENV ASPNETCORE_URLS=http://+:8080
 
