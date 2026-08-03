@@ -109,9 +109,8 @@ if (connectionString.StartsWith("postgres://") || connectionString.StartsWith("p
 }
 
 builder.Services.AddScoped<IDbConnection>(sp => new NpgsqlConnection(connectionString));
-// Gerçek projede ITenantProvider HTTP Context üzerinden (örneğin Claims'ten) okuyan bir sınıfla doldurulacak.
-// Şimdilik derlenmesi adına sahte bir servis kaydediyoruz:
-builder.Services.AddScoped<ITenantProvider>(sp => throw new NotImplementedException("Gerçek TenantProvider yazılmalıdır."));
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ITenantProvider, PlanlamaApp.Api.Providers.HttpContextTenantProvider>();
 
 builder.Services.AddScoped<IIdempotencyRepository, IdempotencyRepository>();
 
