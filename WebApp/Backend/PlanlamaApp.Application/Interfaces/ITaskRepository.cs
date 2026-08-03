@@ -24,15 +24,18 @@ namespace PlanlamaApp.Application.Interfaces
         Task<TaskItem?> GetByIdAsync(int id);
 
         /// <summary>Yeni görev oluşturur. TenantId doldurulmuş olmalıdır.</summary>
-        Task<int> CreateAsync(TaskItem task);
+        Task<int> CreateAsync(TaskItem task, System.Data.IDbTransaction? transaction = null);
 
         /// <summary>Mevcut görevi günceller.</summary>
-        Task<bool> UpdateAsync(TaskItem task);
+        Task<bool> UpdateAsync(TaskItem task, System.Data.IDbTransaction? transaction = null);
 
         /// <summary>Görevi siler.</summary>
-        Task<bool> DeleteAsync(int id);
+        Task<bool> DeleteAsync(int id, System.Data.IDbTransaction? transaction = null);
 
         /// <summary>Görevi tamamlandı olarak işaretler ve CompletedAt alanını günceller.</summary>
-        Task<bool> MarkAsCompletedAsync(int id, DateTime completedAt);
+        Task<bool> MarkAsCompletedAsync(int id, DateTime completedAt, System.Data.IDbTransaction? transaction = null);
+
+        /// <summary>Bir zincirdeki görevleri (sırası >= minOrder) kaskad olarak öteler.</summary>
+        Task<bool> PostponeChainAsync(string chainId, string userId, int minOrder, int daysToShift, System.Data.IDbTransaction? transaction = null);
     }
 }

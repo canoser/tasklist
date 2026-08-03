@@ -58,6 +58,13 @@ namespace PlanlamaApp.Domain.Entities
         /// </summary>
         public string? Metadata { get; set; }
 
+        public int? WorkspaceId { get; set; }
+        public string? ChainId { get; set; }
+        public int? ChainOrder { get; set; }
+        public DateTime? OriginalDeadline { get; set; }
+        public bool IsHomework { get; set; } = false;
+        public string? AssignedBy { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     }

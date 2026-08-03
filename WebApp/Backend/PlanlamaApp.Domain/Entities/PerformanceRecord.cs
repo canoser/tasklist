@@ -31,7 +31,10 @@ namespace PlanlamaApp.Domain.Entities
         public int WrongCount { get; set; } = 0;
 
         /// <summary>Boş sayısı (yanıtlanmayan sorular).</summary>
-        public int BlankCount { get; set; } = 0;
+        public int EmptyCount { get; set; } = 0;
+
+        public int? StudyDurationMinutes { get; set; }
+        public int? ExpectedDurationMinutes { get; set; }
 
         /// <summary>
         /// Net skor. YKS'de standart hesaplama: Doğru - (Yanlış / 4).
@@ -41,6 +44,9 @@ namespace PlanlamaApp.Domain.Entities
 
         /// <summary>Öğrencinin serbest notları veya konu değerlendirmesi.</summary>
         public string? Notes { get; set; }
+
+        /// <summary>Öğretmen veya veli geri bildirimi.</summary>
+        public string? TeacherFeedback { get; set; }
 
         public DateTime RecordedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PlanlamaApp.Api.Filters;
+using PlanlamaApp.Application.DTOs;
 using PlanlamaApp.Application.Interfaces;
 using PlanlamaApp.Domain.Entities;
+using System.Data;
+using System.Security.Claims;
 
 namespace PlanlamaApp.Api.Controllers
 {
@@ -18,11 +21,22 @@ namespace PlanlamaApp.Api.Controllers
     {
         private readonly ITaskRepository _taskRepository;
         private readonly IQuotaManager _quotaManager;
+        private readonly ITaskAssignmentRepository _taskAssignmentRepository;
+        private readonly IWorkspaceRepository _workspaceRepository;
+        private readonly IDbConnection _dbConnection;
 
-        public TasksController(ITaskRepository taskRepository, IQuotaManager quotaManager)
+        public TasksController(
+            ITaskRepository taskRepository, 
+            IQuotaManager quotaManager,
+            ITaskAssignmentRepository taskAssignmentRepository,
+            IWorkspaceRepository workspaceRepository,
+            IDbConnection dbConnection)
         {
             _taskRepository = taskRepository;
             _quotaManager = quotaManager;
+            _taskAssignmentRepository = taskAssignmentRepository;
+            _workspaceRepository = workspaceRepository;
+            _dbConnection = dbConnection;
         }
 
         private string? GetCurrentUserId()
@@ -159,12 +173,150 @@ namespace PlanlamaApp.Api.Controllers
             if (existingTask == null) return NotFound();
 
             var currentUserId = GetCurrentUserId();
-            if (existingTask.UserId != currentUserId) return NotFound(); // IDOR koruması
+            if (existingTask.UserId != currentUserId && existingTask.AssignedBy != currentUserId) 
+                return NotFound(); // IDOR koruması: Sadece sahibi veya atayan silebilir.
+
+            if (existingTask.UserId == currentUserId && existingTask.IsTeacherAssigned)
+            {
+                // Öğrenci, öğretmen tarafından atanan görevi silemez.
+                return Forbid(); 
+            }
 
             var success = await _taskRepository.DeleteAsync(id);
             if (!success)
                 return NotFound();
             return NoContent();
+        }
+        // ── Görev Zinciri (Task Chain) ──────────────────────────────────────────
+
+        [HttpPost("chain")]
+        [ServiceFilter(typeof(IdempotencyFilter))]
+        public async Task<IActionResult> CreateChain([FromBody] CreateTaskChainRequest request)
+        {
+            var currentUserId = GetCurrentUserId();
+            if (currentUserId == null) return Unauthorized();
+            
+            if (request.Tasks == null || request.Tasks.Count == 0 || request.AssignedUserIds == null || request.AssignedUserIds.Count == 0)
+                return BadRequest("Geçersiz görev zinciri verisi.");
+
+            var members = await _workspaceRepository.GetMembersAsync(request.WorkspaceId);
+            var callerMember = members.FirstOrDefault(m => m.UserId == currentUserId);
+            if (callerMember == null)
+                return Forbid();
+
+            bool isTeacher = callerMember.Role == "Owner" || callerMember.Role == "Teacher" || callerMember.Role == "Admin" || callerMember.Role == "Leader";
+
+            if (!isTeacher && (request.AssignedUserIds.Count != 1 || request.AssignedUserIds[0] != currentUserId))
+            {
+                return Forbid(); // Öğrenciler başkasına görev atayamaz.
+            }
+
+            if (request.AssignedUserIds.Any(id => !members.Any(m => m.UserId == id)))
+            {
+                return BadRequest("Atanan kullanıcılardan biri bu çalışma alanının üyesi değil.");
+            }
+
+            var chainId = Guid.NewGuid().ToString("N");
+            
+            if (_dbConnection.State != ConnectionState.Open)
+                _dbConnection.Open();
+
+            using var transaction = _dbConnection.BeginTransaction();
+            try
+            {
+                foreach (var userId in request.AssignedUserIds)
+                {
+                    int order = 1;
+                    foreach (var task in request.Tasks)
+                    {
+                        var taskItem = new TaskItem
+                        {
+                            UserId = userId,
+                            CategoryId = task.CategoryId,
+                            Title = task.Title,
+                            Description = task.Description,
+                            TaskType = task.TaskType,
+                            Deadline = task.Deadline,
+                            IsTeacherAssigned = isTeacher,
+                            TargetCount = task.TargetCount,
+                            WorkspaceId = request.WorkspaceId,
+                            ChainId = chainId,
+                            ChainOrder = order,
+                            OriginalDeadline = task.Deadline,
+                            IsHomework = true,
+                            AssignedBy = currentUserId,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        };
+                        
+                        var taskId = await _taskRepository.CreateAsync(taskItem, transaction);
+
+                        var assignment = new TaskAssignment
+                        {
+                            TaskItemId = taskId,
+                            AssignedUserId = userId,
+                            CreatedByUserId = currentUserId,
+                            WorkspaceId = request.WorkspaceId,
+                            Status = "Pending"
+                        };
+                        
+                        await _taskAssignmentRepository.AssignAsync(assignment, transaction);
+                        order++;
+                    }
+                }
+                
+                transaction.Commit();
+                return Ok(new { ChainId = chainId });
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                return StatusCode(500, $"Görev zinciri oluşturulurken hata: {ex.Message}");
+            }
+        }
+
+        [HttpPut("{id:int}/postpone")]
+        [ServiceFilter(typeof(IdempotencyFilter))]
+        public async Task<IActionResult> Postpone(int id, [FromBody] PostponeTaskRequest request)
+        {
+            var existingTask = await _taskRepository.GetByIdAsync(id);
+            if (existingTask == null) return NotFound();
+
+            var currentUserId = GetCurrentUserId();
+            // TODO: Eğer veli/öğretmen de erteleyebilecekse HasAccessToUser kontrolü eklenebilir. Şimdilik sadece sahibi erteleyebilir.
+            if (existingTask.UserId != currentUserId) return NotFound(); 
+
+            if (_dbConnection.State != ConnectionState.Open)
+                _dbConnection.Open();
+
+            using var transaction = _dbConnection.BeginTransaction();
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (request.PostponeAllChain && !string.IsNullOrEmpty(existingTask.ChainId) && !string.IsNullOrEmpty(userId))
+                {
+                    // Zincirleme erteleme (minOrder = mevcut görevin sırası)
+                    await _taskRepository.PostponeChainAsync(existingTask.ChainId, userId, existingTask.ChainOrder ?? 0, request.DaysToShift, transaction);
+                }
+                else
+                {
+                    // Tekli görev erteleme
+                    if (existingTask.Deadline.HasValue)
+                    {
+                        existingTask.Deadline = existingTask.Deadline.Value.AddDays(request.DaysToShift);
+                    }
+                    existingTask.UpdatedAt = DateTime.UtcNow;
+                    await _taskRepository.UpdateAsync(existingTask, transaction);
+                }
+                
+                transaction.Commit();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                return StatusCode(500, $"Erteleme sırasında hata: {ex.Message}");
+            }
         }
     }
 }

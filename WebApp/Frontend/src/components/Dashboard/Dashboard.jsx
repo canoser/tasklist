@@ -4,6 +4,7 @@ import styles from './Dashboard.module.css';
 import Timeline from './Timeline';
 import DashboardSummary from './DashboardSummary';
 import SmartAssistant from './SmartAssistant';
+import AiCommandModal from './AiCommandModal';
 import { useTranslation } from 'react-i18next';
 
 // ── Animasyon varyantları ─────────────────────────────────────────────────────
@@ -17,6 +18,7 @@ const Dashboard = ({ user, guestName, tone }) => {
   const { t } = useTranslation('tasks');
   const displayName = user?.displayName || user?.email?.split('@')[0] || guestName || t('default_username', { ns: 'profile' });
   const [isAssistantVisible, setIsAssistantVisible] = useState(true);
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [taskStats, setTaskStats] = useState({ remaining: 3, completed: 1 });
 
   return (
@@ -59,6 +61,13 @@ const Dashboard = ({ user, guestName, tone }) => {
       <SmartAssistant
         isVisible={isAssistantVisible}
         onHide={() => setIsAssistantVisible(false)}
+        onOpenAi={() => { setIsAssistantVisible(false); setIsAiModalOpen(true); }}
+      />
+
+      <AiCommandModal 
+        isOpen={isAiModalOpen} 
+        onClose={() => setIsAiModalOpen(false)} 
+        workspaceId={1} 
       />
     </>
   );

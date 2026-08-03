@@ -44,7 +44,7 @@ const WIZARD_STEPS = [
 
 // ── Ana SmartAssistant Bileşeni ───────────────────────────────────────────────
 // isVisible ve onHide props'ları ile Dashboard'dan gizleme kontrolü yapılır
-const SmartAssistant = ({ isVisible = true, onHide }) => {
+const SmartAssistant = ({ isVisible = true, onHide, onOpenAi }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [selected, setSelected] = useState(null);
@@ -53,6 +53,10 @@ const SmartAssistant = ({ isVisible = true, onHide }) => {
   const isLastStep = stepIndex === WIZARD_STEPS.length - 1;
 
   const handleOpen = () => {
+    if (onOpenAi) {
+      onOpenAi();
+      return;
+    }
     setStepIndex(0);
     setSelected(null);
     setIsOpen(true);

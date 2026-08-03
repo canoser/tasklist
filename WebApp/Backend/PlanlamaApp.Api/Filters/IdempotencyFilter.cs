@@ -10,7 +10,13 @@ namespace PlanlamaApp.Api.Filters
         private readonly IIdempotencyRepository _repository;
         private readonly ITenantProvider _tenantProvider;
 
-        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, System.Threading.SemaphoreSlim> _locks = new();
+        private class RefCountedSemaphore
+        {
+            public SemaphoreSlim Semaphore { get; } = new(1, 1);
+            public int RefCount;
+        }
+
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, RefCountedSemaphore> _locks = new();
 
         public IdempotencyFilter(IIdempotencyRepository repository, ITenantProvider tenantProvider)
         {
@@ -35,9 +41,10 @@ namespace PlanlamaApp.Api.Filters
             }
 
             var idempotencyKey = extractedKey.ToString();
-            var semaphore = _locks.GetOrAdd(idempotencyKey, _ => new System.Threading.SemaphoreSlim(1, 1));
+            var refSemaphore = _locks.GetOrAdd(idempotencyKey, _ => new RefCountedSemaphore());
+            System.Threading.Interlocked.Increment(ref refSemaphore.RefCount);
 
-            await semaphore.WaitAsync();
+            await refSemaphore.Semaphore.WaitAsync();
             try
             {
                 // Mükerrer istek kontrolü
@@ -50,8 +57,25 @@ namespace PlanlamaApp.Api.Filters
                 // İşlemi gerçekleştir
                 var executedContext = await next();
 
-                // İşlem başarılıysa anahtarı kaydet (Hata aldıysa tekrar denenebilmesi için kaydetmiyoruz)
-                if (executedContext.Exception == null && executedContext.Result is not BadRequestObjectResult)
+                // İşlem başarılıysa anahtarı kaydet
+                bool isSuccess = false;
+                if (executedContext.Exception == null)
+                {
+                    if (executedContext.Result is Microsoft.AspNetCore.Mvc.Infrastructure.IStatusCodeActionResult statusCodeResult && statusCodeResult.StatusCode != null)
+                    {
+                        isSuccess = statusCodeResult.StatusCode >= 200 && statusCodeResult.StatusCode < 300;
+                    }
+                    else if (executedContext.Result is ObjectResult objResult && objResult.StatusCode != null)
+                    {
+                        isSuccess = objResult.StatusCode >= 200 && objResult.StatusCode < 300;
+                    }
+                    else
+                    {
+                        isSuccess = true; // Eğer StatusCode belirtilmemiş bir result ise (ör. düz Ok(), EmptyResult) başarılı varsay
+                    }
+                }
+
+                if (isSuccess)
                 {
                     var newKey = new IdempotencyKey
                     {
@@ -66,9 +90,11 @@ namespace PlanlamaApp.Api.Filters
             }
             finally
             {
-                semaphore.Release();
-                // Optionally, we could remove the semaphore from the dictionary to free memory, 
-                // but removing from a ConcurrentDictionary safely is tricky and memory footprint is small.
+                refSemaphore.Semaphore.Release();
+                if (System.Threading.Interlocked.Decrement(ref refSemaphore.RefCount) == 0)
+                {
+                    _locks.TryRemove(idempotencyKey, out _);
+                }
             }
         }
     }

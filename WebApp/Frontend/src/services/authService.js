@@ -1,5 +1,3 @@
-import { signInWithPopup, signOut } from "firebase/auth";
-import { auth, googleProvider } from "../config/firebase";
 import apiClient from "./apiClient";
 
 let currentUser = null;
@@ -21,21 +19,21 @@ export const checkAuthStatus = async () => {
   }
 };
 
-export const loginWithGoogle = async () => {
+export const loginWithGoogle = async (credential) => {
   try {
-    // [MOBILE_PORT_TODO]: Mobil uygulamalarda (Capacitor/React Native) `signInWithPopup` web görünümü yüzünden çalışmayabilir.
-    // Native Google Sign-In eklentisi (örn. @capacitor-firebase/authentication veya @react-native-google-signin/google-signin)
-    // kullanarak cihazın kendi güvenli OAuth akışını çağırmanız gerekir.
-    const result = await signInWithPopup(auth, googleProvider);
-    const token = await result.user.getIdToken();
+    // [MOBILE_PORT_TODO]: Mobil uygulamalarda (Capacitor) Native Google Sign-In eklentisi (örn. @capacitor-community/google-sign-in)
+    // kullanarak cihazın yerel OAuth akışı çağrılmalı ve alınan ID Token buraya iletilmelidir.
+    if (!credential) {
+      return { user: null, error: 'Google kimlik doğrulama tokenı alınamadı.' };
+    }
     
-    // ZORUNLU KURAL: Zero-Trust gereği sadece ID Token backend'e iletilir
-    const response = await apiClient.post('/auth/google', { idToken: token });
+    // ZORUNLU KURAL: Zero-Trust gereği Google ID Token C# Backend'e iletilir
+    const response = await apiClient.post('/auth/google', { idToken: credential });
     notifyListeners(response.data.user);
     return { user: response.data.user, error: null };
   } catch (error) {
     console.warn("Google login failed:", error);
-    return { user: null, error: error.response?.data || error.message };
+    return { user: null, error: error.response?.data || error.message || 'Google ile giriş başarısız.' };
   }
 };
 
@@ -65,7 +63,6 @@ export const registerWithEmail = async (email, password, name = '') => {
 export const logoutUser = async () => {
   try {
     await apiClient.post('/auth/logout');
-    await signOut(auth); // Firebase oturumunu da temizle (istemci tarafında)
   } catch (error) {
     console.warn("Logout failed:", error);
   }

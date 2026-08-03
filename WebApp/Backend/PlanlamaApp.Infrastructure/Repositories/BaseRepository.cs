@@ -41,6 +41,12 @@ namespace PlanlamaApp.Infrastructure.Repositories
             if (sql.Contains("TenantId", StringComparison.OrdinalIgnoreCase))
                 return sql;
 
+            // UNION, INTERSECT, EXCEPT gibi karmaşık sorgularda string manipülasyonu risklidir.
+            if (lowerSql.Contains(" union ") || lowerSql.Contains(" intersect ") || lowerSql.Contains(" except ") || (lowerSql.Contains("select ") && lowerSql.LastIndexOf("select ") > lowerSql.IndexOf("select ")))
+            {
+                throw new InvalidOperationException("UNION, INTERSECT veya Subquery içeren karmaşık SQL sorguları 'BaseRepository.InjectTenantFilter' tarafından otomatik filtrelenemez. Lütfen SQL sorgunuza 'TenantId = @TenantId' şartını manuel olarak ekleyiniz. (Bulgu 11)");
+            }
+
             string filter = " TenantId = @TenantId ";
 
             int orderByIndex = lowerSql.IndexOf("order by");
@@ -60,34 +66,44 @@ namespace PlanlamaApp.Infrastructure.Repositories
             return sql.Insert(insertIndex, clause);
         }
 
-        protected async Task<IEnumerable<T>> QueryAsync<T>(string sql, object? param = null)
+        protected async Task<IEnumerable<T>> QueryAsync<T>(string sql, object? param = null, IDbTransaction? transaction = null)
         {
             var finalSql = InjectTenantFilter(sql);
             
             var parameters = new DynamicParameters(param);
             parameters.Add("@TenantId", _tenantId);
 
-            return await _dbConnection.QueryAsync<T>(finalSql, parameters);
+            return await _dbConnection.QueryAsync<T>(finalSql, parameters, transaction);
         }
 
-        protected async Task<T?> QueryFirstOrDefaultAsync<T>(string sql, object? param = null)
+        protected async Task<T?> QueryFirstOrDefaultAsync<T>(string sql, object? param = null, IDbTransaction? transaction = null)
         {
             var finalSql = InjectTenantFilter(sql);
             
             var parameters = new DynamicParameters(param);
             parameters.Add("@TenantId", _tenantId);
 
-            return await _dbConnection.QueryFirstOrDefaultAsync<T>(finalSql, parameters);
+            return await _dbConnection.QueryFirstOrDefaultAsync<T>(finalSql, parameters, transaction);
         }
 
-        protected async Task<int> ExecuteAsync(string sql, object? param = null)
+        protected async Task<int> ExecuteAsync(string sql, object? param = null, IDbTransaction? transaction = null)
         {
             var finalSql = InjectTenantFilter(sql);
             
             var parameters = new DynamicParameters(param);
             parameters.Add("@TenantId", _tenantId);
 
-            return await _dbConnection.ExecuteAsync(finalSql, parameters);
+            return await _dbConnection.ExecuteAsync(finalSql, parameters, transaction);
+        }
+
+        protected async Task<T> ExecuteScalarAsync<T>(string sql, object? param = null, IDbTransaction? transaction = null)
+        {
+            var finalSql = InjectTenantFilter(sql);
+            
+            var parameters = new DynamicParameters(param);
+            parameters.Add("@TenantId", _tenantId);
+
+            return await _dbConnection.ExecuteScalarAsync<T>(finalSql, parameters, transaction);
         }
     }
 }

@@ -56,11 +56,11 @@ namespace PlanlamaApp.Infrastructure.Repositories
         {
             // INSERT: TenantId kolonu sorguda zorunlu (BaseRepository kural).
             var sql = @"INSERT INTO PerformanceRecords 
-                            (TenantId, UserId, TaskItemId, CategoryId, CorrectCount, WrongCount, BlankCount, NetScore, Notes, RecordedAt, UpdatedAt)
+                            (TenantId, UserId, TaskItemId, CategoryId, CorrectCount, WrongCount, EmptyCount, NetScore, Notes, TeacherFeedback, RecordedAt, StudyDurationMinutes, ExpectedDurationMinutes, UpdatedAt)
                         VALUES 
-                            (@TenantId, @UserId, @TaskItemId, @CategoryId, @CorrectCount, @WrongCount, @BlankCount, @NetScore, @Notes, @RecordedAt, @UpdatedAt);
-                        SELECT last_insert_rowid();";
-            return await _dbConnection.ExecuteScalarAsync<int>(sql, record);
+                            (@TenantId, @UserId, @TaskItemId, @CategoryId, @CorrectCount, @WrongCount, @EmptyCount, @NetScore, @Notes, @TeacherFeedback, @RecordedAt, @StudyDurationMinutes, @ExpectedDurationMinutes, @UpdatedAt)
+                        RETURNING Id;";
+            return await ExecuteScalarAsync<int>(sql, record);
         }
 
         public async Task<bool> UpdateAsync(PerformanceRecord record)
@@ -68,9 +68,12 @@ namespace PlanlamaApp.Infrastructure.Repositories
             var sql = @"UPDATE PerformanceRecords 
                         SET CorrectCount = @CorrectCount,
                             WrongCount = @WrongCount,
-                            BlankCount = @BlankCount,
+                            EmptyCount = @EmptyCount,
                             NetScore = @NetScore,
                             Notes = @Notes,
+                            TeacherFeedback = @TeacherFeedback,
+                            StudyDurationMinutes = @StudyDurationMinutes,
+                            ExpectedDurationMinutes = @ExpectedDurationMinutes,
                             UpdatedAt = @UpdatedAt
                         WHERE Id = @Id AND TenantId = @TenantId";
             var affected = await ExecuteAsync(sql, record);

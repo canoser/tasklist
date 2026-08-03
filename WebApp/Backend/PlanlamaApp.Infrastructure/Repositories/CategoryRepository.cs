@@ -43,9 +43,9 @@ namespace PlanlamaApp.Infrastructure.Repositories
             var sql = @"INSERT INTO Categories 
                             (TenantId, Name, ParentId, IsFromTemplate, SortOrder, CreatedAt, UpdatedAt)
                         VALUES 
-                            (@TenantId, @Name, @ParentId, @IsFromTemplate, @SortOrder, @CreatedAt, @UpdatedAt);
-                        SELECT last_insert_rowid();";
-            return await _dbConnection.ExecuteScalarAsync<int>(sql, category);
+                            (@TenantId, @Name, @ParentId, @IsFromTemplate, @SortOrder, @CreatedAt, @UpdatedAt)
+                        RETURNING ""Id"";";
+            return await ExecuteScalarAsync<int>(sql, category);
         }
 
         public async Task<bool> UpdateAsync(Category category)
@@ -90,7 +90,7 @@ namespace PlanlamaApp.Infrastructure.Repositories
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 };
-                await _dbConnection.ExecuteAsync(sql, cloned);
+                await ExecuteAsync(sql, cloned);
             }
         }
     }

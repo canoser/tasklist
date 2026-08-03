@@ -2,12 +2,13 @@ using System.Data;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Data.Sqlite;
+using Npgsql;
 using Microsoft.IdentityModel.Tokens;
 using PlanlamaApp.Api.Filters;
 using PlanlamaApp.Application.Interfaces;
 using PlanlamaApp.Infrastructure;
 using PlanlamaApp.Infrastructure.Repositories;
+using PlanlamaApp.Infrastructure.Providers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -87,7 +88,9 @@ builder.Services.AddAuthorization(options =>
 
 // 6. Dependency Injection (DI) - Katmanlar Arası Bağımlılıklar
 // Geliştirme ortamı için geçici bir SQLite bağlantısı ve TenantProvider
-builder.Services.AddScoped<IDbConnection>(sp => new SqliteConnection("Data Source=planlama_app.db"));
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection bulunamadı! appsettings.json kontrol edin.");
+builder.Services.AddScoped<IDbConnection>(sp => new NpgsqlConnection(connectionString));
 // Gerçek projede ITenantProvider HTTP Context üzerinden (örneğin Claims'ten) okuyan bir sınıfla doldurulacak.
 // Şimdilik derlenmesi adına sahte bir servis kaydediyoruz:
 builder.Services.AddScoped<ITenantProvider>(sp => throw new NotImplementedException("Gerçek TenantProvider yazılmalıdır."));
@@ -109,6 +112,18 @@ builder.Services.AddScoped<ISystemSettingsRepository, SystemSettingsRepository>(
 builder.Services.AddScoped<ISettingsService, PlanlamaApp.Infrastructure.Services.SettingsService>();
 builder.Services.AddScoped<IQuotaManager, PlanlamaApp.Infrastructure.Services.QuotaManager>();
 builder.Services.AddScoped<IRewardValidator, PlanlamaApp.Infrastructure.Services.MockRewardValidator>();
+builder.Services.AddScoped<IStorageService, PlanlamaApp.Infrastructure.Services.R2StorageService>();
+
+// AI Provider DI
+var activeAiProvider = builder.Configuration["AiSettings:ActiveProvider"]?.ToLower();
+if (activeAiProvider == "gemini")
+{
+    builder.Services.AddHttpClient<IAiProvider, GeminiProvider>();
+}
+else
+{
+    builder.Services.AddHttpClient<IAiProvider, OpenAiProvider>();
+}
 
 // IdempotencyFilter'ı DI container'a kaydet (Controller'larda [ServiceFilter] ile kullanım için zorunludur)
 builder.Services.AddScoped<IdempotencyFilter>();
@@ -141,8 +156,7 @@ app.UseAuthorization();
 app.MapControllers().RequireRateLimiting("FixedPolicy");
 
 // Veritabanı migration: UserRoles ve TaskAssignments tablolarını oluştur (idempotentten)
-var dbConnectionString = builder.Configuration.GetConnectionString("Default") ?? "Data Source=planlama_app.db";
-DatabaseMigration.Run(dbConnectionString);
+DatabaseMigration.Run(connectionString);
 
 app.Run();
 

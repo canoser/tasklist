@@ -18,10 +18,27 @@ namespace PlanlamaApp.Api.Controllers
     public class PerformanceController : ControllerBase
     {
         private readonly IPerformanceRepository _performanceRepository;
+        private readonly IWorkspaceRepository _workspaceRepository;
 
-        public PerformanceController(IPerformanceRepository performanceRepository)
+        public PerformanceController(IPerformanceRepository performanceRepository, IWorkspaceRepository workspaceRepository)
         {
             _performanceRepository = performanceRepository;
+            _workspaceRepository = workspaceRepository;
+        }
+
+        private string? GetCurrentUserId()
+        {
+            return User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        }
+
+        private async Task<bool> HasAccessToUserAsync(string requestedUserId)
+        {
+            var currentUserId = GetCurrentUserId();
+            if (currentUserId == null) return false;
+            if (currentUserId == requestedUserId) return true;
+
+            // Check if current user is an observer of the requested user
+            return await _workspaceRepository.IsObserverAsync(currentUserId, requestedUserId);
         }
 
         // ── GET ──────────────────────────────────────────────────────────────────
@@ -30,6 +47,9 @@ namespace PlanlamaApp.Api.Controllers
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetByUser(string userId)
         {
+            if (!await HasAccessToUserAsync(userId))
+                return Forbid();
+
             var records = await _performanceRepository.GetByUserIdAsync(userId);
             return Ok(records);
         }
@@ -44,14 +64,23 @@ namespace PlanlamaApp.Api.Controllers
             var record = await _performanceRepository.GetByTaskItemIdAsync(taskItemId);
             if (record is null)
                 return NotFound($"TaskItemId={taskItemId} için performans kaydı bulunamadı.");
+            
+            if (!await HasAccessToUserAsync(record.UserId))
+                return Forbid();
+
             return Ok(record);
         }
 
         /// <summary>Belirli bir ders/konuya ait tüm performans kayıtlarını getirir (konu analizi).</summary>
-        [HttpGet("category/{categoryId:int}")]
-        public async Task<IActionResult> GetByCategory(int categoryId)
+        [HttpGet("user/{userId}/category/{categoryId:int}")]
+        public async Task<IActionResult> GetByCategory(string userId, int categoryId)
         {
+            if (!await HasAccessToUserAsync(userId))
+                return Forbid();
+
             var records = await _performanceRepository.GetByCategoryIdAsync(categoryId);
+            records = records.Where(r => r.UserId == userId).ToList();
+
             return Ok(records);
         }
 
@@ -64,6 +93,9 @@ namespace PlanlamaApp.Api.Controllers
             if (start >= end)
                 return BadRequest("Başlangıç tarihi bitiş tarihinden önce olmalıdır.");
 
+            if (!await HasAccessToUserAsync(userId))
+                return Forbid();
+
             var records = await _performanceRepository.GetByDateRangeAsync(userId, start, end);
             return Ok(records);
         }
@@ -75,6 +107,10 @@ namespace PlanlamaApp.Api.Controllers
             var record = await _performanceRepository.GetByIdAsync(id);
             if (record is null)
                 return NotFound($"Id={id} olan performans kaydı bulunamadı.");
+
+            if (!await HasAccessToUserAsync(record.UserId))
+                return Forbid();
+
             return Ok(record);
         }
 
@@ -88,6 +124,13 @@ namespace PlanlamaApp.Api.Controllers
         [ServiceFilter(typeof(IdempotencyFilter))]
         public async Task<IActionResult> Create([FromBody] PerformanceRecord record)
         {
+            if (string.IsNullOrEmpty(record.UserId))
+                record.UserId = GetCurrentUserId() ?? string.Empty;
+
+            if (!await HasAccessToUserAsync(record.UserId))
+                return Forbid();
+
+            record.NetScore = record.CorrectCount - (record.WrongCount / 4.0m);
             record.RecordedAt = DateTime.UtcNow;
             record.UpdatedAt = DateTime.UtcNow;
             var newId = await _performanceRepository.CreateAsync(record);
@@ -102,9 +145,32 @@ namespace PlanlamaApp.Api.Controllers
         [ServiceFilter(typeof(IdempotencyFilter))]
         public async Task<IActionResult> Update(int id, [FromBody] PerformanceRecord record)
         {
-            record.Id = id;
-            record.UpdatedAt = DateTime.UtcNow;
-            var success = await _performanceRepository.UpdateAsync(record);
+            var existingRecord = await _performanceRepository.GetByIdAsync(id);
+            if (existingRecord == null) return NotFound();
+
+            if (!await HasAccessToUserAsync(existingRecord.UserId))
+                return Forbid();
+
+            var currentUserId = GetCurrentUserId();
+            if (currentUserId != null && currentUserId != existingRecord.UserId)
+            {
+                // Gözlemci/Öğretmen sadece geri bildirim yazabilir
+                existingRecord.TeacherFeedback = record.TeacherFeedback;
+            }
+            else
+            {
+                // Öğrenci kendi verilerini güncelleyebilir
+                existingRecord.CorrectCount = record.CorrectCount;
+                existingRecord.WrongCount = record.WrongCount;
+                existingRecord.EmptyCount = record.EmptyCount;
+                existingRecord.NetScore = record.CorrectCount - (record.WrongCount / 4.0m);
+                existingRecord.StudyDurationMinutes = record.StudyDurationMinutes;
+                existingRecord.ExpectedDurationMinutes = record.ExpectedDurationMinutes;
+                existingRecord.Notes = record.Notes;
+            }
+
+            existingRecord.UpdatedAt = DateTime.UtcNow;
+            var success = await _performanceRepository.UpdateAsync(existingRecord);
             if (!success)
                 return NotFound($"Id={id} olan performans kaydı bulunamadı veya güncellenemedi.");
             return NoContent();
@@ -116,6 +182,12 @@ namespace PlanlamaApp.Api.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
+            var existingRecord = await _performanceRepository.GetByIdAsync(id);
+            if (existingRecord == null) return NotFound();
+
+            if (!await HasAccessToUserAsync(existingRecord.UserId))
+                return Forbid();
+
             var success = await _performanceRepository.DeleteAsync(id);
             if (!success)
                 return NotFound($"Id={id} olan performans kaydı bulunamadı.");

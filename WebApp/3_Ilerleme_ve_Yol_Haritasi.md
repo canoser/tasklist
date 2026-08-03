@@ -143,7 +143,6 @@ Bu dosya, projenin başından itibaren tamamlanan adımları ve gelecekte yapıl
   - `start-wifi-host.ps1` native PowerShell scripti stabilize edildi, IP algılama ve `.env` oto-güncelleme sorunsuz hale getirildi.
   - `IdempotencyFilter.cs` üzerinde **Race Condition (Milisaniyelik Çift Tıklama)** testi (Mutation Testing) yapıldı. Ciddi bir güvenlik/veri çakışması açığı (500 Error) tespit edildi.
   - Filtre içerisine `SemaphoreSlim` ile "In-Memory Lock (Bellek İçi Kilitleme)" kurgulandı. Aynı saniyede gelen mükerrer istekler %100 başarıyla `409 Conflict` dönerek durduruldu.
-  - `AGENTS.md` içerisine "Proactive Portability Check" kuralı eklendi. Geliştirilen her yeni özelliğin Native (Capacitor/iOS/Android) uyumlu olması güvenceye alındı, değilse koda `// [MOBILE_PORT_TODO]` yazılması zorunlu kılındı.
 
 ---
 

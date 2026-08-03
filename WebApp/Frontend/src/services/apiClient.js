@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { auth } from '../config/firebase';
 
 // Native apps require an absolute URL. Dev mode can use localhost or specific IP via .env
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
