@@ -1,0 +1,33 @@
+{
+  "modal_title": "Yeni Görev Ekle",
+  "field_title": "Görev Başlığı *",
+  "field_title_placeholder": "Örn: Türev Soru Çözümü",
+  "field_category": "Ders / Kategori",
+  "field_date": "Tarih *",
+  "field_target": "Hedef Miktar (Opsiyonel)",
+  "field_target_placeholder": "Örn: 50",
+  "field_teacher_assigned": "Bu görev dışarıdan verildi",
+  "field_teacher_assigned_buddy": "Biri bana bu görevi yükledi 😅",
+
+  "btn_submit": "Görev Ekle",
+  "btn_submit_buddy": "Ekle gitsin!",
+  "btn_saving": "Kaydediliyor...",
+  "btn_saving_buddy": "Bi saniye...",
+
+  "cat_math": "Matematik",
+  "cat_physics": "Fizik",
+  "cat_chemistry": "Kimya",
+  "cat_biology": "Biyoloji",
+  "cat_exam": "Deneme / Sınav",
+  "cat_other": "Diğer / Kişisel",
+
+  "stat_remaining": "{{count}} Görev kaldı",
+  "stat_remaining_buddy": "{{count}} görev bekliyorsa seni 👀",
+  "stat_completed": "{{count}} Tamamlandı",
+  "stat_completed_buddy": "{{count}} tane bitirdin, aferin!",
+
+  "greeting_morning": "Günaydın 🌤️",
+  "greeting_morning_buddy": "Hayırlı sabahlar kanka 🌤️",
+  "greeting_hello": "Merhaba, {{name}}!",
+  "greeting_hello_buddy": "Naaber {{name}}! 👋"
+}

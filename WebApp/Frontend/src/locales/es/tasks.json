@@ -1,0 +1,33 @@
+{
+  "modal_title": "Añadir Nueva Tarea",
+  "field_title": "Título de la Tarea *",
+  "field_title_placeholder": "Ej.: Resolver problemas de derivadas",
+  "field_category": "Materia / Categoría",
+  "field_date": "Fecha *",
+  "field_target": "Cantidad Objetivo (Opcional)",
+  "field_target_placeholder": "Ej.: 50",
+  "field_teacher_assigned": "Esta tarea fue asignada por un profesor",
+  "field_teacher_assigned_buddy": "Alguien me ha endosado esta tarea 😅",
+
+  "btn_submit": "Añadir Tarea",
+  "btn_submit_buddy": "¡Añádela ya!",
+  "btn_saving": "Guardando...",
+  "btn_saving_buddy": "Un momento...",
+
+  "cat_math": "Matemáticas",
+  "cat_physics": "Física",
+  "cat_chemistry": "Química",
+  "cat_biology": "Biología",
+  "cat_exam": "Simulacro / Examen",
+  "cat_other": "Otro / Personal",
+
+  "stat_remaining": "{{count}} Tareas restantes",
+  "stat_remaining_buddy": "{{count}} tareas esperándote 💪",
+  "stat_completed": "{{count}} Completadas",
+  "stat_completed_buddy": "Has terminado {{count}}, ¡bien hecho!",
+
+  "greeting_morning": "Buenos días ☀️",
+  "greeting_morning_buddy": "¡Buenos días, colega! ☀️",
+  "greeting_hello": "¡Hola, {{name}}!",
+  "greeting_hello_buddy": "¡Qué pasa, {{name}}! 🤙"
+}

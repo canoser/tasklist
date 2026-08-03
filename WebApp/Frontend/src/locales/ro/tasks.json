@@ -1,0 +1,33 @@
+{
+  "modal_title": "Adaugă o Sarcină Nouă",
+  "field_title": "Titlul Sarcinii *",
+  "field_title_placeholder": "Ex: Rezolvă probleme cu derivate",
+  "field_category": "Materie / Categorie",
+  "field_date": "Dată *",
+  "field_target": "Cantitate Țintă (Opțional)",
+  "field_target_placeholder": "Ex: 50",
+  "field_teacher_assigned": "Această sarcină a fost atribuită de un profesor",
+  "field_teacher_assigned_buddy": "Cineva mi-a pasat sarcina asta 😅",
+
+  "btn_submit": "Adaugă Sarcina",
+  "btn_submit_buddy": "Doar adaug-o!",
+  "btn_saving": "Se salvează...",
+  "btn_saving_buddy": "O secundă...",
+
+  "cat_math": "Matematică",
+  "cat_physics": "Fizică",
+  "cat_chemistry": "Chimie",
+  "cat_biology": "Biologie",
+  "cat_exam": "Simulare / Examen",
+  "cat_other": "Altele / Personal",
+
+  "stat_remaining": "{{count}} Sarcini rămase",
+  "stat_remaining_buddy": "{{count}} task-uri te așteaptă 💪",
+  "stat_completed": "{{count}} Finalizate",
+  "stat_completed_buddy": "Ai dat gata {{count}}, bravo!",
+
+  "greeting_morning": "Bună dimineața ☀️",
+  "greeting_morning_buddy": "Neața bro ☀️",
+  "greeting_hello": "Salut, {{name}}!",
+  "greeting_hello_buddy": "Care-i treaba, {{name}}! 🤙"
+}

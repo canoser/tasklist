@@ -1,0 +1,33 @@
+{
+  "modal_title": "Add New Task",
+  "field_title": "Task Title *",
+  "field_title_placeholder": "E.g.: Derivative Problem Solving",
+  "field_category": "Subject / Category",
+  "field_date": "Date *",
+  "field_target": "Target Amount (Optional)",
+  "field_target_placeholder": "E.g.: 50",
+  "field_teacher_assigned": "This task was assigned by a teacher",
+  "field_teacher_assigned_buddy": "Someone dumped this task on me 😅",
+
+  "btn_submit": "Add Task",
+  "btn_submit_buddy": "Just add it!",
+  "btn_saving": "Saving...",
+  "btn_saving_buddy": "Just a sec...",
+
+  "cat_math": "Math",
+  "cat_physics": "Physics",
+  "cat_chemistry": "Chemistry",
+  "cat_biology": "Biology",
+  "cat_exam": "Mock / Exam",
+  "cat_other": "Other / Personal",
+
+  "stat_remaining": "{{count}} Tasks remaining",
+  "stat_remaining_buddy": "{{count}} tasks waiting for you 👀",
+  "stat_completed": "{{count}} Completed",
+  "stat_completed_buddy": "You finished {{count}}, well done!",
+
+  "greeting_morning": "Good morning 🌤️",
+  "greeting_morning_buddy": "Morning buddy 🌤️",
+  "greeting_hello": "Hello, {{name}}!",
+  "greeting_hello_buddy": "What's up {{name}}! 👋"
+}

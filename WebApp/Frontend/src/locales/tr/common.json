@@ -1,0 +1,81 @@
+{
+  "nav_home": "Ana Sayfa",
+  "nav_workspace": "Alanlarım",
+  "nav_calendar": "Takvim",
+  "nav_profile": "Profil",
+
+  "btn_cancel": "İptal",
+  "btn_cancel_semi": "Vazgeç",
+  "btn_cancel_buddy": "Dur dur, iptal!",
+
+  "btn_save": "Kaydet",
+  "btn_save_semi": "Kaydet",
+  "btn_save_buddy": "Tamam kaydettim!",
+
+  "btn_delete": "Sil",
+  "btn_delete_semi": "Sil",
+  "btn_delete_buddy": "Uçur gitsin",
+
+  "btn_confirm": "Onayla",
+  "btn_confirm_buddy": "Tamam anlaştık",
+
+  "loading": "Yükleniyor...",
+  "loading_buddy": "Bekle bi saniye...",
+
+  "warning_label": "Uyarı",
+
+  "login": "Giriş Yap",
+  "logout": "Çıkış",
+
+  "app_name": "PlanlamaApp",
+
+  "tag_add_placeholder": "Ekle veya yaz...",
+  "tag_create_prefix": "olarak ekle",
+  "tag_remove_aria": "{{name}} kaldır",
+
+  "ws_title": "Alanlarım",
+  "ws_subtitle": "Ekiplerinizi ve çalışma gruplarınızı yönetin",
+  "ws_subtitle_buddy": "Ekiplerini ve tayfanı buradan yönet",
+  "ws_btn_create": "+ Yeni Alan Oluştur",
+  "ws_btn_create_buddy": "+ Yeni Ekip Kur",
+  "ws_btn_join": "Koda ile Katıl",
+  "ws_btn_join_buddy": "Kodla İçeri Sız",
+  
+  "ws_section_owned": "👑 Yönettiğim Alanlar",
+  "ws_section_owned_buddy": "👑 Lideri Olduğum Ekipler",
+  "ws_empty_owned": "Henüz yönettiğiniz bir alan yok.",
+  "ws_empty_owned_buddy": "Daha kendi ekibini kurmadın.",
+  
+  "ws_section_joined": "👥 Üye Olduğum Alanlar",
+  "ws_section_joined_buddy": "👥 Takıldığım Ekipler",
+  "ws_empty_joined": "Henüz bir alana katılmadınız.",
+  "ws_empty_joined_buddy": "Henüz hiçbir tayfaya katılmadın.",
+
+  "ws_guest_title": "Kayıt Gerekli",
+  "ws_guest_title_buddy": "Dur Yolcu!",
+  "ws_guest_desc": "Alanlarım özelliği ile kendi ekiplerinizi kurabilir veya ortak çalışma alanlarına katılabilirsiniz. Bu özellik bulut tabanlı çalıştığı için lütfen ücretsiz hesabınızı oluşturun.",
+  "ws_guest_desc_buddy": "Alanlar kısmı tayfayla takılmalık yer, o yüzden buluta bağlanıyor. Buraya girmek için önce bi hesap açman lazım kanka.",
+
+  "cal_title": "Takvim",
+  "cal_day_mon": "Pzt",
+  "cal_day_tue": "Sal",
+  "cal_day_wed": "Çar",
+  "cal_day_thu": "Per",
+  "cal_day_fri": "Cum",
+  "cal_day_sat": "Cmt",
+  "cal_day_sun": "Paz",
+
+  "cal_legend_teacher": "Öğretmen",
+  "cal_legend_other": "Kişisel / Diğer",
+
+  "day_detail_tasks_count": "{{count}} Görev",
+  "day_detail_tasks_count_buddy": "{{count}} Tane İş",
+  "day_detail_empty": "Bu güne ait görev bulunmuyor.",
+  "day_detail_empty_buddy": "Bugün bomboşuz kanka yat uyu.",
+  "task_status_completed": "Tamamlandı",
+  "task_status_completed_buddy": "Bitti Gitti",
+  "task_status_partial": "%{{percent}} Bitti",
+  "task_status_partial_buddy": "Yüzde {{percent}} Koptu",
+  "task_status_pending": "Bekliyor",
+  "task_status_pending_buddy": "Sırada"
+}

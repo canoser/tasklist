@@ -1,0 +1,33 @@
+{
+  "default_username": "Usuario",
+  "default_email": "usuario@planlama.app",
+  "role_badge": "Mi Cuenta",
+
+  "section_theme": "Tema y Apariencia",
+  "section_settings": "Cuenta y Preferencias",
+  "section_roles": "Roles",
+
+  "theme_desc": "Personaliza la paleta de colores y el modo de apariencia de la aplicación.",
+  "theme_dark": "Oscuro",
+  "theme_light": "Claro",
+  "theme_classic": "Clásico",
+  "theme_nature": "Naturaleza",
+  "theme_lovely": "Encantador",
+  "appearance_mode": "Modo de Apariencia",
+  "theme_style": "Estilo del Tema",
+
+  "setting_notifications": "Notificaciones",
+  "setting_notifications_value": "Activadas",
+  "setting_language": "Idioma / Región",
+  "setting_language_value": "Español (ES)",
+  "setting_tone": "Tono",
+  "setting_tone_formal": "Formal",
+  "setting_tone_semi": "Semi-formal",
+  "setting_tone_buddy": "Modo Colega 😎",
+  "setting_version": "Versión de la App",
+
+  "roles_desc": "Gestiona tus roles en el sistema. Puedes añadir múltiples roles.",
+  "roles_desc_buddy": "¡Configura qué sombreros llevas puestos aquí!",
+  "roles_login_hint": "Por favor, inicia sesión para gestionar roles.",
+  "roles_login_hint_buddy": "Tienes que iniciar sesión primero, colega 😅"
+}

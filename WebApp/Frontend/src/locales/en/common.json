@@ -1,0 +1,87 @@
+{
+  "nav_home": "Home",
+  "nav_workspace": "My Spaces",
+  "nav_calendar": "Calendar",
+  "nav_profile": "Profile",
+
+  "btn_cancel": "Cancel",
+  "btn_cancel_semi": "Cancel",
+  "btn_cancel_buddy": "Wait, cancel!",
+
+  "btn_save": "Save",
+  "btn_save_semi": "Save",
+  "btn_save_buddy": "Alright saved!",
+
+  "btn_delete": "Delete",
+  "btn_delete_semi": "Delete",
+  "btn_delete_buddy": "Trash it",
+
+  "btn_confirm": "Confirm",
+  "btn_confirm_semi": "Confirm",
+  "btn_confirm_buddy": "Deal",
+
+  "loading": "Loading...",
+  "loading_buddy": "Hold on a sec...",
+
+  "warning_label": "Warning",
+
+  "login": "Login",
+  "logout": "Logout",
+
+  "app_name": "PlanlamaApp",
+
+  "tag_add_placeholder": "Add or type...",
+  "tag_create_prefix": "Add as",
+  "tag_remove_aria": "Remove {{name}}",
+
+  "ws_title": "My Spaces",
+  "ws_subtitle": "Please manage your teams and work groups",
+  "ws_subtitle_semi": "Manage your teams and work groups",
+  "ws_subtitle_buddy": "Manage your squads and teams here",
+  "ws_btn_create": "+ Create Workspace",
+  "ws_btn_create_buddy": "+ Build a Squad",
+  "ws_btn_join": "Join with Code",
+  "ws_btn_join_buddy": "Sneak in with Code",
+  
+  "ws_section_owned": "👑 Workspaces I Manage",
+  "ws_section_owned_buddy": "👑 Squads I Lead",
+  "ws_empty_owned": "You have not created any workspaces yet.",
+  "ws_empty_owned_semi": "You haven't created any workspaces yet.",
+  "ws_empty_owned_buddy": "You haven't built your own squad yet.",
+  
+  "ws_section_joined": "👥 Workspaces I Joined",
+  "ws_section_joined_buddy": "👥 Squads I Hang Out In",
+  "ws_empty_joined": "You have not joined any workspaces yet.",
+  "ws_empty_joined_semi": "You haven't joined any workspaces yet.",
+  "ws_empty_joined_buddy": "You haven't joined any squads yet.",
+
+  "ws_guest_title": "Registration Required",
+  "ws_guest_title_semi": "Registration Required",
+  "ws_guest_title_buddy": "Hold up, mate!",
+  "ws_guest_desc": "With the My Spaces feature, you can create teams or join shared workspaces. Since this is a cloud-based feature, please create a free account to continue.",
+  "ws_guest_desc_semi": "My Spaces lets you build teams or join shared workspaces. It's cloud-based, so create your free account to jump in!",
+  "ws_guest_desc_buddy": "Spaces are for squads, so they connect to the cloud. You gotta create an account first, bro.",
+
+  "cal_title": "Calendar",
+  "cal_day_mon": "Mon",
+  "cal_day_tue": "Tue",
+  "cal_day_wed": "Wed",
+  "cal_day_thu": "Thu",
+  "cal_day_fri": "Fri",
+  "cal_day_sat": "Sat",
+  "cal_day_sun": "Sun",
+
+  "cal_legend_teacher": "Teacher",
+  "cal_legend_other": "Personal / Other",
+
+  "day_detail_tasks_count": "{{count}} Tasks",
+  "day_detail_tasks_count_buddy": "{{count}} Things to do",
+  "day_detail_empty": "No tasks for this day.",
+  "day_detail_empty_buddy": "Nothing to do today bro, just chill.",
+  "task_status_completed": "Completed",
+  "task_status_completed_buddy": "Done deal",
+  "task_status_partial": "{{percent}}% Done",
+  "task_status_partial_buddy": "Killed {{percent}}%",
+  "task_status_pending": "Pending",
+  "task_status_pending_buddy": "In queue"
+}

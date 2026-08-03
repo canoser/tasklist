@@ -1,0 +1,9 @@
+/* ── RoleTagSelect.module.css ───────────────────────────────────────────────── */
+
+.hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+  padding: 8px 0;
+}

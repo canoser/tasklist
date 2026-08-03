@@ -1,0 +1,43 @@
+{
+  "default_username": "Kullanıcı",
+  "default_email": "kullanici@planlama.app",
+  "role_badge": "Kayıtlı Kullanıcı",
+  "badge_guest": "Misafir Hesabı (Cihazda Saklanıyor)",
+  "badge_guest_buddy": "Misafir Hesabı (Cihazda Saklı)",
+  "cloud_banner_text": "Verilerinizi kaybetmemek ve ekiplere katılmak için hesabınızı ücretsiz oluşturun.",
+  "cloud_banner_text_buddy": "Verilerini kaybetmemek ve tayfaya katılmak için ücretsiz bir hesap aç kanka.",
+  "cloud_banner_btn": "Kayıt Ol / Giriş Yap",
+  "edit_name_prompt": "Lütfen yeni isminizi veya lakabınızı girin:",
+  "avatar_picker_title": "Profil Avatarı Seçin",
+
+  "section_theme": "Tema ve Görünüm",
+  "section_settings": "Hesap & Tercihler",
+  "section_roles": "Roller",
+
+  "theme_desc": "Uygulamanın renk paletini ve görünüm modunu kişiselleştirin.",
+  "theme_dark": "Karanlık",
+  "theme_light": "Aydınlık",
+  "theme_classic": "Klasik",
+  "theme_nature": "Doğa",
+  "theme_lovely": "Sevecen",
+  "appearance_mode": "Görünüm Modu",
+  "theme_style": "Tema Stili",
+
+  "setting_notifications": "Bildirimler",
+  "setting_notifications_value": "Açık",
+  "setting_language": "Dil / Bölge",
+  "setting_language_value": "Türkçe (TR)",
+  "setting_tone": "Üslup",
+  "setting_tone_formal": "Resmi",
+  "setting_tone_semi": "Yarı Samimi",
+  "setting_tone_buddy": "Kanka Modu 🤝",
+  "setting_version": "Uygulama Sürümü",
+
+  "roles_desc": "Sistemdeki rollerinizi yönetin. Birden fazla rol ekleyebilirsiniz.",
+  "roles_desc_buddy": "Hangi şapkaları giydiğini buradan ayarlayabilirsin!",
+  "roles_login_hint": "Rolleri yönetmek için giriş yapın.",
+  "roles_login_hint_buddy": "Önce giriş yapman lazım kanka 😅",
+
+  "account_title": "Hesabım",
+  "account_delete": "Hesabı Sil"
+}

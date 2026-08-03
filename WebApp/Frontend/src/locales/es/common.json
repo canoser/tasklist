@@ -1,0 +1,87 @@
+{
+  "nav_home": "Inicio",
+  "nav_workspace": "Mis Espacios",
+  "nav_calendar": "Calendario",
+  "nav_profile": "Perfil",
+
+  "btn_cancel": "Cancelar",
+  "btn_cancel_semi": "Cancelar",
+  "btn_cancel_buddy": "¡Espera, cancela!",
+
+  "btn_save": "Guardar",
+  "btn_save_semi": "Guardar",
+  "btn_save_buddy": "¡Listo, guardado!",
+
+  "btn_delete": "Eliminar",
+  "btn_delete_semi": "Eliminar",
+  "btn_delete_buddy": "A la basura",
+
+  "btn_confirm": "Confirmar",
+  "btn_confirm_buddy": "Hecho",
+
+  "loading": "Cargando...",
+  "loading_buddy": "Espera un momento...",
+
+  "warning_label": "Advertencia",
+
+  "login": "Iniciar Sesión",
+  "logout": "Cerrar Sesión",
+
+  "app_name": "PlanlamaApp",
+
+  "tag_add_placeholder": "Añada o escriba...",
+  "tag_add_placeholder_semi": "Añade o escribe...",
+  "tag_create_prefix": "Añadir como",
+  "tag_remove_aria": "Eliminar {{name}}",
+
+  "ws_title": "Mis Espacios",
+  "ws_subtitle": "Gestione sus equipos y grupos de trabajo",
+  "ws_subtitle_semi": "Gestiona tus equipos y grupos de trabajo",
+  "ws_subtitle_buddy": "Maneja a tu equipo aquí",
+  "ws_btn_create": "+ Crear Espacio",
+  "ws_btn_create_buddy": "+ Armar un equipo",
+  "ws_btn_join": "Unirse con Código",
+  "ws_btn_join_buddy": "Entrar con código",
+  
+  "ws_section_owned": "👑 Espacios que Administro",
+  "ws_section_owned_buddy": "👑 Equipos que Lidero",
+  "ws_empty_owned": "Aún no ha creado ningún espacio.",
+  "ws_empty_owned_semi": "Aún no has creado ningún espacio.",
+  "ws_empty_owned_buddy": "Todavía no has armado tu propio equipo.",
+  
+  "ws_section_joined": "👥 Espacios a los que me Uní",
+  "ws_section_joined_buddy": "👥 Equipos con los que ando",
+  "ws_empty_joined": "Aún no se ha unido a ningún espacio.",
+  "ws_empty_joined_semi": "Aún no te has unido a ningún espacio.",
+  "ws_empty_joined_buddy": "Aún no te has unido a ningún equipo.",
+
+  "ws_guest_title": "Registro Requerido",
+  "ws_guest_title_semi": "Registro Requerido",
+  "ws_guest_title_buddy": "¡Espera, amigo!",
+  "ws_guest_desc": "Con la función Mis Espacios puede crear sus propios equipos o unirse a espacios compartidos. Al ser una función en la nube, por favor cree su cuenta gratuita.",
+  "ws_guest_desc_semi": "Con la función Mis Espacios puedes crear tus propios equipos o unirte a espacios compartidos. Al ser una función en la nube, por favor crea tu cuenta gratuita.",
+  "ws_guest_desc_buddy": "La sección de espacios es para el equipo y usa la nube. Tienes que crearte una cuenta primero, hermano.",
+
+  "cal_title": "Calendario",
+  "cal_day_mon": "Lun",
+  "cal_day_tue": "Mar",
+  "cal_day_wed": "Mié",
+  "cal_day_thu": "Jue",
+  "cal_day_fri": "Vie",
+  "cal_day_sat": "Sáb",
+  "cal_day_sun": "Dom",
+
+  "cal_legend_teacher": "Profesor",
+  "cal_legend_other": "Personal / Otro",
+
+  "day_detail_tasks_count": "{{count}} Tareas",
+  "day_detail_tasks_count_buddy": "{{count}} Cosas que hacer",
+  "day_detail_empty": "No hay tareas para este día.",
+  "day_detail_empty_buddy": "Nada que hacer hoy, relájate.",
+  "task_status_completed": "Completado",
+  "task_status_completed_buddy": "Hecho",
+  "task_status_partial": "{{percent}}% Hecho",
+  "task_status_partial_buddy": "Destruido {{percent}}%",
+  "task_status_pending": "Pendiente",
+  "task_status_pending_buddy": "En espera"
+}

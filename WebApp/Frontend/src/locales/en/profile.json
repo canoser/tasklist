@@ -1,0 +1,40 @@
+{
+  "default_username": "User",
+  "default_email": "user@planlama.app",
+  "role_badge": "My Account",
+  "badge_guest": "Guest Account (Saved on Device)",
+  "badge_guest_buddy": "Guest Account (Stored on Phone)",
+  "cloud_banner_text": "Create your free account to keep your data safe and join team workspaces.",
+  "cloud_banner_text_buddy": "Create a free account so you don't lose your data and can join squads, bro.",
+  "cloud_banner_btn": "Register / Login",
+  "edit_name_prompt": "Please enter your new name or nickname:",
+  "avatar_picker_title": "Choose Profile Avatar",
+
+  "section_theme": "Theme & Appearance",
+  "section_settings": "Account & Preferences",
+  "section_roles": "Roles",
+
+  "theme_desc": "Personalize the color palette and appearance mode of the application.",
+  "theme_dark": "Dark",
+  "theme_light": "Light",
+  "theme_classic": "Classic",
+  "theme_nature": "Nature",
+  "theme_lovely": "Lovely",
+  "appearance_mode": "Appearance Mode",
+  "theme_style": "Theme Style",
+
+  "setting_notifications": "Notifications",
+  "setting_notifications_value": "On",
+  "setting_language": "Language / Region",
+  "setting_language_value": "English (EN)",
+  "setting_tone": "Tone",
+  "setting_tone_formal": "Formal",
+  "setting_tone_semi": "Semi-Formal",
+  "setting_tone_buddy": "Buddy Mode 🤝",
+  "setting_version": "App Version",
+
+  "roles_desc": "Manage your roles in the system. You can add multiple roles.",
+  "roles_desc_buddy": "Configure the hats you wear from here, bro!",
+  "roles_login_hint": "Please log in to manage roles.",
+  "roles_login_hint_buddy": "You need to log in first, mate 😅"
+}

@@ -1,0 +1,33 @@
+{
+  "modal_title": "Neue Aufgabe hinzufügen",
+  "field_title": "Aufgabentitel *",
+  "field_title_placeholder": "Z.B.: Ableitungsprobleme lösen",
+  "field_category": "Fach / Kategorie",
+  "field_date": "Datum *",
+  "field_target": "Zielmenge (Optional)",
+  "field_target_placeholder": "Z.B.: 50",
+  "field_teacher_assigned": "Diese Aufgabe wurde von einem Lehrer zugewiesen",
+  "field_teacher_assigned_buddy": "Jemand hat mir diese Aufgabe aufs Auge gedrückt 😅",
+
+  "btn_submit": "Aufgabe hinzufügen",
+  "btn_submit_buddy": "Einfach hinzufügen!",
+  "btn_saving": "Speichern...",
+  "btn_saving_buddy": "Sekunde...",
+
+  "cat_math": "Mathematik",
+  "cat_physics": "Physik",
+  "cat_chemistry": "Chemie",
+  "cat_biology": "Biologie",
+  "cat_exam": "Probeprüfung / Klausur",
+  "cat_other": "Sonstiges / Persönlich",
+
+  "stat_remaining": "{{count}} Aufgaben verbleibend",
+  "stat_remaining_buddy": "{{count}} Aufgaben warten auf dich 💪",
+  "stat_completed": "{{count}} Erledigt",
+  "stat_completed_buddy": "Du hast {{count}} geschafft, gut gemacht!",
+
+  "greeting_morning": "Guten Morgen ☀️",
+  "greeting_morning_buddy": "Morgen Kumpel ☀️",
+  "greeting_hello": "Hallo, {{name}}!",
+  "greeting_hello_buddy": "Was geht, {{name}}! 🤙"
+}
