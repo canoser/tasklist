@@ -45,5 +45,26 @@ namespace PlanlamaApp.Api.Controllers
             
             return Ok(new { Message = $"{key} ayarı başarıyla güncellendi." });
         }
+
+        [HttpGet("users/pending")]
+        public async Task<IActionResult> GetPendingUsers([FromServices] IUserRepository userRepository)
+        {
+            var users = await userRepository.GetPendingUsersAsync();
+            return Ok(users);
+        }
+
+        public class ApproveUserRequest
+        {
+            public int? CustomAiLimit { get; set; }
+            public int? CustomStorageLimit { get; set; }
+        }
+
+        [HttpPost("users/{userId}/approve")]
+        [ServiceFilter(typeof(IdempotencyFilter))]
+        public async Task<IActionResult> ApproveUser(string userId, [FromBody] ApproveUserRequest request, [FromServices] IUserRepository userRepository)
+        {
+            await userRepository.ApproveUserAsPremiumAsync(userId, request.CustomAiLimit, request.CustomStorageLimit);
+            return Ok(new { Message = "Kullanıcı başarıyla onaylandı ve Premium yapıldı." });
+        }
     }
 }

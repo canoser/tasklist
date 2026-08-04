@@ -10,6 +10,8 @@ namespace PlanlamaApp.Domain.Entities
         public string? PasswordHash { get; set; }
         public string? GoogleId { get; set; }
         public string SubscriptionPlan { get; set; } = "free";
+        public int? CustomAiLimit { get; set; }
+        public int? CustomStorageLimit { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

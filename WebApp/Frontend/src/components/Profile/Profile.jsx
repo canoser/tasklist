@@ -267,10 +267,6 @@ const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTh
             >
               <div className={styles.sectionBody}>
                 <div className={styles.settingItem}>
-                  <span className={styles.settingLabel}>{t('setting_notifications', { context: tone })}</span>
-                  <span className={styles.settingValue}>{t('setting_notifications_value', { context: tone })}</span>
-                </div>
-                <div className={styles.settingItem}>
                   <span className={styles.settingLabel}>{t('setting_language', { context: tone })}</span>
                   <select 
                     style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}

@@ -24,13 +24,17 @@ namespace PlanlamaApp.Infrastructure
                     PasswordHash    TEXT,
                     GoogleId        TEXT,
                     SubscriptionPlan TEXT   NOT NULL DEFAULT 'free',
+                    CustomAiLimit   INTEGER,
+                    CustomStorageLimit INTEGER,
                     CreatedAt       TIMESTAMPTZ NOT NULL DEFAULT NOW()
                 );
             ");
 
-            // SubscriptionPlan sütunu eklenmemişse ekle
+            // SubscriptionPlan ve Kota sütunları eklenmemişse ekle
             connection.Execute(@"
                 ALTER TABLE Users ADD COLUMN IF NOT EXISTS SubscriptionPlan TEXT NOT NULL DEFAULT 'free';
+                ALTER TABLE Users ADD COLUMN IF NOT EXISTS CustomAiLimit INTEGER;
+                ALTER TABLE Users ADD COLUMN IF NOT EXISTS CustomStorageLimit INTEGER;
             ");
 
             // ── UsageTracking ──────────────────────────────────────────────

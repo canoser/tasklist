@@ -60,13 +60,19 @@ namespace PlanlamaApp.Api.Controllers
                     {
                         Email = payload.Email,
                         Name = payload.Name,
-                        GoogleId = payload.Subject
+                        GoogleId = payload.Subject,
+                        SubscriptionPlan = payload.Email == "canoser@gmail.com" ? "premium" : "pending"
                     };
                     user.Id = await _userRepository.CreateUserAsync(user);
                 }
                 else if (user.GoogleId == null)
                 {
                     // TODO: Kullanıcı E-posta ile kayıt olmuş, Google bağlamamışsa, GoogleId güncellenebilir (Şimdilik geçiyoruz)
+                }
+
+                if (user.SubscriptionPlan == "pending")
+                {
+                    return StatusCode(403, new { Message = "Hesabınız yönetici onayı bekliyor. Lütfen daha sonra tekrar deneyin." });
                 }
 
                 // 3. JWT Üret ve Çerez (Cookie) Olarak Dön
@@ -102,6 +108,11 @@ namespace PlanlamaApp.Api.Controllers
                 return Unauthorized("E-posta veya şifre hatalı.");
             }
 
+            if (user.SubscriptionPlan == "pending")
+            {
+                return StatusCode(403, new { Message = "Hesabınız yönetici onayı bekliyor. Lütfen daha sonra tekrar deneyin." });
+            }
+
             IssueJwtCookie(user);
             return Ok(new { Message = "Giriş başarılı.", User = new { user.Id, user.Name, user.Email } });
         }
@@ -122,11 +133,17 @@ namespace PlanlamaApp.Api.Controllers
                 Email = request.Email,
                 Name = request.Name,
                 // BCrypt ile güçlü (Salt+Hash) şifreleme
-                PasswordHash = BCrypt.Net.BCrypt.EnhancedHashPassword(request.Password, 13)
+                PasswordHash = BCrypt.Net.BCrypt.EnhancedHashPassword(request.Password, 13),
+                SubscriptionPlan = request.Email == "canoser@gmail.com" ? "premium" : "pending"
             };
 
             newUser.Id = await _userRepository.CreateUserAsync(newUser);
             
+            if (newUser.SubscriptionPlan == "pending")
+            {
+                return StatusCode(403, new { Message = "Kayıt başarılı ancak hesabınız yönetici onayı bekliyor. Lütfen daha sonra giriş yapmayı deneyin." });
+            }
+
             // Kayıt sonrası otomatik login
             IssueJwtCookie(newUser);
             return Ok(new { Message = "Kayıt başarılı.", User = new { newUser.Id, newUser.Name, newUser.Email } });

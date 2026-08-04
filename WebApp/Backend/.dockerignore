@@ -1,21 +1,7 @@
-**/.vs/
-**/.idea/
-**/.git/
-
-# Build results
 **/bin/
 **/obj/
-
-# Test projects
-**/Tests/
-**/*Tests/
-**/*Test/
-**/*.Tests.csproj
-
-# Other
-**/.vscode/
-**/*.user
-**/*.suo
+**/.git/
+**/node_modules/
 *.md
-.gitignore
-.dockerignore
+*.sqlite
+*.db

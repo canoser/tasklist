@@ -7,6 +7,9 @@ namespace PlanlamaApp.Application.Interfaces
         Task<bool> DeleteAllUserDataAsync(string userId);
         Task<PlanlamaApp.Domain.Entities.User?> GetUserByEmailAsync(string email);
         Task<PlanlamaApp.Domain.Entities.User?> GetUserByGoogleIdAsync(string googleId);
+        Task<PlanlamaApp.Domain.Entities.User?> GetUserByIdAsync(string id);
         Task<string> CreateUserAsync(PlanlamaApp.Domain.Entities.User user);
+        Task<System.Collections.Generic.IEnumerable<PlanlamaApp.Domain.Entities.User>> GetPendingUsersAsync();
+        Task ApproveUserAsPremiumAsync(string userId, int? customAiLimit, int? customStorageLimit);
     }
 }

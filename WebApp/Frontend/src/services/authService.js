@@ -33,7 +33,8 @@ export const loginWithGoogle = async (credential) => {
     return { user: response.data.user, error: null };
   } catch (error) {
     console.warn("Google login failed:", error);
-    return { user: null, error: error.response?.data || error.message || 'Google ile giriş başarısız.' };
+    const errorMsg = error.response?.data?.message || error.response?.data || error.message || 'Google ile giriş başarısız.';
+    return { user: null, error: errorMsg };
   }
 };
 
@@ -45,7 +46,8 @@ export const loginWithEmail = async (email, password) => {
   } catch (error) {
     console.warn("Email login failed:", error);
     // Account enumeration protection: Hata detayı backend'den jenerik gelir
-    return { user: null, error: error.response?.data || 'Giriş başarısız.' };
+    const errorMsg = error.response?.data?.message || error.response?.data || 'Giriş başarısız.';
+    return { user: null, error: errorMsg };
   }
 };
 
@@ -56,7 +58,8 @@ export const registerWithEmail = async (email, password, name = '') => {
     return { user: response.data.user, error: null };
   } catch (error) {
     console.warn("Register failed:", error);
-    return { user: null, error: error.response?.data || 'Kayıt başarısız.' };
+    const errorMsg = error.response?.data?.message || error.response?.data || 'Kayıt başarısız.';
+    return { user: null, error: errorMsg };
   }
 };
 

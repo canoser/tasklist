@@ -101,17 +101,16 @@ const AccountModal = ({ isOpen, onClose, user, openAuth }) => {
 
         {/* Abonelik ve Depolama */}
         <div className={styles.section}>
-          <h3 className={styles.sectionTitle}>Abonelik & Depolama</h3>
+          <h3 className={styles.sectionTitle}>Abonelik Durumu</h3>
           
           <div className={styles.settingItem} style={{ alignItems: 'flex-start' }}>
             <div className={styles.settingInfo} style={{ width: '100%' }}>
               <span className={styles.settingLabel}>
-                PlanlamaApp Standart
+                PlanlamaApp Web <span className={styles.premiumBadge}>👑 PREMİUM</span>
               </span>
-              <span className={styles.settingDesc}>Bulutta 15 MB / 100 MB kullanılıyor</span>
-              <div className={styles.storageBarContainer}>
-                <div className={styles.storageBarFill} style={{ width: '15%' }}></div>
-              </div>
+              <span className={styles.settingDesc}>
+                Hesabınız yönetici tarafından onaylanmıştır. Tüm özelliklere tam erişiminiz bulunmaktadır.
+              </span>
             </div>
           </div>
         </div>

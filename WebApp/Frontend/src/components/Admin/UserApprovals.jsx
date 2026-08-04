@@ -1,0 +1,168 @@
+import React, { useState, useEffect } from 'react';
+import { UserCheck, RefreshCw, AlertCircle } from 'lucide-react';
+import apiClient from '../../services/apiClient';
+import styles from './AdminPanel.module.css';
+
+const UserApprovals = ({ settings }) => {
+  const [pendingUsers, setPendingUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [approvingId, setApprovingId] = useState(null);
+
+  // Default values from settings
+  const defaultAiLimit = settings.find(s => s.key === 'AiTaskCreation')?.value || '5';
+  const defaultStorageLimit = settings.find(s => s.key === 'FileStorage')?.value || '50';
+
+  const [customLimits, setCustomLimits] = useState({});
+
+  const fetchPendingUsers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await apiClient.get('/admin/users/pending');
+      setPendingUsers(response.data);
+      
+      // Initialize custom limits for each user
+      const initialLimits = {};
+      response.data.forEach(u => {
+        initialLimits[u.id] = {
+          aiLimit: defaultAiLimit,
+          storageLimit: defaultStorageLimit
+        };
+      });
+      setCustomLimits(initialLimits);
+    } catch (err) {
+      console.error("Fetch pending users error:", err);
+      setError("Bekleyen kullanıcılar yüklenirken hata oluştu.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPendingUsers();
+  }, []);
+
+  const handleLimitChange = (userId, field, value) => {
+    setCustomLimits(prev => ({
+      ...prev,
+      [userId]: {
+        ...prev[userId],
+        [field]: value
+      }
+    }));
+  };
+
+  const handleApprove = async (userId) => {
+    try {
+      setApprovingId(userId);
+      const limits = customLimits[userId];
+      
+      const payload = {
+        customAiLimit: limits.aiLimit ? parseInt(limits.aiLimit, 10) : null,
+        customStorageLimit: limits.storageLimit ? parseInt(limits.storageLimit, 10) : null
+      };
+
+      await apiClient.post(`/admin/users/${userId}/approve`, payload);
+      
+      // Remove from list
+      setPendingUsers(prev => prev.filter(u => u.id !== userId));
+    } catch (err) {
+      console.error("Approve error:", err);
+      alert("Kullanıcı onaylanırken bir hata oluştu.");
+    } finally {
+      setApprovingId(null);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className={styles.loadingContainer}>
+        <RefreshCw className={styles.spinner} size={24} />
+        <p>Kullanıcılar Yükleniyor...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.sectionContainer} style={{ marginTop: '30px' }}>
+      <div className={styles.sectionDivider}>
+        <h2>Bekleyen Kullanıcı Onayları</h2>
+      </div>
+
+      {error && (
+        <div className={styles.errorAlert}>
+          <AlertCircle size={20} />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {pendingUsers.length === 0 && !error ? (
+        <div className={styles.emptyState}>
+          Onay bekleyen kullanıcı bulunmamaktadır.
+        </div>
+      ) : (
+        <div className={styles.settingsGrid}>
+          {pendingUsers.map(user => (
+            <div key={user.id} className={styles.settingCard}>
+              <div className={styles.settingInfo}>
+                <h3 style={{ marginBottom: '5px' }}>{user.name}</h3>
+                <p style={{ color: 'var(--text-secondary)' }}>{user.email}</p>
+                <small style={{ color: 'var(--text-tertiary)', display: 'block', marginTop: '10px' }}>
+                  Kayıt: {new Date(user.createdAt).toLocaleString()}
+                </small>
+              </div>
+              
+              <div className={styles.settingAction} style={{ flexDirection: 'column', alignItems: 'stretch', gap: '15px' }}>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: '12px', display: 'block', marginBottom: '5px', color: 'var(--text-secondary)' }}>
+                      AI Limiti
+                    </label>
+                    <input 
+                      type="number"
+                      className={styles.inputField}
+                      style={{ width: '100%' }}
+                      value={customLimits[user.id]?.aiLimit || ''}
+                      onChange={(e) => handleLimitChange(user.id, 'aiLimit', e.target.value)}
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: '12px', display: 'block', marginBottom: '5px', color: 'var(--text-secondary)' }}>
+                      Depolama (MB)
+                    </label>
+                    <input 
+                      type="number"
+                      className={styles.inputField}
+                      style={{ width: '100%' }}
+                      value={customLimits[user.id]?.storageLimit || ''}
+                      onChange={(e) => handleLimitChange(user.id, 'storageLimit', e.target.value)}
+                    />
+                  </div>
+                </div>
+                
+                <button 
+                  onClick={() => handleApprove(user.id)}
+                  disabled={approvingId === user.id}
+                  className={styles.saveBtn}
+                  style={{ width: '100%', justifyContent: 'center', backgroundColor: '#10b981', color: '#fff' }}
+                >
+                  {approvingId === user.id ? (
+                    <RefreshCw size={18} className={styles.spinner} />
+                  ) : (
+                    <>
+                      <UserCheck size={18} />
+                      <span>Premium Olarak Onayla</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default UserApprovals;

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Settings, Save, AlertCircle, RefreshCw } from 'lucide-react';
 import { getSettings, updateSetting } from '../../services/adminSettingsService';
 import QuotaSimulator from './QuotaSimulator';
+import UserApprovals from './UserApprovals';
 import styles from './AdminPanel.module.css';
 
 const AdminPanel = () => {
@@ -125,6 +126,12 @@ const AdminPanel = () => {
           </div>
         )}
       </div>
+
+      <div className={styles.sectionDivider}>
+        <h2>Kullanıcı Yönetimi</h2>
+      </div>
+
+      <UserApprovals settings={settings} />
 
       <div className={styles.sectionDivider}>
         <h2>Test Araçları</h2>

@@ -49,9 +49,14 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowStrict", policy =>
     {
+        var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+        
         policy.SetIsOriginAllowed(origin => 
                 {
                     var host = new Uri(origin).Host;
+                    
+                    if (allowedOrigins.Contains(origin)) return true;
+                    
                     return host == "localhost" || host == "127.0.0.1" || host.StartsWith("192.168.");
                 })
               .AllowAnyMethod()
