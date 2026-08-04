@@ -37,9 +37,7 @@ jobs:
           VITE_CDN_URL: https://cdn.dersmatris.com
 
       - name: ☁️ Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=dersmatris-app --branch=main
-          workingDirectory: WebApp/Frontend
+        run: npx wrangler pages deploy dist --project-name=dersmatris-app --branch=main
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
