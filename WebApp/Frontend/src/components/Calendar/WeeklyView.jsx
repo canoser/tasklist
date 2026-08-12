@@ -15,7 +15,7 @@ const WeeklyView = ({ tasks = [], roles = [], weekStart, onDayClick, filter }) =
   const today = new Date();
 
   return (
-    <div className={styles.weekGrid}>
+    <div className={styles.weekList}>
       {days.map(day => {
         const isToday = day.toDateString() === today.toDateString();
         const dayTasks = tasks.filter(t => {
@@ -33,17 +33,18 @@ const WeeklyView = ({ tasks = [], roles = [], weekStart, onDayClick, filter }) =
         return (
           <div
             key={day.toISOString()}
-            className={`${styles.dayColumn} ${isToday ? styles.todayColumn : ''}`}
+            className={`${styles.dayRow} ${isToday ? styles.todayRow : ''}`}
             onClick={() => onDayClick?.(day)}
           >
             <div className={styles.dayHeader}>
-              <span className={styles.dayName}>
-                {day.toLocaleString('tr-TR', { weekday: 'short' }).toUpperCase()}
-              </span>
               <span className={`${styles.dayNum} ${isToday ? styles.todayNum : ''}`}>
                 {day.getDate()}
               </span>
+              <span className={styles.dayName}>
+                {day.toLocaleString('tr-TR', { weekday: 'long' })}
+              </span>
             </div>
+
             <div className={styles.taskList}>
               {Object.entries(roleCounts).map(([rName, count]) => {
                 const colors = getTagColors(rName);

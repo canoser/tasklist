@@ -1,52 +1,50 @@
-.weekGrid {
-  display: flex;
-  gap: 4px;
-  padding: 4px 0;
-  min-height: 220px;
-}
-
-.dayColumn {
-  flex: 1;
-  min-width: 0;
+.weekList {
   display: flex;
   flex-direction: column;
+  gap: 6px;
+  padding: 4px 0;
+}
+
+.dayRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
   border-radius: 8px;
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
-  overflow: hidden;
   cursor: pointer;
   transition: border-color 0.15s, background-color 0.15s;
+  gap: 12px;
 }
 
-.dayColumn:hover {
+.dayRow:hover {
   border-color: var(--accent-primary);
 }
 
-.todayColumn {
+.todayRow {
   border-color: var(--accent-primary);
   background: rgba(99, 102, 241, 0.05);
 }
 
 .dayHeader {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding: 6px 4px 4px;
-  border-bottom: 1px solid var(--border-color);
-  gap: 2px;
+  gap: 8px;
+  min-width: 130px;
+  flex-shrink: 0;
 }
 
 .dayName {
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--text-muted);
-  letter-spacing: 0.05em;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 .dayNum {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-muted);
 }
 
 .todayNum {
@@ -55,31 +53,28 @@
 
 .taskList {
   display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 6px 4px;
-  overflow: hidden;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  flex: 1;
 }
 
 .roleBadge {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   border-radius: 4px;
-  padding: 2px 4px;
+  padding: 3px 8px;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .emptyDay {
   color: var(--text-muted);
   font-size: 12px;
-  text-align: center;
-  padding-top: 8px;
 }
 
 @media (max-width: 480px) {
-  .dayName { font-size: 8px; }
-  .dayNum  { font-size: 13px; }
-  .roleBadge { font-size: 9px; }
+  .dayHeader { min-width: 100px; gap: 6px; }
+  .dayName { font-size: 12px; }
+  .roleBadge { font-size: 10px; padding: 2px 6px; }
 }
