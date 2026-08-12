@@ -5,10 +5,16 @@
 }
 
 .section {
-  min-height: 100vh;
+  min-height: auto;
   padding: 24px 0;
   display: flex;
   flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .section {
+    padding: 8px 0;
+  }
 }
 
 .sectionHeader {

@@ -181,6 +181,7 @@ const TagSelect = ({
               setIsOpen(true);
               setHighlightedIndex(-1);
             }}
+            onClick={() => setIsOpen(true)}
             onFocus={() => setIsOpen(true)}
             onKeyDown={handleKeyDown}
             placeholder={tags.length === 0 ? placeholder : ''}

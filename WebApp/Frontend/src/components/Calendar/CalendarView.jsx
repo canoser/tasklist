@@ -122,23 +122,20 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
           }}
         >
           <span className={styles.dayNumber}>{d}</span>
-          {dayData && (
-            <div className={styles.dotsRow}>
-              {Object.entries(dayData.counts).map(([roleName, count]) => {
-                if (count === 0) return null;
-                const colors = getTagColors(roleName);
-                return (
-                  <div 
-                    key={roleName} 
-                    className={styles.countBadge}
-                    style={{ backgroundColor: colors.background, color: colors.color, borderColor: colors.border }}
-                  >
-                    {count}
-                  </div>
-                );
-              })}
-            </div>
-          )}
+          {dayData && (() => {
+            const totalCount = Object.values(dayData.counts).reduce((a, b) => a + b, 0);
+            if (totalCount === 0) return null;
+            return (
+              <div className={styles.dotsRow}>
+                <div 
+                  className={styles.countBadge}
+                  style={{ backgroundColor: 'var(--accent-primary)', color: '#fff' }}
+                >
+                  {totalCount}
+                </div>
+              </div>
+            );
+          })()}
         </div>
       );
     }
@@ -180,16 +177,6 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
         />
       </div>
 
-      {roles.length > 0 && (
-        <div className={styles.legend}>
-          {roles.map(r => (
-            <div key={r.id} className={styles.legendItem}>
-              <div className={styles.legendColor} style={{ backgroundColor: getTagColors(r.roleName).background }} />
-              {r.roleName}
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 };

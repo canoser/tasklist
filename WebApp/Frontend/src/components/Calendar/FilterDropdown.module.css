@@ -94,8 +94,8 @@
      basit CSS ile şimdilik aşağı doğru */
 }
 
-/* Telefon ekranlarında yukarı doğru açılması için bir fallback sınıfı */
-@media (max-height: 600px) {
+/* Telefon ekranlarında yukarı doğru açılması için fallback */
+@media (max-width: 768px), (max-height: 600px) {
   .dropdown {
     top: auto;
     bottom: calc(100% + 8px);

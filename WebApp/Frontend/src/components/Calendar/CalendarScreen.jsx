@@ -176,7 +176,7 @@ const CalendarScreen = ({ user, navigation, tone }) => {
         <div className={screenStyles.sectionHeader}>
           <button onClick={() => scrollTo(categoryRef)} className={screenStyles.sectionNavBtn}>↑ Kategoriler</button>
           <h2 className={screenStyles.sectionTitle}>Zincir Görevler</h2>
-          <div style={{ width: '80px' }}></div> {/* Dengeleyici görünmez div */}
+          <button onClick={() => scrollTo(calendarRef)} className={screenStyles.sectionNavBtn}>↑ Takvim</button>
         </div>
         <ChainManagerPanel user={user} />
       </section>
