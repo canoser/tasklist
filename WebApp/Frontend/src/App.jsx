@@ -86,7 +86,9 @@ export default function App() {
           <header className={styles.header}>
             <div className={styles.logoArea}>
               <span className={styles.logoBadge}>P</span>
-              <h2 className={styles.title}>{t('app_name', { context: tone })}</h2>
+              <h2 className={styles.title}>
+                {user ? (user.email || user.displayName) : t('app_name', { context: tone })}
+              </h2>
             </div>
 
             <div className={styles.actions}>
@@ -95,10 +97,9 @@ export default function App() {
               </button>
 
               {user ? (
-                <div className={styles.userBadge}>
-                  <span className={styles.userEmail}>{user.email || user.displayName}</span>
-                  <button className={`${styles.logoutBtn} no-select`} onClick={logoutUser}>{t('logout', { context: tone })}</button>
-                </div>
+                <button className={`${styles.logoutBtn} no-select`} onClick={logoutUser}>
+                  {t('logout', { context: tone })}
+                </button>
               ) : (
                 <button className={`${styles.authBtn} no-select`} onClick={() => openModal('auth')}>
                   {t('login', { context: tone })}

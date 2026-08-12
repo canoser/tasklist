@@ -19,7 +19,9 @@
 .logoArea {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.6rem;
+  min-width: 0;
+  flex: 1;
 }
 
 .logoBadge {
@@ -29,25 +31,31 @@
   padding: 0.4rem 0.8rem;
   border-radius: var(--border-radius-sm);
   font-size: 1.1rem;
+  flex-shrink: 0;
 }
 
 .title {
-  font-size: 1.25rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.6rem;
+  flex-shrink: 0;
 }
 
 .themeBtn {
   background-color: var(--bg-input);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 0.75rem;
   border-radius: var(--border-radius-md);
   cursor: pointer;
   font-weight: 500;
@@ -76,29 +84,22 @@
   background-color: var(--accent-hover);
 }
 
-.userBadge {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  background-color: var(--accent-light);
-  padding: 0.4rem 0.8rem;
+.logoutBtn {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  color: var(--danger, #ef4444);
+  padding: 0.5rem 0.85rem;
   border-radius: var(--border-radius-md);
-  border: 1px solid var(--accent-primary);
-}
-
-.userEmail {
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
 }
 
-.logoutBtn {
-  background: none;
-  border: none;
-  color: var(--danger);
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
+.logoutBtn:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+  border-color: var(--danger, #ef4444);
 }
 
 .main {
