@@ -168,15 +168,36 @@ namespace PlanlamaApp.Api.Controllers
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
             {
-                return Unauthorized();
+                // HATA TESPİTİ (NOKTA ATIŞI): Eğer kimlik yoksa, gelen çerezleri frontend'e hata mesajında geri dönelim ki sorunu görelim.
+                var incomingCookies = Request.Cookies.Keys.ToList();
+                var host = Request.Host.Host;
+                return Unauthorized(new { 
+                    Message = "Yetkisiz Erişim. Token bulunamadı.", 
+                    DebugInfo = new {
+                        CookiesReceived = incomingCookies,
+                        Host = host,
+                        AuthHeader = Request.Headers.Authorization.ToString()
+                    }
+                });
             }
 
-            // DB'den güncel kullanıcı bilgisini al (isteğe bağlı, claims'ten de dönülebilir)
-            // Ama güvenlik açısından şifre hash vs dönmemeye dikkat
             return Ok(new { 
                 Id = userId, 
                 Email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value,
                 Name = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
+            });
+        }
+
+        [HttpGet("debug")]
+        public IActionResult DebugConnection()
+        {
+            // Nokta atışı tespit için, tarayıcıdan backend'e gelen her şeyi JSON olarak dönüyoruz.
+            return Ok(new {
+                Cookies = Request.Cookies.Select(c => new { c.Key, HasValue = !string.IsNullOrEmpty(c.Value) }),
+                Headers = Request.Headers.Select(h => new { h.Key, h.Value = h.Value.ToString() }),
+                Host = Request.Host.Host,
+                Scheme = Request.Scheme,
+                IsHttps = Request.IsHttps
             });
         }
 
