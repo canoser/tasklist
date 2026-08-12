@@ -5,9 +5,8 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  // [MOBILE_PORT_TODO]: Mobil uygulamada (Capacitor/React Native) Cookie tabanlı auth çalışmayacaktır.
   // withCredentials: true satırını kaldırıp, bunun yerine Authorization: Bearer <token> header'ı eklemeniz gerekecek.
-  withCredentials: true, // ZORUNLU KURAL: HttpOnly çerezlerin backend'e gönderilmesi için
+  // Cookie sorunlarını aşmak için LocalStorage + Bearer token mimarisine geçildi.
   headers: {
     'Content-Type': 'application/json',
   },
@@ -31,6 +30,12 @@ apiClient.interceptors.request.use(
         : `idempotency-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
         
       config.headers['Idempotency-Key'] = idempotencyKey;
+    }
+
+    // JWT Token'ı LocalStorage'dan alıp Authorization Header'a ekle
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
     }
 
     return config;

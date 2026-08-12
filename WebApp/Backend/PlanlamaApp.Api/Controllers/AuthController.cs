@@ -76,8 +76,8 @@ namespace PlanlamaApp.Api.Controllers
                 }
 
                 // 3. JWT Üret ve Çerez (Cookie) Olarak Dön
-                IssueJwtCookie(user);
-                return Ok(new { Message = "Giriş başarılı.", User = new { user.Id, user.Name, user.Email } });
+                var tokenString = IssueJwtToken(user);
+                return Ok(new { Message = "Giriş başarılı.", token = tokenString, User = new { user.Id, user.Name, user.Email } });
             }
             catch (InvalidJwtException)
             {
@@ -113,8 +113,8 @@ namespace PlanlamaApp.Api.Controllers
                 return StatusCode(403, new { Message = "Hesabınız yönetici onayı bekliyor. Lütfen daha sonra tekrar deneyin." });
             }
 
-            IssueJwtCookie(user);
-            return Ok(new { Message = "Giriş başarılı.", User = new { user.Id, user.Name, user.Email } });
+            var tokenString = IssueJwtToken(user);
+            return Ok(new { Message = "Giriş başarılı.", token = tokenString, User = new { user.Id, user.Name, user.Email } });
         }
 
         [HttpPost("register")]
@@ -144,9 +144,9 @@ namespace PlanlamaApp.Api.Controllers
                 return StatusCode(403, new { Message = "Kayıt başarılı ancak hesabınız yönetici onayı bekliyor. Lütfen daha sonra giriş yapmayı deneyin." });
             }
 
-            // Kayıt sonrası otomatik login
-            IssueJwtCookie(newUser);
-            return Ok(new { Message = "Kayıt başarılı.", User = new { newUser.Id, newUser.Name, newUser.Email } });
+            // Kayıt sonrası otomatik login (Token döndürüyoruz)
+            var tokenString = IssueJwtToken(newUser);
+            return Ok(new { Message = "Kayıt başarılı.", token = tokenString, User = new { newUser.Id, newUser.Name, newUser.Email } });
         }
 
         [HttpPost("logout")]
@@ -201,7 +201,7 @@ namespace PlanlamaApp.Api.Controllers
             });
         }
 
-        private void IssueJwtCookie(User user)
+        private string IssueJwtToken(User user)
         {
             // JWT Ayarları
             var secretKey = _configuration["Jwt:SecretKey"] ?? "BU_COK_GIZLI_GECICI_BIR_ANAHTARDIR_HICBIR_ZAMAN_PRODUCTIONDA_KULLANILMAMALIDIR_12345!!!";
@@ -227,22 +227,7 @@ namespace PlanlamaApp.Api.Controllers
                 signingCredentials: creds
             );
 
-            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-
-            // ZORUNLU KURAL: XSS ve CSRF Koruması için HttpOnly ve SameSite=Strict/None
-            // [MOBILE_PORT_TODO]: Native mobil uygulamalarda Cookie kullanılamaz.
-            // Bu metodun, token'ı JSON response olarak geri dönecek şekilde güncellenmesi 
-            // (örn. return Ok(new { token = tokenString })) gerekmektedir.
-            
-            bool isLocal = Request.Host.Host.Contains("localhost") || Request.Host.Host.StartsWith("192.168");
-            
-            Response.Cookies.Append("auth_token", tokenString, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = !isLocal, // Canlı ortamda (HTTPS) zorunludur
-                SameSite = isLocal ? SameSiteMode.Lax : SameSiteMode.None, // Cross-Origin (farklı domain/subdomain) desteklemek için None olmalıdır
-                Expires = DateTime.UtcNow.AddDays(90)
-            });
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

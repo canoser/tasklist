@@ -29,6 +29,11 @@ export const loginWithGoogle = async (credential) => {
     
     // ZORUNLU KURAL: Zero-Trust gereği Google ID Token C# Backend'e iletilir
     const response = await apiClient.post('/auth/google', { idToken: credential });
+    
+    if (response.data.token) {
+      localStorage.setItem('auth_token', response.data.token);
+    }
+    
     notifyListeners(response.data.user);
     return { user: response.data.user, error: null };
   } catch (error) {
@@ -41,6 +46,11 @@ export const loginWithGoogle = async (credential) => {
 export const loginWithEmail = async (email, password) => {
   try {
     const response = await apiClient.post('/auth/login', { email, password });
+    
+    if (response.data.token) {
+      localStorage.setItem('auth_token', response.data.token);
+    }
+    
     notifyListeners(response.data.user);
     return { user: response.data.user, error: null };
   } catch (error) {
@@ -54,6 +64,11 @@ export const loginWithEmail = async (email, password) => {
 export const registerWithEmail = async (email, password, name = '') => {
   try {
     const response = await apiClient.post('/auth/register', { email, password, name });
+    
+    if (response.data.token) {
+      localStorage.setItem('auth_token', response.data.token);
+    }
+    
     notifyListeners(response.data.user);
     return { user: response.data.user, error: null };
   } catch (error) {
@@ -69,6 +84,10 @@ export const logoutUser = async () => {
   } catch (error) {
     console.warn("Logout failed:", error);
   }
+  
+  // Cookie yerine LocalStorage temizliği
+  localStorage.removeItem('auth_token');
+  
   notifyListeners(null);
   return { error: null };
 };
