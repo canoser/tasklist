@@ -206,6 +206,8 @@ namespace PlanlamaApp.Api.Controllers
                 signingCredentials: creds
             );
 
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
             // ZORUNLU KURAL: XSS ve CSRF Koruması için HttpOnly ve SameSite=Strict/None
             // [MOBILE_PORT_TODO]: Native mobil uygulamalarda Cookie kullanılamaz.
             // Bu metodun, token'ı JSON response olarak geri dönecek şekilde güncellenmesi 
