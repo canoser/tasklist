@@ -115,10 +115,12 @@
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-md);
   box-shadow: var(--shadow-lg);
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   z-index: 200;
   max-height: 240px;
-  overflow-y: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* İki sütunlu harika görünüm */
 }
 
 .dropdownItem {
@@ -150,9 +152,11 @@
   opacity: 1;
 }
 
-/* "X olarak ekle" seçeneği için üst kenarlık */
+/* "X olarak ekle" seçeneği için üst kenarlık ve grid yayılımı */
 .createOption {
   border-top: 1px solid var(--border-color);
+  grid-column: 1 / -1; /* İki sütunu da kapla (boydan boya) */
+  justify-content: center; /* Ortala */
 }
 
 .createLabel {

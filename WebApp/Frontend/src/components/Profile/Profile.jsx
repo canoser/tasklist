@@ -322,9 +322,10 @@ const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTh
         <AnimatePresence>
           {openSections.roles && (
             <motion.div
-              initial={{ height: 0, opacity: 0, overflow: 'hidden' }}
-              animate={{ height: 'auto', opacity: 1, transitionEnd: { overflow: 'visible' } }}
-              exit={{ height: 0, opacity: 0, overflow: 'hidden' }}
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              style={{ overflow: 'visible' }}
             >
               <div className={styles.sectionBody}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>

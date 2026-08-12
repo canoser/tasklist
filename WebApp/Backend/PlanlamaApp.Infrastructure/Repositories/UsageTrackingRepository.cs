@@ -105,5 +105,18 @@ namespace PlanlamaApp.Infrastructure.Repositories
             var sql = "SELECT * FROM UsageTracking WHERE TenantId = @TenantId AND ResourceType = @ResourceType";
             return await _dbConnection.QueryFirstOrDefaultAsync<UsageTracking>(sql, new { TenantId = tenantId, ResourceType = resourceType });
         }
+
+        public async Task<IEnumerable<UsageMetric>> GetGlobalUsageMetricsAsync()
+        {
+            var sql = @"
+                SELECT 
+                    ResourceType, 
+                    SUM(UsedAmount) as TotalUsedAmount, 
+                    COUNT(DISTINCT TenantId) as TotalUsers 
+                FROM UsageTracking 
+                GROUP BY ResourceType;
+            ";
+            return await _dbConnection.QueryAsync<UsageMetric>(sql);
+        }
     }
 }

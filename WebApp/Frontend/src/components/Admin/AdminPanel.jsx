@@ -3,6 +3,7 @@ import { Settings, Save, AlertCircle, RefreshCw } from 'lucide-react';
 import { getSettings, updateSetting } from '../../services/adminSettingsService';
 import QuotaSimulator from './QuotaSimulator';
 import UserApprovals from './UserApprovals';
+import UsageDashboard from './UsageDashboard';
 import styles from './AdminPanel.module.css';
 
 const AdminPanel = () => {
@@ -11,6 +12,7 @@ const AdminPanel = () => {
   const [savingKey, setSavingKey] = useState(null);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState('');
+  const [activeTab, setActiveTab] = useState('settings'); // 'settings', 'usage', 'users'
 
   const fetchSettings = async () => {
     try {
@@ -86,9 +88,33 @@ const AdminPanel = () => {
         </div>
       )}
 
-      <div className={styles.settingsGrid}>
-        {settings.map((setting) => (
-          <div key={setting.key} className={styles.settingCard}>
+      {/* ── Sekmeler (Tabs) ── */}
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
+        <button 
+          onClick={() => setActiveTab('settings')}
+          style={{ padding: '8px 16px', background: activeTab === 'settings' ? 'var(--accent-primary)' : 'transparent', color: activeTab === 'settings' ? 'white' : 'var(--text-secondary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+        >
+          Sistem Ayarları
+        </button>
+        <button 
+          onClick={() => setActiveTab('usage')}
+          style={{ padding: '8px 16px', background: activeTab === 'usage' ? 'var(--accent-primary)' : 'transparent', color: activeTab === 'usage' ? 'white' : 'var(--text-secondary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+        >
+          Kullanım & Maliyet
+        </button>
+        <button 
+          onClick={() => setActiveTab('users')}
+          style={{ padding: '8px 16px', background: activeTab === 'users' ? 'var(--accent-primary)' : 'transparent', color: activeTab === 'users' ? 'white' : 'var(--text-secondary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+        >
+          Kullanıcı Yönetimi
+        </button>
+      </div>
+
+      {activeTab === 'settings' && (
+        <>
+          <div className={styles.settingsGrid}>
+            {settings.map((setting) => (
+              <div key={setting.key} className={styles.settingCard}>
             <div className={styles.settingInfo}>
               <h3>{setting.key}</h3>
               <p>{setting.description}</p>
@@ -120,25 +146,28 @@ const AdminPanel = () => {
             </div>
           </div>
         ))}
-        {settings.length === 0 && !error && (
-          <div className={styles.emptyState}>
-            Sistem ayarı bulunamadı.
+            {settings.length === 0 && !error && (
+              <div className={styles.emptyState}>
+                Sistem ayarı bulunamadı.
+              </div>
+            )}
           </div>
-        )}
-      </div>
 
-      <div className={styles.sectionDivider}>
-        <h2>Kullanıcı Yönetimi</h2>
-      </div>
+          <div className={styles.sectionDivider}>
+            <h2>Test Araçları</h2>
+          </div>
+          
+          <QuotaSimulator resourceType="AiTaskCreation" />
+        </>
+      )}
 
-      <UserApprovals settings={settings} />
+      {activeTab === 'usage' && (
+        <UsageDashboard />
+      )}
 
-      <div className={styles.sectionDivider}>
-        <h2>Test Araçları</h2>
-      </div>
-      
-      {/* Kota Simülatörü Bileşeni */}
-      <QuotaSimulator resourceType="AiTaskCreation" />
+      {activeTab === 'users' && (
+        <UserApprovals settings={settings} />
+      )}
     </div>
   );
 };

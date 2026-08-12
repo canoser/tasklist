@@ -178,29 +178,32 @@ const apiService = {
 
 // ── Dışa Açık Servis (USE_MOCK geçişi) ───────────────────────────────────────
 
-const impl = USE_MOCK ? mockService : apiService;
+// Dinamik implementasyon seçici:
+// Eğer genel USE_MOCK aktifse veya kullanıcı giriş yapmamışsa (misafir modu - !userId) mockService kullan.
+// Aksi takdirde (gerçek oturum açılmışsa) apiService kullan.
+const getImpl = (userId) => (USE_MOCK || !userId) ? mockService : apiService;
 
 export const roleService = {
   /** Kullanıcının aktif rollerini getirir. */
-  getActive: (userId) => impl.getActive(userId),
+  getActive: (userId) => getImpl(userId).getActive(userId),
 
   /** Rol ekler veya restore eder. Oluşturulan/restore edilen rolü döner. */
-  add: (userId, roleName) => impl.add(userId, roleName),
+  add: (userId, roleName) => getImpl(userId).add(userId, roleName),
 
   /** Bir role bağlı görev sayısını döner. Karar Modalı için kullanılır. */
-  getTaskCount: (userId, roleId) => impl.getTaskCount(userId, roleId),
+  getTaskCount: (userId, roleId) => getImpl(userId).getTaskCount(userId, roleId),
 
   /** Soft-delete (görev yoksa doğrudan bu çağrılır). */
-  softDelete: (userId, roleId) => impl.softDelete(userId, roleId),
+  softDelete: (userId, roleId) => getImpl(userId).softDelete(userId, roleId),
 
   /** "Görevleri Tut (Rolsüz Bırak)": Soft-delete + TaskAssignment.RoleId = null. */
-  keepTasks: (userId, roleId) => impl.keepTasks(userId, roleId),
+  keepTasks: (userId, roleId) => getImpl(userId).keepTasks(userId, roleId),
 
   /** "Görevleri de Tamamen Sil": Hard-delete (geri alınamaz). */
-  hardDelete: (userId, roleId) => impl.hardDelete(userId, roleId),
+  hardDelete: (userId, roleId) => getImpl(userId).hardDelete(userId, roleId),
 
   /** Restore: Soft-deleted rolü geri getirir. */
-  restore: (userId, roleId) => impl.restore(userId, roleId),
+  restore: (userId, roleId) => getImpl(userId).restore(userId, roleId),
 
   /** Öneri listesi — UI bileşenlerine beslenecek sabit roller. */
   suggestions: DEFAULT_SUGGESTIONS,

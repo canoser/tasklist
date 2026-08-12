@@ -127,7 +127,9 @@ const TagSelect = ({
       {/* ── Pill Alanı + Input ── */}
       <div
         className={`${styles.inputArea} ${disabled ? styles.disabled : ''}`}
-        onClick={() => !disabled && inputRef.current?.focus()}
+        onClick={() => {
+          if (!disabled) inputRef.current?.focus();
+        }}
         role="combobox"
         aria-expanded={isOpen}
         aria-haspopup="listbox"
@@ -182,7 +184,6 @@ const TagSelect = ({
             onFocus={() => setIsOpen(true)}
             onKeyDown={handleKeyDown}
             placeholder={tags.length === 0 ? placeholder : ''}
-            disabled={isLoading}
             autoComplete="off"
             aria-autocomplete="list"
           />

@@ -21,6 +21,7 @@ import { DEFAULT_TONE } from './config/featureFlags';
 import { setTone as setI18nTone } from './i18n';
 import storage from './utils/storage';
 import GuestWelcomeModal from './components/Auth/GuestWelcomeModal';
+import { useKeyboardScrollFix } from './hooks/useKeyboardScrollFix';
 
 // Çevrimdışı işlem kuyruğunu ve senkronizasyonu başlat
 startSyncListener();
@@ -44,6 +45,9 @@ export default function App() {
   const { t } = useTranslation('common');
   // Merkezi Navigasyon Yöneticisi (URL Hash tabanlı)
   const { activeTab, setTab, openModal, closeModal, isModalOpen } = useAppNavigation('home');
+
+  // Mobil klavye açıldığında input'un arkada kalmasını engelleyen global hook
+  useKeyboardScrollFix();
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);

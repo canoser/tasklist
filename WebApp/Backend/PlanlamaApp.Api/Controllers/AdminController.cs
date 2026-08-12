@@ -66,5 +66,12 @@ namespace PlanlamaApp.Api.Controllers
             await userRepository.ApproveUserAsPremiumAsync(userId, request.CustomAiLimit, request.CustomStorageLimit);
             return Ok(new { Message = "Kullanıcı başarıyla onaylandı ve Premium yapıldı." });
         }
+
+        [HttpGet("usage-metrics")]
+        public async Task<IActionResult> GetGlobalUsageMetrics([FromServices] IUsageTrackingRepository usageTrackingRepository)
+        {
+            var metrics = await usageTrackingRepository.GetGlobalUsageMetricsAsync();
+            return Ok(metrics);
+        }
     }
 }
