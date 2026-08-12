@@ -8,13 +8,13 @@ import { useUndo } from '../Common/UndoContext';
 import { useTaskContext } from '../../context/TaskContext';
 import CategoryManagerPanel from '../Category/CategoryManagerPanel';
 import ChainManagerPanel from '../Chain/ChainManagerPanel';
-import styles from '../Dashboard/Dashboard.module.css';
 import screenStyles from './CalendarScreen.module.css';
 
 const CalendarScreen = ({ user, navigation, tone }) => {
   const [tasks, setTasks] = useState([]);
   const [userRoles, setUserRoles] = useState([]);
   const [selectedDay, setSelectedDay] = useState(null);
+  const [sectionHeight, setSectionHeight] = useState(null);
   
   const [actionTask, setActionTask] = useState(null);
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
@@ -22,10 +22,24 @@ const CalendarScreen = ({ user, navigation, tone }) => {
   const { triggerUndoableAction } = useUndo();
   const { lastAddedTask } = useTaskContext();
 
+  const containerRef = useRef(null);
   const calendarRef = useRef(null);
   const categoryRef = useRef(null);
   const chainRef = useRef(null);
 
+  // Kapsayıcı yüksekliğini ölç — header + bottom nav çıkarılınca kalan tam alan
+  useEffect(() => {
+    const measure = () => {
+      if (containerRef.current) {
+        setSectionHeight(containerRef.current.clientHeight);
+      }
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
+
+  // Her bölüm tam ekran kaydırma (scroll-snap) ile gidecek
   const scrollTo = (ref) => {
     ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
@@ -33,11 +47,10 @@ const CalendarScreen = ({ user, navigation, tone }) => {
   useEffect(() => {
     let isMounted = true;
     const fetchTasks = async () => {
-      // Orijinalde aylık görevleri getirmesi gerekir, mock service için geniş bir aralık veriyoruz
       const start = new Date();
-      start.setDate(1); // Ay başı
+      start.setDate(1);
       const end = new Date();
-      end.setMonth(end.getMonth() + 1); // Bir sonraki ay
+      end.setMonth(end.getMonth() + 1);
       
       try {
         const [taskData, roleData] = await Promise.all([
@@ -56,7 +69,6 @@ const CalendarScreen = ({ user, navigation, tone }) => {
     return () => { isMounted = false; };
   }, [user]);
 
-  // Yeni görev eklenirse takvime dahil et
   useEffect(() => {
     if (lastAddedTask) {
       setTasks(prev => {
@@ -68,23 +80,17 @@ const CalendarScreen = ({ user, navigation, tone }) => {
 
   const handleDayClick = (date) => {
     setSelectedDay(date);
-    setTimeout(() => {
-      navigation.openModal('dayDetail');
-    }, 0);
+    setTimeout(() => navigation.openModal('dayDetail'), 0);
   };
 
   const handleTaskClick = (task) => {
     setActionTask(task);
-    setTimeout(() => {
-      setIsActionModalOpen(true);
-    }, 0);
+    setTimeout(() => setIsActionModalOpen(true), 0);
   };
 
   const handleComplete = (task) => {
-    // Optimistic UI Update
     const prevState = [...tasks];
     const newState = tasks.map(t => t.id === task.id ? { ...t, isCompleted: true } : t);
-
     triggerUndoableAction(
       'Görev tamamlandı.',
       () => setTasks(newState),
@@ -96,23 +102,13 @@ const CalendarScreen = ({ user, navigation, tone }) => {
   const handlePartialComplete = (task, done, total, targetDate) => {
     const prevState = [...tasks];
     const percent = Math.round((done / total) * 100);
-    
-    // Asıl görev %X tamamlandı olarak güncellenir.
     const updatedTask = { ...task, partialPercent: percent };
-    // Kalan miktar için kopyası yeni tarihe atılır (Mock logic)
     const copyTask = { 
-      ...task, 
-      id: Date.now(), 
-      title: `${task.title} (Kalan)`, 
-      targetCount: total - done,
-      deadline: targetDate,
-      partialPercent: null,
-      isCompleted: false
+      ...task, id: Date.now(), title: `${task.title} (Kalan)`, 
+      targetCount: total - done, deadline: targetDate,
+      partialPercent: null, isCompleted: false
     };
-
-    const newState = tasks.map(t => t.id === task.id ? updatedTask : t);
-    newState.push(copyTask);
-
+    const newState = [...tasks.map(t => t.id === task.id ? updatedTask : t), copyTask];
     triggerUndoableAction(
       `Görev kısmen (%${percent}) tamamlandı. Kalanı ötelendi.`,
       () => setTasks(newState),
@@ -123,20 +119,17 @@ const CalendarScreen = ({ user, navigation, tone }) => {
 
   const handlePostpone = (task, targetDate, cascade) => {
     const prevState = [...tasks];
-    
     let newState = tasks.map(t => t.id === task.id ? { ...t, deadline: targetDate } : t);
     if (cascade) {
-      // Mock cascade: rastgele 1-2 görevi de 1 gün ileri at
       newState = newState.map(t => {
         if (t.id !== task.id && t.subject === task.subject && !t.isCompleted) {
           const d = new Date(targetDate);
-          d.setDate(d.getDate() + 1); // 1 gün sonrası
+          d.setDate(d.getDate() + 1);
           return { ...t, deadline: d.toISOString() };
         }
         return t;
       });
     }
-
     triggerUndoableAction(
       cascade ? 'Zincirleme erteleme uygulandı.' : 'Görev ertelendi.',
       () => setTasks(newState),
@@ -145,12 +138,17 @@ const CalendarScreen = ({ user, navigation, tone }) => {
     );
   };
 
+  // Her section'ın yüksekliği: ölçülen kapsayıcı yüksekliği veya fallback
+  const sectionStyle = sectionHeight ? { height: `${sectionHeight}px` } : {};
+
   return (
-    <div className={screenStyles.scrollContainer}>
-      {/* BÖLÜM 1: TAKVİM */}
-      <section ref={calendarRef} className={screenStyles.section}>
-        <CalendarView tasks={tasks} roles={userRoles} onDayClick={handleDayClick} tone={tone} />
-        
+    <div ref={containerRef} className={screenStyles.scrollContainer}>
+
+      {/* ── BÖLÜM 1: TAKVİM ────────────────────────────────────────────────── */}
+      <section ref={calendarRef} className={screenStyles.section} style={sectionStyle}>
+        <div className={screenStyles.calendarContent}>
+          <CalendarView tasks={tasks} roles={userRoles} onDayClick={handleDayClick} tone={tone} />
+        </div>
         <div className={screenStyles.calendarNavFooter}>
           <button onClick={() => scrollTo(categoryRef)} className={screenStyles.primaryBtn}>
             Kategoriler ↓
@@ -160,25 +158,29 @@ const CalendarScreen = ({ user, navigation, tone }) => {
           </button>
         </div>
       </section>
-      
-      {/* BÖLÜM 2: KATEGORİLER */}
-      <section ref={categoryRef} className={screenStyles.section}>
+
+      {/* ── BÖLÜM 2: KATEGORİLER ───────────────────────────────────────────── */}
+      <section ref={categoryRef} className={screenStyles.section} style={sectionStyle}>
         <div className={screenStyles.sectionHeader}>
           <button onClick={() => scrollTo(calendarRef)} className={screenStyles.sectionNavBtn}>↑ Takvim</button>
           <h2 className={screenStyles.sectionTitle}>Kategoriler</h2>
-          <button onClick={() => scrollTo(chainRef)} className={screenStyles.sectionNavBtn}>Zincir Görev ↓</button>
+          <button onClick={() => scrollTo(chainRef)} className={screenStyles.sectionNavBtn}>Zincir ↓</button>
         </div>
-        <CategoryManagerPanel />
+        <div className={screenStyles.sectionContent}>
+          <CategoryManagerPanel />
+        </div>
       </section>
 
-      {/* BÖLÜM 3: ZİNCİR GÖREVLER */}
-      <section ref={chainRef} className={screenStyles.section}>
+      {/* ── BÖLÜM 3: ZİNCİR GÖREVLER ───────────────────────────────────────── */}
+      <section ref={chainRef} className={screenStyles.section} style={sectionStyle}>
         <div className={screenStyles.sectionHeader}>
           <button onClick={() => scrollTo(categoryRef)} className={screenStyles.sectionNavBtn}>↑ Kategoriler</button>
           <h2 className={screenStyles.sectionTitle}>Zincir Görevler</h2>
           <button onClick={() => scrollTo(calendarRef)} className={screenStyles.sectionNavBtn}>↑ Takvim</button>
         </div>
-        <ChainManagerPanel user={user} />
+        <div className={screenStyles.sectionContent}>
+          <ChainManagerPanel user={user} />
+        </div>
       </section>
 
       <DayDetailModal 
