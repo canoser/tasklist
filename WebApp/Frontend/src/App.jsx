@@ -30,6 +30,7 @@ export default function App() {
   const [theme, setTheme] = useState('classic'); // 'classic', 'nature', 'lovely' vb.
   const [appearance, setAppearance] = useState('dark'); // 'light', 'dark'
   const [user, setUser] = useState(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [guestName, setGuestName] = useState(storage.getString('guest_name') || '');
   
   const [tone, setTone] = useState(
@@ -57,6 +58,7 @@ export default function App() {
   useEffect(() => {
     const unsubscribe = subscribeToAuthChanges((currentUser) => {
       setUser(currentUser);
+      setIsAuthLoading(false);
     });
     return () => unsubscribe();
   }, []);
@@ -64,6 +66,15 @@ export default function App() {
   const toggleAppearance = () => {
     setAppearance((prev) => (prev === 'dark' ? 'light' : 'dark'));
   };
+
+  if (isAuthLoading) {
+    return (
+      <div className={styles.loadingScreen}>
+        <div className={styles.spinner}></div>
+        <p>{t('loading', { defaultValue: 'Yükleniyor...' })}</p>
+      </div>
+    );
+  }
 
   return (
     <BrowserRouter>
