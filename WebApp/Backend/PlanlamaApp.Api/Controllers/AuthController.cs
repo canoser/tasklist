@@ -152,11 +152,12 @@ namespace PlanlamaApp.Api.Controllers
         [HttpPost("logout")]
         public IActionResult Logout()
         {
+            bool isLocal = Request.Host.Host.Contains("localhost") || Request.Host.Host.StartsWith("192.168");
             Response.Cookies.Delete("auth_token", new CookieOptions
             {
                 HttpOnly = true,
-                Secure = !Request.Host.Host.StartsWith("192.168"),
-                SameSite = SameSiteMode.Lax
+                Secure = !isLocal,
+                SameSite = isLocal ? SameSiteMode.Lax : SameSiteMode.None
             });
             return Ok(new { Message = "Çıkış yapıldı." });
         }
@@ -205,17 +206,18 @@ namespace PlanlamaApp.Api.Controllers
                 signingCredentials: creds
             );
 
-            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-
-            // ZORUNLU KURAL: XSS ve CSRF Koruması için HttpOnly ve SameSite=Strict
+            // ZORUNLU KURAL: XSS ve CSRF Koruması için HttpOnly ve SameSite=Strict/None
             // [MOBILE_PORT_TODO]: Native mobil uygulamalarda Cookie kullanılamaz.
             // Bu metodun, token'ı JSON response olarak geri dönecek şekilde güncellenmesi 
             // (örn. return Ok(new { token = tokenString })) gerekmektedir.
+            
+            bool isLocal = Request.Host.Host.Contains("localhost") || Request.Host.Host.StartsWith("192.168");
+            
             Response.Cookies.Append("auth_token", tokenString, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = !Request.Host.Host.StartsWith("192.168"), // Yerel ağ (Wi-Fi) üzerinden HTTP bağlantısında Cookie'nin reddedilmemesi için
-                SameSite = SameSiteMode.Lax,
+                Secure = !isLocal, // Canlı ortamda (HTTPS) zorunludur
+                SameSite = isLocal ? SameSiteMode.Lax : SameSiteMode.None, // Cross-Origin (farklı domain/subdomain) desteklemek için None olmalıdır
                 Expires = DateTime.UtcNow.AddDays(90)
             });
         }
