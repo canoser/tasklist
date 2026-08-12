@@ -7,6 +7,7 @@ import i18n from '../../i18n';
 import storage from '../../utils/storage';
 import { logoutUser } from '../../services/authService';
 import AccountModal from './AccountModal';
+import DropdownSelect from '../Common/DropdownSelect/DropdownSelect';
 
 const ChevronIcon = ({ isOpen }) => (
   <svg 
@@ -26,6 +27,7 @@ const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTh
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [localGuestName, setLocalGuestName] = useState(guestName || storage.getString('guest_name') || '');
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
+  const [showRoleInfo, setShowRoleInfo] = useState(false);
 
   const toggleSection = (sec) => setOpenSections(prev => ({ ...prev, [sec]: !prev[sec] }));
 
@@ -175,10 +177,9 @@ const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTh
         <AnimatePresence>
           {openSections.theme && (
             <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              style={{ overflow: 'hidden' }}
+              initial={{ height: 0, opacity: 0, overflow: 'hidden' }}
+              animate={{ height: 'auto', opacity: 1, transitionEnd: { overflow: 'visible' } }}
+              exit={{ height: 0, opacity: 0, overflow: 'hidden' }}
             >
               <div className={styles.sectionBody}>
                 <p className={styles.themeDesc}>
@@ -260,42 +261,40 @@ const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTh
         <AnimatePresence>
           {openSections.settings && (
             <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              style={{ overflow: 'hidden' }}
+              initial={{ height: 0, opacity: 0, overflow: 'hidden' }}
+              animate={{ height: 'auto', opacity: 1, transitionEnd: { overflow: 'visible' } }}
+              exit={{ height: 0, opacity: 0, overflow: 'hidden' }}
             >
               <div className={styles.sectionBody}>
                 <div className={styles.settingItem}>
                   <span className={styles.settingLabel}>{t('setting_language', { context: tone })}</span>
-                  <select 
-                    style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
-                    value={i18n.language} 
-                    onChange={e => {
-                      const newLang = e.target.value;
+                  <DropdownSelect
+                    value={i18n.language}
+                    onChange={newLang => {
                       storage.setString('planlama_lang', newLang);
                       i18n.changeLanguage(newLang);
                     }}
-                  >
-                    <option value="tr">Türkçe</option>
-                    <option value="en">English</option>
-                    <option value="es">Español</option>
-                    <option value="fr">Français</option>
-                    <option value="de">Deutsch</option>
-                    <option value="ro">Română</option>
-                  </select>
+                    options={[
+                      { value: 'tr', label: 'Türkçe' },
+                      { value: 'en', label: 'English' },
+                      { value: 'es', label: 'Español' },
+                      { value: 'fr', label: 'Français' },
+                      { value: 'de', label: 'Deutsch' },
+                      { value: 'ro', label: 'Română' }
+                    ]}
+                  />
                 </div>
                 <div className={styles.settingItem}>
                   <span className={styles.settingLabel}>{t('setting_tone', { context: tone })}</span>
-                  <select 
-                    style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
-                    value={tone} 
-                    onChange={e => onToneChange(e.target.value)}
-                  >
-                    <option value="formal">{t('setting_tone_formal')}</option>
-                    <option value="semi">{t('setting_tone_semi')}</option>
-                    <option value="buddy">{t('setting_tone_buddy')}</option>
-                  </select>
+                  <DropdownSelect
+                    value={tone}
+                    onChange={onToneChange}
+                    options={[
+                      { value: 'formal', label: t('setting_tone_formal') },
+                      { value: 'semi', label: t('setting_tone_semi') },
+                      { value: 'buddy', label: t('setting_tone_buddy') }
+                    ]}
+                  />
                 </div>
                 <div className={styles.settingItem}>
                   <span className={styles.settingLabel}>{t('setting_version', { context: tone })}</span>
@@ -323,16 +322,55 @@ const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTh
         <AnimatePresence>
           {openSections.roles && (
             <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              style={{ overflow: 'hidden' }}
+              initial={{ height: 0, opacity: 0, overflow: 'hidden' }}
+              animate={{ height: 'auto', opacity: 1, transitionEnd: { overflow: 'visible' } }}
+              exit={{ height: 0, opacity: 0, overflow: 'hidden' }}
             >
               <div className={styles.sectionBody}>
-                <p className={styles.themeDesc}>
-                  {t('roles_desc', { context: tone })}
-                </p>
-                <RoleTagSelect userId={user?.uid} tone={tone} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                  <p className={styles.themeDesc} style={{ marginBottom: 0 }}>
+                    {t('roles_desc', { context: tone })}
+                  </p>
+                  <span 
+                    onClick={() => setShowRoleInfo(!showRoleInfo)}
+                    style={{ 
+                      fontSize: '12px', 
+                      color: 'var(--accent-primary, #3b82f6)', 
+                      cursor: 'pointer', 
+                      fontWeight: '600',
+                      whiteSpace: 'nowrap',
+                      marginLeft: '12px'
+                    }}
+                  >
+                    {t('roles_how_to_use_link', { defaultValue: 'Nasıl Kullanılır?' })}
+                  </span>
+                </div>
+
+                <AnimatePresence>
+                  {showRoleInfo && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      style={{ overflow: 'hidden', marginBottom: '16px' }}
+                    >
+                      <div style={{ 
+                        padding: '12px', 
+                        background: 'var(--bg-primary, #f9fafb)', 
+                        border: '1px solid var(--border-color, #e5e7eb)',
+                        borderLeft: '4px solid var(--accent-primary, #3b82f6)',
+                        borderRadius: '8px',
+                        fontSize: '13px',
+                        color: 'var(--text-secondary, #4b5563)',
+                        lineHeight: '1.5'
+                      }}>
+                        {t('roles_how_to_use_info', { context: tone, defaultValue: 'Roller, görevlerinizi belirli kimlikler altında (Örn: Öğrenci, Müdür, Baba) organize etmenizi sağlar. Kutucuğa tıklayarak listeden bir rol seçebilir veya kendi özel rolünüzü yazıp Enter tuşuna basarak listeye yeni bir rol ekleyebilirsiniz.' })}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <RoleTagSelect userId={user?.id || user?.uid} tone={tone} />
               </div>
             </motion.div>
           )}

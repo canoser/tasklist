@@ -27,13 +27,11 @@ import styles from './RoleTagSelect.module.css';
 import { USE_MOCK } from '../../config/featureFlags';
 import { useTranslation } from 'react-i18next';
 
-/** Mock modda Firebase auth olmadan da özelliği test edebilmek için fallback ID. */
-const MOCK_USER_ID = 'mock-user-demo';
 
 const RoleTagSelect = ({ userId, tone }) => {
   const { t } = useTranslation('profile');
-  // USE_MOCK=true iken auth olmadan test edilebilsin diye fallback ID kullan
-  const effectiveUserId = userId || (USE_MOCK ? MOCK_USER_ID : null);
+  // MOCK_USER_ID kullanımını kaldırıp her yerin aynı fallback'i (guest) kullanmasını sağlıyoruz
+  const effectiveUserId = userId || null;
 
   // ── Stable Fonksiyonlar (useCallback) ─────────────────────────────────────
   const fetchFn        = useCallback(() => roleService.getActive(effectiveUserId), [effectiveUserId]);
@@ -61,6 +59,7 @@ const RoleTagSelect = ({ userId, tone }) => {
       </p>
     );
   }
+
 
 
   // ── Render ────────────────────────────────────────────────────────────────

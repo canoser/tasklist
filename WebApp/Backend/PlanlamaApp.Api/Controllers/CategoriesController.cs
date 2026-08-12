@@ -25,6 +25,13 @@ namespace PlanlamaApp.Api.Controllers
 
         // ── GET ──────────────────────────────────────────────────────────────────
 
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var all = await _categoryRepository.GetAllAsync();
+            return Ok(all);
+        }
+
         /// <summary>Tüm kök (ders) kategorilerini listeler (ParentId = null).</summary>
         [HttpGet("roots")]
         public async Task<IActionResult> GetRoots()
@@ -58,10 +65,19 @@ namespace PlanlamaApp.Api.Controllers
         [ServiceFilter(typeof(IdempotencyFilter))]
         public async Task<IActionResult> Create([FromBody] Category category)
         {
-            category.CreatedAt = DateTime.UtcNow;
-            category.UpdatedAt = DateTime.UtcNow;
-            var newId = await _categoryRepository.CreateAsync(category);
-            return CreatedAtAction(nameof(GetById), new { id = newId }, new { Id = newId });
+            try 
+            {
+                category.CreatedAt = DateTime.UtcNow;
+                category.UpdatedAt = DateTime.UtcNow;
+                var newId = await _categoryRepository.CreateAsync(category);
+                return CreatedAtAction(nameof(GetById), new { id = newId }, new { Id = newId });
+            }
+            catch (Exception ex)
+            {
+                var errorMsg = $"[Category Create Error - {DateTime.UtcNow}]\n{ex}\n----------------------------------\n";
+                System.IO.File.AppendAllText("CATEGORY_ERROR_LOG.txt", errorMsg);
+                return StatusCode(500, new { Message = "Kategori eklenirken sunucu hatası oluştu.", ErrorDetails = ex.Message });
+            }
         }
 
         /// <summary>Mevcut kategoriyi günceller. Idempotency-Key header zorunludur.</summary>

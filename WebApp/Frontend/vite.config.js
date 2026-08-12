@@ -3,10 +3,25 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  // Dev proxy hedefi: VITE_API_TARGET veya localhost
+  const apiTarget = process.env.VITE_API_TARGET || 'http://localhost:5268';
+
+  return {
   server: {
     host: '0.0.0.0',
-    port: 5173
+    port: 5173,
+    proxy: {
+      // [MOBILE_PORT_TODO]: Capacitor (Native iOS/Android) build'lerinde Vite Proxy ÇALIŞMAZ!
+      // Native uygulamalar doğrudan mutlak URL'ye (Örn: https://api.site.com) istek atmalıdır.
+      // Geliştirme ortamında (Web) tüm /api isteklerini backend'e yönlendir.
+      // Böylece cookie same-origin olur, SameSite=Lax sorunsuz çalışır.
+      '/api': {
+        target: apiTarget,
+        changeOrigin: true,
+        secure: false,
+      }
+    }
   },
   plugins: [
     react(),
@@ -43,4 +58,5 @@ export default defineConfig({
       }
     })
   ],
-})
+  };
+});

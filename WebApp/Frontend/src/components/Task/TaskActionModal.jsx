@@ -4,11 +4,14 @@ import { CloseIcon, AlertIcon } from '../Common/Icons';
 import styles from './TaskActionModal.module.css';
 import { useTranslation } from 'react-i18next';
 
+import chainService from '../../services/chainService';
+
 const TaskActionModal = ({ isOpen, onClose, task, onComplete, onPartialComplete, onPostpone }) => {
   const { t } = useTranslation('common');
   const [mode, setMode] = useState('menu'); // 'menu' | 'partial' | 'postpone'
   const [doneAmount, setDoneAmount] = useState('');
   const [targetDate, setTargetDate] = useState('');
+  const [postponeAll, setPostponeAll] = useState(false);
 
   if (!isOpen || !task) return null;
 
@@ -36,10 +39,20 @@ const TaskActionModal = ({ isOpen, onClose, task, onComplete, onPartialComplete,
     handleClose();
   };
 
-  const submitPostpone = () => {
+  const submitPostpone = async () => {
     if (!targetDate) return;
-    onPostpone(task, targetDate, true); // true = Zincirleme öteleme onayı (UI'da basitleştirildi)
-    handleClose();
+    try {
+      const today = new Date();
+      const targetDateObj = new Date(targetDate);
+      const daysToShift = Math.round((targetDateObj - today) / (1000 * 60 * 60 * 24));
+      
+      await chainService.postponeTask(task.id, daysToShift, postponeAll);
+      onPostpone(task, targetDate, postponeAll); // State'i yerel olarak güncellemesi için (CalendarScreen)
+      handleClose();
+    } catch (err) {
+      console.error('Erteleme hatası:', err);
+      handleClose();
+    }
   };
 
   // Toplam hedef sayısını bul (örn: "30 Soru" -> 30)
@@ -116,13 +129,35 @@ const TaskActionModal = ({ isOpen, onClose, task, onComplete, onPartialComplete,
         {mode === 'postpone' && (
           <div className={styles.partialForm}>
             
-            {/* Zincirleme Erteleme Uyarısı (Mock) */}
-            <div className={styles.warningBox}>
-              <div className={styles.warningTitle}><AlertIcon /> Zincirleme Erteleme</div>
-              <div className={styles.warningText}>
-                Bu göreve bağlı {Math.floor(Math.random() * 3) + 1} alt görev daha bulunuyor. Bu görevi ertelerseniz, programa uygun şekilde ondan sonraki görevler de kaydırılacaktır.
+            {/* Zincirleme Erteleme Uyarısı */}
+            {task.chainId && (
+              <div className={styles.warningBox}>
+                <div className={styles.warningTitle}><AlertIcon /> Zincirleme Erteleme</div>
+                <div className={styles.warningText}>
+                  Bu görev bir zincirin parçası. Sonraki görevler de kaydırılsın mı?
+                </div>
+                <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                    <input 
+                      type="radio" 
+                      name="postponeMode" 
+                      checked={!postponeAll} 
+                      onChange={() => setPostponeAll(false)} 
+                    />
+                    Sadece bu görevi ertele
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                    <input 
+                      type="radio" 
+                      name="postponeMode" 
+                      checked={postponeAll} 
+                      onChange={() => setPostponeAll(true)} 
+                    />
+                    Zinciri de kaydır
+                  </label>
+                </div>
               </div>
-            </div>
+            )}
 
             <div className={styles.inputGroup}>
               <label className={styles.label}>Yeni Tarihi Seçin</label>

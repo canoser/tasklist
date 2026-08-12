@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 const WorkspaceScreen = ({ user, tone }) => {
   const { t } = useTranslation('common');
-  const { ownedWorkspaces, joinedWorkspaces, loading } = useWorkspaces(user?.uid);
+  const { ownedWorkspaces, joinedWorkspaces, loading } = useWorkspaces(user?.id || user?.uid);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
 

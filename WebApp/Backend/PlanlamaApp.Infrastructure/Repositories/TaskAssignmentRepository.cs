@@ -62,7 +62,7 @@ namespace PlanlamaApp.Infrastructure.Repositories
                             WorkspaceId = EXCLUDED.WorkspaceId,
                             Status = EXCLUDED.Status,
                             AssignedAt = EXCLUDED.AssignedAt
-                        RETURNING ""Id"";";
+                        RETURNING Id;";
 
             return await ExecuteScalarAsync<int>(sql, assignment, transaction);
         }

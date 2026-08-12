@@ -1,0 +1,51 @@
+.pickerContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.selectRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.levelArrow {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.select {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 6px 10px;
+  outline: none;
+  font-size: 14px;
+  min-width: 150px;
+}
+
+.select:focus {
+  border-color: var(--accent-primary);
+}
+
+.clearBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.clearBtn:hover {
+  color: var(--text-primary);
+}
+
+.loadingDot {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}

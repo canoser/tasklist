@@ -17,6 +17,12 @@ namespace PlanlamaApp.Infrastructure.Repositories
         {
         }
 
+        public async Task<IEnumerable<Category>> GetAllAsync()
+        {
+            var sql = @"SELECT * FROM Categories ORDER BY ParentId ASC NULLS FIRST, SortOrder ASC, Name ASC";
+            return await QueryAsync<Category>(sql);
+        }
+
         public async Task<IEnumerable<Category>> GetRootCategoriesAsync()
         {
             // ParentId NULL olan kategoriler kök (ders) kategorilerdir.
@@ -39,17 +45,19 @@ namespace PlanlamaApp.Infrastructure.Repositories
 
         public async Task<int> CreateAsync(Category category)
         {
+            category.TenantId = _tenantId;
             // INSERT: TenantId kolonu sorguda zorunlu (BaseRepository kural).
             var sql = @"INSERT INTO Categories 
                             (TenantId, Name, ParentId, IsFromTemplate, SortOrder, CreatedAt, UpdatedAt)
                         VALUES 
                             (@TenantId, @Name, @ParentId, @IsFromTemplate, @SortOrder, @CreatedAt, @UpdatedAt)
-                        RETURNING ""Id"";";
+                        RETURNING Id;";
             return await ExecuteScalarAsync<int>(sql, category);
         }
 
         public async Task<bool> UpdateAsync(Category category)
         {
+            category.TenantId = _tenantId;
             var sql = @"UPDATE Categories 
                         SET Name = @Name,
                             ParentId = @ParentId,

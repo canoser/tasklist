@@ -1,25 +1,14 @@
 {
   "modal_title": "Ajouter une Nouvelle Tâche",
-  "field_title": "Titre de la Tâche *",
+  "field_title": "Tâche *",
   "field_title_placeholder": "Ex: Résoudre des problèmes de dérivées",
-  "field_category": "Matière / Catégorie",
+  "field_category": "Catégorie",
   "field_date": "Date *",
-  "field_target": "Quantité Cible (Optionnel)",
-  "field_target_placeholder": "Ex: 50",
-  "field_teacher_assigned": "Cette tâche a été assignée par un professeur",
-  "field_teacher_assigned_buddy": "On m'a refilé cette tâche 😅",
 
   "btn_submit": "Ajouter la Tâche",
   "btn_submit_buddy": "Allez, on ajoute !",
   "btn_saving": "Enregistrement...",
   "btn_saving_buddy": "Deux secondes...",
-
-  "cat_math": "Mathématiques",
-  "cat_physics": "Physique",
-  "cat_chemistry": "Chimie",
-  "cat_biology": "Biologie",
-  "cat_exam": "Examen Blanc",
-  "cat_other": "Autre / Personnel",
 
   "stat_remaining": "{{count}} Tâches restantes",
   "stat_remaining_buddy": "{{count}} tâches t'attendent 💪",

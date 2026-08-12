@@ -66,7 +66,7 @@ namespace PlanlamaApp.Infrastructure.Repositories
 
             var insertSql = @"INSERT INTO UserRoles (TenantId, UserId, RoleName, IsActive, DeletedAt, CreatedAt, UpdatedAt)
                               VALUES (@TenantId, @UserId, @RoleName, 1, NULL, @CreatedAt, @UpdatedAt)
-                              RETURNING ""Id"";";
+                              RETURNING Id;";
             return await ExecuteScalarAsync<int>(insertSql, tag);
         }
 

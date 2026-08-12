@@ -189,6 +189,27 @@ namespace PlanlamaApp.Api.Controllers
         }
         // ── Görev Zinciri (Task Chain) ──────────────────────────────────────────
 
+        /// <summary>Kullanıcının tüm zincir görevlerini gruplu listeler.</summary>
+        [HttpGet("chains")]
+        public async Task<IActionResult> GetChains()
+        {
+            var currentUserId = GetCurrentUserId();
+            if (currentUserId == null) return Unauthorized();
+
+            var tasks = await _taskRepository.GetChainTasksByUserIdAsync(currentUserId);
+
+            // ChainId'ye göre grupla
+            var chains = tasks
+                .GroupBy(t => t.ChainId)
+                .Select(g => new
+                {
+                    ChainId = g.Key,
+                    Tasks = g.OrderBy(t => t.ChainOrder).ToList()
+                });
+
+            return Ok(chains);
+        }
+
         [HttpPost("chain")]
         [ServiceFilter(typeof(IdempotencyFilter))]
         public async Task<IActionResult> CreateChain([FromBody] CreateTaskChainRequest request)
@@ -196,24 +217,35 @@ namespace PlanlamaApp.Api.Controllers
             var currentUserId = GetCurrentUserId();
             if (currentUserId == null) return Unauthorized();
             
-            if (request.Tasks == null || request.Tasks.Count == 0 || request.AssignedUserIds == null || request.AssignedUserIds.Count == 0)
-                return BadRequest("Geçersiz görev zinciri verisi.");
-
-            var members = await _workspaceRepository.GetMembersAsync(request.WorkspaceId);
-            var callerMember = members.FirstOrDefault(m => m.UserId == currentUserId);
-            if (callerMember == null)
-                return Forbid();
-
-            bool isTeacher = callerMember.Role == "Owner" || callerMember.Role == "Teacher" || callerMember.Role == "Admin" || callerMember.Role == "Leader";
-
-            if (!isTeacher && (request.AssignedUserIds.Count != 1 || request.AssignedUserIds[0] != currentUserId))
+            // Atanan kullanıcılar listesi boşsa, isteği yapan kişiye ata
+            if (request.AssignedUserIds == null || request.AssignedUserIds.Count == 0)
             {
-                return Forbid(); // Öğrenciler başkasına görev atayamaz.
+                request.AssignedUserIds = new List<string> { currentUserId };
             }
 
-            if (request.AssignedUserIds.Any(id => !members.Any(m => m.UserId == id)))
+            if (request.Tasks == null || request.Tasks.Count == 0)
+                return BadRequest("Geçersiz görev zinciri verisi.");
+
+            bool isTeacher = false;
+            // Eğer bir Workspace belirtilmişse workspace kontrollerini yap
+            if (request.WorkspaceId != null && request.WorkspaceId.Value > 0)
             {
-                return BadRequest("Atanan kullanıcılardan biri bu çalışma alanının üyesi değil.");
+                var members = await _workspaceRepository.GetMembersAsync(request.WorkspaceId.Value);
+                var callerMember = members.FirstOrDefault(m => m.UserId == currentUserId);
+                if (callerMember == null)
+                    return Forbid();
+
+                isTeacher = callerMember.Role == "Owner" || callerMember.Role == "Teacher" || callerMember.Role == "Admin" || callerMember.Role == "Leader";
+
+                if (!isTeacher && (request.AssignedUserIds.Count != 1 || request.AssignedUserIds[0] != currentUserId))
+                {
+                    return Forbid(); // Öğrenciler başkasına görev atayamaz.
+                }
+
+                if (request.AssignedUserIds.Any(id => !members.Any(m => m.UserId == id)))
+                {
+                    return BadRequest("Atanan kullanıcılardan biri bu çalışma alanının üyesi değil.");
+                }
             }
 
             var chainId = Guid.NewGuid().ToString("N");
@@ -243,7 +275,7 @@ namespace PlanlamaApp.Api.Controllers
                             ChainId = chainId,
                             ChainOrder = order,
                             OriginalDeadline = task.Deadline,
-                            IsHomework = true,
+                            IsHomework = request.WorkspaceId != null,
                             AssignedBy = currentUserId,
                             CreatedAt = DateTime.UtcNow,
                             UpdatedAt = DateTime.UtcNow
@@ -251,16 +283,19 @@ namespace PlanlamaApp.Api.Controllers
                         
                         var taskId = await _taskRepository.CreateAsync(taskItem, transaction);
 
-                        var assignment = new TaskAssignment
+                        if (request.WorkspaceId != null && request.WorkspaceId.Value > 0)
                         {
-                            TaskItemId = taskId,
-                            AssignedUserId = userId,
-                            CreatedByUserId = currentUserId,
-                            WorkspaceId = request.WorkspaceId,
-                            Status = "Pending"
-                        };
-                        
-                        await _taskAssignmentRepository.AssignAsync(assignment, transaction);
+                            var assignment = new TaskAssignment
+                            {
+                                TaskItemId = taskId,
+                                AssignedUserId = userId,
+                                CreatedByUserId = currentUserId,
+                                WorkspaceId = request.WorkspaceId.Value,
+                                Status = "Pending"
+                            };
+                            
+                            await _taskAssignmentRepository.AssignAsync(assignment, transaction);
+                        }
                         order++;
                     }
                 }
@@ -271,7 +306,9 @@ namespace PlanlamaApp.Api.Controllers
             catch (Exception ex)
             {
                 transaction.Rollback();
-                return StatusCode(500, $"Görev zinciri oluşturulurken hata: {ex.Message}");
+                var errorMsg = $"[Chain Create Error - {DateTime.UtcNow}]\n{ex}\n----------------------------------\n";
+                System.IO.File.AppendAllText("CHAIN_ERROR_LOG.txt", errorMsg);
+                return StatusCode(500, new { Message = "Görev zinciri oluşturulurken sunucu hatası oluştu.", ErrorDetails = ex.Message });
             }
         }
 

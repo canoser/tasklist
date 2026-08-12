@@ -165,7 +165,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// Geliştirme (Development) ortamında HTTP ile de çalışılabilmesi için HTTPS yönlendirmeyi sadece Production'da aktif et
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseCors("AllowStrict");
 

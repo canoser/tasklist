@@ -1,0 +1,128 @@
+.container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.mainBtn {
+  background: var(--bg-card, #ffffff);
+  color: var(--text-primary, #111827);
+  border: 1px solid var(--border-color, #e5e7eb);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.mainBtn:hover {
+  background: var(--bg-primary, #f9fafb);
+  border-color: var(--text-muted, #9ca3af);
+}
+
+.expandedStrip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: slideRight 0.3s ease forwards;
+  flex-wrap: wrap;
+}
+
+@keyframes slideRight {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.closeBtn {
+  background: transparent;
+  color: var(--text-muted, #6b7280);
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.closeBtn:hover {
+  background: var(--bg-card, #ffffff);
+  color: var(--text-primary, #111827);
+}
+
+.filterBtn {
+  background: var(--bg-card, #ffffff);
+  color: var(--text-secondary, #4b5563);
+  border: 1px solid var(--border-color, #e5e7eb);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.filterBtn:hover {
+  border-color: var(--text-muted, #9ca3af);
+  color: var(--text-primary, #111827);
+}
+
+.activeFilterBtn {
+  background: var(--text-primary, #111827);
+  color: var(--bg-primary, #ffffff);
+  border-color: var(--text-primary, #111827);
+}
+
+.relative {
+  position: relative;
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  min-width: 200px;
+  max-height: 250px;
+  overflow-y: auto;
+  z-index: 50;
+  padding: 8px 0;
+  /* Mobil veya alt kısıma yakın yerlerde yukarı açılması için ek mantık React tarafında yapılabilir, 
+     basit CSS ile şimdilik aşağı doğru */
+}
+
+/* Telefon ekranlarında yukarı doğru açılması için bir fallback sınıfı */
+@media (max-height: 600px) {
+  .dropdown {
+    top: auto;
+    bottom: calc(100% + 8px);
+  }
+}
+
+.dropdownItem {
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-primary, #111827);
+  transition: background 0.1s;
+}
+
+.dropdownItem:hover {
+  background: var(--bg-primary, #f9fafb);
+}
+
+.selected {
+  background: rgba(59, 130, 246, 0.1); /* accent-primary light */
+  color: var(--accent-primary, #3b82f6);
+  font-weight: 600;
+}
+
+.empty {
+  padding: 8px 16px;
+  font-size: 13px;
+  color: var(--text-muted, #6b7280);
+  font-style: italic;
+}

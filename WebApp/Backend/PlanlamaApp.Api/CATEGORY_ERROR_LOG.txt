@@ -1,0 +1,25 @@
+[Category Create Error - 12.08.2026 01:48:17]
+Npgsql.PostgresException (0x80004005): 42703: column "Id" does not exist
+
+POSITION: 252
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteScalar(Boolean async, CancellationToken cancellationToken)
+   at Dapper.SqlMapper.ExecuteScalarImplAsync[T](IDbConnection cnn, CommandDefinition command) in /_/Dapper/SqlMapper.Async.cs:line 1242
+   at PlanlamaApp.Infrastructure.Repositories.BaseRepository.ExecuteScalarAsync[T](String sql, Object param, IDbTransaction transaction) in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Infrastructure\Repositories\BaseRepository.cs:line 106
+   at PlanlamaApp.Infrastructure.Repositories.CategoryRepository.CreateAsync(Category category) in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Infrastructure\Repositories\CategoryRepository.cs:line 55
+   at PlanlamaApp.Api.Controllers.CategoriesController.Create(Category category) in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api\Controllers\CategoriesController.cs:line 72
+  Exception data:
+    Severity: ERROR
+    SqlState: 42703
+    MessageText: column "Id" does not exist
+    Hint: Perhaps you meant to reference the column "categories.id".
+    Position: 252
+    File: parse_relation.c
+    Line: 3729
+    Routine: errorMissingColumn
+----------------------------------

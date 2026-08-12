@@ -145,6 +145,16 @@ namespace PlanlamaApp.Infrastructure
                 );
             ");
 
+            // Eksik olabilecek yeni kolonları ekle (Migration Update)
+            connection.Execute(@"
+                ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS WorkspaceId INTEGER;
+                ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS ChainId TEXT;
+                ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS ChainOrder INTEGER;
+                ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS OriginalDeadline TIMESTAMPTZ;
+                ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS IsHomework BOOLEAN NOT NULL DEFAULT FALSE;
+                ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS AssignedBy TEXT;
+            ");
+
             // ── Categories ─────────────────────────────────────────────────
             connection.Execute(@"
                 CREATE TABLE IF NOT EXISTS Categories (

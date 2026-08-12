@@ -5,12 +5,13 @@ import styles from './AddTaskModal.module.css';
 import { taskService } from '../../services/taskService';
 import { useTranslation } from 'react-i18next';
 import { useTaskContext } from '../../context/TaskContext';
+import HierarchicalCategoryPicker from '../Category/HierarchicalCategoryPicker';
 
 const AddTaskModal = ({ isOpen, onClose, tone }) => {
   const { t } = useTranslation('tasks');
   const { notifyTaskAdded } = useTaskContext();
   const [title, setTitle] = useState('');
-  const [subject, setSubject] = useState(t('cat_math'));
+  const [categoryId, setCategoryId] = useState(null);
   const [targetCount, setTargetCount] = useState('');
   const [deadline, setDeadline] = useState('');
   const [isTeacherAssigned, setIsTeacherAssigned] = useState(false);
@@ -23,7 +24,7 @@ const AddTaskModal = ({ isOpen, onClose, tone }) => {
     const newTask = {
       id: Date.now(), // Fallback ID for optimistic updates
       title,
-      subject,
+      categoryId,
       taskType: 'Görev',
       targetCount: targetCount ? parseInt(targetCount) : null,
       count: targetCount ? `${targetCount} Soru` : null,
@@ -45,7 +46,7 @@ const AddTaskModal = ({ isOpen, onClose, tone }) => {
       
       // Formu temizle ve kapat
       setTitle('');
-      setSubject(t('cat_math'));
+      setCategoryId(null);
       setTargetCount('');
       setDeadline('');
       setIsTeacherAssigned(false);
@@ -74,15 +75,11 @@ const AddTaskModal = ({ isOpen, onClose, tone }) => {
         </div>
 
         <div className={styles.formGroup}>
-          <label className={styles.label}>{t('field_category', { context: tone })}</label>
-          <select className={styles.select} value={subject} onChange={e => setSubject(e.target.value)}>
-            <option value={t('cat_math')}>{t('cat_math')}</option>
-            <option value={t('cat_physics')}>{t('cat_physics')}</option>
-            <option value={t('cat_chemistry')}>{t('cat_chemistry')}</option>
-            <option value={t('cat_biology')}>{t('cat_biology')}</option>
-            <option value={t('cat_exam')}>{t('cat_exam')}</option>
-            <option value={t('cat_other')}>{t('cat_other')}</option>
-          </select>
+          <label className={styles.label}>Kategori</label>
+          <HierarchicalCategoryPicker 
+            value={categoryId} 
+            onChange={(id) => setCategoryId(id)} 
+          />
         </div>
 
         <div className={styles.formGroup}>

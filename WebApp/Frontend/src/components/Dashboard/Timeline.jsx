@@ -130,7 +130,7 @@ const Timeline = ({ user, tasks: initialPropsTasks, onStatsChange }) => {
   useEffect(() => {
     let isMounted = true;
     const fetchTimelineData = async () => {
-      if (!user?.uid) return;
+      if (!(user?.id || user?.uid)) return;
       
       setLoading(true);
       setError(null);
@@ -203,7 +203,7 @@ const Timeline = ({ user, tasks: initialPropsTasks, onStatsChange }) => {
 
     // API Çağrısı (Idempotency Filter koruması altında)
     try {
-      await taskService.completeTask(perfData.taskId, perfData, user?.uid);
+      await taskService.completeTask(perfData.taskId, perfData, user?.id || user?.uid);
     } catch (err) {
       console.error('API Görev tamamlama çağrısında hata oluştu:', err);
     }

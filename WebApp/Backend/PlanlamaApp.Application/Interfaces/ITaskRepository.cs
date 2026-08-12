@@ -37,5 +37,11 @@ namespace PlanlamaApp.Application.Interfaces
 
         /// <summary>Bir zincirdeki görevleri (sırası >= minOrder) kaskad olarak öteler.</summary>
         Task<bool> PostponeChainAsync(string chainId, string userId, int minOrder, int daysToShift, System.Data.IDbTransaction? transaction = null);
+
+        /// <summary>
+        /// Kullanıcının zincir görevlerini gruplu olarak getirir.
+        /// Her grup: ChainId, görev listesi (ChainOrder'a göre sıralı).
+        /// </summary>
+        Task<IEnumerable<TaskItem>> GetChainTasksByUserIdAsync(string userId);
     }
 }

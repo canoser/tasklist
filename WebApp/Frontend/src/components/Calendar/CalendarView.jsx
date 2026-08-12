@@ -1,12 +1,46 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { ChevronLeftIcon, ChevronRightIcon } from '../Common/Icons';
 import { groupTasksByRole, getTagColors } from '../../utils/taskUtils';
 import styles from './CalendarView.module.css';
 import { useTranslation } from 'react-i18next';
+import FilterDropdown from './FilterDropdown';
+import { categoryService } from '../../services/categoryService';
 
 const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
   const { t, i18n } = useTranslation('common');
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [filter, setFilter] = useState({ roleIds: [], categoryIds: [], chainIds: [] });
+  const [rootCategories, setRootCategories] = useState([]);
+  const [chains, setChains] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchRoots = () => {
+      categoryService.getRoots().then(roots => {
+        if (isMounted) setRootCategories(roots || []);
+      }).catch(console.error);
+    };
+    const fetchChains = async () => {
+      try {
+        const { default: chainService } = await import('../../services/chainService');
+        const data = await chainService.getChains();
+        if (isMounted) setChains(data || []);
+      } catch(err) {
+        console.error(err);
+      }
+    };
+    
+    fetchRoots();
+    fetchChains();
+    
+    window.addEventListener('categoriesUpdated', fetchRoots);
+    window.addEventListener('chainsUpdated', fetchChains);
+    return () => { 
+      isMounted = false; 
+      window.removeEventListener('categoriesUpdated', fetchRoots);
+      window.removeEventListener('chainsUpdated', fetchChains);
+    };
+  }, []);
 
   // Ayın başını ve sonunu bul
   const year = currentDate.getFullYear();
@@ -24,7 +58,24 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
   const dayDataMap = useMemo(() => {
     const map = {};
     if (!Array.isArray(tasks)) return map;
-    tasks.forEach(task => {
+
+    const filteredTasks = tasks.filter(t => {
+      if (filter.roleIds?.length > 0) {
+        // Eğer görev rol atanmamışsa roleName null gelir. Ancak filtrede belirli roller seçiliyse,
+        // görevin rolu seçili roller arasında olmalı.
+        const role = roles.find(r => r.roleName === t.roleName);
+        if (!role || !filter.roleIds.includes(role.id)) return false;
+      }
+      if (filter.categoryIds?.length > 0) {
+        if (!filter.categoryIds.includes(t.categoryId)) return false;
+      }
+      if (filter.chainIds?.length > 0) {
+        if (!t.chainId || !filter.chainIds.includes(t.chainId)) return false;
+      }
+      return true;
+    });
+
+    filteredTasks.forEach(task => {
       if (!task.deadline) return;
       const tDate = new Date(task.deadline);
       // Sadece bu aya ait olanları alalım
@@ -38,7 +89,7 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
       }
     });
     return map;
-  }, [tasks, month, year]);
+  }, [tasks, month, year, filter, roles]);
 
   const handlePrevMonth = () => {
     setCurrentDate(new Date(year, month - 1, 1));
@@ -119,21 +170,26 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
         {renderCells()}
       </div>
 
-      <div className={styles.legend}>
-        {roles.length === 0 ? (
-          <div className={styles.legendItem}>
-            <div className={styles.legendColor} style={{ backgroundColor: getTagColors('Diğer / Kişisel').background }} />
-            {t('cal_legend_other', { context: tone })}
-          </div>
-        ) : (
-          roles.map(r => (
+      <div style={{ marginTop: '16px', marginBottom: '8px' }}>
+        <FilterDropdown 
+          roles={roles} 
+          categories={rootCategories}
+          chains={chains}
+          filter={filter} 
+          onFilterChange={setFilter} 
+        />
+      </div>
+
+      {roles.length > 0 && (
+        <div className={styles.legend}>
+          {roles.map(r => (
             <div key={r.id} className={styles.legendItem}>
               <div className={styles.legendColor} style={{ backgroundColor: getTagColors(r.roleName).background }} />
               {r.roleName}
             </div>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

@@ -55,7 +55,7 @@ namespace PlanlamaApp.Infrastructure.Repositories
             var sql = @"
                 INSERT INTO Workspaces (TenantId, OwnerId, Name, Description, InviteCode, Type, Settings, IsActive, CreatedAt, UpdatedAt)
                 VALUES (@TenantId, @OwnerId, @Name, @Description, @InviteCode, @Type, @Settings, @IsActive, @CreatedAt, @UpdatedAt)
-                RETURNING ""Id"";
+                RETURNING Id;
             ";
             
             var id = await ExecuteScalarAsync<int>(sql, workspace);
@@ -115,7 +115,7 @@ namespace PlanlamaApp.Infrastructure.Repositories
                 INSERT INTO WorkspaceMembers (TenantId, WorkspaceId, UserId, DisplayName, JoinedAt)
                 VALUES (@TenantId, @WorkspaceId, @UserId, @DisplayName, @JoinedAt)
                 ON CONFLICT(WorkspaceId, UserId) DO NOTHING
-                RETURNING ""Id"";
+                RETURNING Id;
             ";
             var id = await ExecuteScalarAsync<int>(sql, member);
             member.Id = id;

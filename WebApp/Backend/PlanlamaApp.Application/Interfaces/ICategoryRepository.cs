@@ -9,6 +9,8 @@ namespace PlanlamaApp.Application.Interfaces
     /// </summary>
     public interface ICategoryRepository
     {
+        Task<IEnumerable<Category>> GetAllAsync();
+
         /// <summary>
         /// Tüm kök kategorileri getirir (ParentId == null).
         /// Genellikle "Dersler" listesini oluşturmak için kullanılır.

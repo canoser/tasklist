@@ -1,0 +1,166 @@
+.panel {
+  padding: 16px;
+  background: var(--bg-card);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.primaryBtn {
+  background: var(--accent-primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.primaryBtn:hover {
+  opacity: 0.9;
+}
+
+.secondaryBtn {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.secondaryBtn:hover {
+  background: var(--bg-card);
+}
+
+.chainCard {
+  margin-bottom: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.chainCardHeader {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  background: var(--bg-card);
+  transition: background 0.2s;
+}
+
+.chainCardHeader:hover {
+  background: var(--bg-primary);
+}
+
+.chainTitle {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.chainMeta {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.chevron {
+  color: var(--text-muted);
+  transition: transform 0.2s;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.taskList {
+  padding: 8px 16px;
+  background: var(--bg-primary);
+  border-top: 1px solid var(--border-color);
+}
+
+.taskRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-color-light, rgba(0,0,0,0.05));
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.taskRow:last-child {
+  border-bottom: none;
+}
+
+.taskCompleted {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.taskActive {
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+
+.createForm {
+  padding: 16px;
+  background: var(--bg-card);
+  border-radius: 10px;
+  margin-top: 12px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border-color);
+}
+
+.stepRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.stepInput {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 13px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.stepDateInput {
+  width: 140px;
+  padding: 6px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 13px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.moveBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--text-muted);
+}
+
+.moveBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.moveBtn:not(:disabled):hover {
+  background: rgba(0,0,0,0.05);
+  border-radius: 4px;
+}

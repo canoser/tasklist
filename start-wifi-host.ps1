@@ -31,11 +31,14 @@ if (-not $ipInfo) {
 $ipAddress = ($ipInfo -split ": ")[-1].Trim()
 Write-Host "--> Tespit edilen Wi-Fi IP Adresi: $ipAddress" -ForegroundColor Green
 
-# 3. Frontend .env dosyasini guncelle
+# 3. Frontend .env dosyasini guncelle (Proxy mimarisi)
+# [MOBILE_PORT_TODO]: Mobil derlemelerinde (Capacitor) Proxy CALISMAZ. VITE_API_BASE_URL mutlak IP adresi olmalidir.
+# VITE_API_BASE_URL=/api: Frontend Vite proxy uzerinden backend'e erisir (cookie same-origin olur)
+# VITE_API_TARGET: Vite proxy'nin yonlendirecegi gercek backend adresi
 $envPath = "WebApp\Frontend\.env"
-$envContent = "VITE_API_BASE_URL=http://$($ipAddress):5268/api"
+$envContent = "VITE_API_BASE_URL=/api`r`nVITE_API_TARGET=http://$($ipAddress):5268`r`nVITE_GOOGLE_CLIENT_ID=679106587500-fui49dfsdkpvb3qtvi6cl1krdpt64alh.apps.googleusercontent.com"
 Set-Content -Path $envPath -Value $envContent
-Write-Host "--> Frontend .env dosyasi guncellendi: $envContent" -ForegroundColor Green
+Write-Host "--> Frontend .env dosyasi guncellendi (Proxy: /api -> http://$($ipAddress):5268)" -ForegroundColor Green
 
 # 4. Backend'i baslat (Yeni pencerede)
 Write-Host "--> Backend (API) baslatiliyor..." -ForegroundColor Yellow

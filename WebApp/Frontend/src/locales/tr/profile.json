@@ -38,6 +38,11 @@
   "roles_login_hint": "Rolleri yönetmek için giriş yapın.",
   "roles_login_hint_buddy": "Önce giriş yapman lazım kanka 😅",
 
+  "roles_how_to_use_link": "Nasıl Kullanılır?",
+  "roles_how_to_use_info": "Roller, görevlerinizi belirli kimlikler altında (Örn: Öğrenci, Müdür, Baba) organize etmenizi sağlar. Kutuya tıklayarak listeden bir rol seçebilir veya kendi özel rolünüzü yazıp 'Enter' tuşuna basarak listeye yeni bir rol ekleyebilirsiniz.",
+  "roles_how_to_use_info_semi": "Roller, hayatındaki farklı kimliklerini (Örn: Sporcu, Tasarımcı) temsil eder. Kutuya tıklayıp listeden seçebilir veya kendi özel rolünü yazıp 'Enter' ile yenisini oluşturabilirsin.",
+  "roles_how_to_use_info_buddy": "Kanka, roller senin şapkaların gibi. Mesela 'Kaptan', 'Öğrenci'. Listede yoksa kendi kafana göre yazıp Enter'a basman yeterli, hemen eklenir!",
+
   "account_title": "Hesabım",
   "account_delete": "Hesabı Sil"
 }

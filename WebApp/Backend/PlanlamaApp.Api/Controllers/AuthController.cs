@@ -155,8 +155,8 @@ namespace PlanlamaApp.Api.Controllers
             Response.Cookies.Delete("auth_token", new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict
+                Secure = !Request.Host.Host.StartsWith("192.168"),
+                SameSite = SameSiteMode.Lax
             });
             return Ok(new { Message = "Çıkış yapıldı." });
         }
@@ -201,7 +201,7 @@ namespace PlanlamaApp.Api.Controllers
                 issuer: _configuration["Jwt:Issuer"] ?? "planlama_app",
                 audience: _configuration["Jwt:Audience"] ?? "planlama_app_users",
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(24),
+                expires: DateTime.UtcNow.AddDays(90),
                 signingCredentials: creds
             );
 
@@ -214,9 +214,9 @@ namespace PlanlamaApp.Api.Controllers
             Response.Cookies.Append("auth_token", tokenString, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true, // HTTPS üzerinden çalışması gerekir (localhost'ta da genelde kabul edilir)
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddHours(24)
+                Secure = !Request.Host.Host.StartsWith("192.168"), // Yerel ağ (Wi-Fi) üzerinden HTTP bağlantısında Cookie'nin reddedilmemesi için
+                SameSite = SameSiteMode.Lax,
+                Expires = DateTime.UtcNow.AddDays(90)
             });
         }
     }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import CalendarView from './CalendarView';
 import DayDetailModal from './DayDetailModal';
 import TaskActionModal from '../Task/TaskActionModal';
@@ -6,7 +6,10 @@ import { taskService } from '../../services/taskService';
 import roleService from '../../services/roleService';
 import { useUndo } from '../Common/UndoContext';
 import { useTaskContext } from '../../context/TaskContext';
+import CategoryManagerPanel from '../Category/CategoryManagerPanel';
+import ChainManagerPanel from '../Chain/ChainManagerPanel';
 import styles from '../Dashboard/Dashboard.module.css';
+import screenStyles from './CalendarScreen.module.css';
 
 const CalendarScreen = ({ user, navigation, tone }) => {
   const [tasks, setTasks] = useState([]);
@@ -19,6 +22,14 @@ const CalendarScreen = ({ user, navigation, tone }) => {
   const { triggerUndoableAction } = useUndo();
   const { lastAddedTask } = useTaskContext();
 
+  const calendarRef = useRef(null);
+  const categoryRef = useRef(null);
+  const chainRef = useRef(null);
+
+  const scrollTo = (ref) => {
+    ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   useEffect(() => {
     let isMounted = true;
     const fetchTasks = async () => {
@@ -30,8 +41,8 @@ const CalendarScreen = ({ user, navigation, tone }) => {
       
       try {
         const [taskData, roleData] = await Promise.all([
-          taskService.getTimeline(user?.uid || null, start, end),
-          roleService.getActive(user?.uid || null)
+          taskService.getTimeline(user?.id || user?.uid || null, start, end),
+          roleService.getActive(user?.id || user?.uid || null)
         ]);
         if (isMounted) {
           setTasks(taskData || []);
@@ -77,7 +88,7 @@ const CalendarScreen = ({ user, navigation, tone }) => {
     triggerUndoableAction(
       'Görev tamamlandı.',
       () => setTasks(newState),
-      () => taskService.completeTask(task.id, { status: 'completed' }, user?.uid),
+      () => taskService.completeTask(task.id, { status: 'completed' }, user?.id || user?.uid),
       () => setTasks(prevState)
     );
   };
@@ -135,9 +146,41 @@ const CalendarScreen = ({ user, navigation, tone }) => {
   };
 
   return (
-    <div className={styles.dashboard}>
-      <CalendarView tasks={tasks} roles={userRoles} onDayClick={handleDayClick} tone={tone} />
+    <div className={screenStyles.scrollContainer}>
+      {/* BÖLÜM 1: TAKVİM */}
+      <section ref={calendarRef} className={screenStyles.section}>
+        <CalendarView tasks={tasks} roles={userRoles} onDayClick={handleDayClick} tone={tone} />
+        
+        <div className={screenStyles.calendarNavFooter}>
+          <button onClick={() => scrollTo(categoryRef)} className={screenStyles.primaryBtn}>
+            Kategoriler ↓
+          </button>
+          <button onClick={() => scrollTo(chainRef)} className={screenStyles.secondaryBtn}>
+            Zincir Görevler ↓
+          </button>
+        </div>
+      </section>
       
+      {/* BÖLÜM 2: KATEGORİLER */}
+      <section ref={categoryRef} className={screenStyles.section}>
+        <div className={screenStyles.sectionHeader}>
+          <button onClick={() => scrollTo(calendarRef)} className={screenStyles.sectionNavBtn}>↑ Takvim</button>
+          <h2 className={screenStyles.sectionTitle}>Kategoriler</h2>
+          <button onClick={() => scrollTo(chainRef)} className={screenStyles.sectionNavBtn}>Zincir Görev ↓</button>
+        </div>
+        <CategoryManagerPanel />
+      </section>
+
+      {/* BÖLÜM 3: ZİNCİR GÖREVLER */}
+      <section ref={chainRef} className={screenStyles.section}>
+        <div className={screenStyles.sectionHeader}>
+          <button onClick={() => scrollTo(categoryRef)} className={screenStyles.sectionNavBtn}>↑ Kategoriler</button>
+          <h2 className={screenStyles.sectionTitle}>Zincir Görevler</h2>
+          <div style={{ width: '80px' }}></div> {/* Dengeleyici görünmez div */}
+        </div>
+        <ChainManagerPanel user={user} />
+      </section>
+
       <DayDetailModal 
         isOpen={navigation.isModalOpen('dayDetail')} 
         onClose={() => navigation.closeModal('dayDetail')} 

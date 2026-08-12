@@ -23,17 +23,14 @@ import { USE_MOCK } from '../config/featureFlags';
 
 // ── Sabitler ─────────────────────────────────────────────────────────────────
 
-const STORAGE_KEY = (userId) => `planlama_roles_${userId}`;
+const STORAGE_KEY = (userId) => `planlama_roles_v2_${userId || 'guest'}`;
 let _nextMockId = 100;
 
 /**
  * Demo amaçlı: Bu rollere ait görev sayısı > 0 olarak seeding yapılır,
  * böylece "Karar Modalı" ilk açılışta test edilebilir.
  */
-const SEED_ROLES = [
-  { id: 1, roleName: 'Öğrenci', isActive: true, deletedAt: null, _mockTaskCount: 3 },
-  { id: 2, roleName: 'Öğretmen', isActive: true, deletedAt: null, _mockTaskCount: 2 },
-];
+const SEED_ROLES = [];
 
 const DEFAULT_SUGGESTIONS = [
   'Öğrenci', 'Öğretmen', 'Ebeveyn', 'Mentor', 'Proje Yöneticisi',

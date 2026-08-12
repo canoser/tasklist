@@ -42,6 +42,15 @@ namespace PlanlamaApp.Infrastructure.Repositories
             return await QueryAsync<TaskItem>(sql, new { UserId = userId, Start = start, End = end });
         }
 
+        public async Task<IEnumerable<TaskItem>> GetChainTasksByUserIdAsync(string userId)
+        {
+            var sql = @"SELECT * FROM TaskItems
+                        WHERE UserId = @UserId
+                          AND ChainId IS NOT NULL
+                        ORDER BY ChainId ASC, ChainOrder ASC";
+            return await QueryAsync<TaskItem>(sql, new { UserId = userId });
+        }
+
         public async Task<TaskItem?> GetByIdAsync(int id)
         {
             var sql = @"SELECT * FROM TaskItems WHERE Id = @Id";
@@ -61,7 +70,7 @@ namespace PlanlamaApp.Infrastructure.Repositories
                              @Deadline, @IsTeacherAssigned, @IsCompleted, @CompletedAt, @TargetCount, @Metadata,
                              @WorkspaceId, @ChainId, @ChainOrder, @OriginalDeadline, @IsHomework, @AssignedBy,
                              @CreatedAt, @UpdatedAt)
-                        RETURNING ""Id"";";
+                        RETURNING Id;";
             return await ExecuteScalarAsync<int>(sql, task, transaction);
         }
 

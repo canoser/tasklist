@@ -37,3 +37,8 @@ UygulamamÄ±zÄ±n IndexedDB tabanlÄ± Offline-First mekanizmasÄ± PWA olarak web Ã¼z
 | Dosya Yolu | Web DavranÄ±ÅŸÄ± | Mobil Port Ã‡Ã¶zÃ¼mÃ¼ | Ã–ncelik |
 | :--- | :--- | :--- | :--- |
 | `WebApp/Frontend/src/services/storageService.js` (henÃ¼z yazÄ±lmadÄ±) | `fetch(presignedPutUrl, { method: 'PUT', body: file })` | `@capacitor/http` veya `@capacitor-community/http` ile native HTTP PUT; bÃ¼yÃ¼k dosyalar iÃ§in `@capacitor/filesystem` Ã¼zerinden okuma + yÃ¼kleme dÃ¶ngÃ¼sÃ¼. | ðŸŸ  Orta |
+
+
+## [MOBILE_PORT_TODO]: Auth Cookie & API Proxy Sorunu
+- **Vite Proxy (vite.config.js & .env)**: Geliþtirme ortamýnda SameSite=Lax sorununu çözmek için VITE_API_BASE_URL=/api kullanýlmýþ ve Vite Proxy yapýlandýrýlmýþtýr. Ancak **Capacitor native build'lerinde bu proxy çalýþmaz**. Mobil uygulama derlenirken VITE_API_BASE_URL deðiþkenine **MUTLAK URL** (Örn: https://api.domain.com veya http://192.168.1.8:5268/api) verilmelidir.
+- **Cookie Desteði**: Mobil uygulamalarda (Özellikle iOS WKWebView) Cookie yönetimi stabil çalýþmayabilir. Cihaz yerelinden (Örn: HTTP veya Capacitor þemasý ile) farklý bir sunucuya atýlan HTTP isteklerinde SameSite kýsýtlamalarý veya güvenlik politikalarý çerezleri engelleyebilir. Gerçek mobil uygulamada **JWT token'ýn Authorization: Bearer <token> header'ý ile gönderilecek þekilde mimari düzenlemesi yapýlmasý** tavsiye edilir (ilgili kodlar piClient.js ve AuthController.cs içinde [MOBILE_PORT_TODO] ile iþaretlenmiþtir).
