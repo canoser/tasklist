@@ -194,7 +194,7 @@ namespace PlanlamaApp.Api.Controllers
             // Nokta atışı tespit için, tarayıcıdan backend'e gelen her şeyi JSON olarak dönüyoruz.
             return Ok(new {
                 Cookies = Request.Cookies.Select(c => new { c.Key, HasValue = !string.IsNullOrEmpty(c.Value) }),
-                Headers = Request.Headers.Select(h => new { h.Key, h.Value = h.Value.ToString() }),
+                Headers = Request.Headers.Select(h => new { h.Key, Value = h.Value.ToString() }),
                 Host = Request.Host.Host,
                 Scheme = Request.Scheme,
                 IsHttps = Request.IsHttps
