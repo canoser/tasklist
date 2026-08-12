@@ -1,6 +1,8 @@
-/* ── Scroll-snap: her bölüm tam ekran ───────────────────────────────────── */
 .scrollContainer {
-  height: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   overflow-y: scroll;
   scroll-snap-type: y mandatory;
   scroll-behavior: smooth;
@@ -22,8 +24,7 @@
   scroll-snap-stop: always;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 /* İçerik kısmı: sectionHeader'ın altında kalanlar büyür */

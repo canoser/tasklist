@@ -14,12 +14,17 @@ const AddTaskModal = ({ isOpen, onClose, tone }) => {
   const [categoryId, setCategoryId] = useState(null);
   const [targetCount, setTargetCount] = useState('');
   const [deadline, setDeadline] = useState('');
+  const [scheduledTime, setScheduledTime] = useState('');
   const [isTeacherAssigned, setIsTeacherAssigned] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSave = async () => {
     if (!title || !deadline) return;
     setLoading(true);
+
+    const metadata = scheduledTime
+      ? JSON.stringify({ hasScheduledTime: true, scheduledTime })
+      : null;
 
     const newTask = {
       id: Date.now(), // Fallback ID for optimistic updates
@@ -31,7 +36,8 @@ const AddTaskModal = ({ isOpen, onClose, tone }) => {
       deadline: new Date(deadline).toISOString(),
       isTeacherAssigned,
       isCompleted: false,
-      color: isTeacherAssigned ? 'Orange' : 'Blue'
+      color: isTeacherAssigned ? 'Orange' : 'Blue',
+      metadata
     };
 
     try {
@@ -49,6 +55,7 @@ const AddTaskModal = ({ isOpen, onClose, tone }) => {
       setCategoryId(null);
       setTargetCount('');
       setDeadline('');
+      setScheduledTime('');
       setIsTeacherAssigned(false);
       onClose();
     }
@@ -89,6 +96,16 @@ const AddTaskModal = ({ isOpen, onClose, tone }) => {
             className={styles.input} 
             value={deadline} 
             onChange={e => setDeadline(e.target.value)} 
+          />
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Saat (isteğe bağlı)</label>
+          <input 
+            type="time" 
+            className={styles.input} 
+            value={scheduledTime} 
+            onChange={e => setScheduledTime(e.target.value)} 
           />
         </div>
 

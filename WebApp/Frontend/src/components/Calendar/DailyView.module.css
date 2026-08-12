@@ -1,0 +1,122 @@
+.dailyWrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 400px;
+}
+
+/* Zamansız görevler */
+.allDayZone {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  flex-shrink: 0;
+}
+
+.allDayLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  white-space: nowrap;
+  margin-top: 4px;
+  min-width: 60px;
+}
+
+.allDayTasks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
+}
+
+/* Saat çizelgesi */
+.timelineContainer {
+  flex: 1;
+  overflow-y: auto;
+  position: relative;
+  max-height: 320px;
+}
+
+.timeSlot {
+  display: flex;
+  align-items: flex-start;
+  border-bottom: 1px solid var(--border-color);
+  position: relative;
+}
+
+.currentHour {
+  background: rgba(99, 102, 241, 0.04);
+}
+
+.timeLabel {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  width: 44px;
+  padding: 4px 8px 0 4px;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.slotContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 4px 8px;
+}
+
+/* Görev kartı (zamansız) */
+.taskCard {
+  background: var(--bg-card);
+  border-radius: 6px;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* Görev kartı (saatli) */
+.scheduledCard {
+  border-radius: 6px;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.cardTime {
+  font-size: 10px;
+  opacity: 0.8;
+  white-space: nowrap;
+}
+
+.cardTitle {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.taskTitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.taskMeta {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.completed {
+  opacity: 0.45;
+  text-decoration: line-through;
+}

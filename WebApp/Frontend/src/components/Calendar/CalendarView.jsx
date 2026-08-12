@@ -1,10 +1,25 @@
-import { useState, useMemo, useEffect } from 'react';
+// [MOBILE_PORT_TODO]: CSS @keyframes slide animations are web-specific.
+// Native apps (Capacitor/React Native) should use react-native-reanimated for tab view animations.
+// [MOBILE_PORT_TODO]: toLocaleString('tr-TR') -> date-fns/locale/tr
+
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { ChevronLeftIcon, ChevronRightIcon } from '../Common/Icons';
-import { groupTasksByRole, getTagColors } from '../../utils/taskUtils';
+import { getTagColors } from '../../utils/taskUtils';
 import styles from './CalendarView.module.css';
 import { useTranslation } from 'react-i18next';
 import FilterDropdown from './FilterDropdown';
 import { categoryService } from '../../services/categoryService';
+import WeeklyView from './WeeklyView';
+import DailyView from './DailyView';
+
+function getWeekStart(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = (day === 0 ? -6 : 1 - day); // Pazartesi başlangıç
+  d.setDate(d.getDate() + diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
 
 const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
   const { t, i18n } = useTranslation('common');
@@ -12,6 +27,12 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
   const [filter, setFilter] = useState({ roleIds: [], categoryIds: [], chainIds: [] });
   const [rootCategories, setRootCategories] = useState([]);
   const [chains, setChains] = useState([]);
+
+  // Görünüm modları & Animasyon state'leri
+  const [viewMode, setViewMode] = useState('monthly'); // 'monthly' | 'weekly' | 'daily'
+  const [animDir, setAnimDir] = useState('forward');   // 'forward' | 'backward'
+  const [isAnimating, setIsAnimating] = useState(false);
+  const prevModeRef = useRef('monthly');
 
   useEffect(() => {
     let isMounted = true;
@@ -42,27 +63,31 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
     };
   }, []);
 
-  // Ayın başını ve sonunu bul
+  const switchView = (newMode) => {
+    if (newMode === viewMode) return;
+    const order = ['monthly', 'weekly', 'daily'];
+    const dir = order.indexOf(newMode) > order.indexOf(viewMode) ? 'forward' : 'backward';
+    setAnimDir(dir);
+    setIsAnimating(true);
+    prevModeRef.current = viewMode;
+    setViewMode(newMode);
+    setTimeout(() => setIsAnimating(false), 360);
+  };
+
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDayOfMonth = new Date(year, month, 1).getDay();
-  // JS'de Pazar 0'dır. Takvimi Pazartesi'den (1) başlatmak için kaydırma yapalım.
   const emptyDaysBefore = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
 
   const currentLang = i18n.language || 'tr-TR';
-  const monthName = currentDate.toLocaleString(currentLang, { month: 'long', year: 'numeric' });
 
-  // Görevleri günlere göre grupla ve her gün için rol isimlerine göre sayıları belirle
-  const dayDataMap = useMemo(() => {
-    const map = {};
-    if (!Array.isArray(tasks)) return map;
-
-    const filteredTasks = tasks.filter(t => {
+  // Filtrelenmiş görevler listesi
+  const filteredTasks = useMemo(() => {
+    if (!Array.isArray(tasks)) return [];
+    return tasks.filter(t => {
       if (filter.roleIds?.length > 0) {
-        // Eğer görev rol atanmamışsa roleName null gelir. Ancak filtrede belirli roller seçiliyse,
-        // görevin rolu seçili roller arasında olmalı.
         const role = roles.find(r => r.roleName === t.roleName);
         if (!role || !filter.roleIds.includes(role.id)) return false;
       }
@@ -74,11 +99,14 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
       }
       return true;
     });
+  }, [tasks, filter, roles]);
 
+  // Aylık görünüm için dayDataMap
+  const dayDataMap = useMemo(() => {
+    const map = {};
     filteredTasks.forEach(task => {
       if (!task.deadline) return;
       const tDate = new Date(task.deadline);
-      // Sadece bu aya ait olanları alalım
       if (tDate.getFullYear() === year && tDate.getMonth() === month) {
         const day = tDate.getDate();
         if (!map[day]) map[day] = { counts: {} };
@@ -89,24 +117,65 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
       }
     });
     return map;
-  }, [tasks, month, year, filter, roles]);
+  }, [filteredTasks, month, year]);
 
-  const handlePrevMonth = () => {
-    setCurrentDate(new Date(year, month - 1, 1));
+  const handlePrev = () => {
+    if (viewMode === 'monthly') {
+      setCurrentDate(new Date(year, month - 1, 1));
+    } else if (viewMode === 'weekly') {
+      setCurrentDate(prev => {
+        const d = new Date(prev);
+        d.setDate(d.getDate() - 7);
+        return d;
+      });
+    } else {
+      setCurrentDate(prev => {
+        const d = new Date(prev);
+        d.setDate(d.getDate() - 1);
+        return d;
+      });
+    }
   };
 
-  const handleNextMonth = () => {
-    setCurrentDate(new Date(year, month + 1, 1));
+  const handleNext = () => {
+    if (viewMode === 'monthly') {
+      setCurrentDate(new Date(year, month + 1, 1));
+    } else if (viewMode === 'weekly') {
+      setCurrentDate(prev => {
+        const d = new Date(prev);
+        d.setDate(d.getDate() + 7);
+        return d;
+      });
+    } else {
+      setCurrentDate(prev => {
+        const d = new Date(prev);
+        d.setDate(d.getDate() + 1);
+        return d;
+      });
+    }
+  };
+
+  const getHeaderLabel = () => {
+    if (viewMode === 'monthly') {
+      return currentDate.toLocaleString(currentLang, { month: 'long', year: 'numeric' });
+    } else if (viewMode === 'weekly') {
+      const wStart = getWeekStart(currentDate);
+      const wEnd = new Date(wStart);
+      wEnd.setDate(wEnd.getDate() + 6);
+      const startStr = wStart.toLocaleString(currentLang, { day: 'numeric', month: 'short' });
+      const endStr = wEnd.toLocaleString(currentLang, { day: 'numeric', month: 'short' });
+      return `${startStr} - ${endStr}`;
+    } else {
+      return currentDate.toLocaleString(currentLang, { weekday: 'short', day: 'numeric', month: 'short' });
+    }
   };
 
   const renderCells = () => {
     const cells = [];
-    // Boşluklar
     for (let i = 0; i < emptyDaysBefore; i++) {
       cells.push(<div key={`empty-${i}`} className={`${styles.dayCell} ${styles.empty}`} />);
     }
 
-    // Günler
     const today = new Date();
     for (let d = 1; d <= daysInMonth; d++) {
       const isToday = today.getDate() === d && today.getMonth() === month && today.getFullYear() === year;
@@ -142,31 +211,82 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
     return cells;
   };
 
+  const weekStart = useMemo(() => getWeekStart(currentDate), [currentDate]);
+
   return (
     <div className={styles.calendarSection}>
+      {/* Üst Bar: Toggle + Navigasyon */}
       <div className={styles.header}>
-        <span className={styles.title}>{t('cal_title', { context: tone })}</span>
+        <div className={styles.viewToggle}>
+          <button 
+            onClick={() => switchView('monthly')} 
+            className={`${styles.toggleBtn} ${viewMode === 'monthly' ? styles.active : ''}`}
+          >
+            Aylık
+          </button>
+          <button 
+            onClick={() => switchView('weekly')} 
+            className={`${styles.toggleBtn} ${viewMode === 'weekly' ? styles.active : ''}`}
+          >
+            Haftalık
+          </button>
+          <button 
+            onClick={() => switchView('daily')} 
+            className={`${styles.toggleBtn} ${viewMode === 'daily' ? styles.active : ''}`}
+          >
+            Günlük
+          </button>
+        </div>
+
         <div className={styles.monthNav}>
-          <button className={styles.navBtn} onClick={handlePrevMonth}><ChevronLeftIcon /></button>
-          <span className={styles.currentMonth}>{monthName}</span>
-          <button className={styles.navBtn} onClick={handleNextMonth}><ChevronRightIcon /></button>
+          <button className={styles.navBtn} onClick={handlePrev}><ChevronLeftIcon /></button>
+          <span className={styles.currentMonth}>{getHeaderLabel()}</span>
+          <button className={styles.navBtn} onClick={handleNext}><ChevronRightIcon /></button>
         </div>
       </div>
 
-      <div className={styles.weekdays}>
-        <span className={styles.weekday}>{t('cal_day_mon', { context: tone })}</span>
-        <span className={styles.weekday}>{t('cal_day_tue', { context: tone })}</span>
-        <span className={styles.weekday}>{t('cal_day_wed', { context: tone })}</span>
-        <span className={styles.weekday}>{t('cal_day_thu', { context: tone })}</span>
-        <span className={styles.weekday}>{t('cal_day_fri', { context: tone })}</span>
-        <span className={styles.weekday}>{t('cal_day_sat', { context: tone })}</span>
-        <span className={styles.weekday}>{t('cal_day_sun', { context: tone })}</span>
+      {/* Animasyon Sarmalayıcısı */}
+      <div className={`${styles.viewSlide} ${isAnimating ? (animDir === 'forward' ? styles.slideForward : styles.slideBackward) : ''}`}>
+        {viewMode === 'monthly' && (
+          <>
+            <div className={styles.weekdays}>
+              <span className={styles.weekday}>{t('cal_day_mon', { context: tone })}</span>
+              <span className={styles.weekday}>{t('cal_day_tue', { context: tone })}</span>
+              <span className={styles.weekday}>{t('cal_day_wed', { context: tone })}</span>
+              <span className={styles.weekday}>{t('cal_day_thu', { context: tone })}</span>
+              <span className={styles.weekday}>{t('cal_day_fri', { context: tone })}</span>
+              <span className={styles.weekday}>{t('cal_day_sat', { context: tone })}</span>
+              <span className={styles.weekday}>{t('cal_day_sun', { context: tone })}</span>
+            </div>
+
+            <div className={styles.daysGrid}>
+              {renderCells()}
+            </div>
+          </>
+        )}
+
+        {viewMode === 'weekly' && (
+          <WeeklyView 
+            tasks={filteredTasks} 
+            roles={roles} 
+            weekStart={weekStart} 
+            onDayClick={onDayClick} 
+            filter={filter} 
+          />
+        )}
+
+        {viewMode === 'daily' && (
+          <DailyView 
+            tasks={filteredTasks} 
+            roles={roles} 
+            date={currentDate} 
+            filter={filter} 
+            onDayClick={onDayClick} 
+          />
+        )}
       </div>
 
-      <div className={styles.daysGrid}>
-        {renderCells()}
-      </div>
-
+      {/* Filtreler — her modda sabit */}
       <div style={{ marginTop: '16px', marginBottom: '8px' }}>
         <FilterDropdown 
           roles={roles} 

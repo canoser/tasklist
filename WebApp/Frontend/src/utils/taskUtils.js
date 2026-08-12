@@ -83,3 +83,19 @@ export function buildCategoryTree(taskList) {
   });
   return tree;
 }
+
+// [MOBILE_PORT_TODO]: Bu fonksiyon web'de JSON.parse ile çalışır.
+// Native tarafta da aynı mantık geçerlidir, değişmesi gerekmez.
+export function getScheduledTime(task) {
+  if (!task?.metadata) return null;
+  try {
+    const meta = typeof task.metadata === 'string'
+      ? JSON.parse(task.metadata)
+      : task.metadata;
+    if (!meta.hasScheduledTime) return null;
+    return meta.scheduledTime || null;
+  } catch {
+    return null;
+  }
+}
+
