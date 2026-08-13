@@ -375,6 +375,6 @@ Yapay zeka (OpenAI/Gemini) maliyetlerine ve karmaÅŸÄ±klÄ±ÄŸÄ±na girmeden, sadece
 3.  **Makro Åablonlar (Onboarding ÅablonlarÄ±):** KullanÄ±cÄ± "Ben YKS SayÄ±salcÄ±yÄ±m" dediÄŸinde LLM'e gitmeyiz. Kendi veritabanÄ±mÄ±zda Ã¶nceden hazÄ±rladÄ±ÄŸÄ±mÄ±z "YKS SayÄ±sal Åablonu" JSON'Ä±nÄ± kullanÄ±cÄ±nÄ±n takvimine otomatik dÃ¶ÅŸeriz (Sanki asistan ona Ã¶zel program yapmÄ±ÅŸ hissi verir).
 4.  **Zarif Renk KodlamasÄ±:** LLM olmadan da gÃ¶revlere atanan statik roller Ã¼zerinden CSS ile sol kenar Ã§izgileri (Mor, Mavi, YeÅŸil) kolayca renklendirilir.
 
-### Ek İsterler (Faz 1 & 2 İçin Notlar)
-- **Asistan Dil Seçimi:** Uygulama ilk açıldığında (onboarding aşamasında) asistan kullanıcıya nasıl hitap edilmesini istediğini sormalıdır (Resmi, Samimi, Kanka Modu vb.). İletişim cümleleri (If-Else / LLM) buna göre şekillenecektir.
-- **Kısmi Tamamlama Raporlaması:** Görev 10 soruluksa ve o gün 6'sı çözülürse, o günkü görev %60 tamamlandı olarak kalır. Geriye kalan 4 soru için geleceğe kopya görev açılır. Kopya görev tamamlandığında orijinal günün istatistiği değişmez ancak detaylara girildiğinde 'Kalan kısmı ileri bir tarihte tamamlandı' notu düşülür.
+### Ek Ä°sterler (Faz 1 & 2 Ä°Ã§in Notlar)
+- **Asistan Dil SeÃ§imi:** Uygulama ilk aÃ§Ä±ldÄ±ÄŸÄ±nda (onboarding aÅŸamasÄ±nda) asistan kullanÄ±cÄ±ya nasÄ±l hitap edilmesini istediÄŸini sormalÄ±dÄ±r (Resmi, Samimi, Kanka Modu vb.). Ä°letiÅŸim cÃ¼mleleri (If-Else / LLM) buna gÃ¶re ÅŸekillenecektir.
+- **KÄ±smi Tamamlama RaporlamasÄ±:** GÃ¶rev 10 soruluksa ve o gÃ¼n 6'sÄ± Ã§Ã¶zÃ¼lÃ¼rse, o gÃ¼nkÃ¼ gÃ¶rev %60 tamamlandÄ± olarak kalÄ±r. Geriye kalan 4 soru iÃ§in geleceÄŸe kopya gÃ¶rev aÃ§Ä±lÄ±r. Kopya gÃ¶rev tamamlandÄ±ÄŸÄ±nda orijinal gÃ¼nÃ¼n istatistiÄŸi deÄŸiÅŸmez ancak detaylara girildiÄŸinde 'Kalan kÄ±smÄ± ileri bir tarihte tamamlandÄ±' notu dÃ¼ÅŸÃ¼lÃ¼r.
