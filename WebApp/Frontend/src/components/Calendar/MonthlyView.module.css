@@ -30,8 +30,13 @@
   grid-auto-rows: minmax(45px, 1fr);
   gap: 4px;
   min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior-y: auto;
+}
+
+@media (orientation: landscape) {
+  .daysGrid {
+    overflow-y: auto;
+    overscroll-behavior-y: auto;
+  }
 }
 
 .dayCell {
