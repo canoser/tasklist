@@ -11,6 +11,7 @@ import FilterDropdown from './FilterDropdown';
 import { categoryService } from '../../services/categoryService';
 import WeeklyView from './WeeklyView';
 import DailyView from './DailyView';
+import MonthlyView from './MonthlyView';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function getWeekStart(date) {
@@ -93,13 +94,6 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
     setViewMode(newMode);
   };
 
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
-
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const firstDayOfMonth = new Date(year, month, 1).getDay();
-  const emptyDaysBefore = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
-
   const currentLang = i18n.language || 'tr-TR';
 
   // Filtrelenmiş görevler listesi
@@ -120,28 +114,10 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
     });
   }, [tasks, filter, roles]);
 
-  // Aylık görünüm için dayDataMap
-  const dayDataMap = useMemo(() => {
-    const map = {};
-    filteredTasks.forEach(task => {
-      if (!task.deadline) return;
-      const tDate = new Date(task.deadline);
-      if (tDate.getFullYear() === year && tDate.getMonth() === month) {
-        const day = tDate.getDate();
-        if (!map[day]) map[day] = { counts: {} };
-
-        const rName = task.roleName || 'Diğer / Kişisel';
-        if (!map[day].counts[rName]) map[day].counts[rName] = 0;
-        map[day].counts[rName]++;
-      }
-    });
-    return map;
-  }, [filteredTasks, month, year]);
-
   const handlePrev = () => {
     setAnimDir('backward');
     if (viewMode === 'monthly') {
-      setCurrentDate(new Date(year, month - 1, 1));
+      setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
     } else if (viewMode === 'weekly') {
       setCurrentDate(prev => {
         const d = new Date(prev);
@@ -160,7 +136,7 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
   const handleNext = () => {
     setAnimDir('forward');
     if (viewMode === 'monthly') {
-      setCurrentDate(new Date(year, month + 1, 1));
+      setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
     } else if (viewMode === 'weekly') {
       setCurrentDate(prev => {
         const d = new Date(prev);
@@ -242,7 +218,55 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
     return cells;
   };
 
-  const weekStart = useMemo(() => getWeekStart(currentDate), [currentDate]);
+  const getOffsetDate = (baseDate, offsetMode, amount) => {
+    const d = new Date(baseDate);
+    if (offsetMode === 'monthly') d.setMonth(d.getMonth() + amount);
+    else if (offsetMode === 'weekly') d.setDate(d.getDate() + 7 * amount);
+    else d.setDate(d.getDate() + amount);
+    return d;
+  };
+
+  const prevDate = getOffsetDate(currentDate, viewMode, -1);
+  const nextDate = getOffsetDate(currentDate, viewMode, 1);
+
+  const renderViewContent = (dateObj) => {
+    if (viewMode === 'monthly') {
+      return (
+        <MonthlyView 
+          tasks={filteredTasks} 
+          roles={roles} 
+          filter={filter} 
+          date={dateObj} 
+          onDayClick={onDayClick} 
+          tone={tone} 
+          t={t} 
+        />
+      );
+    }
+    if (viewMode === 'weekly') {
+      return (
+        <WeeklyView 
+          tasks={filteredTasks} 
+          roles={roles} 
+          weekStart={getWeekStart(dateObj)} 
+          onDayClick={onDayClick} 
+          filter={filter} 
+        />
+      );
+    }
+    if (viewMode === 'daily') {
+      return (
+        <DailyView 
+          tasks={filteredTasks} 
+          roles={roles} 
+          date={dateObj} 
+          filter={filter} 
+          onDayClick={onDayClick} 
+        />
+      );
+    }
+    return null;
+  };
 
   return (
     <div className={styles.calendarSection}>
@@ -296,43 +320,17 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
             }}
             style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column' }}
           >
-            {viewMode === 'monthly' && (
-              <div className={styles.monthlyWrapper}>
-                <div className={styles.weekdays}>
-                  <span className={styles.weekday}>{t('cal_day_mon', { context: tone })}</span>
-                  <span className={styles.weekday}>{t('cal_day_tue', { context: tone })}</span>
-                  <span className={styles.weekday}>{t('cal_day_wed', { context: tone })}</span>
-                  <span className={styles.weekday}>{t('cal_day_thu', { context: tone })}</span>
-                  <span className={styles.weekday}>{t('cal_day_fri', { context: tone })}</span>
-                  <span className={styles.weekday}>{t('cal_day_sat', { context: tone })}</span>
-                  <span className={styles.weekday}>{t('cal_day_sun', { context: tone })}</span>
-                </div>
+            <div style={{ position: 'absolute', width: '100%', height: '100%', left: '-100%', top: 0 }}>
+              {renderViewContent(prevDate)}
+            </div>
+            
+            <div style={{ width: '100%', height: '100%' }}>
+              {renderViewContent(currentDate)}
+            </div>
 
-                <div className={styles.daysGrid}>
-                  {renderCells()}
-                </div>
-              </div>
-            )}
-
-            {viewMode === 'weekly' && (
-              <WeeklyView 
-                tasks={filteredTasks} 
-                roles={roles} 
-                weekStart={weekStart} 
-                onDayClick={onDayClick} 
-                filter={filter} 
-              />
-            )}
-
-            {viewMode === 'daily' && (
-              <DailyView 
-                tasks={filteredTasks} 
-                roles={roles} 
-                date={currentDate} 
-                filter={filter} 
-                onDayClick={onDayClick} 
-              />
-            )}
+            <div style={{ position: 'absolute', width: '100%', height: '100%', left: '100%', top: 0 }}>
+              {renderViewContent(nextDate)}
+            </div>
           </motion.div>
         </AnimatePresence>
       </div>
