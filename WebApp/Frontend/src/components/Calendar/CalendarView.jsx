@@ -155,19 +155,21 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
   const x = useMotionValue(0);
   const containerRef = useRef(null);
 
-  const handleDragEnd = async (e, { offset, velocity }) => {
+  const handleDragEnd = (e, { offset, velocity }) => {
     const swipe = offset.x;
     const swipeThreshold = 50;
     const width = containerRef.current?.offsetWidth || window.innerWidth;
 
     if (swipe < -swipeThreshold) {
-      await animate(x, -width, { type: "spring", bounce: 0, velocity: velocity.x });
       handleNext();
-      x.set(0);
+      const currentX = x.get();
+      x.set(currentX + width);
+      animate(x, 0, { type: "spring", bounce: 0, velocity: velocity.x, stiffness: 400, damping: 40 });
     } else if (swipe > swipeThreshold) {
-      await animate(x, width, { type: "spring", bounce: 0, velocity: velocity.x });
       handlePrev();
-      x.set(0);
+      const currentX = x.get();
+      x.set(currentX - width);
+      animate(x, 0, { type: "spring", bounce: 0, velocity: velocity.x, stiffness: 400, damping: 40 });
     } else {
       animate(x, 0, { type: "spring", bounce: 0, velocity: velocity.x });
     }
