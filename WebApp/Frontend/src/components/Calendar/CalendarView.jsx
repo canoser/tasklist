@@ -12,7 +12,7 @@ import { categoryService } from '../../services/categoryService';
 import WeeklyView from './WeeklyView';
 import DailyView from './DailyView';
 import MonthlyView from './MonthlyView';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, useMotionValue, animate } from 'framer-motion';
 
 function getWeekStart(date) {
   const d = new Date(date);
@@ -152,13 +152,24 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
     }
   };
 
-  const handleDragEnd = (e, { offset, velocity }) => {
+  const x = useMotionValue(0);
+  const containerRef = useRef(null);
+
+  const handleDragEnd = async (e, { offset, velocity }) => {
     const swipe = offset.x;
     const swipeThreshold = 50;
+    const width = containerRef.current?.offsetWidth || window.innerWidth;
+
     if (swipe < -swipeThreshold) {
+      await animate(x, -width, { type: "spring", bounce: 0, velocity: velocity.x });
       handleNext();
+      x.set(0);
     } else if (swipe > swipeThreshold) {
+      await animate(x, width, { type: "spring", bounce: 0, velocity: velocity.x });
       handlePrev();
+      x.set(0);
+    } else {
+      animate(x, 0, { type: "spring", bounce: 0, velocity: velocity.x });
     }
   };
 
@@ -177,47 +188,6 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
     }
   };
 
-  const renderCells = () => {
-    const cells = [];
-    for (let i = 0; i < emptyDaysBefore; i++) {
-      cells.push(<div key={`empty-${i}`} className={`${styles.dayCell} ${styles.empty}`} />);
-    }
-
-    const today = new Date();
-    for (let d = 1; d <= daysInMonth; d++) {
-      const isToday = today.getDate() === d && today.getMonth() === month && today.getFullYear() === year;
-      const dayData = dayDataMap[d];
-      
-      cells.push(
-        <div 
-          key={`day-${d}`} 
-          className={`${styles.dayCell} ${isToday ? styles.today : ''}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (onDayClick) onDayClick(new Date(year, month, d));
-          }}
-        >
-          <span className={styles.dayNumber}>{d}</span>
-          {dayData && (() => {
-            const totalCount = Object.values(dayData.counts).reduce((a, b) => a + b, 0);
-            if (totalCount === 0) return null;
-            return (
-              <div className={styles.dotsRow}>
-                <div 
-                  className={styles.countBadge}
-                  style={{ backgroundColor: 'var(--accent-primary)', color: '#fff' }}
-                >
-                  {totalCount}
-                </div>
-              </div>
-            );
-          })()}
-        </div>
-      );
-    }
-    return cells;
-  };
-
   const getOffsetDate = (baseDate, offsetMode, amount) => {
     const d = new Date(baseDate);
     if (offsetMode === 'monthly') d.setMonth(d.getMonth() + amount);
@@ -225,7 +195,6 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
     else d.setDate(d.getDate() + amount);
     return d;
   };
-
   const prevDate = getOffsetDate(currentDate, viewMode, -1);
   const nextDate = getOffsetDate(currentDate, viewMode, 1);
 
@@ -301,38 +270,24 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
       </div>
 
       {/* Animasyon Sarmalayıcısı */}
-      <div className={styles.viewSlide}>
-        <AnimatePresence initial={false} custom={animDir}>
-          <motion.div
-            key={viewMode + currentDate.toISOString()}
-            custom={animDir}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={1}
-            onDragEnd={handleDragEnd}
-            transition={{
-              x: { type: "spring", stiffness: 300, damping: 30 },
-              opacity: { duration: 0.2 }
-            }}
-            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column' }}
-          >
-            <div style={{ position: 'absolute', width: '100%', height: '100%', left: '-100%', top: 0 }}>
-              {renderViewContent(prevDate)}
-            </div>
-            
-            <div style={{ width: '100%', height: '100%' }}>
-              {renderViewContent(currentDate)}
-            </div>
+      <div className={styles.viewSlide} ref={containerRef}>
+        <motion.div
+          style={{ x, position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column' }}
+          drag="x"
+          onDragEnd={handleDragEnd}
+        >
+          <div style={{ position: 'absolute', width: '100%', height: '100%', left: '-100%', top: 0 }}>
+            {renderViewContent(prevDate)}
+          </div>
+          
+          <div style={{ width: '100%', height: '100%' }}>
+            {renderViewContent(currentDate)}
+          </div>
 
-            <div style={{ position: 'absolute', width: '100%', height: '100%', left: '100%', top: 0 }}>
-              {renderViewContent(nextDate)}
-            </div>
-          </motion.div>
-        </AnimatePresence>
+          <div style={{ position: 'absolute', width: '100%', height: '100%', left: '100%', top: 0 }}>
+            {renderViewContent(nextDate)}
+          </div>
+        </motion.div>
       </div>
 
       {/* Filtreler — her modda sabit */}
