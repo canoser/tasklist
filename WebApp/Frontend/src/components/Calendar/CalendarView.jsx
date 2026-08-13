@@ -278,15 +278,15 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
           drag="x"
           onDragEnd={handleDragEnd}
         >
-          <div style={{ position: 'absolute', width: '100%', height: '100%', left: '-100%', top: 0 }}>
+          <div style={{ position: 'absolute', width: '100%', height: '100%', left: '-100%', top: 0, display: 'flex', flexDirection: 'column' }}>
             {renderViewContent(prevDate)}
           </div>
           
-          <div style={{ width: '100%', height: '100%' }}>
+          <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
             {renderViewContent(currentDate)}
           </div>
 
-          <div style={{ position: 'absolute', width: '100%', height: '100%', left: '100%', top: 0 }}>
+          <div style={{ position: 'absolute', width: '100%', height: '100%', left: '100%', top: 0, display: 'flex', flexDirection: 'column' }}>
             {renderViewContent(nextDate)}
           </div>
         </motion.div>
