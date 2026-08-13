@@ -11,6 +11,7 @@ import FilterDropdown from './FilterDropdown';
 import { categoryService } from '../../services/categoryService';
 import WeeklyView from './WeeklyView';
 import DailyView from './DailyView';
+import { useSwipeable } from 'react-swipeable';
 
 function getWeekStart(date) {
   const d = new Date(date);
@@ -155,6 +156,13 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
     }
   };
 
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: () => handlePrev(), // Swipe left to go back (as requested: sola kaydırınca önceki)
+    onSwipedRight: () => handleNext(), // Swipe right to go next (as requested: sağa kaydırdıkça sonraki)
+    preventScrollOnSwipe: true,
+    trackMouse: true
+  });
+
   const getHeaderLabel = () => {
     if (viewMode === 'monthly') {
       return currentDate.toLocaleString(currentLang, { month: 'long', year: 'numeric' });
@@ -246,7 +254,10 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
       </div>
 
       {/* Animasyon Sarmalayıcısı */}
-      <div className={`${styles.viewSlide} ${isAnimating ? (animDir === 'forward' ? styles.slideForward : styles.slideBackward) : ''}`}>
+      <div 
+        {...swipeHandlers}
+        className={`${styles.viewSlide} ${isAnimating ? (animDir === 'forward' ? styles.slideForward : styles.slideBackward) : ''}`}
+      >
         {viewMode === 'monthly' && (
           <div className={styles.monthlyWrapper}>
             <div className={styles.weekdays}>
