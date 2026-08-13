@@ -8,10 +8,6 @@ const FilterDropdown = ({ roles = [], categories = [], chains = [], filter, onFi
   const containerRef = useRef(null);
 
   useEffect(() => {
-    if (onToggle) onToggle(isOpen);
-  }, [isOpen, onToggle]);
-
-  useEffect(() => {
     const handleClickOutside = (event) => {
       if (containerRef.current && !containerRef.current.contains(event.target)) {
         setActiveMenu(null);
@@ -49,6 +45,7 @@ const FilterDropdown = ({ roles = [], categories = [], chains = [], filter, onFi
     onFilterChange({ roleIds: [], categoryIds: [], chainIds: [] });
     setActiveMenu(null);
     setIsOpen(false);
+    if (onToggle) onToggle(false);
   };
 
   const isAll = (!filter.roleIds || filter.roleIds.length === 0) 
@@ -58,12 +55,12 @@ const FilterDropdown = ({ roles = [], categories = [], chains = [], filter, onFi
   return (
     <div className={styles.container} ref={containerRef}>
       {!isOpen ? (
-        <button type="button" className={styles.mainBtn} onClick={() => setIsOpen(true)}>
+        <button type="button" className={styles.mainBtn} onClick={() => { setIsOpen(true); if (onToggle) onToggle(true); }}>
           Filtreler {(!isAll) ? '(Aktif)' : ''}
         </button>
       ) : (
         <div className={styles.expandedStrip}>
-          <button type="button" className={styles.closeBtn} onClick={() => { setIsOpen(false); setActiveMenu(null); }}>
+          <button type="button" className={styles.closeBtn} onClick={() => { setIsOpen(false); setActiveMenu(null); if (onToggle) onToggle(false); }}>
             ✕ Kapat
           </button>
           
