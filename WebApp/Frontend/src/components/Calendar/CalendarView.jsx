@@ -11,7 +11,6 @@ import FilterDropdown from './FilterDropdown';
 import { categoryService } from '../../services/categoryService';
 import WeeklyView from './WeeklyView';
 import DailyView from './DailyView';
-import { useSwipeable } from 'react-swipeable';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function getWeekStart(date) {
@@ -177,12 +176,15 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
     }
   };
 
-  const swipeHandlers = useSwipeable({
-    onSwipedLeft: () => handlePrev(), // Swipe left to go back (as requested: sola kaydırınca önceki)
-    onSwipedRight: () => handleNext(), // Swipe right to go next (as requested: sağa kaydırdıkça sonraki)
-    preventScrollOnSwipe: true,
-    trackMouse: true
-  });
+  const handleDragEnd = (e, { offset, velocity }) => {
+    const swipe = offset.x;
+    const swipeThreshold = 50;
+    if (swipe < -swipeThreshold) {
+      handleNext();
+    } else if (swipe > swipeThreshold) {
+      handlePrev();
+    }
+  };
 
   const getHeaderLabel = () => {
     if (viewMode === 'monthly') {
@@ -275,7 +277,7 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
       </div>
 
       {/* Animasyon Sarmalayıcısı */}
-      <div {...swipeHandlers} className={styles.viewSlide}>
+      <div className={styles.viewSlide}>
         <AnimatePresence initial={false} custom={animDir}>
           <motion.div
             key={viewMode + currentDate.toISOString()}
@@ -284,6 +286,10 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
             initial="enter"
             animate="center"
             exit="exit"
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={1}
+            onDragEnd={handleDragEnd}
             transition={{
               x: { type: "spring", stiffness: 300, damping: 30 },
               opacity: { duration: 0.2 }
