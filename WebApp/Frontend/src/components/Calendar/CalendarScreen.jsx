@@ -173,9 +173,9 @@ const CalendarScreen = ({ user, navigation, tone }) => {
       {/* ── BÖLÜM 3: ZİNCİR GÖREVLER ───────────────────────────────────────── */}
       <section ref={chainRef} className={screenStyles.section} style={sectionStyle}>
         <div className={screenStyles.sectionHeader}>
-          <button onClick={() => scrollTo(categoryRef)} className={screenStyles.sectionNavBtn}>↑ Kategoriler</button>
-          <h2 className={screenStyles.sectionTitle}>Zincir Görevler</h2>
           <button onClick={() => scrollTo(calendarRef)} className={screenStyles.sectionNavBtn}>↑ Takvim</button>
+          <h2 className={screenStyles.sectionTitle}>Zincir Görevler</h2>
+          <button onClick={() => scrollTo(categoryRef)} className={screenStyles.sectionNavBtn}>↑ Kategoriler</button>
         </div>
         <div className={screenStyles.sectionContent}>
           <ChainManagerPanel user={user} />
