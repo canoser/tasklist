@@ -248,7 +248,7 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
       {/* Animasyon Sarmalayıcısı */}
       <div className={`${styles.viewSlide} ${isAnimating ? (animDir === 'forward' ? styles.slideForward : styles.slideBackward) : ''}`}>
         {viewMode === 'monthly' && (
-          <>
+          <div className={styles.monthlyWrapper}>
             <div className={styles.weekdays}>
               <span className={styles.weekday}>{t('cal_day_mon', { context: tone })}</span>
               <span className={styles.weekday}>{t('cal_day_tue', { context: tone })}</span>
@@ -262,7 +262,7 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
             <div className={styles.daysGrid}>
               {renderCells()}
             </div>
-          </>
+          </div>
         )}
 
         {viewMode === 'weekly' && (
