@@ -90,6 +90,14 @@
   .container {
     padding: 1rem;
   }
+  .settingAction {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .saveBtn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .settingCard {
