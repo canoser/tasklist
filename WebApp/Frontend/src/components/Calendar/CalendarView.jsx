@@ -287,7 +287,7 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
       </div>
 
       {/* Filtreler — her modda sabit */}
-      <div style={{ marginTop: '16px', marginBottom: '8px' }}>
+      <div className={styles.filterWrapper}>
         <FilterDropdown 
           roles={roles} 
           categories={rootCategories}

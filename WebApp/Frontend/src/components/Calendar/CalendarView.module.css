@@ -4,8 +4,8 @@
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-md);
-  padding: 16px;
-  margin-bottom: 24px;
+  padding: 12px 14px 4px 14px;
+  margin-bottom: 16px;
   flex: 1;
   min-height: 0;
   display: flex;
@@ -14,8 +14,8 @@
 
 @media (max-width: 768px) {
   .calendarSection {
-    padding: 10px;
-    margin-bottom: 8px;
+    padding: 8px 8px 2px 8px;
+    margin-bottom: 4px;
   }
 }
 
@@ -23,7 +23,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
 .title {
@@ -218,4 +218,11 @@
   from { transform: translateX(-40px); opacity: 0; }
   to   { transform: translateX(0);     opacity: 1; }
 }
+
+.filterWrapper {
+  margin-top: 4px;
+  margin-bottom: 0px;
+  flex-shrink: 0;
+}
+
 
