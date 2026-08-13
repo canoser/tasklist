@@ -29,7 +29,7 @@ const DropdownSelect = ({ value, options, onChange }) => {
   const selectedOption = options.find(o => o.value === value) || options[0];
 
   return (
-    <div ref={wrapperRef} className={styles.wrapper}>
+    <div ref={wrapperRef} className={styles.wrapper} style={{ zIndex: isOpen ? 100 : 1 }}>
       <button 
         type="button"
         className={styles.trigger}
