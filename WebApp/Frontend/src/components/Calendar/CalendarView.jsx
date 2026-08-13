@@ -276,6 +276,7 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
         <motion.div
           style={{ x, position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
           drag="x"
+          dragDirectionLock={true}
           onDragEnd={handleDragEnd}
         >
           <div style={{ position: 'absolute', width: '100%', height: '100%', left: '-100%', top: 0, display: 'flex', flexDirection: 'column' }}>
