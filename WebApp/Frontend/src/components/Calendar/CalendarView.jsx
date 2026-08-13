@@ -121,6 +121,8 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
   }, [filteredTasks, month, year]);
 
   const handlePrev = () => {
+    setAnimDir('backward');
+    setIsAnimating(true);
     if (viewMode === 'monthly') {
       setCurrentDate(new Date(year, month - 1, 1));
     } else if (viewMode === 'weekly') {
@@ -136,9 +138,12 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
         return d;
       });
     }
+    setTimeout(() => setIsAnimating(false), 360);
   };
 
   const handleNext = () => {
+    setAnimDir('forward');
+    setIsAnimating(true);
     if (viewMode === 'monthly') {
       setCurrentDate(new Date(year, month + 1, 1));
     } else if (viewMode === 'weekly') {
@@ -154,6 +159,7 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
         return d;
       });
     }
+    setTimeout(() => setIsAnimating(false), 360);
   };
 
   const swipeHandlers = useSwipeable({
