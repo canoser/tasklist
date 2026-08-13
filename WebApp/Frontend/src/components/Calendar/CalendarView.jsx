@@ -282,7 +282,7 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
             {renderViewContent(prevDate)}
           </div>
           
-          <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
             {renderViewContent(currentDate)}
           </div>
 
