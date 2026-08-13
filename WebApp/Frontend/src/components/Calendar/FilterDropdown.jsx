@@ -58,16 +58,17 @@ const FilterDropdown = ({ roles = [], categories = [], chains = [], filter, onFi
   return (
     <div className={styles.container} ref={containerRef}>
       {!isOpen ? (
-        <button className={styles.mainBtn} onClick={() => setIsOpen(true)}>
+        <button type="button" className={styles.mainBtn} onClick={() => setIsOpen(true)}>
           Filtreler {(!isAll) ? '(Aktif)' : ''}
         </button>
       ) : (
         <div className={styles.expandedStrip}>
-          <button className={styles.closeBtn} onClick={() => { setIsOpen(false); setActiveMenu(null); }}>
+          <button type="button" className={styles.closeBtn} onClick={() => { setIsOpen(false); setActiveMenu(null); }}>
             ✕ Kapat
           </button>
           
           <button 
+            type="button"
             className={`${styles.filterBtn} ${isAll ? styles.activeFilterBtn : ''}`}
             onClick={handleClear}
           >
@@ -78,6 +79,7 @@ const FilterDropdown = ({ roles = [], categories = [], chains = [], filter, onFi
           {roles.length > 0 && (
             <div className={styles.relative}>
               <button 
+                type="button"
                 className={`${styles.filterBtn} ${(filter.roleIds && filter.roleIds.length > 0) ? styles.activeFilterBtn : ''}`} 
                 onClick={() => setActiveMenu(activeMenu === 'role' ? null : 'role')}
               >
@@ -107,6 +109,7 @@ const FilterDropdown = ({ roles = [], categories = [], chains = [], filter, onFi
           {/* Kategori Filtresi */}
           <div className={styles.relative}>
             <button 
+              type="button"
               className={`${styles.filterBtn} ${(filter.categoryIds && filter.categoryIds.length > 0) ? styles.activeFilterBtn : ''}`} 
               onClick={() => setActiveMenu(activeMenu === 'category' ? null : 'category')}
             >
@@ -136,6 +139,7 @@ const FilterDropdown = ({ roles = [], categories = [], chains = [], filter, onFi
           {/* Zincir Görev Filtresi */}
           <div className={styles.relative}>
             <button 
+              type="button"
               className={`${styles.filterBtn} ${(filter.chainIds && filter.chainIds.length > 0) ? styles.activeFilterBtn : ''}`} 
               onClick={() => setActiveMenu(activeMenu === 'chain' ? null : 'chain')}
             >

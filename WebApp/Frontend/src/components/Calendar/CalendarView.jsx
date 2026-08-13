@@ -315,10 +315,10 @@ const CalendarView = ({ tasks = [], roles = [], filter: initialFilter, onDayClic
         </div>
         {!isFilterOpen && (
           <div className={styles.navButtons}>
-            <button onClick={onCategoryClick} className={styles.navBtnPrimary}>
+            <button type="button" onClick={onCategoryClick} className={styles.navBtnPrimary}>
               Kategoriler ↓
             </button>
-            <button onClick={onChainClick} className={styles.navBtnSecondary}>
+            <button type="button" onClick={onChainClick} className={styles.navBtnSecondary}>
               Zincir ↓
             </button>
           </div>
