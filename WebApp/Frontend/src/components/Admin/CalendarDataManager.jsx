@@ -112,7 +112,7 @@ const CalendarDataManager = () => {
         </div>
       )}
 
-      <div className={styles.settingCard} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className={styles.settingCard} style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'center' }}>
         <div className={styles.settingInfo}>
           <h3>Örnek Şablon İndir</h3>
           <p>Yapay zeka (AI) ajanları için kullanılacak, doğru JSON formatına sahip boş bir şablon dosyası indirir.</p>
@@ -128,7 +128,7 @@ const CalendarDataManager = () => {
         </button>
       </div>
 
-      <div className={styles.settingCard} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className={styles.settingCard} style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'center' }}>
         <div className={styles.settingInfo}>
           <h3>Mevcut Veriyi Yedekle</h3>
           <p>Şu anki takviminizdeki tüm kategorileri, zincirleri ve görevleri JSON dosyası olarak indirir.</p>
@@ -145,7 +145,7 @@ const CalendarDataManager = () => {
         </button>
       </div>
 
-      <div className={styles.settingCard} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className={styles.settingCard} style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'center' }}>
         <div className={styles.settingInfo}>
           <h3>JSON İçe Aktar</h3>
           <p>JSON dosyasından yeni kategoriler ve görevler ekler.</p>
