@@ -274,7 +274,7 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
       {/* Animasyon Sarmalayıcısı */}
       <div className={styles.viewSlide} ref={containerRef}>
         <motion.div
-          style={{ x, position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column' }}
+          style={{ x, position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
           drag="x"
           onDragEnd={handleDragEnd}
         >
@@ -282,7 +282,7 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
             {renderViewContent(prevDate)}
           </div>
           
-          <div style={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+          <div style={{ position: 'absolute', width: '100%', height: '100%', left: 0, top: 0, display: 'flex', flexDirection: 'column' }}>
             {renderViewContent(currentDate)}
           </div>
 
