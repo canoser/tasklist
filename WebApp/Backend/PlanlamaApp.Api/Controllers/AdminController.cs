@@ -73,5 +73,182 @@ namespace PlanlamaApp.Api.Controllers
             var metrics = await usageTrackingRepository.GetGlobalUsageMetricsAsync();
             return Ok(metrics);
         }
+        [HttpGet("calendar/export-template")]
+        public IActionResult ExportTemplate()
+        {
+            var template = new PlanlamaApp.Application.DTOs.CalendarImportExportDto
+            {
+                Categories = new System.Collections.Generic.List<PlanlamaApp.Application.DTOs.CategoryExportDto>
+                {
+                    new PlanlamaApp.Application.DTOs.CategoryExportDto { ImportId = "cat_1", Name = "Örnek Ders", SortOrder = 1 },
+                    new PlanlamaApp.Application.DTOs.CategoryExportDto { ImportId = "cat_2", Name = "Örnek Konu", ParentImportId = "cat_1", SortOrder = 1 }
+                },
+                Tasks = new System.Collections.Generic.List<PlanlamaApp.Application.DTOs.TaskExportDto>
+                {
+                    new PlanlamaApp.Application.DTOs.TaskExportDto
+                    {
+                        Title = "Örnek Görev",
+                        Description = "Bu bir şablon görevidir",
+                        TaskType = "Soru Çözme",
+                        Deadline = System.DateTime.UtcNow.AddDays(1),
+                        TargetCount = 20,
+                        CategoryImportId = "cat_2",
+                        ChainId = "zincir_1",
+                        ChainOrder = 1,
+                        Metadata = "{}"
+                    }
+                }
+            };
+            return Ok(template);
+        }
+
+        [HttpGet("calendar/export-current")]
+        public async Task<IActionResult> ExportCurrent(
+            [FromServices] ITaskRepository taskRepository,
+            [FromServices] ICategoryRepository categoryRepository)
+        {
+            var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(currentUserId)) return Unauthorized();
+
+            var categories = await categoryRepository.GetAllAsync();
+            var tasks = await taskRepository.GetByUserIdAsync(currentUserId);
+
+            var exportDto = new PlanlamaApp.Application.DTOs.CalendarImportExportDto();
+
+            foreach (var cat in categories)
+            {
+                exportDto.Categories.Add(new PlanlamaApp.Application.DTOs.CategoryExportDto
+                {
+                    ImportId = $"cat_{cat.Id}",
+                    Name = cat.Name,
+                    ParentImportId = cat.ParentId.HasValue ? $"cat_{cat.ParentId}" : null,
+                    SortOrder = cat.SortOrder
+                });
+            }
+
+            foreach (var t in tasks)
+            {
+                exportDto.Tasks.Add(new PlanlamaApp.Application.DTOs.TaskExportDto
+                {
+                    Title = t.Title,
+                    Description = t.Description,
+                    TaskType = t.TaskType,
+                    Deadline = t.Deadline,
+                    TargetCount = t.TargetCount,
+                    CategoryImportId = t.CategoryId.HasValue ? $"cat_{t.CategoryId}" : null,
+                    ChainId = t.ChainId,
+                    ChainOrder = t.ChainOrder,
+                    Metadata = t.Metadata,
+                    IsHomework = t.IsHomework,
+                    IsTeacherAssigned = t.IsTeacherAssigned,
+                    OriginalDeadline = t.OriginalDeadline
+                });
+            }
+
+            return Ok(exportDto);
+        }
+
+        [HttpPost("calendar/import")]
+        [ServiceFilter(typeof(IdempotencyFilter))]
+        public async Task<IActionResult> ImportCalendar(
+            [FromBody] PlanlamaApp.Application.DTOs.CalendarImportExportDto request,
+            [FromServices] ICategoryRepository categoryRepository,
+            [FromServices] ITaskRepository taskRepository,
+            [FromServices] System.Data.IDbConnection dbConnection)
+        {
+            var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(currentUserId)) return Unauthorized();
+
+            dbConnection.Open();
+            using var transaction = dbConnection.BeginTransaction();
+
+            try
+            {
+                var idMap = new System.Collections.Generic.Dictionary<string, int>();
+
+                // Kategorileri sırayla ekle
+                foreach (var catDto in request.Categories)
+                {
+                    int? newParentId = null;
+                    if (!string.IsNullOrEmpty(catDto.ParentImportId))
+                    {
+                        if (idMap.TryGetValue(catDto.ParentImportId, out var mappedId))
+                        {
+                            newParentId = mappedId;
+                        }
+                        else
+                        {
+                            throw new System.Exception($"Kategori referansı bulunamadı: {catDto.ParentImportId}. Lütfen üst kategorileri JSON'da alt kategorilerden önce tanımlayın.");
+                        }
+                    }
+
+                    var newCategory = new Category
+                    {
+                        Name = catDto.Name,
+                        ParentId = newParentId,
+                        SortOrder = catDto.SortOrder,
+                        IsFromTemplate = false,
+                        CreatedAt = System.DateTime.UtcNow,
+                        UpdatedAt = System.DateTime.UtcNow
+                        // TenantId, Repository içindeki CreateAsync metodu tarafından BaseRepository üzerinden ayarlanır.
+                    };
+
+                    var newId = await categoryRepository.CreateAsync(newCategory, transaction);
+                    if (!string.IsNullOrEmpty(catDto.ImportId))
+                    {
+                        idMap[catDto.ImportId] = newId;
+                    }
+                }
+
+                // Görevleri ekle
+                foreach (var taskDto in request.Tasks)
+                {
+                    int? newCategoryId = null;
+                    if (!string.IsNullOrEmpty(taskDto.CategoryImportId))
+                    {
+                        if (idMap.TryGetValue(taskDto.CategoryImportId, out var mappedId))
+                        {
+                            newCategoryId = mappedId;
+                        }
+                        // Eğer idMap içinde yoksa DB'de zaten var olan bir ID referans ediliyor olabilir mi? 
+                        // Şu an sadece yeni eklenenler destekleniyor veya ImportId formatında olmalı.
+                    }
+
+                    var newTask = new TaskItem
+                    {
+                        UserId = currentUserId,
+                        Title = taskDto.Title,
+                        Description = taskDto.Description,
+                        TaskType = taskDto.TaskType ?? "Soru Çözme",
+                        Deadline = taskDto.Deadline,
+                        TargetCount = taskDto.TargetCount,
+                        CategoryId = newCategoryId,
+                        ChainId = taskDto.ChainId,
+                        ChainOrder = taskDto.ChainOrder,
+                        Metadata = taskDto.Metadata,
+                        IsHomework = taskDto.IsHomework,
+                        IsTeacherAssigned = taskDto.IsTeacherAssigned,
+                        OriginalDeadline = taskDto.OriginalDeadline,
+                        CreatedAt = System.DateTime.UtcNow,
+                        UpdatedAt = System.DateTime.UtcNow
+                        // TenantId Repository'de çözülecek.
+                    };
+
+                    await taskRepository.CreateAsync(newTask, transaction);
+                }
+
+                transaction.Commit();
+                return Ok(new { Message = "Toplu veri aktarımı başarıyla tamamlandı." });
+            }
+            catch (System.Exception ex)
+            {
+                transaction.Rollback();
+                return BadRequest(new { Message = "İçe aktarma sırasında bir hata oluştu. İşlem geri alındı.", Error = ex.Message });
+            }
+            finally
+            {
+                dbConnection.Close();
+            }
+        }
     }
 }

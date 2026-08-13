@@ -27,7 +27,7 @@ namespace PlanlamaApp.Application.Interfaces
         Task<Category?> GetByIdAsync(int id);
 
         /// <summary>Yeni kategori oluşturur. TenantId doldurulmuş olmalıdır.</summary>
-        Task<int> CreateAsync(Category category);
+        Task<int> CreateAsync(Category category, System.Data.IDbTransaction? transaction = null);
 
         /// <summary>Mevcut kategoriyi günceller.</summary>
         Task<bool> UpdateAsync(Category category);

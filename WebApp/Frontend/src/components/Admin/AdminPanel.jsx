@@ -6,13 +6,15 @@ import UserApprovals from './UserApprovals';
 import UsageDashboard from './UsageDashboard';
 import styles from './AdminPanel.module.css';
 
+import CalendarDataManager from './CalendarDataManager';
+
 const AdminPanel = () => {
   const [settings, setSettings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState(null);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState('');
-  const [activeTab, setActiveTab] = useState('settings'); // 'settings', 'usage', 'users'
+  const [activeTab, setActiveTab] = useState('settings'); // 'settings', 'usage', 'users', 'data'
 
   const fetchSettings = async () => {
     try {
@@ -89,7 +91,7 @@ const AdminPanel = () => {
       )}
 
       {/* ── Sekmeler (Tabs) ── */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px' }}>
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px', flexWrap: 'wrap' }}>
         <button 
           onClick={() => setActiveTab('settings')}
           style={{ padding: '8px 16px', background: activeTab === 'settings' ? 'var(--accent-primary)' : 'transparent', color: activeTab === 'settings' ? 'white' : 'var(--text-secondary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
@@ -107,6 +109,12 @@ const AdminPanel = () => {
           style={{ padding: '8px 16px', background: activeTab === 'users' ? 'var(--accent-primary)' : 'transparent', color: activeTab === 'users' ? 'white' : 'var(--text-secondary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
         >
           Kullanıcı Yönetimi
+        </button>
+        <button 
+          onClick={() => setActiveTab('data')}
+          style={{ padding: '8px 16px', background: activeTab === 'data' ? 'var(--accent-primary)' : 'transparent', color: activeTab === 'data' ? 'white' : 'var(--text-secondary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+        >
+          Takvim Veri Yönetimi
         </button>
       </div>
 
@@ -167,6 +175,10 @@ const AdminPanel = () => {
 
       {activeTab === 'users' && (
         <UserApprovals settings={settings} />
+      )}
+
+      {activeTab === 'data' && (
+        <CalendarDataManager />
       )}
     </div>
   );

@@ -43,7 +43,7 @@ namespace PlanlamaApp.Infrastructure.Repositories
             return await QueryFirstOrDefaultAsync<Category>(sql, new { Id = id });
         }
 
-        public async Task<int> CreateAsync(Category category)
+        public async Task<int> CreateAsync(Category category, System.Data.IDbTransaction? transaction = null)
         {
             category.TenantId = _tenantId;
             // INSERT: TenantId kolonu sorguda zorunlu (BaseRepository kural).
@@ -52,7 +52,7 @@ namespace PlanlamaApp.Infrastructure.Repositories
                         VALUES 
                             (@TenantId, @Name, @ParentId, @IsFromTemplate, @SortOrder, @CreatedAt, @UpdatedAt)
                         RETURNING Id;";
-            return await ExecuteScalarAsync<int>(sql, category);
+            return await ExecuteScalarAsync<int>(sql, category, transaction);
         }
 
         public async Task<bool> UpdateAsync(Category category)
