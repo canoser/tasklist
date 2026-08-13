@@ -80,7 +80,16 @@
 .settingsGrid {
   display: grid;
   gap: 1.5rem;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 350px), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+@media (max-width: 600px) {
+  .settingsGrid {
+    grid-template-columns: 1fr;
+  }
+  .container {
+    padding: 1rem;
+  }
 }
 
 .settingCard {
