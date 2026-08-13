@@ -44,10 +44,18 @@ const slideVariants = {
   }
 };
 
-const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
+const CalendarView = ({ tasks = [], roles = [], filter: initialFilter, onDayClick, tone, onCategoryClick, onChainClick }) => {
   const { t, i18n } = useTranslation('common');
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [filter, setFilter] = useState({ roleIds: [], categoryIds: [], chainIds: [] });
+  
+  // Filtre state'i
+  const [filter, setFilter] = useState(initialFilter || {
+    roleIds: [],
+    categoryIds: [],
+    chainIds: []
+  });
+
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [rootCategories, setRootCategories] = useState([]);
   const [chains, setChains] = useState([]);
 
@@ -295,13 +303,26 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
 
       {/* Filtreler — her modda sabit */}
       <div className={styles.filterWrapper}>
-        <FilterDropdown 
-          roles={roles} 
-          categories={rootCategories}
-          chains={chains}
-          filter={filter} 
-          onFilterChange={setFilter} 
-        />
+        <div className={styles.filterContainer}>
+          <FilterDropdown 
+            roles={roles} 
+            categories={rootCategories}
+            chains={chains}
+            filter={filter} 
+            onFilterChange={setFilter} 
+            onToggle={setIsFilterOpen}
+          />
+        </div>
+        {!isFilterOpen && (
+          <div className={styles.navButtons}>
+            <button onClick={onCategoryClick} className={styles.navBtnPrimary}>
+              Kategoriler ↓
+            </button>
+            <button onClick={onChainClick} className={styles.navBtnSecondary}>
+              Zincir ↓
+            </button>
+          </div>
+        )}
       </div>
 
     </div>

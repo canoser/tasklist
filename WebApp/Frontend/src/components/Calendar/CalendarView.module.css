@@ -238,8 +238,56 @@
 
 .filterWrapper {
   margin-top: 4px;
-  margin-bottom: 0px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
+.filterContainer {
+  /* Filtre butonu sola hizalı kalsın veya genişlesin */
+}
 
+.navButtons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-left: auto; /* Sağa yasla */
+}
+
+.navBtnPrimary, .navBtnSecondary {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.navBtnPrimary {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.navBtnSecondary {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+@media (orientation: landscape) {
+  .filterWrapper {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .navButtons {
+    margin-left: 0;
+    justify-content: space-between;
+  }
+  .navBtnPrimary, .navBtnSecondary {
+    flex: 1;
+    text-align: center;
+  }
+}

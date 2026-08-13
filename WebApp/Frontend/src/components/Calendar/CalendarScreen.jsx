@@ -147,15 +147,14 @@ const CalendarScreen = ({ user, navigation, tone }) => {
       {/* ── BÖLÜM 1: TAKVİM ────────────────────────────────────────────────── */}
       <section ref={calendarRef} className={screenStyles.section} style={sectionStyle}>
         <div className={screenStyles.calendarContent}>
-          <CalendarView tasks={tasks} roles={userRoles} onDayClick={handleDayClick} tone={tone} />
-        </div>
-        <div className={screenStyles.calendarNavFooter}>
-          <button onClick={() => scrollTo(categoryRef)} className={screenStyles.primaryBtn}>
-            Kategoriler ↓
-          </button>
-          <button onClick={() => scrollTo(chainRef)} className={screenStyles.secondaryBtn}>
-            Zincir Görevler ↓
-          </button>
+          <CalendarView 
+            tasks={tasks} 
+            roles={userRoles} 
+            onDayClick={handleDayClick} 
+            tone={tone} 
+            onCategoryClick={() => scrollTo(categoryRef)}
+            onChainClick={() => scrollTo(chainRef)}
+          />
         </div>
       </section>
 

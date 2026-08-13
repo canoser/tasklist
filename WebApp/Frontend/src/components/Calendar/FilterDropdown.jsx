@@ -1,11 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styles from './FilterDropdown.module.css';
 
-const FilterDropdown = ({ roles = [], categories = [], chains = [], filter, onFilterChange }) => {
+const FilterDropdown = ({ roles = [], categories = [], chains = [], filter, onFilterChange, onToggle }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState(null);
   
   const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (onToggle) onToggle(isOpen);
+  }, [isOpen, onToggle]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -138,7 +142,7 @@ const FilterDropdown = ({ roles = [], categories = [], chains = [], filter, onFi
               Zincir {(filter.chainIds && filter.chainIds.length > 0) ? `(${filter.chainIds.length})` : ''}
             </button>
             {activeMenu === 'chain' && (
-              <div className={styles.dropdown}>
+              <div className={`${styles.dropdown} ${styles.dropdownRight}`}>
                 {chains.length === 0 ? <div className={styles.empty}>Zincir bulunamadı</div> : null}
                 {chains.map(ch => {
                   const isSelected = filter.chainIds && filter.chainIds.includes(ch.chainId);

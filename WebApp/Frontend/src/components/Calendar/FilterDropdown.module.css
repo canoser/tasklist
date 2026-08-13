@@ -2,7 +2,6 @@
   position: relative;
   display: flex;
   align-items: center;
-  margin-bottom: 16px;
 }
 
 .mainBtn {
@@ -90,8 +89,11 @@
   overflow-y: auto;
   z-index: 50;
   padding: 8px 0;
-  /* Mobil veya alt kısıma yakın yerlerde yukarı açılması için ek mantık React tarafında yapılabilir, 
-     basit CSS ile şimdilik aşağı doğru */
+}
+
+.dropdownRight {
+  left: auto;
+  right: 0;
 }
 
 /* Telefon ekranlarında yukarı doğru açılması için fallback */
