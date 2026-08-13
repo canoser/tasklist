@@ -3,8 +3,11 @@
 
 import { getTagColors } from '../../utils/taskUtils';
 import styles from './WeeklyView.module.css';
+import { useOrientation } from '../../hooks/useOrientation';
 
 const WeeklyView = ({ tasks = [], roles = [], weekStart, onDayClick, filter }) => {
+  const isLandscape = useOrientation();
+  
   // weekStart'tan itibaren 7 gün üret (Pazartesi -> Pazar)
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(weekStart);
@@ -41,7 +44,7 @@ const WeeklyView = ({ tasks = [], roles = [], weekStart, onDayClick, filter }) =
                 {day.getDate()}
               </span>
               <span className={styles.dayName}>
-                {day.toLocaleString('tr-TR', { weekday: 'long' })}
+                {day.toLocaleString('tr-TR', { weekday: isLandscape ? 'short' : 'long' })}
               </span>
             </div>
 

@@ -106,3 +106,36 @@
     padding: 2px 6px;
   }
 }
+
+@media (orientation: landscape) {
+  .weekList {
+    flex-direction: row;
+    height: 100%;
+  }
+  .dayRow {
+    flex-direction: column;
+    height: 100%;
+    align-items: center;
+    padding: 10px 4px;
+    gap: 8px;
+    justify-content: flex-start;
+  }
+  .dayHeader {
+    flex-direction: column;
+    min-width: auto;
+    gap: 2px;
+  }
+  .taskList {
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 4px;
+  }
+  .roleBadge {
+    padding: 2px 4px;
+    font-size: 10px;
+    width: 100%;
+    text-align: center;
+    white-space: normal;
+  }
+}

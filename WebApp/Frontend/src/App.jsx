@@ -22,6 +22,8 @@ import { setTone as setI18nTone } from './i18n';
 import storage from './utils/storage';
 import GuestWelcomeModal from './components/Auth/GuestWelcomeModal';
 import { useKeyboardScrollFix } from './hooks/useKeyboardScrollFix';
+import { useOrientation } from './hooks/useOrientation';
+import { motion } from 'framer-motion';
 
 // Çevrimdışı işlem kuyruğunu ve senkronizasyonu başlat
 startSyncListener();
@@ -49,6 +51,9 @@ export default function App() {
 
   // Mobil klavye açıldığında input'un arkada kalmasını engelleyen global hook
   useKeyboardScrollFix();
+
+  const isLandscape = useOrientation();
+  const [isHeaderVisible, setIsHeaderVisible] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -83,30 +88,59 @@ export default function App() {
         <MobileLayout>
           <div className={styles.container}>
           {/* ── Üst Bar ─────────────────────────────────────────────────────── */}
-          <header className={styles.header}>
-            <div className={styles.logoArea}>
-              <span className={styles.logoBadge}>P</span>
-              <h2 className={styles.title}>
-                {user ? (user.email || user.displayName) : t('app_name', { context: tone })}
-              </h2>
-            </div>
+          <motion.div
+            initial={false}
+            animate={{ y: isLandscape ? (isHeaderVisible ? 0 : '-100%') : 0 }}
+            transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
+            style={{ 
+              position: isLandscape ? 'absolute' : 'relative', 
+              width: '100%', 
+              zIndex: 50 
+            }}
+          >
+            <header className={styles.header}>
+              <div className={styles.logoArea}>
+                <span className={styles.logoBadge}>P</span>
+                <h2 className={styles.title}>
+                  {user ? (user.email || user.displayName) : t('app_name', { context: tone })}
+                </h2>
+              </div>
 
-            <div className={styles.actions}>
-              <button className={`${styles.themeBtn} no-select`} onClick={toggleAppearance}>
-                {appearance === 'dark' ? '☀️' : '🌙'}
-              </button>
+              <div className={styles.actions}>
+                <button className={`${styles.themeBtn} no-select`} onClick={toggleAppearance}>
+                  {appearance === 'dark' ? '☀️' : '🌙'}
+                </button>
 
-              {user ? (
-                <button className={`${styles.logoutBtn} no-select`} onClick={logoutUser}>
-                  {t('logout', { context: tone })}
-                </button>
-              ) : (
-                <button className={`${styles.authBtn} no-select`} onClick={() => openModal('auth')}>
-                  {t('login', { context: tone })}
-                </button>
-              )}
-            </div>
-          </header>
+                {user ? (
+                  <button className={`${styles.logoutBtn} no-select`} onClick={logoutUser}>
+                    {t('logout', { context: tone })}
+                  </button>
+                ) : (
+                  <button className={`${styles.authBtn} no-select`} onClick={() => openModal('auth')}>
+                    {t('login', { context: tone })}
+                  </button>
+                )}
+              </div>
+            </header>
+            
+            {/* Sürükleme Tutamağı (Sadece Yatayda) */}
+            {isLandscape && (
+              <div className={styles.dragHandleContainer}>
+                <motion.div
+                  className={styles.dragHandle}
+                  drag="y"
+                  dragConstraints={{ top: 0, bottom: 0 }}
+                  onDragEnd={(e, { offset, velocity }) => {
+                    if (!isHeaderVisible && (offset.y > 20 || velocity.y > 100)) setIsHeaderVisible(true);
+                    if (isHeaderVisible && (offset.y < -20 || velocity.y < -100)) setIsHeaderVisible(false);
+                  }}
+                  onClick={() => setIsHeaderVisible(!isHeaderVisible)}
+                >
+                  <div className={styles.dragIndicator} />
+                </motion.div>
+              </div>
+            )}
+          </motion.div>
 
           {/* ── Ana İçerik Alanı ────────────────────────────────────────────── */}
           <main className={styles.main}>

@@ -59,6 +59,34 @@
   text-align: center;
 }
 
+@media (orientation: landscape) {
+  .calendarSection {
+    flex-direction: row-reverse;
+    gap: 12px;
+  }
+  .header {
+    flex-direction: column;
+    justify-content: flex-start;
+    width: 150px;
+    margin-bottom: 0;
+    gap: 20px;
+    flex-shrink: 0;
+  }
+  .viewToggle {
+    flex-direction: column;
+    width: 100%;
+  }
+  .viewToggle button {
+    width: 100%;
+    border-radius: var(--border-radius-sm);
+  }
+  .monthNav {
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+  }
+}
+
 /* Aylık Görünüm Sarmalayıcısı */
 .monthlyWrapper {
   flex: 1;
