@@ -32,10 +32,11 @@ apiClient.interceptors.request.use(
       config.headers['Idempotency-Key'] = idempotencyKey;
     }
 
-    // JWT Token'ı LocalStorage'dan alıp Authorization Header'a ekle
+    // [MOBILE_PORT_TODO]: For native apps, retrieve tokens from Secure Storage async instead of synchronous localStorage, 
+    // or cache the token in memory/state so it can be attached synchronously here.
     const token = localStorage.getItem('auth_token');
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`;
     }
 
     return config;

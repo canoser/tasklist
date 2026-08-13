@@ -32,6 +32,7 @@ const CategoryManagerPanel = () => {
   }, []);
 
   const handleDelete = async (id) => {
+    // [MOBILE_PORT_TODO]: window.confirm can block Capacitor iOS WebViews or not render well. Use a custom Modal or Dialog component instead.
     if (!window.confirm('Kategoriyi silmek istediğinize emin misiniz? Altındaki öğeler de etkilenebilir.')) return;
     try {
       await categoryService.delete(id);

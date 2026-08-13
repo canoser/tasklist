@@ -48,6 +48,7 @@ export const loginWithEmail = async (email, password) => {
     const response = await apiClient.post('/auth/login', { email, password });
     
     if (response.data.token) {
+      // [MOBILE_PORT_TODO]: In native apps, use Secure Storage (e.g. Capacitor Preferences or iOS Keychain) instead of localStorage for tokens.
       localStorage.setItem('auth_token', response.data.token);
     }
     
