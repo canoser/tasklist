@@ -1,5 +1,5 @@
-// [MOBILE_PORT_TODO]: CSS @keyframes slide animations are web-specific.
-// Native apps (Capacitor/React Native) should use react-native-reanimated for tab view animations.
+// [MOBILE_PORT_TODO]: The current true carousel slider uses framer-motion. This is highly performant and works perfectly on Web and Capacitor (iOS/Android WebViews).
+// However, if porting to pure React Native in the future, framer-motion must be replaced with react-native-reanimated & react-native-gesture-handler or ScrollView with pagingEnabled.
 // [MOBILE_PORT_TODO]: toLocaleString('tr-TR') -> date-fns/locale/tr
 
 import { useState, useMemo, useEffect, useRef } from 'react';
