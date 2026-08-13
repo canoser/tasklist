@@ -12,6 +12,7 @@ import { categoryService } from '../../services/categoryService';
 import WeeklyView from './WeeklyView';
 import DailyView from './DailyView';
 import { useSwipeable } from 'react-swipeable';
+import { motion, AnimatePresence } from 'framer-motion';
 
 function getWeekStart(date) {
   const d = new Date(date);
@@ -21,6 +22,27 @@ function getWeekStart(date) {
   d.setHours(0, 0, 0, 0);
   return d;
 }
+
+const slideVariants = {
+  enter: (direction) => {
+    return {
+      x: direction === 'forward' ? '100%' : '-100%',
+      opacity: 0.5
+    };
+  },
+  center: {
+    zIndex: 1,
+    x: 0,
+    opacity: 1
+  },
+  exit: (direction) => {
+    return {
+      zIndex: 0,
+      x: direction === 'forward' ? '-100%' : '100%',
+      opacity: 0.5
+    };
+  }
+};
 
 const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
   const { t, i18n } = useTranslation('common');
@@ -32,7 +54,6 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
   // Görünüm modları & Animasyon state'leri
   const [viewMode, setViewMode] = useState('monthly'); // 'monthly' | 'weekly' | 'daily'
   const [animDir, setAnimDir] = useState('forward');   // 'forward' | 'backward'
-  const [isAnimating, setIsAnimating] = useState(false);
   const prevModeRef = useRef('monthly');
 
   useEffect(() => {
@@ -69,10 +90,8 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
     const order = ['monthly', 'weekly', 'daily'];
     const dir = order.indexOf(newMode) > order.indexOf(viewMode) ? 'forward' : 'backward';
     setAnimDir(dir);
-    setIsAnimating(true);
     prevModeRef.current = viewMode;
     setViewMode(newMode);
-    setTimeout(() => setIsAnimating(false), 360);
   };
 
   const year = currentDate.getFullYear();
@@ -122,7 +141,6 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
 
   const handlePrev = () => {
     setAnimDir('backward');
-    setIsAnimating(true);
     if (viewMode === 'monthly') {
       setCurrentDate(new Date(year, month - 1, 1));
     } else if (viewMode === 'weekly') {
@@ -138,12 +156,10 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
         return d;
       });
     }
-    setTimeout(() => setIsAnimating(false), 360);
   };
 
   const handleNext = () => {
     setAnimDir('forward');
-    setIsAnimating(true);
     if (viewMode === 'monthly') {
       setCurrentDate(new Date(year, month + 1, 1));
     } else if (viewMode === 'weekly') {
@@ -159,7 +175,6 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
         return d;
       });
     }
-    setTimeout(() => setIsAnimating(false), 360);
   };
 
   const swipeHandlers = useSwipeable({
@@ -260,47 +275,60 @@ const CalendarView = ({ tasks = [], roles = [], onDayClick, tone }) => {
       </div>
 
       {/* Animasyon Sarmalayıcısı */}
-      <div 
-        {...swipeHandlers}
-        className={`${styles.viewSlide} ${isAnimating ? (animDir === 'forward' ? styles.slideForward : styles.slideBackward) : ''}`}
-      >
-        {viewMode === 'monthly' && (
-          <div className={styles.monthlyWrapper}>
-            <div className={styles.weekdays}>
-              <span className={styles.weekday}>{t('cal_day_mon', { context: tone })}</span>
-              <span className={styles.weekday}>{t('cal_day_tue', { context: tone })}</span>
-              <span className={styles.weekday}>{t('cal_day_wed', { context: tone })}</span>
-              <span className={styles.weekday}>{t('cal_day_thu', { context: tone })}</span>
-              <span className={styles.weekday}>{t('cal_day_fri', { context: tone })}</span>
-              <span className={styles.weekday}>{t('cal_day_sat', { context: tone })}</span>
-              <span className={styles.weekday}>{t('cal_day_sun', { context: tone })}</span>
-            </div>
+      <div {...swipeHandlers} className={styles.viewSlide}>
+        <AnimatePresence initial={false} custom={animDir}>
+          <motion.div
+            key={viewMode + currentDate.toISOString()}
+            custom={animDir}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{
+              x: { type: "spring", stiffness: 300, damping: 30 },
+              opacity: { duration: 0.2 }
+            }}
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column' }}
+          >
+            {viewMode === 'monthly' && (
+              <div className={styles.monthlyWrapper}>
+                <div className={styles.weekdays}>
+                  <span className={styles.weekday}>{t('cal_day_mon', { context: tone })}</span>
+                  <span className={styles.weekday}>{t('cal_day_tue', { context: tone })}</span>
+                  <span className={styles.weekday}>{t('cal_day_wed', { context: tone })}</span>
+                  <span className={styles.weekday}>{t('cal_day_thu', { context: tone })}</span>
+                  <span className={styles.weekday}>{t('cal_day_fri', { context: tone })}</span>
+                  <span className={styles.weekday}>{t('cal_day_sat', { context: tone })}</span>
+                  <span className={styles.weekday}>{t('cal_day_sun', { context: tone })}</span>
+                </div>
 
-            <div className={styles.daysGrid}>
-              {renderCells()}
-            </div>
-          </div>
-        )}
+                <div className={styles.daysGrid}>
+                  {renderCells()}
+                </div>
+              </div>
+            )}
 
-        {viewMode === 'weekly' && (
-          <WeeklyView 
-            tasks={filteredTasks} 
-            roles={roles} 
-            weekStart={weekStart} 
-            onDayClick={onDayClick} 
-            filter={filter} 
-          />
-        )}
+            {viewMode === 'weekly' && (
+              <WeeklyView 
+                tasks={filteredTasks} 
+                roles={roles} 
+                weekStart={weekStart} 
+                onDayClick={onDayClick} 
+                filter={filter} 
+              />
+            )}
 
-        {viewMode === 'daily' && (
-          <DailyView 
-            tasks={filteredTasks} 
-            roles={roles} 
-            date={currentDate} 
-            filter={filter} 
-            onDayClick={onDayClick} 
-          />
-        )}
+            {viewMode === 'daily' && (
+              <DailyView 
+                tasks={filteredTasks} 
+                roles={roles} 
+                date={currentDate} 
+                filter={filter} 
+                onDayClick={onDayClick} 
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* Filtreler — her modda sabit */}

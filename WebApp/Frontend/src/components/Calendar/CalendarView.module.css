@@ -198,33 +198,14 @@
   box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3);
 }
 
-/* Slide Animasyonu */
+/* Slide Animasyonu Container */
 .viewSlide {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-              opacity  0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.slideForward {
-  animation: slideInRight 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-.slideBackward {
-  animation: slideInLeft 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-@keyframes slideInRight {
-  from { transform: translateX(40px); opacity: 0; }
-  to   { transform: translateX(0);    opacity: 1; }
-}
-
-@keyframes slideInLeft {
-  from { transform: translateX(-40px); opacity: 0; }
-  to   { transform: translateX(0);     opacity: 1; }
+  position: relative; /* For absolute child (framer-motion) */
 }
 
 .filterWrapper {
