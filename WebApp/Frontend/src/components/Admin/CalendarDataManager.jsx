@@ -2,8 +2,10 @@ import React, { useState, useRef } from 'react';
 import { Download, Upload, AlertCircle, CheckCircle, FileJson } from 'lucide-react';
 import apiClient from '../../services/apiClient';
 import styles from './AdminPanel.module.css';
+import { useTranslation } from 'react-i18next';
 
-const CalendarDataManager = () => {
+const CalendarDataManager = ({ tone }) => {
+  const { t } = useTranslation('admin');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState('');
@@ -27,11 +29,11 @@ const CalendarDataManager = () => {
       setError(null);
       const res = await apiClient.get('/admin/calendar/export-template');
       downloadFile(res.data, 'takvim_sablon.json');
-      setSuccessMsg('Şablon dosyası başarıyla indirildi.');
+      setSuccessMsg(t('msg_template_success', { context: tone }));
       setTimeout(() => setSuccessMsg(''), 3000);
     } catch (err) {
       console.error(err);
-      setError('Şablon indirilirken hata oluştu.');
+      setError(t('msg_template_fail', { context: tone }));
     } finally {
       setLoading(false);
     }
@@ -43,11 +45,11 @@ const CalendarDataManager = () => {
       setError(null);
       const res = await apiClient.get('/admin/calendar/export-current');
       downloadFile(res.data, 'takvim_yedek.json');
-      setSuccessMsg('Mevcut takvim yedeği başarıyla indirildi.');
+      setSuccessMsg(t('msg_backup_success', { context: tone }));
       setTimeout(() => setSuccessMsg(''), 3000);
     } catch (err) {
       console.error(err);
-      setError('Mevcut veri indirilirken hata oluştu.');
+      setError(t('msg_backup_fail', { context: tone }));
     } finally {
       setLoading(false);
     }
@@ -72,10 +74,10 @@ const CalendarDataManager = () => {
           }
         });
         
-        setSuccessMsg(res.data.Message || 'Veri başarıyla içeri aktarıldı.');
+        setSuccessMsg(res.data.Message || t('msg_import_success', { context: tone, count: res.data.ImportedCount || 0 }));
       } catch (err) {
         console.error("Import error:", err);
-        setError(err.response?.data?.Message || 'İçeri aktarma işlemi başarısız oldu. Dosya formatını kontrol edin.');
+        setError(err.response?.data?.Message || t('msg_import_fail', { context: tone }));
       } finally {
         setLoading(false);
         if (fileInputRef.current) {
@@ -95,7 +97,7 @@ const CalendarDataManager = () => {
   return (
     <div className={styles.settingsGrid} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <div className={styles.sectionDivider} style={{ margin: '0' }}>
-        <h2>Takvim Veri Yönetimi</h2>
+        <h2>{t('tab_data', { context: tone })}</h2>
       </div>
       
       {error && (
@@ -114,8 +116,8 @@ const CalendarDataManager = () => {
 
       <div className={styles.settingCard} style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'center' }}>
         <div className={styles.settingInfo}>
-          <h3>Örnek Şablon İndir</h3>
-          <p>Yapay zeka (AI) ajanları için kullanılacak, doğru JSON formatına sahip boş bir şablon dosyası indirir.</p>
+          <h3>{t('btn_download_template', { context: tone })}</h3>
+          <p>{t('desc_template', { context: tone })}</p>
         </div>
         <button 
           onClick={handleDownloadTemplate} 
@@ -124,14 +126,14 @@ const CalendarDataManager = () => {
           type="button"
         >
           <FileJson size={18} />
-          <span>Şablonu İndir</span>
+          <span>{t('btn_download_template', { context: tone })}</span>
         </button>
       </div>
 
       <div className={styles.settingCard} style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'center' }}>
         <div className={styles.settingInfo}>
-          <h3>Mevcut Veriyi Yedekle</h3>
-          <p>Şu anki takviminizdeki tüm kategorileri, zincirleri ve görevleri JSON dosyası olarak indirir.</p>
+          <h3>{t('btn_backup', { context: tone })}</h3>
+          <p>{t('desc_backup', { context: tone })}</p>
         </div>
         <button 
           onClick={handleDownloadCurrent} 
@@ -141,14 +143,14 @@ const CalendarDataManager = () => {
           style={{ backgroundColor: 'var(--accent-secondary)' }}
         >
           <Download size={18} />
-          <span>Yedekle</span>
+          <span>{t('btn_backup', { context: tone })}</span>
         </button>
       </div>
 
       <div className={styles.settingCard} style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'center' }}>
         <div className={styles.settingInfo}>
-          <h3>JSON İçe Aktar</h3>
-          <p>JSON dosyasından yeni kategoriler ve görevler ekler.</p>
+          <h3>{t('btn_import', { context: tone })}</h3>
+          <p>{t('desc_import', { context: tone })}</p>
           <p style={{ color: 'var(--text-warning)', fontWeight: 'bold', marginTop: '5px', fontSize: '0.85rem' }}>
             Dikkat: Mevcut verileri silmez, üzerlerine ekler. Kategori hiyerarşisinde üst kategorilerin JSON dosyasında üst sıralarda olması gerekir.
           </p>
@@ -169,7 +171,7 @@ const CalendarDataManager = () => {
             type="button"
           >
             <Upload size={18} />
-            <span>Dosya Yükle</span>
+            <span>{t('btn_import', { context: tone })}</span>
           </button>
         </div>
       </div>

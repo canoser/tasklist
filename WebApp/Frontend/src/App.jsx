@@ -174,7 +174,7 @@ export default function App() {
             )}
 
             {activeTab === 'admin' && user?.email === 'canoser@gmail.com' && (
-              <AdminPanel />
+              <AdminPanel tone={tone} />
             )}
           </main>
 

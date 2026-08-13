@@ -4,8 +4,11 @@
 import { getTagColors } from '../../utils/taskUtils';
 import styles from './WeeklyView.module.css';
 import { useOrientation } from '../../hooks/useOrientation';
+import { useTranslation } from 'react-i18next';
 
-const WeeklyView = ({ tasks = [], roles = [], weekStart, onDayClick, filter }) => {
+const WeeklyView = ({ tasks = [], roles = [], weekStart, onDayClick, filter, tone, t }) => {
+  const { i18n } = useTranslation('common');
+  const currentLang = i18n.language || 'tr-TR';
   const isLandscape = useOrientation();
   
   // weekStart'tan itibaren 7 gün üret (Pazartesi -> Pazar)
@@ -28,8 +31,8 @@ const WeeklyView = ({ tasks = [], roles = [], weekStart, onDayClick, filter }) =
 
         // Rol bazlı sayılar
         const roleCounts = {};
-        dayTasks.forEach(t => {
-          const rName = t.roleName || 'Diğer';
+        dayTasks.forEach(tTask => {
+          const rName = tTask.roleName || t('role_other', { context: tone }) || 'Diğer';
           roleCounts[rName] = (roleCounts[rName] || 0) + 1;
         });
 
@@ -44,7 +47,7 @@ const WeeklyView = ({ tasks = [], roles = [], weekStart, onDayClick, filter }) =
                 {day.getDate()}
               </span>
               <span className={styles.dayName}>
-                {day.toLocaleString('tr-TR', { weekday: isLandscape ? 'short' : 'long' })}
+                {day.toLocaleString(currentLang, { weekday: isLandscape ? 'short' : 'long' })}
               </span>
             </div>
 

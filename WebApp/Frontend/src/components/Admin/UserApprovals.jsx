@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { UserCheck, RefreshCw, AlertCircle } from 'lucide-react';
 import apiClient from '../../services/apiClient';
 import styles from './AdminPanel.module.css';
+import { useTranslation } from 'react-i18next';
 
-const UserApprovals = ({ settings }) => {
+const UserApprovals = ({ settings, tone }) => {
+  const { t } = useTranslation('admin');
   const [pendingUsers, setPendingUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -33,7 +35,7 @@ const UserApprovals = ({ settings }) => {
       setCustomLimits(initialLimits);
     } catch (err) {
       console.error("Fetch pending users error:", err);
-      setError("Bekleyen kullanıcılar yüklenirken hata oluştu.");
+      setError(t('user_approvals_err_fetch', { context: tone }));
     } finally {
       setLoading(false);
     }
@@ -69,7 +71,7 @@ const UserApprovals = ({ settings }) => {
       setPendingUsers(prev => prev.filter(u => u.id !== userId));
     } catch (err) {
       console.error("Approve error:", err);
-      alert("Kullanıcı onaylanırken bir hata oluştu.");
+      alert(t('user_approvals_err_approve', { context: tone }));
     } finally {
       setApprovingId(null);
     }
@@ -79,7 +81,7 @@ const UserApprovals = ({ settings }) => {
     return (
       <div className={styles.loadingContainer}>
         <RefreshCw className={styles.spinner} size={24} />
-        <p>Kullanıcılar Yükleniyor...</p>
+        <p>{t('loading_usage', { context: tone })}</p>
       </div>
     );
   }
@@ -87,7 +89,7 @@ const UserApprovals = ({ settings }) => {
   return (
     <div className={styles.sectionContainer} style={{ marginTop: '30px' }}>
       <div className={styles.sectionDivider}>
-        <h2>Bekleyen Kullanıcı Onayları</h2>
+        <h2>{t('user_approvals_title', { context: tone })}</h2>
       </div>
 
       {error && (
@@ -99,7 +101,7 @@ const UserApprovals = ({ settings }) => {
 
       {pendingUsers.length === 0 && !error ? (
         <div className={styles.emptyState}>
-          Onay bekleyen kullanıcı bulunmamaktadır.
+          {t('user_approvals_empty', { context: tone })}
         </div>
       ) : (
         <div className={styles.settingsGrid}>
@@ -152,7 +154,7 @@ const UserApprovals = ({ settings }) => {
                   ) : (
                     <>
                       <UserCheck size={18} />
-                      <span>Premium Olarak Onayla</span>
+                      <span>{t('user_approvals_btn_approve', { context: tone })}</span>
                     </>
                   )}
                 </button>

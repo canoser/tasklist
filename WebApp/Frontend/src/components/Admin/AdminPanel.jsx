@@ -7,8 +7,10 @@ import UsageDashboard from './UsageDashboard';
 import styles from './AdminPanel.module.css';
 
 import CalendarDataManager from './CalendarDataManager';
+import { useTranslation } from 'react-i18next';
 
-const AdminPanel = () => {
+const AdminPanel = ({ tone }) => {
+  const { t } = useTranslation('admin');
   const [settings, setSettings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState(null);
@@ -24,7 +26,7 @@ const AdminPanel = () => {
       setSettings(data);
     } catch (err) {
       console.error("Settings fetch error:", err);
-      setError("Ayarlar yüklenirken bir hata oluştu. Lütfen yetkinizi kontrol edin.");
+      setError(t('err_fetch_settings', { context: tone }));
     } finally {
       setLoading(false);
     }
@@ -48,11 +50,11 @@ const AdminPanel = () => {
       
       await updateSetting(key, value, description);
       
-      setSuccessMsg(`${key} ayarı başarıyla güncellendi!`);
+      setSuccessMsg(t('msg_save_success', { context: tone, key }));
       setTimeout(() => setSuccessMsg(''), 3000);
     } catch (err) {
       console.error("Setting update error:", err);
-      setError(`${key} güncellenemedi.`);
+      setError(t('msg_save_fail', { context: tone, key }));
     } finally {
       setSavingKey(null);
     }
@@ -62,7 +64,7 @@ const AdminPanel = () => {
     return (
       <div className={styles.loadingContainer}>
         <RefreshCw className={styles.spinner} size={32} />
-        <p>Sistem Ayarları Yükleniyor...</p>
+        <p>{t('loading_settings', { context: tone })}</p>
       </div>
     );
   }
@@ -72,9 +74,9 @@ const AdminPanel = () => {
       <div className={styles.header}>
         <div className={styles.headerTitle}>
           <Settings size={28} className={styles.headerIcon} />
-          <h1>Sistem Yönetim Paneli</h1>
+          <h1>{t('admin_panel_title', { context: tone })}</h1>
         </div>
-        <p className={styles.headerSubtitle}>SaaS Kotaları ve Uygulama Sınırları</p>
+        <p className={styles.headerSubtitle}>{t('admin_panel_subtitle', { context: tone })}</p>
       </div>
 
       {error && (
@@ -96,25 +98,25 @@ const AdminPanel = () => {
           onClick={() => setActiveTab('settings')}
           style={{ padding: '8px 16px', background: activeTab === 'settings' ? 'var(--accent-primary)' : 'transparent', color: activeTab === 'settings' ? 'white' : 'var(--text-secondary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
         >
-          Sistem Ayarları
+          {t('tab_settings', { context: tone })}
         </button>
         <button 
           onClick={() => setActiveTab('usage')}
           style={{ padding: '8px 16px', background: activeTab === 'usage' ? 'var(--accent-primary)' : 'transparent', color: activeTab === 'usage' ? 'white' : 'var(--text-secondary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
         >
-          Kullanım & Maliyet
+          {t('tab_usage', { context: tone })}
         </button>
         <button 
           onClick={() => setActiveTab('users')}
           style={{ padding: '8px 16px', background: activeTab === 'users' ? 'var(--accent-primary)' : 'transparent', color: activeTab === 'users' ? 'white' : 'var(--text-secondary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
         >
-          Kullanıcı Yönetimi
+          {t('tab_users', { context: tone })}
         </button>
         <button 
           onClick={() => setActiveTab('data')}
           style={{ padding: '8px 16px', background: activeTab === 'data' ? 'var(--accent-primary)' : 'transparent', color: activeTab === 'data' ? 'white' : 'var(--text-secondary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
         >
-          Takvim Veri Yönetimi
+          {t('tab_data', { context: tone })}
         </button>
       </div>
 
@@ -144,41 +146,41 @@ const AdminPanel = () => {
                 ) : (
                   <>
                     <Save size={18} />
-                    <span>Kaydet</span>
+                    <span>{t('btn_save', { context: tone })}</span>
                   </>
                 )}
               </button>
             </div>
             <div className={styles.lastUpdated}>
-              Son güncelleme: {new Date(setting.updatedAt).toLocaleString()}
+              {t('lbl_last_updated', { context: tone, date: new Date(setting.updatedAt).toLocaleString() })}
             </div>
           </div>
         ))}
             {settings.length === 0 && !error && (
               <div className={styles.emptyState}>
-                Sistem ayarı bulunamadı.
+                {t('lbl_empty_settings', { context: tone })}
               </div>
             )}
           </div>
 
           <div className={styles.sectionDivider}>
-            <h2>Test Araçları</h2>
+            <h2>{t('lbl_test_tools', { context: tone })}</h2>
           </div>
           
-          <QuotaSimulator resourceType="AiTaskCreation" />
+          <QuotaSimulator resourceType="AiTaskCreation" tone={tone} />
         </>
       )}
 
       {activeTab === 'usage' && (
-        <UsageDashboard />
+        <UsageDashboard tone={tone} />
       )}
 
       {activeTab === 'users' && (
-        <UserApprovals settings={settings} />
+        <UserApprovals settings={settings} tone={tone} />
       )}
 
       {activeTab === 'data' && (
-        <CalendarDataManager />
+        <CalendarDataManager tone={tone} />
       )}
     </div>
   );

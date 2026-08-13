@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import chainService from '../../services/chainService';
 import HierarchicalCategoryPicker from '../Category/HierarchicalCategoryPicker';
 import styles from './ChainManagerPanel.module.css';
+import { useTranslation } from 'react-i18next';
 
 const ChainManagerPanel = ({ user }) => {
+  const { t } = useTranslation('common');
   const [chains, setChains] = useState([]);
   const [loading, setLoading] = useState(false);
   const [expandedChainId, setExpandedChainId] = useState(null);
@@ -63,7 +65,7 @@ const ChainManagerPanel = ({ user }) => {
   const handleCreateChain = async (e) => {
     e.preventDefault();
     if (newChainTasks.some(t => !t.title.trim() || !t.deadline)) {
-      alert('Lütfen tüm adımların başlığını ve hedeflenen tarihini doldurun.');
+      alert(t('alert_chain_fill_fields', { defaultValue: 'Lütfen tüm adımların başlığını ve hedeflenen tarihini doldurun.' }));
       return;
     }
     
@@ -83,7 +85,7 @@ const ChainManagerPanel = ({ user }) => {
       window.dispatchEvent(new Event('chainsUpdated'));
     } catch (err) {
       console.error('Zincir oluşturulamadı:', err);
-      alert('Zincir oluşturulamadı. Detaylar için konsola bakın.');
+      alert(t('alert_chain_create_error', { defaultValue: 'Zincir oluşturulamadı. Detaylar için konsola bakın.' }));
     } finally {
       setCreating(false);
     }
@@ -94,18 +96,18 @@ const ChainManagerPanel = ({ user }) => {
   return (
     <div className={styles.panel}>
       <div className={styles.panelHeader}>
-        <h3 style={{ margin: 0 }}>Zincir Görevler</h3>
+        <h3 style={{ margin: 0 }}>{t('chain_management', { defaultValue: 'Zincir Görevler' })}</h3>
         <button 
           className={styles.primaryBtn} 
           onClick={() => setShowCreateForm(!showCreateForm)}
         >
-          {showCreateForm ? 'İptal' : '＋ Yeni Zincir'}
+          {showCreateForm ? t('btn_cancel', { defaultValue: 'İptal' }) : `＋ ${t('btn_new_chain', { defaultValue: 'Yeni Zincir' })}`}
         </button>
       </div>
 
       {showCreateForm && (
         <form className={styles.createForm} onSubmit={handleCreateChain}>
-          <h4 style={{ margin: '0 0 12px 0' }}>Yeni Görev Zinciri</h4>
+          <h4 style={{ margin: '0 0 12px 0' }}>{t('new_chain_title', { defaultValue: 'Yeni Görev Zinciri' })}</h4>
           
           {newChainTasks.map((step, index) => (
             <div key={index} className={styles.stepRow}>
@@ -113,7 +115,7 @@ const ChainManagerPanel = ({ user }) => {
               <input
                 type="text"
                 className={styles.stepInput}
-                placeholder="Görev Başlığı"
+                placeholder={t('placeholder_task_title', { defaultValue: 'Görev Başlığı' })}
                 value={step.title}
                 onChange={(e) => updateStep(index, 'title', e.target.value)}
                 required
@@ -134,19 +136,19 @@ const ChainManagerPanel = ({ user }) => {
 
           <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
             <button type="button" className={styles.secondaryBtn} onClick={addStep}>
-              ＋ Adım Ekle
+              ＋ {t('btn_add_step', { defaultValue: 'Adım Ekle' })}
             </button>
             <button type="submit" className={styles.primaryBtn} disabled={creating}>
-              {creating ? 'Oluşturuluyor...' : 'Kaydet'}
+              {creating ? t('creating', { defaultValue: 'Oluşturuluyor...' }) : t('btn_save', { defaultValue: 'Kaydet' })}
             </button>
           </div>
         </form>
       )}
 
       {loading ? (
-        <p>Yükleniyor...</p>
+        <p>{t('loading', { defaultValue: 'Yükleniyor...' })}</p>
       ) : chains.length === 0 ? (
-        <p style={{ color: 'var(--text-muted)' }}>Henüz bir görev zinciriniz yok.</p>
+        <p style={{ color: 'var(--text-muted)' }}>{t('empty_chains', { defaultValue: 'Henüz bir görev zinciriniz yok.' })}</p>
       ) : (
         chains.map(chain => {
           const firstTask = chain.tasks[0];

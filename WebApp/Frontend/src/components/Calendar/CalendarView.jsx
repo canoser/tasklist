@@ -230,6 +230,8 @@ const CalendarView = ({ tasks = [], roles = [], filter: initialFilter, onDayClic
           weekStart={getWeekStart(dateObj)} 
           onDayClick={onDayClick} 
           filter={filter} 
+          tone={tone}
+          t={t}
         />
       );
     }
@@ -241,6 +243,8 @@ const CalendarView = ({ tasks = [], roles = [], filter: initialFilter, onDayClic
           date={dateObj} 
           filter={filter} 
           onDayClick={onDayClick} 
+          tone={tone}
+          t={t}
         />
       );
     }
@@ -256,19 +260,19 @@ const CalendarView = ({ tasks = [], roles = [], filter: initialFilter, onDayClic
             onClick={() => switchView('monthly')} 
             className={`${styles.toggleBtn} ${viewMode === 'monthly' ? styles.active : ''}`}
           >
-            Aylık
+            {t('view_monthly', { context: tone })}
           </button>
           <button 
             onClick={() => switchView('weekly')} 
             className={`${styles.toggleBtn} ${viewMode === 'weekly' ? styles.active : ''}`}
           >
-            Haftalık
+            {t('view_weekly', { context: tone })}
           </button>
           <button 
             onClick={() => switchView('daily')} 
             className={`${styles.toggleBtn} ${viewMode === 'daily' ? styles.active : ''}`}
           >
-            Günlük
+            {t('view_daily', { context: tone })}
           </button>
         </div>
 
@@ -316,10 +320,10 @@ const CalendarView = ({ tasks = [], roles = [], filter: initialFilter, onDayClic
         {!isFilterOpen && (
           <div className={styles.navButtons}>
             <button type="button" onClick={onCategoryClick} className={styles.navBtnSecondary}>
-              Kategoriler ↓
+              {t('nav_categories', { context: tone })} ↓
             </button>
             <button type="button" onClick={onChainClick} className={styles.navBtnSecondary}>
-              Zincir ↓
+              {t('nav_chains', { context: tone })} ↓
             </button>
           </div>
         )}

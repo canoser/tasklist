@@ -3,8 +3,10 @@ import { categoryService } from '../../services/categoryService';
 import { buildTree } from '../../utils/categoryUtils';
 import HierarchicalCategoryPicker from './HierarchicalCategoryPicker';
 import styles from './CategoryManagerPanel.module.css';
+import { useTranslation } from 'react-i18next';
 
 const CategoryManagerPanel = () => {
+  const { t } = useTranslation('common');
   const [categories, setCategories] = useState([]);
   const [tree, setTree] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -33,7 +35,7 @@ const CategoryManagerPanel = () => {
 
   const handleDelete = async (id) => {
     // [MOBILE_PORT_TODO]: window.confirm can block Capacitor iOS WebViews or not render well. Use a custom Modal or Dialog component instead.
-    if (!window.confirm('Kategoriyi silmek istediğinize emin misiniz? Altındaki öğeler de etkilenebilir.')) return;
+    if (!window.confirm(t('confirm_delete_category', { defaultValue: 'Kategoriyi silmek istediğinize emin misiniz? Altındaki öğeler de etkilenebilir.' }))) return;
     try {
       await categoryService.delete(id);
       loadCategories();
@@ -68,10 +70,10 @@ const CategoryManagerPanel = () => {
       <div className={styles.treeNode} style={{ marginLeft: `${depth * 16}px` }}>
         <span className={styles.nodeName}>{node.name}</span>
         <div className={styles.nodeActions}>
-          <button className={styles.addChildBtn} onClick={() => { setAddingChildTo(node.id); setNewCategoryName(''); }} title="Alt Kategori Ekle">
+          <button className={styles.addChildBtn} onClick={() => { setAddingChildTo(node.id); setNewCategoryName(''); }} title={t('btn_add_subcategory', { defaultValue: 'Alt Kategori Ekle' })}>
             ＋
           </button>
-          <button className={styles.deleteBtn} onClick={() => handleDelete(node.id)} title="Sil">
+          <button className={styles.deleteBtn} onClick={() => handleDelete(node.id)} title={t('btn_delete', { defaultValue: 'Sil' })}>
             🗑
           </button>
         </div>
@@ -84,12 +86,12 @@ const CategoryManagerPanel = () => {
             className={styles.inlineInput}
             value={newCategoryName}
             onChange={(e) => setNewCategoryName(e.target.value)}
-            placeholder="Yeni alt kategori adı"
+            placeholder={t('placeholder_new_subcategory', { defaultValue: 'Yeni alt kategori adı' })}
             autoFocus
           />
           <div className={styles.saveCancelBtns}>
-            <button type="submit" className={styles.addRootBtn}>Kaydet</button>
-            <button type="button" className={styles.deleteBtn} onClick={() => setAddingChildTo(null)}>İptal</button>
+            <button type="submit" className={styles.addRootBtn}>{t('btn_save', { defaultValue: 'Kaydet' })}</button>
+            <button type="button" className={styles.deleteBtn} onClick={() => setAddingChildTo(null)}>{t('btn_cancel', { defaultValue: 'İptal' })}</button>
           </div>
         </form>
       )}
@@ -101,9 +103,9 @@ const CategoryManagerPanel = () => {
   return (
     <div className={styles.panel}>
       <div className={styles.panelHeader}>
-        <h3 style={{ margin: 0 }}>Kategori Yönetimi</h3>
+        <h3 style={{ margin: 0 }}>{t('category_management', { defaultValue: 'Kategori Yönetimi' })}</h3>
         <button className={styles.addRootBtn} onClick={() => setShowAddRootForm(!showAddRootForm)}>
-          ＋ Yeni Kök Kategori
+          {showAddRootForm ? t('btn_cancel', { defaultValue: 'İptal' }) : `＋ ${t('btn_new_root_category', { defaultValue: 'Yeni Kök Kategori' })}`}
         </button>
       </div>
 
@@ -115,26 +117,26 @@ const CategoryManagerPanel = () => {
               className={styles.inlineInput}
               value={newCategoryName}
               onChange={(e) => setNewCategoryName(e.target.value)}
-              placeholder="Yeni kategori adı"
+              placeholder={t('placeholder_new_category', { defaultValue: 'Yeni kategori adı' })}
               autoFocus
             />
-            <div style={{ fontSize: '13px' }}>İsteğe bağlı: Üst Kategori Seçin (Boş bırakılırsa kök olur)</div>
+            <div style={{ fontSize: '13px' }}>{t('opt_parent_category', { defaultValue: 'İsteğe bağlı: Üst Kategori Seçin (Boş bırakılırsa kök olur)' })}</div>
             <HierarchicalCategoryPicker
               value={newCategoryParentId}
               onChange={(id) => setNewCategoryParentId(id)}
             />
             <div className={styles.saveCancelBtns} style={{ marginTop: '8px' }}>
-              <button type="submit" className={styles.addRootBtn}>Kaydet</button>
-              <button type="button" className={styles.deleteBtn} onClick={() => setShowAddRootForm(false)}>İptal</button>
+              <button type="submit" className={styles.addRootBtn}>{t('btn_save', { defaultValue: 'Kaydet' })}</button>
+              <button type="button" className={styles.deleteBtn} onClick={() => setShowAddRootForm(false)}>{t('btn_cancel', { defaultValue: 'İptal' })}</button>
             </div>
           </div>
         </form>
       )}
 
       {loading ? (
-        <p>Yükleniyor...</p>
+        <p>{t('loading', { defaultValue: 'Yükleniyor...' })}</p>
       ) : tree.length === 0 ? (
-        <p className={styles.nodeName}>Henüz kategori yok.</p>
+        <p className={styles.nodeName}>{t('empty_categories', { defaultValue: 'Henüz kategori yok.' })}</p>
       ) : (
         <div>
           {tree.map(rootNode => renderNode(rootNode))}

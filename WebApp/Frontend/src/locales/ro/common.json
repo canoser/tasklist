@@ -3,40 +3,30 @@
   "nav_workspace": "Spațiile Mele",
   "nav_calendar": "Calendar",
   "nav_profile": "Profil",
-
   "btn_cancel": "Anulați",
   "btn_cancel_semi": "Anulează",
   "btn_cancel_buddy": "Stai, las-o baltă!",
-
   "btn_save": "Salvați",
   "btn_save_semi": "Salvează",
   "btn_save_buddy": "Gata, salvat!",
-
   "btn_delete": "Ștergeți",
   "btn_delete_semi": "Șterge",
   "btn_delete_buddy": "Aruncă la gunoi",
-
   "btn_confirm": "Confirmați",
   "btn_confirm_semi": "Confirmă",
   "btn_confirm_buddy": "S-a făcut",
-
   "loading": "Se încarcă...",
   "loading_buddy": "Stai o secundă...",
-
   "warning_label": "Avertisment",
-
   "login": "Autentificare",
   "logout": "Deconectare",
-
   "app_name": "PlanlamaApp",
-
   "tag_add_placeholder": "Adăugați sau scrieți...",
   "tag_add_placeholder_semi": "Adaugă sau scrie...",
   "tag_create_prefix": "Adăugați ca",
   "tag_create_prefix_semi": "Adaugă ca",
   "tag_remove_aria": "Ștergeți {{name}}",
   "tag_remove_aria_semi": "Șterge {{name}}",
-
   "ws_title": "Spațiile Mele",
   "ws_subtitle": "Gestionați-vă echipele și grupurile de lucru",
   "ws_subtitle_semi": "Gestionează-ți echipele și grupurile de lucru",
@@ -47,28 +37,24 @@
   "ws_btn_join": "Alăturați-vă cu un Cod",
   "ws_btn_join_semi": "Alătură-te cu un Cod",
   "ws_btn_join_buddy": "Bagă-te cu un cod",
-  
   "ws_section_owned": "👑 Spații pe care le Gestionați",
   "ws_section_owned_semi": "👑 Spații pe care le Gestionez",
   "ws_section_owned_buddy": "👑 Echipele pe care le conduc",
   "ws_empty_owned": "Nu ați creat încă niciun spațiu.",
   "ws_empty_owned_semi": "Încă nu ai creat niciun spațiu.",
   "ws_empty_owned_buddy": "Încă nu ți-ai făcut propria echipă, bro.",
-  
   "ws_section_joined": "👥 Spații la care v-ați Alăturat",
   "ws_section_joined_semi": "👥 Spații la care m-am Alăturat",
   "ws_section_joined_buddy": "👥 Găști cu care o ard",
   "ws_empty_joined": "Nu v-ați alăturat încă niciunui spațiu.",
   "ws_empty_joined_semi": "Încă nu te-ai alăturat niciunui spațiu.",
   "ws_empty_joined_buddy": "Nu te-ai băgat în nicio gașcă încă.",
-
   "ws_guest_title": "Înregistrare Necesară",
   "ws_guest_title_semi": "Înregistrare Necesară",
   "ws_guest_title_buddy": "Stai așa, boss!",
   "ws_guest_desc": "Cu funcția Spațiile Mele puteți crea echipe proprii sau vă puteți alătura spațiilor de lucru comune. Această funcționalitate este bazată pe cloud, vă rugăm să vă creați un cont gratuit.",
   "ws_guest_desc_semi": "Cu funcția Spațiile Mele poți crea echipe proprii sau te poți alătura spațiilor de lucru comune. Această funcționalitate este bazată pe cloud, te rugăm să îți creezi un cont gratuit.",
   "ws_guest_desc_buddy": "Zona de spații e pentru gașcă, deci se conectează la cloud. Trebuie să-ți faci un cont mai întâi, frate.",
-
   "cal_title": "Calendar",
   "cal_day_mon": "Lun",
   "cal_day_tue": "Mar",
@@ -77,10 +63,8 @@
   "cal_day_fri": "Vin",
   "cal_day_sat": "Sâm",
   "cal_day_sun": "Dum",
-
   "cal_legend_teacher": "Profesor",
   "cal_legend_other": "Personal / Altele",
-
   "day_detail_tasks_count": "{{count}} Sarcini",
   "day_detail_tasks_count_buddy": "{{count}} Chestii de făcut",
   "day_detail_empty": "Nicio sarcină pentru această zi.",
@@ -90,5 +74,15 @@
   "task_status_partial": "{{percent}}% Terminat",
   "task_status_partial_buddy": "Rupt {{percent}}%",
   "task_status_pending": "În așteptare",
-  "task_status_pending_buddy": "La rând"
+  "task_status_pending_buddy": "La rând",
+  "view_monthly": "Lunar",
+  "view_monthly_buddy": "Vedere Lunară",
+  "view_weekly": "Săptămânal",
+  "view_weekly_buddy": "Săptămâna Asta",
+  "view_daily": "Zilnic",
+  "view_daily_buddy": "Ce E Azi",
+  "nav_categories": "Categorii",
+  "nav_categories_buddy": "Categorii",
+  "nav_chains": "Sarcini în Lanț",
+  "nav_chains_buddy": "Nu Rupe Lanțul"
 }

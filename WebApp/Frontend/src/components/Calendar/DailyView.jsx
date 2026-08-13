@@ -9,7 +9,7 @@ import styles from './DailyView.module.css';
 const HOURS = Array.from({ length: 24 }, (_, i) => i); // 0..23
 const SLOT_HEIGHT = 64; // px per hour
 
-const DailyView = ({ tasks = [], roles = [], date, filter, onDayClick }) => {
+const DailyView = ({ tasks = [], roles = [], date, filter, onDayClick, tone, t }) => {
   const containerRef = useRef(null);
 
   // Görevleri bugüne göre filtrele
@@ -37,18 +37,18 @@ const DailyView = ({ tasks = [], roles = [], date, filter, onDayClick }) => {
       {/* Zamansız görevler şeridi */}
       {unscheduledTasks.length > 0 && (
         <div className={styles.allDayZone}>
-          <span className={styles.allDayLabel}>📋 Zamansız</span>
+          <span className={styles.allDayLabel}>📋 {t('lbl_unscheduled', { context: tone }) || 'Zamansız'}</span>
           <div className={styles.allDayTasks}>
-            {unscheduledTasks.map(t => {
-              const colors = getTagColors(t.roleName || 'Diğer');
+            {unscheduledTasks.map(tTask => {
+              const colors = getTagColors(tTask.roleName || t('role_other', { context: tone }) || 'Diğer');
               return (
                 <div
-                  key={t.id}
-                  className={`${styles.taskCard} ${t.isCompleted ? styles.completed : ''}`}
+                  key={tTask.id}
+                  className={`${styles.taskCard} ${tTask.isCompleted ? styles.completed : ''}`}
                   style={{ borderLeft: `3px solid ${colors.background}` }}
                 >
-                  <span className={styles.taskTitle}>{t.title}</span>
-                  {t.targetCount && <span className={styles.taskMeta}>{t.targetCount} Soru</span>}
+                  <span className={styles.taskTitle}>{tTask.title}</span>
+                  {tTask.targetCount && <span className={styles.taskMeta}>{tTask.targetCount} {t('lbl_question', { context: tone }) || 'Soru'}</span>}
                 </div>
               );
             })}
@@ -69,16 +69,16 @@ const DailyView = ({ tasks = [], roles = [], date, filter, onDayClick }) => {
             <div key={hour} className={`${styles.timeSlot} ${isCurrentHour ? styles.currentHour : ''}`} style={{ height: SLOT_HEIGHT }}>
               <span className={styles.timeLabel}>{String(hour).padStart(2, '0')}:00</span>
               <div className={styles.slotContent}>
-                {hourTasks.map(t => {
-                  const colors = getTagColors(t.roleName || 'Diğer');
+                {hourTasks.map(tTask => {
+                  const colors = getTagColors(tTask.roleName || t('role_other', { context: tone }) || 'Diğer');
                   return (
                     <div
-                      key={t.id}
-                      className={`${styles.scheduledCard} ${t.isCompleted ? styles.completed : ''}`}
+                      key={tTask.id}
+                      className={`${styles.scheduledCard} ${tTask.isCompleted ? styles.completed : ''}`}
                       style={{ background: colors.background, color: colors.color }}
                     >
-                      <span className={styles.cardTime}>{getScheduledTime(t)}</span>
-                      <span className={styles.cardTitle}>{t.title}</span>
+                      <span className={styles.cardTime}>{getScheduledTime(tTask)}</span>
+                      <span className={styles.cardTitle}>{tTask.title}</span>
                     </div>
                   );
                 })}

@@ -106,7 +106,7 @@ const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTh
                 onClick={navigateToAdmin}
                 style={{ background: 'var(--accent-color, #ff3366)', color: 'white' }}
               >
-                🔐 Yönetim Paneli
+                🔐 {t('admin_panel', { context: tone, defaultValue: 'Yönetim Paneli' })}
               </button>
             )}
             {user && (

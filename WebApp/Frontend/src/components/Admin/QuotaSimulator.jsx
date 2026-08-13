@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Play, Video, WifiOff, AlertCircle, RefreshCw, Activity } from 'lucide-react';
 import { getQuotaStatus, simulateDeductQuota, grantReward } from '../../services/quotaService';
 import styles from './QuotaSimulator.module.css';
+import { useTranslation } from 'react-i18next';
 
-const QuotaSimulator = ({ resourceType = 'AiTaskCreation' }) => {
+const QuotaSimulator = ({ resourceType = 'AiTaskCreation', tone }) => {
+  const { t } = useTranslation('admin');
   const [quota, setQuota] = useState(null);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
@@ -20,7 +22,7 @@ const QuotaSimulator = ({ resourceType = 'AiTaskCreation' }) => {
       setQuota(data);
     } catch (err) {
       console.error('Quota load error:', err);
-      setError('Kota bilgisi alınamadı.');
+      setError(t('err_fetch_settings', { context: tone }) || 'Kota bilgisi alınamadı.');
     } finally {
       setLoading(false);
     }
@@ -56,7 +58,7 @@ const QuotaSimulator = ({ resourceType = 'AiTaskCreation' }) => {
       if (err.response && err.response.status === 429) {
         setError(err.response.data.message || 'Kota doldu!');
       } else {
-        setError('Kota düşümü başarısız oldu.');
+        setError(t('simulator_fail', { context: tone }));
       }
     } finally {
       setActionLoading(false);
@@ -90,7 +92,7 @@ const QuotaSimulator = ({ resourceType = 'AiTaskCreation' }) => {
       <div className={styles.simulatorCard}>
         <div className={styles.header}>
           <RefreshCw className={styles.spinner} size={20} />
-          <h2>Kota Yükleniyor...</h2>
+          <h2>{t('loading_usage', { context: tone })}</h2>
         </div>
       </div>
     );
@@ -106,13 +108,13 @@ const QuotaSimulator = ({ resourceType = 'AiTaskCreation' }) => {
     <div className={styles.simulatorCard}>
       <div className={styles.header}>
         <Activity size={24} className={styles.headerIcon} />
-        <h2>{resourceType} Kota Simülatörü</h2>
+        <h2>{resourceType} {t('simulator_title', { context: tone })}</h2>
       </div>
 
       {isOffline && (
         <div className={styles.offlineAlert}>
           <WifiOff size={20} />
-          <span>İşlem için internet bağlantısı gerekiyor. Çevrimdışı moddasınız.</span>
+          <span>Offline mode</span>
         </div>
       )}
 
@@ -164,7 +166,7 @@ const QuotaSimulator = ({ resourceType = 'AiTaskCreation' }) => {
           className={`${styles.actionBtn} ${styles.deductBtn}`}
         >
           {actionLoading ? <RefreshCw size={18} className={styles.spinner} /> : <Play size={18} />}
-          Simüle Et (-1)
+          {t('simulator_btn', { context: tone })} (-1)
         </button>
 
         <button 

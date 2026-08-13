@@ -9,8 +9,10 @@ import { useTaskContext } from '../../context/TaskContext';
 import CategoryManagerPanel from '../Category/CategoryManagerPanel';
 import ChainManagerPanel from '../Chain/ChainManagerPanel';
 import screenStyles from './CalendarScreen.module.css';
+import { useTranslation } from 'react-i18next';
 
 const CalendarScreen = ({ user, navigation, tone }) => {
+  const { t } = useTranslation('common');
   const [tasks, setTasks] = useState([]);
   const [userRoles, setUserRoles] = useState([]);
   const [selectedDay, setSelectedDay] = useState(null);
@@ -161,9 +163,9 @@ const CalendarScreen = ({ user, navigation, tone }) => {
       {/* ── BÖLÜM 2: KATEGORİLER ───────────────────────────────────────────── */}
       <section ref={categoryRef} className={screenStyles.section} style={sectionStyle}>
         <div className={screenStyles.sectionHeader}>
-          <button onClick={() => scrollTo(calendarRef)} className={screenStyles.sectionNavBtn}>↑ Takvim</button>
-          <h2 className={screenStyles.sectionTitle}>Kategoriler</h2>
-          <button onClick={() => scrollTo(chainRef)} className={screenStyles.sectionNavBtn}>Zincir ↓</button>
+          <button onClick={() => scrollTo(calendarRef)} className={screenStyles.sectionNavBtn}>↑ {t('cal_title', { context: tone })}</button>
+          <h2 className={screenStyles.sectionTitle}>{t('nav_categories', { context: tone })}</h2>
+          <button onClick={() => scrollTo(chainRef)} className={screenStyles.sectionNavBtn}>↓ {t('nav_chains', { context: tone })}</button>
         </div>
         <div className={screenStyles.sectionContent}>
           <CategoryManagerPanel />
@@ -173,9 +175,9 @@ const CalendarScreen = ({ user, navigation, tone }) => {
       {/* ── BÖLÜM 3: ZİNCİR GÖREVLER ───────────────────────────────────────── */}
       <section ref={chainRef} className={screenStyles.section} style={sectionStyle}>
         <div className={screenStyles.sectionHeader}>
-          <button onClick={() => scrollTo(calendarRef)} className={screenStyles.sectionNavBtn}>↑ Takvim</button>
-          <h2 className={screenStyles.sectionTitle}>Zincir Görevler</h2>
-          <button onClick={() => scrollTo(categoryRef)} className={screenStyles.sectionNavBtn}>↑ Kategoriler</button>
+          <button onClick={() => scrollTo(calendarRef)} className={screenStyles.sectionNavBtn}>↑ {t('cal_title', { context: tone })}</button>
+          <h2 className={screenStyles.sectionTitle}>{t('nav_chains', { context: tone })}</h2>
+          <button onClick={() => scrollTo(categoryRef)} className={screenStyles.sectionNavBtn}>↑ {t('nav_categories', { context: tone })}</button>
         </div>
         <div className={screenStyles.sectionContent}>
           <ChainManagerPanel user={user} />

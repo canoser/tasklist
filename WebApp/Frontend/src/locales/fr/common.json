@@ -3,37 +3,27 @@
   "nav_workspace": "Mes Espaces",
   "nav_calendar": "Calendrier",
   "nav_profile": "Profil",
-
   "btn_cancel": "Annuler",
   "btn_cancel_semi": "Annuler",
   "btn_cancel_buddy": "Attends, annule !",
-
   "btn_save": "Enregistrer",
   "btn_save_semi": "Enregistrer",
   "btn_save_buddy": "C'est dans la boîte !",
-
   "btn_delete": "Supprimer",
   "btn_delete_semi": "Supprimer",
   "btn_delete_buddy": "À la poubelle",
-
   "btn_confirm": "Confirmer",
   "btn_confirm_buddy": "Marché conclu",
-
   "loading": "Chargement...",
   "loading_buddy": "Bouge pas...",
-
   "warning_label": "Avertissement",
-
   "login": "Connexion",
   "logout": "Déconnexion",
-
   "app_name": "PlanlamaApp",
-
   "tag_add_placeholder": "Ajoutez ou tapez...",
   "tag_add_placeholder_semi": "Ajoute ou tape...",
   "tag_create_prefix": "Ajouter comme",
   "tag_remove_aria": "Supprimer {{name}}",
-
   "ws_title": "Mes Espaces",
   "ws_subtitle": "Gérez vos équipes et groupes de travail",
   "ws_subtitle_semi": "Gère tes équipes et groupes de travail",
@@ -42,26 +32,22 @@
   "ws_btn_create_buddy": "+ Monter une Équipe",
   "ws_btn_join": "Rejoindre avec un Code",
   "ws_btn_join_buddy": "S'incruster avec un code",
-  
   "ws_section_owned": "👑 Espaces que je gère",
   "ws_section_owned_buddy": "👑 Équipes que je mène",
   "ws_empty_owned": "Vous n'avez pas encore créé d'espace.",
   "ws_empty_owned_semi": "Tu n'as pas encore créé d'espace.",
   "ws_empty_owned_buddy": "T'as pas encore monté ta propre équipe.",
-  
   "ws_section_joined": "👥 Espaces rejoints",
   "ws_section_joined_buddy": "👥 Équipes que je squatte",
   "ws_empty_joined": "Vous n'avez rejoint aucun espace.",
   "ws_empty_joined_semi": "Tu n'as rejoint aucun espace.",
   "ws_empty_joined_buddy": "T'as rejoint aucune équipe pour l'instant.",
-
   "ws_guest_title": "Inscription Requise",
   "ws_guest_title_semi": "Inscription Requise",
   "ws_guest_title_buddy": "Attends une minute, mon pote !",
   "ws_guest_desc": "La fonctionnalité Mes Espaces vous permet de créer vos propres équipes ou de rejoindre des espaces partagés. Basée sur le cloud, veuillez créer un compte gratuit.",
   "ws_guest_desc_semi": "La fonctionnalité Mes Espaces te permet de créer tes propres équipes ou de rejoindre des espaces partagés. Basée sur le cloud, crée ton compte gratuit pour continuer.",
   "ws_guest_desc_buddy": "Les espaces, c'est pour la bande, donc ça utilise le cloud. Faut te créer un compte d'abord, mec.",
-
   "cal_title": "Calendrier",
   "cal_day_mon": "Lun",
   "cal_day_tue": "Mar",
@@ -70,11 +56,9 @@
   "cal_day_fri": "Ven",
   "cal_day_sat": "Sam",
   "cal_day_sun": "Dim",
-
   "cal_legend_teacher": "Professeur",
   "cal_legend_student": "Étudiant",
   "cal_legend_other": "Personnel / Autre",
-
   "day_detail_tasks_count": "{{count}} Tâches",
   "day_detail_tasks_count_buddy": "{{count}} Trucs à faire",
   "day_detail_empty": "Aucune tâche pour ce jour.",
@@ -84,5 +68,15 @@
   "task_status_partial": "{{percent}}% Fait",
   "task_status_partial_buddy": "Géré à {{percent}}%",
   "task_status_pending": "En attente",
-  "task_status_pending_buddy": "En file"
+  "task_status_pending_buddy": "En file",
+  "view_monthly": "Mensuel",
+  "view_monthly_buddy": "Vue Mensuelle",
+  "view_weekly": "Hebdomadaire",
+  "view_weekly_buddy": "Cette Semaine",
+  "view_daily": "Quotidien",
+  "view_daily_buddy": "Quoi Aujourd'hui",
+  "nav_categories": "Catégories",
+  "nav_categories_buddy": "Catégories",
+  "nav_chains": "Tâches en Chaîne",
+  "nav_chains_buddy": "Ne Casse Pas Chaîne"
 }
