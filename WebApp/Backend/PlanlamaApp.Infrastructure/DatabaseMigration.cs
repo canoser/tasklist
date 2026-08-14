@@ -113,6 +113,12 @@ namespace PlanlamaApp.Infrastructure
                 );
             ");
 
+            connection.Execute(@"
+                ALTER TABLE WorkspaceMembers ADD COLUMN IF NOT EXISTS Role TEXT NOT NULL DEFAULT 'Member';
+                ALTER TABLE WorkspaceMembers ADD COLUMN IF NOT EXISTS ObserverLinkedUserId TEXT;
+                ALTER TABLE WorkspaceMembers ADD COLUMN IF NOT EXISTS IsActiveMember BOOLEAN NOT NULL DEFAULT TRUE;
+            ");
+
             // ── IdempotencyKeys ────────────────────────────────────────────
             connection.Execute(@"
                 CREATE TABLE IF NOT EXISTS IdempotencyKeys (
@@ -153,6 +159,9 @@ namespace PlanlamaApp.Infrastructure
                 ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS OriginalDeadline TIMESTAMPTZ;
                 ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS IsHomework BOOLEAN NOT NULL DEFAULT FALSE;
                 ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS AssignedBy TEXT;
+                ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS AssignedByWorkspaceId INTEGER;
+                ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS AssignedByUserId TEXT;
+                ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS UserTaskSnapshot TEXT;
             ");
 
             // ── Categories ─────────────────────────────────────────────────

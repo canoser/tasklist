@@ -51,6 +51,23 @@ export default function useWorkspaces(userId) {
     }
   };
 
+  const assignTask = async (workspaceId, taskData) => {
+    return await workspaceService.assignTask(workspaceId, taskData);
+  };
+
+  const deleteTask = async (workspaceId, batchId) => {
+    return await workspaceService.deleteTask(workspaceId, batchId);
+  };
+
+  const promoteMember = async (workspaceId, memberId) => {
+    return await workspaceService.promoteMember(workspaceId, memberId);
+  };
+
+  const leaveWorkspace = async (workspaceId) => {
+    await workspaceService.leaveWorkspace(workspaceId);
+    setJoinedWorkspaces(prev => prev.filter(w => w.id !== workspaceId));
+  };
+
   return {
     ownedWorkspaces,
     joinedWorkspaces,
@@ -58,6 +75,10 @@ export default function useWorkspaces(userId) {
     error,
     createWorkspace,
     joinWorkspace,
+    assignTask,
+    deleteTask,
+    promoteMember,
+    leaveWorkspace,
     refresh: fetchWorkspaces
   };
 }

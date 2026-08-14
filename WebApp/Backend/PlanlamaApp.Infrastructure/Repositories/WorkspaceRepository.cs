@@ -47,7 +47,10 @@ namespace PlanlamaApp.Infrastructure.Repositories
 
         public async Task<int> CreateAsync(Workspace workspace)
         {
-            workspace.InviteCode = Guid.NewGuid().ToString("N").Substring(0, 6).ToUpper();
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            var random = new Random();
+            workspace.InviteCode = new string(Enumerable.Repeat(chars, 8).Select(s => s[random.Next(s.Length)]).ToArray());
+            
             workspace.CreatedAt = DateTime.UtcNow;
             workspace.UpdatedAt = DateTime.UtcNow;
 
@@ -84,7 +87,7 @@ namespace PlanlamaApp.Infrastructure.Repositories
 
         public async Task<IEnumerable<WorkspaceMember>> GetMembersAsync(int workspaceId)
         {
-            var sql = "SELECT * FROM WorkspaceMembers WHERE WorkspaceId = @WorkspaceId";
+            var sql = "SELECT * FROM WorkspaceMembers WHERE WorkspaceId = @WorkspaceId AND IsActiveMember = true";
             return await QueryAsync<WorkspaceMember>(sql, new { WorkspaceId = workspaceId });
         }
 
@@ -112,9 +115,10 @@ namespace PlanlamaApp.Infrastructure.Repositories
             member.JoinedAt = DateTime.UtcNow;
             member.TenantId = _tenantId;
             var sql = @"
-                INSERT INTO WorkspaceMembers (TenantId, WorkspaceId, UserId, DisplayName, JoinedAt)
-                VALUES (@TenantId, @WorkspaceId, @UserId, @DisplayName, @JoinedAt)
-                ON CONFLICT(WorkspaceId, UserId) DO NOTHING
+                INSERT INTO WorkspaceMembers (TenantId, WorkspaceId, UserId, DisplayName, JoinedAt, Role, ObserverLinkedUserId, IsActiveMember)
+                VALUES (@TenantId, @WorkspaceId, @UserId, @DisplayName, @JoinedAt, @Role, @ObserverLinkedUserId, true)
+                ON CONFLICT(WorkspaceId, UserId) DO UPDATE 
+                SET IsActiveMember = true, Role = EXCLUDED.Role, JoinedAt = EXCLUDED.JoinedAt
                 RETURNING Id;
             ";
             var id = await ExecuteScalarAsync<int>(sql, member);
@@ -131,7 +135,7 @@ namespace PlanlamaApp.Infrastructure.Repositories
 
         public async Task<bool> RemoveMemberAsync(int workspaceId, string userId)
         {
-            var sql = "DELETE FROM WorkspaceMembers WHERE WorkspaceId = @WorkspaceId AND UserId = @UserId";
+            var sql = "UPDATE WorkspaceMembers SET IsActiveMember = false WHERE WorkspaceId = @WorkspaceId AND UserId = @UserId";
             var affected = await ExecuteAsync(sql, new { WorkspaceId = workspaceId, UserId = userId });
             return affected > 0;
         }

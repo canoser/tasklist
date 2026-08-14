@@ -43,5 +43,11 @@ namespace PlanlamaApp.Application.Interfaces
         /// Her grup: ChainId, görev listesi (ChainOrder'a göre sıralı).
         /// </summary>
         Task<IEnumerable<TaskItem>> GetChainTasksByUserIdAsync(string userId);
+
+        /// <summary>
+        /// Kullanıcı alandan çıktığında tamamlanmamış görevleri siler, 
+        /// tamamlanmış olanları JSON snapshot olarak saklar.
+        /// </summary>
+        Task<bool> HandleWorkspaceLeaveAsync(int workspaceId, string userId, System.Data.IDbTransaction? transaction = null);
     }
 }

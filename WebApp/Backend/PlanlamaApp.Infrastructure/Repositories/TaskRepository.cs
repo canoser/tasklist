@@ -64,12 +64,12 @@ namespace PlanlamaApp.Infrastructure.Repositories
                             (TenantId, UserId, CategoryId, Title, Description, TaskType, 
                              Deadline, IsTeacherAssigned, IsCompleted, CompletedAt, TargetCount, Metadata, 
                              WorkspaceId, ChainId, ChainOrder, OriginalDeadline, IsHomework, AssignedBy,
-                             CreatedAt, UpdatedAt)
+                             AssignedByWorkspaceId, AssignedByUserId, UserTaskSnapshot, CreatedAt, UpdatedAt)
                         VALUES 
                             (@TenantId, @UserId, @CategoryId, @Title, @Description, @TaskType,
                              @Deadline, @IsTeacherAssigned, @IsCompleted, @CompletedAt, @TargetCount, @Metadata,
                              @WorkspaceId, @ChainId, @ChainOrder, @OriginalDeadline, @IsHomework, @AssignedBy,
-                             @CreatedAt, @UpdatedAt)
+                             @AssignedByWorkspaceId, @AssignedByUserId, @UserTaskSnapshot, @CreatedAt, @UpdatedAt)
                         RETURNING Id;";
             return await ExecuteScalarAsync<int>(sql, task, transaction);
         }
@@ -95,6 +95,9 @@ namespace PlanlamaApp.Infrastructure.Repositories
                             OriginalDeadline = @OriginalDeadline,
                             IsHomework = @IsHomework,
                             AssignedBy = @AssignedBy,
+                            AssignedByWorkspaceId = @AssignedByWorkspaceId,
+                            AssignedByUserId = @AssignedByUserId,
+                            UserTaskSnapshot = @UserTaskSnapshot,
                             UpdatedAt = @UpdatedAt
                         WHERE Id = @Id AND TenantId = @TenantId";
             var affected = await ExecuteAsync(sql, task, transaction);
@@ -152,6 +155,34 @@ namespace PlanlamaApp.Infrastructure.Repositories
                 await ExecuteAsync(updateSql, new { Deadline = task.Deadline, UpdatedAt = DateTime.UtcNow, Id = task.Id }, transaction);
             }
             return tasks.Any();
+        }
+
+        public async Task<bool> HandleWorkspaceLeaveAsync(int workspaceId, string userId, System.Data.IDbTransaction? transaction = null)
+        {
+            var selectSql = "SELECT * FROM TaskItems WHERE UserId = @UserId AND AssignedByWorkspaceId = @WorkspaceId";
+            var tasks = await QueryAsync<TaskItem>(selectSql, new { UserId = userId, WorkspaceId = workspaceId }, transaction);
+            
+            foreach(var task in tasks)
+            {
+                if(task.IsCompleted)
+                {
+                    var updateSql = @"UPDATE TaskItems 
+                                      SET AssignedByWorkspaceId = NULL, 
+                                          UserTaskSnapshot = @Snapshot 
+                                      WHERE Id = @Id AND TenantId = @TenantId";
+                    var snapshot = System.Text.Json.JsonSerializer.Serialize(new { 
+                        WorkspaceId = workspaceId, 
+                        LeftAt = DateTime.UtcNow,
+                        Note = "Kullanıcı çalışma alanından ayrıldı, bu görev performans kayıtları için korundu."
+                    });
+                    await ExecuteAsync(updateSql, new { Snapshot = snapshot, Id = task.Id }, transaction);
+                }
+                else
+                {
+                    await DeleteAsync(task.Id, transaction);
+                }
+            }
+            return true;
         }
     }
 }

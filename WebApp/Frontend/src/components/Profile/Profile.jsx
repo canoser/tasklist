@@ -8,7 +8,6 @@ import storage from '../../utils/storage';
 import { logoutUser } from '../../services/authService';
 import AccountModal from './AccountModal';
 import DropdownSelect from '../Common/DropdownSelect/DropdownSelect';
-import CalendarImport from './CalendarImport';
 
 const ChevronIcon = ({ isOpen }) => (
   <svg 
@@ -23,14 +22,14 @@ const PRESET_AVATARS = ['🎓', '🦊', '🚀', '⚡', '🌟', '🎯', '🦁', '
 
 const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTheme, tone, onToneChange, openAuth, navigateToAdmin }) => {
   const { t } = useTranslation('profile');
-  const [openSections, setOpenSections] = useState({ theme: false, settings: false, roles: false, import: false });
+  const [openSection, setOpenSection] = useState(null); // Tek seferde sadece 1 sekme açık kalır
   const [customAvatar, setCustomAvatar] = useState(storage.getString('user_avatar') || '');
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [localGuestName, setLocalGuestName] = useState(guestName || storage.getString('guest_name') || '');
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const [showRoleInfo, setShowRoleInfo] = useState(false);
 
-  const toggleSection = (sec) => setOpenSections(prev => ({ ...prev, [sec]: !prev[sec] }));
+  const toggleSection = (sec) => setOpenSection(prev => prev === sec ? null : sec);
 
   const displayName = user?.displayName || user?.email?.split('@')[0] || localGuestName || t('default_username');
   const initial = displayName.charAt(0).toUpperCase();
@@ -123,7 +122,8 @@ const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTh
         isOpen={isAccountModalOpen} 
         onClose={() => setIsAccountModalOpen(false)} 
         user={user} 
-        openAuth={openAuth} 
+        openAuth={openAuth}
+        tone={tone}
       />
 
       {/* Avatar Seçim Paneli */}
@@ -172,11 +172,11 @@ const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTh
           <h3 className={styles.sectionTitle}>
             <span className={styles.sectionIcon}>🎨</span> {t('section_theme', { context: tone })}
           </h3>
-          <ChevronIcon isOpen={openSections.theme} />
+          <ChevronIcon isOpen={openSection === 'theme'} />
         </div>
 
         <AnimatePresence>
-          {openSections.theme && (
+          {openSection === 'theme' && (
             <motion.div
               initial={{ height: 0, opacity: 0, overflow: 'hidden' }}
               animate={{ height: 'auto', opacity: 1, transitionEnd: { overflow: 'visible' } }}
@@ -256,11 +256,11 @@ const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTh
           <h3 className={styles.sectionTitle}>
             <span className={styles.sectionIcon}>⚙️</span> {t('section_settings', { context: tone })}
           </h3>
-          <ChevronIcon isOpen={openSections.settings} />
+          <ChevronIcon isOpen={openSection === 'settings'} />
         </div>
 
         <AnimatePresence>
-          {openSections.settings && (
+          {openSection === 'settings' && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
@@ -318,11 +318,11 @@ const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTh
           <h3 className={styles.sectionTitle}>
             <span className={styles.sectionIcon}>👤</span> {t('section_roles', { context: tone })}
           </h3>
-          <ChevronIcon isOpen={openSections.roles} />
+          <ChevronIcon isOpen={openSection === 'roles'} />
         </div>
 
         <AnimatePresence>
-          {openSections.roles && (
+          {openSection === 'roles' && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
@@ -374,35 +374,6 @@ const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTh
                 </AnimatePresence>
 
                 <RoleTagSelect userId={user?.id || user?.uid} tone={tone} />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* ── TAKVİM İÇE AKTAR BÖLÜMÜ ─────────────────────────────────────── */}
-      <div className={styles.sectionCard}>
-        <div
-          className={styles.sectionHeader}
-          onClick={() => toggleSection('import')}
-          style={{ cursor: 'pointer' }}
-        >
-          <h3 className={styles.sectionTitle}>
-            <span className={styles.sectionIcon}>📅</span> {t('section_calendar_import', { defaultValue: 'Takvimi İçe Aktar' })}
-          </h3>
-          <ChevronIcon isOpen={openSections.import} />
-        </div>
-
-        <AnimatePresence>
-          {openSections.import && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              style={{ overflow: 'hidden' }}
-            >
-              <div className={styles.sectionBody}>
-                <CalendarImport tone={tone} user={user} />
               </div>
             </motion.div>
           )}

@@ -119,5 +119,39 @@ export const workspaceService = {
       body: JSON.stringify(displayName) // or { displayName } depending on API
     });
     return true;
+  },
+
+  assignTask: async (workspaceId, taskData) => {
+    if (USE_MOCK) {
+      return new Promise(resolve => setTimeout(() => resolve({ Message: "Mock assigned", BatchId: "mock-batch" }), 300));
+    }
+    const response = await fetch(`/api/workspace/${workspaceId}/tasks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(taskData)
+    });
+    if (!response.ok) throw new Error('Görev atanamadı');
+    return response.json();
+  },
+
+  deleteTask: async (workspaceId, batchId) => {
+    if (USE_MOCK) return Promise.resolve(true);
+    const response = await fetch(`/api/workspace/${workspaceId}/tasks/${batchId}`, { method: 'DELETE' });
+    if (!response.ok) throw new Error('Görev silinemedi');
+    return response.json();
+  },
+
+  promoteMember: async (workspaceId, userId) => {
+    if (USE_MOCK) return Promise.resolve(true);
+    const response = await fetch(`/api/workspace/${workspaceId}/members/${userId}/promote`, { method: 'POST' });
+    if (!response.ok) throw new Error('Yetki verilemedi');
+    return true;
+  },
+
+  leaveWorkspace: async (workspaceId) => {
+    if (USE_MOCK) return Promise.resolve(true);
+    const response = await fetch(`/api/workspace/${workspaceId}/leave`, { method: 'POST' });
+    if (!response.ok) throw new Error('Alandan ayrılma başarısız');
+    return true;
   }
 };

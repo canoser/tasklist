@@ -21,7 +21,7 @@ const CalendarImport = ({ tone, user }) => {
       const parsedTasks = parseICS(icsString, tone, t);
       
       if (!parsedTasks || parsedTasks.length === 0) {
-        throw new Error(t('ics_empty', { context: tone, defaultValue: 'Takvimde hiç görev bulunamadı.' }));
+        throw new Error(t('ics_empty', { context: tone }));
       }
 
       // Prototip için her görevi döngüyle ekliyoruz
@@ -40,14 +40,14 @@ const CalendarImport = ({ tone, user }) => {
       }
 
       setIsSuccess(true);
-      setMessage(t('ics_success', { context: tone, defaultValue: `${addedCount} görev başarıyla içe aktarıldı!` }));
+      setMessage(t('ics_success', { context: tone, count: addedCount }));
       
       // Global event fırlatarak takvimi güncelle
       window.dispatchEvent(new Event('tasksUpdated'));
       
     } catch (err) {
       setIsSuccess(false);
-      setMessage(err.message || 'İçe aktarma sırasında bir hata oluştu.');
+      setMessage(err.message || t('file_read_error', { context: tone }));
     } finally {
       setIsLoading(false);
     }
@@ -60,22 +60,19 @@ const CalendarImport = ({ tone, user }) => {
     setIsLoading(true);
     setMessage('');
     try {
-      // CORS sorununu aşmak için basit bir proxy veya direkt fetch denemesi
-      // Not: Google iCal linkleri genellikle tarayıcıdan direkt fetch edilemez (CORS nedeniyle)
-      // Ancak prototip/test amaçlı allorigins kullanıyoruz
       const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
       const response = await fetch(proxyUrl);
       
-      if (!response.ok) throw new Error('Takvim URL\'sine erişilemedi.');
+      if (!response.ok) throw new Error(t('url_access_error', { context: tone }));
       const data = await response.json();
       
-      if (!data.contents) throw new Error('Takvim verisi alınamadı.');
+      if (!data.contents) throw new Error(t('url_access_error', { context: tone }));
       
       await importTasks(data.contents);
       setUrl('');
     } catch (err) {
       setIsSuccess(false);
-      setMessage(t('ics_cors_error', { context: tone, defaultValue: 'Linkten okunurken hata oluştu. Lütfen bilgisayarınıza indirip Dosya Seç kısmından yüklemeyi deneyin.' }));
+      setMessage(t('ics_cors_error', { context: tone }));
       setIsLoading(false);
     }
   };
@@ -90,7 +87,7 @@ const CalendarImport = ({ tone, user }) => {
     };
     reader.onerror = () => {
       setIsSuccess(false);
-      setMessage('Dosya okunurken bir hata oluştu.');
+      setMessage(t('file_read_error', { context: tone }));
     };
     reader.readAsText(file);
     e.target.value = ''; // Reset input
@@ -99,24 +96,26 @@ const CalendarImport = ({ tone, user }) => {
   return (
     <div className={styles.importContainer}>
       <p className={styles.description}>
-        {t('calendar_import_desc', { context: tone, defaultValue: 'Google Takvim, Apple veya Outlook takviminizdeki etkinlikleri .ics linki veya dosyası ile içeri aktarabilirsiniz.' })}
+        {t('calendar_import_desc', { context: tone })}
       </p>
 
       <form className={styles.urlForm} onSubmit={handleUrlSubmit}>
         <input 
           type="url" 
           className={styles.inputField} 
-          placeholder="https://... veya webcal://..." 
+          placeholder={t('calendar_import_placeholder', { context: tone })} 
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           disabled={isLoading}
         />
         <button type="submit" className={styles.importBtn} disabled={isLoading || !url}>
-          {isLoading ? '...' : 'İndir'}
+          {isLoading ? '...' : t('btn_import_url', { context: tone })}
         </button>
       </form>
 
-      <div className={styles.divider}><span>veya</span></div>
+      <div className={styles.divider}>
+        <span>{t('or', { context: tone })}</span>
+      </div>
 
       <div className={styles.fileUploadWrap}>
         <button 
@@ -125,7 +124,7 @@ const CalendarImport = ({ tone, user }) => {
           onClick={() => fileInputRef.current?.click()}
           disabled={isLoading}
         >
-          📂 Dosya Yükle (.ics)
+          {t('btn_upload_ics', { context: tone })}
         </button>
         <input 
           type="file" 
@@ -148,34 +147,34 @@ const CalendarImport = ({ tone, user }) => {
           className={styles.howToHeader} 
           onClick={() => setShowHowTo(!showHowTo)}
         >
-          <span>Nasıl Yapılır? (Link Nereden Alınır)</span>
+          <span>{t('how_to_title', { context: tone })}</span>
           <span>{showHowTo ? '▲' : '▼'}</span>
         </div>
         
         {showHowTo && (
           <div className={styles.howToBody}>
-            <h4>Google Takvim</h4>
+            <h4>{t('how_to_google_title', { context: tone })}</h4>
             <ol>
-              <li>calendar.google.com'a girin.</li>
-              <li>Takvimlerim altından takvimin <b>Ayarlar ve Paylaşım</b> bölümüne girin.</li>
-              <li>En alttaki <b>"iCal biçiminde gizli adres"</b> linkini kopyalayıp buraya yapıştırın.</li>
+              <li>{t('how_to_google_1', { context: tone })}</li>
+              <li>{t('how_to_google_2', { context: tone })}</li>
+              <li>{t('how_to_google_3', { context: tone })}</li>
             </ol>
             
-            <h4>Apple Takvim (iCloud)</h4>
+            <h4>{t('how_to_apple_title', { context: tone })}</h4>
             <ol>
-              <li>icloud.com/calendar'a girin.</li>
-              <li>Takvimin yanındaki <b>Yayınla (Wi-Fi ikonu)</b> tuşuna basıp "Herkese Açık Takvim" yapın.</li>
-              <li>Çıkan `webcal://` linkini buraya yapıştırın.</li>
+              <li>{t('how_to_apple_1', { context: tone })}</li>
+              <li>{t('how_to_apple_2', { context: tone })}</li>
+              <li>{t('how_to_apple_3', { context: tone })}</li>
             </ol>
 
-            <h4>Microsoft Outlook</h4>
+            <h4>{t('how_to_outlook_title', { context: tone })}</h4>
             <ol>
-              <li>outlook.live.com/calendar'a girin. Ayarlar &gt; Takvim &gt; Paylaşılan Takvimler'e gidin.</li>
-              <li>Takvimi yayınla kısmından izinleri ayarlayıp "Yayımla" butonuna basın. Çıkan ICS linkini kullanın.</li>
+              <li>{t('how_to_outlook_1', { context: tone })}</li>
+              <li>{t('how_to_outlook_2', { context: tone })}</li>
             </ol>
 
             <div className={styles.wittyJoke}>
-              🤖 İşin içinden çıkamazsanız yapay zekaya sormaktan çekinmeyin, o sizin için burada!
+              {t('how_to_ai_joke', { context: tone })}
             </div>
           </div>
         )}

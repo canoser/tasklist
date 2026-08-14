@@ -6,8 +6,9 @@ import { useTranslation } from 'react-i18next';
 import apiClient from '../../services/apiClient';
 import storage from '../../utils/storage';
 import { logoutUser } from '../../services/authService';
+import CalendarImport from './CalendarImport';
 
-const AccountModal = ({ isOpen, onClose, user, openAuth }) => {
+const AccountModal = ({ isOpen, onClose, user, openAuth, tone }) => {
   const { t } = useTranslation('profile');
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -137,6 +138,12 @@ const AccountModal = ({ isOpen, onClose, user, openAuth }) => {
             </div>
             <button className={styles.actionBtn} onClick={handleResetData}>Sıfırla</button>
           </div>
+        </div>
+
+        {/* Takvimi İçe Aktar */}
+        <div className={styles.section}>
+          <h3 className={styles.sectionTitle}>{t('section_calendar_import', { context: tone, defaultValue: 'Takvimi İçe Aktar (.ics)' })}</h3>
+          <CalendarImport tone={tone} user={user} />
         </div>
 
         {/* Tehlike Alanı (App Store Kuralı) */}

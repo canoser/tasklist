@@ -65,6 +65,10 @@ namespace PlanlamaApp.Domain.Entities
         public bool IsHomework { get; set; } = false;
         public string? AssignedBy { get; set; }
 
+        public int? AssignedByWorkspaceId { get; set; }
+        public string? AssignedByUserId { get; set; }
+        public string? UserTaskSnapshot { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     }

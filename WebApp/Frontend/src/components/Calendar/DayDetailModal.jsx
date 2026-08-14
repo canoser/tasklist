@@ -56,7 +56,14 @@ const DayDetailModal = ({ isOpen, onClose, date, tasks = [], roles = [], tone, o
               className={styles.taskLeaf} 
             >
               <div className={styles.taskInfo}>
-                <span className={styles.taskTitle}>{task.title}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className={styles.taskTitle}>{task.title}</span>
+                  {task.assignedByWorkspaceId && (
+                    <span style={{ fontSize: '0.7rem', background: 'var(--primary)', color: '#fff', padding: '2px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
+                      {t('ws_badge_workspace', { context: tone })}
+                    </span>
+                  )}
+                </div>
                 <span className={styles.taskMeta}>
                   {task.time || '12:00'} • {task.targetCount || task.count || '-'}
                 </span>
@@ -74,21 +81,21 @@ const DayDetailModal = ({ isOpen, onClose, date, tasks = [], roles = [], tone, o
                 <button 
                   className={styles.actionBtn}
                   onClick={(e) => { e.stopPropagation(); if (onTaskToggle) onTaskToggle(task); }}
-                  title="Tamamla/Geri Al"
+                  title={t('action_complete_toggle', { context: tone })}
                 >
                   <CheckIcon color={task.isCompleted ? '#10b981' : 'currentColor'} />
                 </button>
                 <button 
                   className={styles.actionBtn}
                   onClick={(e) => { e.stopPropagation(); if (onTaskPostpone) onTaskPostpone(task); }}
-                  title="Yarına Ertele"
+                  title={t('action_postpone_tomorrow', { context: tone })}
                 >
                   <CalendarIcon />
                 </button>
                 <button 
                   className={styles.actionBtn}
                   onClick={(e) => { e.stopPropagation(); if (onTaskEdit) onTaskEdit(task); }}
-                  title="Düzenle"
+                  title={t('action_edit', { context: tone })}
                 >
                   <EditIcon />
                 </button>

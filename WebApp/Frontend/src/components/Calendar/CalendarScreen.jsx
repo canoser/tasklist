@@ -109,7 +109,7 @@ const CalendarScreen = ({ user, navigation, tone }) => {
     }
 
     triggerUndoableAction(
-      'Görev tamamlandı.',
+      t('msg_task_completed', { context: tone }),
       () => setTasks(newState),
       () => taskService.completeTask(task.id, { status: 'completed' }, user?.id || user?.uid),
       () => setTasks(prevState)
@@ -127,7 +127,7 @@ const CalendarScreen = ({ user, navigation, tone }) => {
     }
 
     triggerUndoableAction(
-      newStatus ? 'Görev tamamlandı.' : 'Görev geri alındı.',
+      newStatus ? t('msg_task_completed', { context: tone }) : t('msg_task_uncompleted', { context: tone }),
       () => setTasks(newState),
       () => taskService.completeTask(task.id, { status: newStatus ? 'completed' : 'pending' }, user?.id || user?.uid),
       () => setTasks(prevState)
@@ -145,7 +145,7 @@ const CalendarScreen = ({ user, navigation, tone }) => {
     };
     const newState = [...tasks.map(t => t.id === task.id ? updatedTask : t), copyTask];
     triggerUndoableAction(
-      `Görev kısmen (%${percent}) tamamlandı. Kalanı ötelendi.`,
+      t('msg_task_partial', { context: tone, percent }),
       () => setTasks(newState),
       () => console.log('API: Partial complete called', task.id, percent),
       () => setTasks(prevState)
@@ -171,7 +171,7 @@ const CalendarScreen = ({ user, navigation, tone }) => {
     }
 
     triggerUndoableAction(
-      cascade ? 'Zincirleme erteleme uygulandı.' : 'Görev ertelendi.',
+      cascade ? t('msg_task_cascade_postponed', { context: tone }) : t('msg_task_postponed', { context: tone }),
       () => setTasks(newState),
       () => console.log('API: Postpone called', task.id, targetDate, cascade),
       () => setTasks(prevState)
