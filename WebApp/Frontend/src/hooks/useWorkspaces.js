@@ -36,7 +36,8 @@ export default function useWorkspaces(userId) {
       return newWorkspace;
     } catch (err) {
       console.error(err);
-      throw new Error('Alan oluşturulamadı');
+      const errorMsg = err.response?.data?.message || err.response?.data || err.message || 'Alan oluşturulamadı';
+      throw new Error(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg));
     }
   };
 
@@ -47,7 +48,8 @@ export default function useWorkspaces(userId) {
       return workspace;
     } catch (err) {
       console.error(err);
-      throw err;
+      const errorMsg = err.response?.data?.message || err.response?.data || err.message || 'Alana katılım başarısız';
+      throw new Error(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg));
     }
   };
 
