@@ -28,6 +28,10 @@ const WorkspaceScreen = ({ user, tone }) => {
           await leaveWorkspace(id);
           setActiveWorkspace(null);
         }}
+        onUpdateWorkspace={(updated) => {
+          setActiveWorkspace(updated);
+          refresh();
+        }}
       />
     );
   }
