@@ -101,25 +101,25 @@ const UsageDashboard = ({ tone }) => {
       {systemStats && (
         <div className={styles.settingsGrid} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', marginBottom: '30px' }}>
           <div className={styles.settingCard} style={{ textAlign: 'center', padding: '20px' }}>
-            <h3 style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px' }}>Toplam Kullanıcı</h3>
+            <h3 style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px' }}>{t('stat_total_users', { context: tone })}</h3>
             <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--primary-color)' }}>{systemStats.totalUsers}</div>
           </div>
           <div className={styles.settingCard} style={{ textAlign: 'center', padding: '20px' }}>
-            <h3 style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px' }}>Premium Abone</h3>
+            <h3 style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px' }}>{t('stat_premium_users', { context: tone })}</h3>
             <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#eab308' }}>{systemStats.premiumUsers}</div>
           </div>
           <div className={styles.settingCard} style={{ textAlign: 'center', padding: '20px' }}>
-            <h3 style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px' }}>Açılan Çalışma Alanı</h3>
+            <h3 style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px' }}>{t('stat_total_workspaces', { context: tone })}</h3>
             <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#10b981' }}>{systemStats.totalWorkspaces}</div>
           </div>
           <div className={styles.settingCard} style={{ textAlign: 'center', padding: '20px' }}>
-            <h3 style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px' }}>Toplam Görev</h3>
+            <h3 style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px' }}>{t('stat_total_tasks', { context: tone })}</h3>
             <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#8b5cf6' }}>{systemStats.totalTasks}</div>
           </div>
         </div>
       )}
 
-      <h3 style={{ marginBottom: '16px', fontSize: '18px' }}>Kaynak Harcamaları</h3>
+      <h3 style={{ marginBottom: '16px', fontSize: '18px' }}>{t('stat_resource_costs', { context: tone })}</h3>
       <div className={styles.settingsGrid} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
         {metrics.map((metric) => {
           let icon = <BarChart2 />;
@@ -149,7 +149,7 @@ const UsageDashboard = ({ tone }) => {
                 <div>
                   <h3 style={{ margin: 0, fontSize: '16px' }}>{label}</h3>
                   <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <Database size={12} /> Bu veri Neon veritabanından alınmıştır
+                    <Database size={12} /> {t('msg_neon_data', { context: tone })}
                   </p>
                 </div>
               </div>
@@ -179,21 +179,21 @@ const UsageDashboard = ({ tone }) => {
                       style={{ width: '100%', padding: '10px', background: 'transparent', border: '1px solid var(--accent-primary)', color: 'var(--accent-primary)', borderRadius: '8px', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', fontWeight: '500' }}
                     >
                       {loadingCf ? <RefreshCw size={16} className={styles.spinner} /> : <Server size={16} />}
-                      {loadingCf ? 'Hesaplanıyor...' : 'Gerçek Cloudflare R2 Boyutunu Hesapla'}
+                      {loadingCf ? t('msg_calculating', { context: tone }) : t('btn_calc_cloudflare', { context: tone })}
                     </button>
                   ) : (
                     <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '8px' }}>
                       <h4 style={{ margin: '0 0 8px 0', fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <Server size={12} /> Gerçek Cloudflare (API) Verisi
+                        <Server size={12} /> {t('lbl_real_cloudflare_data', { context: tone })}
                       </h4>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <div>
-                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Toplam Boyut</span><br/>
+                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{t('lbl_total_size', { context: tone })}</span><br/>
                           <strong>{(cfStats.totalSizeInBytes / (1024 * 1024)).toFixed(2)} MB</strong>
                         </div>
                         <div style={{ textAlign: 'right' }}>
-                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Toplam Dosya</span><br/>
-                          <strong>{cfStats.objectCount} adet</strong>
+                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{t('lbl_total_files', { context: tone })}</span><br/>
+                          <strong>{cfStats.objectCount} {t('lbl_items', { context: tone, defaultValue: 'adet' })}</strong>
                         </div>
                       </div>
                     </div>
