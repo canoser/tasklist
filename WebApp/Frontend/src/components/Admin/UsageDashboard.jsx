@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart2, Cloud, Zap, DollarSign, RefreshCw, AlertCircle } from 'lucide-react';
+import { BarChart2, Cloud, Zap, DollarSign, RefreshCw, AlertCircle, Database, Server } from 'lucide-react';
 import { getGlobalUsageMetrics } from '../../services/adminUsageService';
+import { getSystemStats, getCloudflareStats } from '../../services/adminService';
 import styles from './AdminPanel.module.css';
 import { useTranslation } from 'react-i18next';
 
@@ -13,15 +14,23 @@ const UNIT_COSTS = {
 const UsageDashboard = ({ tone }) => {
   const { t } = useTranslation('admin');
   const [metrics, setMetrics] = useState([]);
+  const [systemStats, setSystemStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  const [cfStats, setCfStats] = useState(null);
+  const [loadingCf, setLoadingCf] = useState(false);
 
   const fetchMetrics = async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await getGlobalUsageMetrics();
-      setMetrics(data || []);
+      const [usageData, statsData] = await Promise.all([
+        getGlobalUsageMetrics(),
+        getSystemStats().catch(() => null)
+      ]);
+      setMetrics(usageData || []);
+      setSystemStats(statsData);
     } catch (err) {
       console.error("Metrics fetch error:", err);
       setError(t('err_fetch_usage', { context: tone }));
@@ -33,6 +42,19 @@ const UsageDashboard = ({ tone }) => {
   useEffect(() => {
     fetchMetrics();
   }, []);
+
+  const handleCalculateCloudflare = async () => {
+    setLoadingCf(true);
+    try {
+      const stats = await getCloudflareStats();
+      setCfStats(stats);
+    } catch (err) {
+      console.error(err);
+      alert("Cloudflare R2 verisi alınırken hata oluştu.");
+    } finally {
+      setLoadingCf(false);
+    }
+  };
 
   const calculateCost = (resourceType, amount) => {
     const costPerUnit = UNIT_COSTS[resourceType] || 0;
@@ -75,6 +97,29 @@ const UsageDashboard = ({ tone }) => {
         </div>
       </div>
 
+      {/* SYSTEM STATS CARDS */}
+      {systemStats && (
+        <div className={styles.settingsGrid} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', marginBottom: '30px' }}>
+          <div className={styles.settingCard} style={{ textAlign: 'center', padding: '20px' }}>
+            <h3 style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px' }}>Toplam Kullanıcı</h3>
+            <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--primary-color)' }}>{systemStats.totalUsers}</div>
+          </div>
+          <div className={styles.settingCard} style={{ textAlign: 'center', padding: '20px' }}>
+            <h3 style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px' }}>Premium Abone</h3>
+            <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#eab308' }}>{systemStats.premiumUsers}</div>
+          </div>
+          <div className={styles.settingCard} style={{ textAlign: 'center', padding: '20px' }}>
+            <h3 style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px' }}>Açılan Çalışma Alanı</h3>
+            <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#10b981' }}>{systemStats.totalWorkspaces}</div>
+          </div>
+          <div className={styles.settingCard} style={{ textAlign: 'center', padding: '20px' }}>
+            <h3 style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px' }}>Toplam Görev</h3>
+            <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#8b5cf6' }}>{systemStats.totalTasks}</div>
+          </div>
+        </div>
+      )}
+
+      <h3 style={{ marginBottom: '16px', fontSize: '18px' }}>Kaynak Harcamaları</h3>
       <div className={styles.settingsGrid} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
         {metrics.map((metric) => {
           let icon = <BarChart2 />;
@@ -103,7 +148,9 @@ const UsageDashboard = ({ tone }) => {
                 </div>
                 <div>
                   <h3 style={{ margin: 0, fontSize: '16px' }}>{label}</h3>
-                  <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)' }}>{t('stat_users', { context: tone, count: metric.totalUsers })}</p>
+                  <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Database size={12} /> Bu veri Neon veritabanından alınmıştır
+                  </p>
                 </div>
               </div>
               
@@ -121,6 +168,38 @@ const UsageDashboard = ({ tone }) => {
                   </p>
                 </div>
               </div>
+
+              {/* CLOUDFLARE R2 ÖZEL BÖLÜMÜ */}
+              {metric.resourceType === 'FileStorage' && (
+                <div style={{ marginTop: '15px', paddingTop: '15px', borderTop: '1px dashed var(--border-color)' }}>
+                  {!cfStats ? (
+                    <button 
+                      onClick={handleCalculateCloudflare}
+                      disabled={loadingCf}
+                      style={{ width: '100%', padding: '10px', background: 'transparent', border: '1px solid var(--accent-primary)', color: 'var(--accent-primary)', borderRadius: '8px', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', fontWeight: '500' }}
+                    >
+                      {loadingCf ? <RefreshCw size={16} className={styles.spinner} /> : <Server size={16} />}
+                      {loadingCf ? 'Hesaplanıyor...' : 'Gerçek Cloudflare R2 Boyutunu Hesapla'}
+                    </button>
+                  ) : (
+                    <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '8px' }}>
+                      <h4 style={{ margin: '0 0 8px 0', fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Server size={12} /> Gerçek Cloudflare (API) Verisi
+                      </h4>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <div>
+                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Toplam Boyut</span><br/>
+                          <strong>{(cfStats.totalSizeInBytes / (1024 * 1024)).toFixed(2)} MB</strong>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>Toplam Dosya</span><br/>
+                          <strong>{cfStats.objectCount} adet</strong>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}

@@ -12,6 +12,7 @@ namespace PlanlamaApp.Domain.Entities
         public string SubscriptionPlan { get; set; } = "free";
         public int? CustomAiLimit { get; set; }
         public int? CustomStorageLimit { get; set; }
+        public int? CustomWorkspaceLimit { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

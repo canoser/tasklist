@@ -3,6 +3,7 @@ import { Settings, Save, AlertCircle, RefreshCw } from 'lucide-react';
 import { getSettings, updateSetting } from '../../services/adminSettingsService';
 import QuotaSimulator from './QuotaSimulator';
 import UserApprovals from './UserApprovals';
+import UserSearch from './UserSearch';
 import UsageDashboard from './UsageDashboard';
 import styles from './AdminPanel.module.css';
 
@@ -176,7 +177,10 @@ const AdminPanel = ({ tone }) => {
       )}
 
       {activeTab === 'users' && (
-        <UserApprovals settings={settings} tone={tone} />
+        <>
+          <UserSearch tone={tone} />
+          <UserApprovals settings={settings} tone={tone} />
+        </>
       )}
 
       {activeTab === 'data' && (

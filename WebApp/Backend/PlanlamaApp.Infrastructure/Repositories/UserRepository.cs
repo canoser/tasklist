@@ -61,8 +61,8 @@ namespace PlanlamaApp.Infrastructure.Repositories
 
         public async Task<string> CreateUserAsync(PlanlamaApp.Domain.Entities.User user)
         {
-            var sql = @"INSERT INTO Users (Id, Email, Name, PasswordHash, GoogleId, SubscriptionPlan, CustomAiLimit, CustomStorageLimit, CreatedAt)
-                        VALUES (@Id, @Email, @Name, @PasswordHash, @GoogleId, @SubscriptionPlan, @CustomAiLimit, @CustomStorageLimit, @CreatedAt);";
+            var sql = @"INSERT INTO Users (Id, Email, Name, PasswordHash, GoogleId, SubscriptionPlan, CustomAiLimit, CustomStorageLimit, CustomWorkspaceLimit, CreatedAt)
+                        VALUES (@Id, @Email, @Name, @PasswordHash, @GoogleId, @SubscriptionPlan, @CustomAiLimit, @CustomStorageLimit, @CustomWorkspaceLimit, @CreatedAt);";
             await _dbConnection.ExecuteAsync(sql, user);
             return user.Id;
         }
@@ -81,6 +81,32 @@ namespace PlanlamaApp.Infrastructure.Repositories
                             CustomStorageLimit = @CustomStorageLimit 
                         WHERE Id = @Id";
             await _dbConnection.ExecuteAsync(sql, new { Id = userId, CustomAiLimit = customAiLimit, CustomStorageLimit = customStorageLimit });
+        }
+
+        public async Task<System.Collections.Generic.IEnumerable<PlanlamaApp.Domain.Entities.User>> SearchUsersByEmailAsync(string email)
+        {
+            var sql = "SELECT * FROM Users WHERE Email ILIKE '%' || @Email || '%'";
+            return await _dbConnection.QueryAsync<PlanlamaApp.Domain.Entities.User>(sql, new { Email = email });
+        }
+
+        public async Task<bool> UpdateUserLimitsAsync(string userId, string subscriptionPlan, int? customAiLimit, int? customStorageLimit, int? customWorkspaceLimit)
+        {
+            var sql = @"UPDATE Users 
+                        SET SubscriptionPlan = @SubscriptionPlan, 
+                            CustomAiLimit = @CustomAiLimit, 
+                            CustomStorageLimit = @CustomStorageLimit,
+                            CustomWorkspaceLimit = @CustomWorkspaceLimit
+                        WHERE Id = @Id";
+            
+            var affectedRows = await _dbConnection.ExecuteAsync(sql, new { 
+                Id = userId, 
+                SubscriptionPlan = subscriptionPlan,
+                CustomAiLimit = customAiLimit, 
+                CustomStorageLimit = customStorageLimit,
+                CustomWorkspaceLimit = customWorkspaceLimit
+            });
+            
+            return affectedRows > 0;
         }
     }
 }

@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using PlanlamaApp.Api.Filters;
 using PlanlamaApp.Application.Interfaces;
 using PlanlamaApp.Domain.Entities;
+using System.Data;
+using Dapper;
 
 namespace PlanlamaApp.Api.Controllers
 {
@@ -67,12 +69,69 @@ namespace PlanlamaApp.Api.Controllers
             return Ok(new { Message = "Kullanıcı başarıyla onaylandı ve Premium yapıldı." });
         }
 
+        [HttpGet("users/search")]
+        public async Task<IActionResult> SearchUsers([FromQuery] string email, [FromServices] IUserRepository userRepository)
+        {
+            if (string.IsNullOrEmpty(email)) return BadRequest(new { Message = "Email parametresi gereklidir." });
+            var users = await userRepository.SearchUsersByEmailAsync(email);
+            return Ok(users);
+        }
+
+        public class OverrideUserLimitsRequest
+        {
+            public string SubscriptionPlan { get; set; } = "free";
+            public int? CustomAiLimit { get; set; }
+            public int? CustomStorageLimit { get; set; }
+            public int? CustomWorkspaceLimit { get; set; }
+        }
+
+        [HttpPut("users/{userId}/override")]
+        [ServiceFilter(typeof(IdempotencyFilter))]
+        public async Task<IActionResult> OverrideUserLimits(string userId, [FromBody] OverrideUserLimitsRequest request, [FromServices] IUserRepository userRepository)
+        {
+            var success = await userRepository.UpdateUserLimitsAsync(
+                userId, 
+                request.SubscriptionPlan, 
+                request.CustomAiLimit, 
+                request.CustomStorageLimit, 
+                request.CustomWorkspaceLimit);
+                
+            if (!success) return NotFound(new { Message = "Kullanıcı bulunamadı veya güncelleme başarısız." });
+            
+            return Ok(new { Message = "Kullanıcı limitleri başarıyla güncellendi." });
+        }
+
         [HttpGet("usage-metrics")]
         public async Task<IActionResult> GetGlobalUsageMetrics([FromServices] IUsageTrackingRepository usageTrackingRepository)
         {
             var metrics = await usageTrackingRepository.GetGlobalUsageMetricsAsync();
             return Ok(metrics);
         }
+
+        [HttpGet("system-stats")]
+        public async Task<IActionResult> GetSystemStats([FromServices] IDbConnection dbConnection)
+        {
+            var stats = new
+            {
+                TotalUsers = await dbConnection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Users;"),
+                PremiumUsers = await dbConnection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Users WHERE SubscriptionPlan = 'premium';"),
+                TotalWorkspaces = await dbConnection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Workspaces;"),
+                TotalTasks = await dbConnection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM TaskItems;")
+            };
+            return Ok(stats);
+        }
+
+        [HttpGet("cloudflare-stats")]
+        public async Task<IActionResult> GetCloudflareStats([FromServices] IStorageService storageService)
+        {
+            var stats = await storageService.GetBucketStatsAsync();
+            return Ok(new
+            {
+                totalSizeInBytes = stats.TotalSizeInBytes,
+                objectCount = stats.ObjectCount
+            });
+        }
+
         [HttpGet("calendar/export-template")]
         public IActionResult ExportTemplate()
         {

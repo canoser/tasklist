@@ -26,5 +26,10 @@ namespace PlanlamaApp.Application.Interfaces
         /// </summary>
         /// <param name="objectKey">The unique key/path of the file to delete.</param>
         Task DeleteFileAsync(string objectKey);
+
+        /// <summary>
+        /// Calculates the total size and object count of the bucket by iterating over objects.
+        /// </summary>
+        Task<(long TotalSizeInBytes, int ObjectCount)> GetBucketStatsAsync();
     }
 }

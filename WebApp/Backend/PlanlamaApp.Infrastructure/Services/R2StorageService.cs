@@ -71,5 +71,34 @@ namespace PlanlamaApp.Infrastructure.Services
 
             await _s3Client.DeleteObjectAsync(request);
         }
+
+        public async Task<(long TotalSizeInBytes, int ObjectCount)> GetBucketStatsAsync()
+        {
+            long totalSize = 0;
+            int objectCount = 0;
+            string? continuationToken = null;
+
+            do
+            {
+                var request = new ListObjectsV2Request
+                {
+                    BucketName = _bucketName,
+                    ContinuationToken = continuationToken
+                };
+
+                var response = await _s3Client.ListObjectsV2Async(request);
+
+                foreach (var obj in response.S3Objects)
+                {
+                    totalSize += obj.Size ?? 0;
+                    objectCount++;
+                }
+
+                continuationToken = response.NextContinuationToken;
+
+            } while (!string.IsNullOrEmpty(continuationToken));
+
+            return (totalSize, objectCount);
+        }
     }
 }

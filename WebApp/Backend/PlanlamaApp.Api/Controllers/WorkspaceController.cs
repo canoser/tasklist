@@ -16,17 +16,20 @@ namespace PlanlamaApp.API.Controllers
         private readonly ITaskAssignmentRepository _taskAssignmentRepository;
         private readonly ITaskRepository _taskRepository;
         private readonly IUserRepository _userRepository;
+        private readonly ISettingsService _settingsService;
 
         public WorkspaceController(
             IWorkspaceRepository workspaceRepository,
             ITaskAssignmentRepository taskAssignmentRepository,
             ITaskRepository taskRepository,
-            IUserRepository userRepository)
+            IUserRepository userRepository,
+            ISettingsService settingsService)
         {
             _workspaceRepository = workspaceRepository;
             _taskAssignmentRepository = taskAssignmentRepository;
             _taskRepository = taskRepository;
             _userRepository = userRepository;
+            _settingsService = settingsService;
         }
 
         private string? GetCurrentUserId()
@@ -70,12 +73,29 @@ namespace PlanlamaApp.API.Controllers
             var user = await _userRepository.GetUserByIdAsync(currentUserId);
             if (user == null) return Unauthorized();
 
-            if ((user.SubscriptionPlan == null || user.SubscriptionPlan.ToLower() == "free"))
+            int maxLimit = -1; // -1 means unlimited
+            
+            if (user.CustomWorkspaceLimit.HasValue)
+            {
+                maxLimit = user.CustomWorkspaceLimit.Value;
+            }
+            else
+            {
+                var plan = string.IsNullOrEmpty(user.SubscriptionPlan) ? "free" : user.SubscriptionPlan.ToLower();
+                if (plan != "premium")
+                {
+                    int defaultForPlan = plan == "free" ? 1 : (plan == "plus" ? 3 : (plan == "pro" ? 10 : -1));
+                    maxLimit = await _settingsService.GetSettingAsIntAsync($"Quota_Workspace_{plan}", defaultForPlan);
+                }
+                // premium defaults to -1 (unlimited)
+            }
+
+            if (maxLimit >= 0)
             {
                 var owned = await _workspaceRepository.GetOwnedAsync(currentUserId);
-                if (owned.Count() >= 1)
+                if (owned.Count() >= maxLimit)
                 {
-                    return BadRequest("Ücretsiz plan ile sadece 1 çalışma alanı kurabilirsiniz. Sınırsız alan için planınızı yükseltin.");
+                    return BadRequest(new { Message = $"Bu plan için maksimum {maxLimit} çalışma alanı hakkınız dolmuştur." });
                 }
             }
 
