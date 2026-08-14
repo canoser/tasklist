@@ -242,17 +242,25 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  overflow-x: auto; /* Ekrana sığmazsa yana kaydırılabilsin */
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px; /* Scrollbar için biraz boşluk */
+}
+/* Scrollbarı mobilde gizleyelim daha temiz dursun */
+.filterWrapper::-webkit-scrollbar {
+  display: none;
 }
 
 .filterContainer {
-  /* Filtre butonu sola hizalı kalsın veya genişlesin */
+  flex-shrink: 0;
 }
 
 .navButtons {
   display: flex;
   gap: 8px;
   align-items: center;
-  margin-left: auto; /* Sağa yasla */
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .navBtnPrimary, .navBtnSecondary {

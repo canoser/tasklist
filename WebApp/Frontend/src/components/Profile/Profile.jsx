@@ -8,6 +8,7 @@ import storage from '../../utils/storage';
 import { logoutUser } from '../../services/authService';
 import AccountModal from './AccountModal';
 import DropdownSelect from '../Common/DropdownSelect/DropdownSelect';
+import CalendarImport from './CalendarImport';
 
 const ChevronIcon = ({ isOpen }) => (
   <svg 
@@ -22,7 +23,7 @@ const PRESET_AVATARS = ['🎓', '🦊', '🚀', '⚡', '🌟', '🎯', '🦁', '
 
 const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTheme, tone, onToneChange, openAuth, navigateToAdmin }) => {
   const { t } = useTranslation('profile');
-  const [openSections, setOpenSections] = useState({ theme: false, settings: false, roles: false });
+  const [openSections, setOpenSections] = useState({ theme: false, settings: false, roles: false, import: false });
   const [customAvatar, setCustomAvatar] = useState(storage.getString('user_avatar') || '');
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [localGuestName, setLocalGuestName] = useState(guestName || storage.getString('guest_name') || '');
@@ -373,6 +374,35 @@ const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTh
                 </AnimatePresence>
 
                 <RoleTagSelect userId={user?.id || user?.uid} tone={tone} />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* ── TAKVİM İÇE AKTAR BÖLÜMÜ ─────────────────────────────────────── */}
+      <div className={styles.sectionCard}>
+        <div
+          className={styles.sectionHeader}
+          onClick={() => toggleSection('import')}
+          style={{ cursor: 'pointer' }}
+        >
+          <h3 className={styles.sectionTitle}>
+            <span className={styles.sectionIcon}>📅</span> {t('section_calendar_import', { defaultValue: 'Takvimi İçe Aktar' })}
+          </h3>
+          <ChevronIcon isOpen={openSections.import} />
+        </div>
+
+        <AnimatePresence>
+          {openSections.import && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              style={{ overflow: 'hidden' }}
+            >
+              <div className={styles.sectionBody}>
+                <CalendarImport tone={tone} user={user} />
               </div>
             </motion.div>
           )}

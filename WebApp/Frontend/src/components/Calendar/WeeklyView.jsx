@@ -1,15 +1,9 @@
-// [MOBILE_PORT_TODO]: onClick → onPress (React Native)
-// [MOBILE_PORT_TODO]: toLocaleString('tr-TR') → date-fns/locale/tr
-
-import { getTagColors } from '../../utils/taskUtils';
 import styles from './WeeklyView.module.css';
-import { useOrientation } from '../../hooks/useOrientation';
 import { useTranslation } from 'react-i18next';
 
-const WeeklyView = ({ tasks = [], roles = [], weekStart, onDayClick, filter, tone, t }) => {
+const WeeklyView = ({ tasks = [], roles = [], weekStart, onDayClick, filter, tone, t, onTaskToggle }) => {
   const { i18n } = useTranslation('common');
   const currentLang = i18n.language || 'tr-TR';
-  const isLandscape = useOrientation();
   
   // weekStart'tan itibaren 7 gün üret (Pazartesi -> Pazar)
   const days = Array.from({ length: 7 }, (_, i) => {
@@ -21,46 +15,44 @@ const WeeklyView = ({ tasks = [], roles = [], weekStart, onDayClick, filter, ton
   const today = new Date();
 
   return (
-    <div className={styles.weekList}>
-      {days.map(day => {
+    <div className={styles.gridContainer}>
+      {days.map((day, index) => {
         const isToday = day.toDateString() === today.toDateString();
-        const dayTasks = tasks.filter(t => {
-          if (!t.deadline) return false;
-          return new Date(t.deadline).toDateString() === day.toDateString();
-        });
-
-        // Rol bazlı sayılar
-        const roleCounts = {};
-        dayTasks.forEach(tTask => {
-          const rName = tTask.roleName || t('role_other', { context: tone }) || 'Diğer';
-          roleCounts[rName] = (roleCounts[rName] || 0) + 1;
-        });
+        const dayTasks = tasks.filter(t => t.deadline && new Date(t.deadline).toDateString() === day.toDateString());
 
         return (
-          <div
-            key={day.toISOString()}
-            className={`${styles.dayRow} ${isToday ? styles.todayRow : ''}`}
-            onClick={() => onDayClick?.(day)}
-          >
-            <div className={styles.dayHeader}>
-              <span className={`${styles.dayNum} ${isToday ? styles.todayNum : ''}`}>
-                {day.getDate()}
-              </span>
+          <div key={day.toISOString()} className={`${styles.sheetCard} ${isToday ? styles.todayCard : ''}`} onClick={() => onDayClick?.(day)}>
+            <div className={`${styles.sheetHeader} ${isToday ? styles.todayHeader : ''}`}>
               <span className={styles.dayName}>
-                {day.toLocaleString(currentLang, { weekday: isLandscape ? 'short' : 'long' })}
+                {day.toLocaleString(currentLang, { weekday: 'long' })}
+              </span>
+              <span className={styles.dateNum}>
+                {day.toLocaleString(currentLang, { month: 'short' })} {day.getDate()}
               </span>
             </div>
-
-            <div className={styles.taskList}>
-              {Object.entries(roleCounts).map(([rName, count]) => {
-                const colors = getTagColors(rName);
-                return (
-                  <div key={rName} className={styles.roleBadge} style={{ background: colors.background, color: colors.color }}>
-                    {rName} · {count}
+            
+            <div className={styles.sheetBody}>
+              {dayTasks.map(task => (
+                <div 
+                  key={task.id} 
+                  className={`${styles.taskItem} ${task.isCompleted ? styles.completed : ''}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDayClick?.(day); // Tıklayınca günlük detayı açsın
+                  }}
+                >
+                  <div 
+                    className={styles.checkbox}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (onTaskToggle) onTaskToggle(task);
+                    }}
+                  >
+                    {task.isCompleted && <span>✓</span>}
                   </div>
-                );
-              })}
-              {dayTasks.length === 0 && <span className={styles.emptyDay}>—</span>}
+                  <span className={styles.taskTitle}>{task.title}</span>
+                </div>
+              ))}
             </div>
           </div>
         );

@@ -44,7 +44,7 @@ const slideVariants = {
   }
 };
 
-const CalendarView = ({ tasks = [], roles = [], filter: initialFilter, onDayClick, tone, onCategoryClick, onChainClick }) => {
+const CalendarView = ({ tasks = [], roles = [], filter: initialFilter, onDayClick, tone, onCategoryClick, onChainClick, onTaskToggle }) => {
   const { t, i18n } = useTranslation('common');
   const [currentDate, setCurrentDate] = useState(new Date());
   
@@ -232,6 +232,7 @@ const CalendarView = ({ tasks = [], roles = [], filter: initialFilter, onDayClic
           filter={filter} 
           tone={tone}
           t={t}
+          onTaskToggle={onTaskToggle}
         />
       );
     }
@@ -277,9 +278,7 @@ const CalendarView = ({ tasks = [], roles = [], filter: initialFilter, onDayClic
         </div>
 
         <div className={styles.monthNav}>
-          <button className={styles.navBtn} onClick={handlePrev}><ChevronLeftIcon /></button>
           <span className={styles.currentMonth}>{getHeaderLabel()}</span>
-          <button className={styles.navBtn} onClick={handleNext}><ChevronRightIcon /></button>
         </div>
       </div>
 
@@ -291,16 +290,23 @@ const CalendarView = ({ tasks = [], roles = [], filter: initialFilter, onDayClic
           dragDirectionLock={true}
           onDragEnd={handleDragEnd}
         >
-          <div style={{ position: 'absolute', width: '100%', height: '100%', left: '-100%', top: 0, display: 'flex', flexDirection: 'column' }}>
-            {renderViewContent(prevDate)}
+          {/* Kaydırma alanlarının kendi içlerinde kaydırılabilmesi için overflow ve touch-action */}
+          <div style={{ position: 'absolute', width: '100%', height: '100%', left: '-100%', top: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}>
+            <div style={{ minHeight: '100%', display: 'flex', flexDirection: 'column' }}>
+              {renderViewContent(prevDate)}
+            </div>
           </div>
           
-          <div style={{ position: 'absolute', width: '100%', height: '100%', left: 0, top: 0, display: 'flex', flexDirection: 'column' }}>
-            {renderViewContent(currentDate)}
+          <div style={{ position: 'absolute', width: '100%', height: '100%', left: 0, top: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}>
+            <div style={{ minHeight: '100%', display: 'flex', flexDirection: 'column' }}>
+              {renderViewContent(currentDate)}
+            </div>
           </div>
 
-          <div style={{ position: 'absolute', width: '100%', height: '100%', left: '100%', top: 0, display: 'flex', flexDirection: 'column' }}>
-            {renderViewContent(nextDate)}
+          <div style={{ position: 'absolute', width: '100%', height: '100%', left: '100%', top: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', touchAction: 'pan-y' }}>
+            <div style={{ minHeight: '100%', display: 'flex', flexDirection: 'column' }}>
+              {renderViewContent(nextDate)}
+            </div>
           </div>
         </motion.div>
       </div>

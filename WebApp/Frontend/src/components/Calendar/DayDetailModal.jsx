@@ -1,11 +1,11 @@
 import { useEffect, useState, useMemo } from 'react';
 import BaseModal from '../Common/BaseModal';
-import { CloseIcon, FolderIcon } from '../Common/Icons';
+import { CloseIcon, FolderIcon, CheckIcon, EditIcon, CalendarIcon } from '../Common/Icons';
 import { groupTasksByRole, buildCategoryTree, getTagColors } from '../../utils/taskUtils';
 import styles from './DayDetailModal.module.css';
 import { useTranslation } from 'react-i18next';
 
-const DayDetailModal = ({ isOpen, onClose, date, tasks = [], roles = [], tone, onTaskClick }) => {
+const DayDetailModal = ({ isOpen, onClose, date, tasks = [], roles = [], tone, onTaskToggle, onTaskPostpone, onTaskEdit }) => {
   const { t, i18n } = useTranslation('common');
   
   // Manuel kapatma (Çarpı veya dışarı tıklama)
@@ -54,25 +54,45 @@ const DayDetailModal = ({ isOpen, onClose, date, tasks = [], roles = [], tone, o
             <div 
               key={task.id} 
               className={styles.taskLeaf} 
-              onClick={(e) => {
-                e.stopPropagation();
-                if (onTaskClick) onTaskClick(task);
-              }}
             >
               <div className={styles.taskInfo}>
                 <span className={styles.taskTitle}>{task.title}</span>
                 <span className={styles.taskMeta}>
                   {task.time || '12:00'} • {task.targetCount || task.count || '-'}
                 </span>
+                <span className={`${styles.statusBadge} ${
+                  task.isCompleted ? styles.statusCompleted : 
+                  task.partialPercent ? styles.statusPartial : styles.statusPending
+                }`}>
+                  {task.isCompleted ? t('task_status_completed', { context: tone }) : 
+                   task.partialPercent ? t('task_status_partial', { context: tone, percent: task.partialPercent }) : 
+                   t('task_status_pending', { context: tone })}
+                </span>
               </div>
-              <span className={`${styles.statusBadge} ${
-                task.isCompleted ? styles.statusCompleted : 
-                task.partialPercent ? styles.statusPartial : styles.statusPending
-              }`}>
-                {task.isCompleted ? t('task_status_completed', { context: tone }) : 
-                 task.partialPercent ? t('task_status_partial', { context: tone, percent: task.partialPercent }) : 
-                 t('task_status_pending', { context: tone })}
-              </span>
+              
+              <div className={styles.taskActions}>
+                <button 
+                  className={styles.actionBtn}
+                  onClick={(e) => { e.stopPropagation(); if (onTaskToggle) onTaskToggle(task); }}
+                  title="Tamamla/Geri Al"
+                >
+                  <CheckIcon color={task.isCompleted ? '#10b981' : 'currentColor'} />
+                </button>
+                <button 
+                  className={styles.actionBtn}
+                  onClick={(e) => { e.stopPropagation(); if (onTaskPostpone) onTaskPostpone(task); }}
+                  title="Yarına Ertele"
+                >
+                  <CalendarIcon />
+                </button>
+                <button 
+                  className={styles.actionBtn}
+                  onClick={(e) => { e.stopPropagation(); if (onTaskEdit) onTaskEdit(task); }}
+                  title="Düzenle"
+                >
+                  <EditIcon />
+                </button>
+              </div>
             </div>
           ))}
         </div>

@@ -14,7 +14,7 @@ const greetingVariants = {
 };
 
 // ── Dashboard Sayfası ─────────────────────────────────────────────────────────
-const Dashboard = ({ user, guestName, tone, setTab }) => {
+const Dashboard = ({ user, guestName, tone }) => {
   const { t } = useTranslation('tasks');
   const displayName = user?.displayName || user?.email?.split('@')[0] || guestName || t('default_username', { ns: 'profile' });
   const [isAssistantVisible, setIsAssistantVisible] = useState(true);
@@ -47,12 +47,6 @@ const Dashboard = ({ user, guestName, tone, setTab }) => {
               <span className={styles.statDot} />
               {t('stat_completed', { count: taskStats.completed, context: tone })}
             </span>
-            <button 
-              onClick={() => setTab && setTab('weeklyPrototype')} 
-              style={{ marginLeft: 'auto', padding: '0.25rem 0.75rem', borderRadius: '1rem', border: '1px solid var(--color-primary)', background: 'transparent', color: 'var(--color-primary)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}
-            >
-              Haftalık Test
-            </button>
           </div>
         </motion.div>
 

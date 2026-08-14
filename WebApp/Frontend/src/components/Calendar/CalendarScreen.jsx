@@ -67,8 +67,17 @@ const CalendarScreen = ({ user, navigation, tone }) => {
         console.error('Takvim verileri çekilemedi:', err);
       }
     };
+
     fetchTasks();
-    return () => { isMounted = false; };
+    
+    // Uygulama içinde bir yerden manuel yenileme tetiklendiğinde dinle
+    const handleUpdate = () => fetchTasks();
+    window.addEventListener('tasksUpdated', handleUpdate);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener('tasksUpdated', handleUpdate);
+    };
   }, [user]);
 
   useEffect(() => {
@@ -93,10 +102,34 @@ const CalendarScreen = ({ user, navigation, tone }) => {
   const handleComplete = (task) => {
     const prevState = [...tasks];
     const newState = tasks.map(t => t.id === task.id ? { ...t, isCompleted: true } : t);
+    
+    // Update local storage for guest
+    if (!user) {
+      import('../../utils/storage').then(mod => mod.default.set('guest_tasks', newState));
+    }
+
     triggerUndoableAction(
       'Görev tamamlandı.',
       () => setTasks(newState),
       () => taskService.completeTask(task.id, { status: 'completed' }, user?.id || user?.uid),
+      () => setTasks(prevState)
+    );
+  };
+
+  const handleToggleComplete = (task) => {
+    const prevState = [...tasks];
+    const newStatus = !task.isCompleted;
+    const newState = tasks.map(t => t.id === task.id ? { ...t, isCompleted: newStatus } : t);
+    
+    // Update local storage for guest
+    if (!user) {
+      import('../../utils/storage').then(mod => mod.default.set('guest_tasks', newState));
+    }
+
+    triggerUndoableAction(
+      newStatus ? 'Görev tamamlandı.' : 'Görev geri alındı.',
+      () => setTasks(newState),
+      () => taskService.completeTask(task.id, { status: newStatus ? 'completed' : 'pending' }, user?.id || user?.uid),
       () => setTasks(prevState)
     );
   };
@@ -132,6 +165,11 @@ const CalendarScreen = ({ user, navigation, tone }) => {
         return t;
       });
     }
+    
+    if (!user) {
+      import('../../utils/storage').then(mod => mod.default.set('guest_tasks', newState));
+    }
+
     triggerUndoableAction(
       cascade ? 'Zincirleme erteleme uygulandı.' : 'Görev ertelendi.',
       () => setTasks(newState),
@@ -156,6 +194,7 @@ const CalendarScreen = ({ user, navigation, tone }) => {
             tone={tone} 
             onCategoryClick={() => scrollTo(categoryRef)}
             onChainClick={() => scrollTo(chainRef)}
+            onTaskToggle={handleToggleComplete}
           />
         </div>
       </section>
@@ -191,7 +230,17 @@ const CalendarScreen = ({ user, navigation, tone }) => {
         tasks={tasks}
         roles={userRoles}
         tone={tone}
-        onTaskClick={handleTaskClick}
+        onTaskToggle={handleToggleComplete}
+        onTaskPostpone={(task) => {
+          // Varsayılan olarak yarına erteliyoruz inline tıklandığında
+          const tmr = new Date();
+          tmr.setDate(tmr.getDate() + 1);
+          handlePostpone(task, tmr.toISOString(), false);
+        }}
+        onTaskEdit={(task) => {
+          // Şimdilik edit modalını çağırabiliriz
+          handleTaskClick(task);
+        }}
       />
 
       <TaskActionModal 

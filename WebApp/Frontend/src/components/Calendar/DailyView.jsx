@@ -23,12 +23,12 @@ const DailyView = ({ tasks = [], roles = [], date, filter, onDayClick, tone, t }
   const unscheduledTasks = dayTasks.filter(t => getScheduledTime(t) === null);
 
   // Açılışta şu anki saate scroll
-  // [MOBILE_PORT_TODO]: containerRef.current.scrollTop -> ScrollView.scrollTo({ y })
   useEffect(() => {
-    if (containerRef.current) {
-      const now = new Date();
-      const scrollY = now.getHours() * SLOT_HEIGHT - 60;
-      containerRef.current.scrollTop = Math.max(0, scrollY);
+    // Current hour elementine id verip oraya kaydıralım
+    const nowHour = new Date().getHours();
+    const el = document.getElementById(`hour-${nowHour}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }, [date]);
 
@@ -37,7 +37,6 @@ const DailyView = ({ tasks = [], roles = [], date, filter, onDayClick, tone, t }
       {/* Zamansız görevler şeridi */}
       {unscheduledTasks.length > 0 && (
         <div className={styles.allDayZone}>
-          <span className={styles.allDayLabel}>📋 {t('lbl_unscheduled', { context: tone }) || 'Zamansız'}</span>
           <div className={styles.allDayTasks}>
             {unscheduledTasks.map(tTask => {
               const colors = getTagColors(tTask.roleName || t('role_other', { context: tone }) || 'Diğer');
@@ -66,7 +65,7 @@ const DailyView = ({ tasks = [], roles = [], date, filter, onDayClick, tone, t }
           const isCurrentHour = new Date().getHours() === hour && date.toDateString() === new Date().toDateString();
 
           return (
-            <div key={hour} className={`${styles.timeSlot} ${isCurrentHour ? styles.currentHour : ''}`} style={{ height: SLOT_HEIGHT }}>
+            <div id={`hour-${hour}`} key={hour} className={`${styles.timeSlot} ${isCurrentHour ? styles.currentHour : ''}`} style={{ height: SLOT_HEIGHT }}>
               <span className={styles.timeLabel}>{String(hour).padStart(2, '0')}:00</span>
               <div className={styles.slotContent}>
                 {hourTasks.map(tTask => {

@@ -183,11 +183,38 @@
   color: var(--text-muted);
 }
 
+.taskActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.actionBtn {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.actionBtn:hover {
+  background: var(--border-color);
+  color: var(--text-primary);
+}
+
 .statusBadge {
   font-size: 11px;
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 12px;
+  width: fit-content;
+  margin-top: 2px;
 }
 
 .statusPending {

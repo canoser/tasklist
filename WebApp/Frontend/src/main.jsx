@@ -7,11 +7,14 @@ import { GOOGLE_CLIENT_ID } from './config/googleAuth'
 
 // PWA Service Worker Registration
 import { registerSW } from 'virtual:pwa-register'
+import { seedDummyTasks } from './seed'
 
 const updateSW = registerSW({
   onNeedRefresh() {},
   onOfflineReady() {},
 })
+
+seedDummyTasks(); // Geçici görevleri yükle
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
