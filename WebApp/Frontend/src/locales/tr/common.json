@@ -89,5 +89,20 @@
     "placeholder_task_title":  "Görev Başlığı",
     "btn_add_step":  "Adım Ekle",
     "creating":  "Oluşturuluyor...",
-    "empty_chains":  "Henüz bir görev zinciriniz yok."
+    "empty_chains":  "Henüz bir görev zinciriniz yok.",
+    "filters": "Filtreler",
+    "filters_buddy": "Filtreler",
+    "filter_active": "Aktif",
+    "filter_all": "Tümü",
+    "filter_all_buddy": "Hepsi",
+    "filter_role": "Rol",
+    "filter_category": "Kategori",
+    "filter_chain": "Zincir",
+    "filter_no_category": "Kategori bulunamadı",
+    "filter_no_category_buddy": "Kategori yok henüz",
+    "filter_no_chain": "Zincir bulunamadı",
+    "filter_no_chain_buddy": "Zincir yok henüz",
+    "filter_chain_suffix": "Zincir",
+    "btn_close": "Kapat",
+    "btn_close_buddy": "Kapat"
 }

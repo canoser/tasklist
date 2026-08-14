@@ -13,6 +13,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { UndoProvider } from './components/Common/UndoContext';
 import { TaskProvider } from './context/TaskContext';
 import CalendarScreen from './components/Calendar/CalendarScreen';
+import WeeklyPrototypeScreen from './components/WeeklyPrototype/WeeklyPrototypeScreen';
 import AdminPanel from './components/Admin/AdminPanel';
 
 import { useAppNavigation } from './hooks/useAppNavigation';
@@ -144,7 +145,7 @@ export default function App() {
 
           {/* ── Ana İçerik Alanı ────────────────────────────────────────────── */}
           <main className={styles.main}>
-            {activeTab === 'home' && <Dashboard user={user} guestName={guestName} tone={tone} />}
+            {activeTab === 'home' && <Dashboard user={user} guestName={guestName} tone={tone} setTab={setTab} />}
 
             {activeTab === 'search' && (
               <WorkspaceScreen user={user} tone={tone} />
@@ -152,6 +153,14 @@ export default function App() {
 
             {activeTab === 'calendar' && (
               <CalendarScreen 
+                user={user} 
+                navigation={{ openModal, closeModal, isModalOpen }} 
+                tone={tone}
+              />
+            )}
+
+            {activeTab === 'weeklyPrototype' && (
+              <WeeklyPrototypeScreen 
                 user={user} 
                 navigation={{ openModal, closeModal, isModalOpen }} 
                 tone={tone}

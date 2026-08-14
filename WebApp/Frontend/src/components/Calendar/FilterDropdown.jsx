@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import styles from './FilterDropdown.module.css';
 
-const FilterDropdown = ({ roles = [], categories = [], chains = [], filter, onFilterChange, onToggle }) => {
+const FilterDropdown = ({ roles = [], categories = [], chains = [], filter, onFilterChange, onToggle, tone }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState(null);
+  const { t } = useTranslation('common');
   
   const containerRef = useRef(null);
 
@@ -56,12 +58,12 @@ const FilterDropdown = ({ roles = [], categories = [], chains = [], filter, onFi
     <div className={styles.container} ref={containerRef}>
       {!isOpen ? (
         <button type="button" className={styles.mainBtn} onClick={() => { setIsOpen(true); if (onToggle) onToggle(true); }}>
-          Filtreler {(!isAll) ? '(Aktif)' : ''}
+          {t('filters', { context: tone })} {(!isAll) ? `(${t('filter_active', { context: tone })})` : ''}
         </button>
       ) : (
         <div className={styles.expandedStrip}>
           <button type="button" className={styles.closeBtn} onClick={() => { setIsOpen(false); setActiveMenu(null); if (onToggle) onToggle(false); }}>
-            ✕ Kapat
+            ✕ {t('btn_close', { context: tone })}
           </button>
           
           <button 
@@ -69,7 +71,7 @@ const FilterDropdown = ({ roles = [], categories = [], chains = [], filter, onFi
             className={`${styles.filterBtn} ${isAll ? styles.activeFilterBtn : ''}`}
             onClick={handleClear}
           >
-            Tümü
+            {t('filter_all', { context: tone })}
           </button>
 
           {/* Rol Filtresi */}
@@ -80,7 +82,7 @@ const FilterDropdown = ({ roles = [], categories = [], chains = [], filter, onFi
                 className={`${styles.filterBtn} ${(filter.roleIds && filter.roleIds.length > 0) ? styles.activeFilterBtn : ''}`} 
                 onClick={() => setActiveMenu(activeMenu === 'role' ? null : 'role')}
               >
-                Rol {(filter.roleIds && filter.roleIds.length > 0) ? `(${filter.roleIds.length})` : ''}
+                {t('filter_role', { context: tone })} {(filter.roleIds && filter.roleIds.length > 0) ? `(${filter.roleIds.length})` : ''}
               </button>
               {activeMenu === 'role' && (
                 <div className={styles.dropdown}>
@@ -110,11 +112,11 @@ const FilterDropdown = ({ roles = [], categories = [], chains = [], filter, onFi
               className={`${styles.filterBtn} ${(filter.categoryIds && filter.categoryIds.length > 0) ? styles.activeFilterBtn : ''}`} 
               onClick={() => setActiveMenu(activeMenu === 'category' ? null : 'category')}
             >
-              Kategori {(filter.categoryIds && filter.categoryIds.length > 0) ? `(${filter.categoryIds.length})` : ''}
+              {t('filter_category', { context: tone })} {(filter.categoryIds && filter.categoryIds.length > 0) ? `(${filter.categoryIds.length})` : ''}
             </button>
             {activeMenu === 'category' && (
               <div className={styles.dropdown}>
-                {categories.length === 0 ? <div className={styles.empty}>Kategori bulunamadı</div> : null}
+                {categories.length === 0 ? <div className={styles.empty}>{t('filter_no_category', { context: tone })}</div> : null}
                 {categories.map(c => {
                   const isSelected = filter.categoryIds && filter.categoryIds.includes(c.id);
                   return (
@@ -140,15 +142,16 @@ const FilterDropdown = ({ roles = [], categories = [], chains = [], filter, onFi
               className={`${styles.filterBtn} ${(filter.chainIds && filter.chainIds.length > 0) ? styles.activeFilterBtn : ''}`} 
               onClick={() => setActiveMenu(activeMenu === 'chain' ? null : 'chain')}
             >
-              Zincir {(filter.chainIds && filter.chainIds.length > 0) ? `(${filter.chainIds.length})` : ''}
+              {t('filter_chain', { context: tone })} {(filter.chainIds && filter.chainIds.length > 0) ? `(${filter.chainIds.length})` : ''}
             </button>
             {activeMenu === 'chain' && (
               <div className={`${styles.dropdown} ${styles.dropdownRight}`}>
-                {chains.length === 0 ? <div className={styles.empty}>Zincir bulunamadı</div> : null}
+                {chains.length === 0 ? <div className={styles.empty}>{t('filter_no_chain', { context: tone })}</div> : null}
                 {chains.map(ch => {
                   const isSelected = filter.chainIds && filter.chainIds.includes(ch.chainId);
                   // Zincir adını ilk görevin başlığından türetelim veya chainId'yi gösterelim
-                  const chainName = ch.tasks && ch.tasks.length > 0 ? ch.tasks[0].title + ' (Zincir)' : ch.chainId;
+                  const chainSuffix = ` (${t('filter_chain_suffix', { context: tone })})`;
+                  const chainName = ch.tasks && ch.tasks.length > 0 ? ch.tasks[0].title + chainSuffix : ch.chainId;
                   return (
                     <div 
                       key={`chain-${ch.chainId}`} 

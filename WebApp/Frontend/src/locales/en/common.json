@@ -95,5 +95,20 @@
     "placeholder_task_title":  "Task Title",
     "btn_add_step":  "Add Step",
     "creating":  "Creating...",
-    "empty_chains":  "You don\u0027t have a task chain yet."
+    "empty_chains":  "You don\u0027t have a task chain yet.",
+    "filters": "Filters",
+    "filters_buddy": "Filters",
+    "filter_active": "Active",
+    "filter_all": "All",
+    "filter_all_buddy": "All",
+    "filter_role": "Role",
+    "filter_category": "Category",
+    "filter_chain": "Chain",
+    "filter_no_category": "No category found",
+    "filter_no_category_buddy": "No categories yet",
+    "filter_no_chain": "No chain found",
+    "filter_no_chain_buddy": "No chains yet",
+    "filter_chain_suffix": "Chain",
+    "btn_close": "Close",
+    "btn_close_buddy": "Close"
 }

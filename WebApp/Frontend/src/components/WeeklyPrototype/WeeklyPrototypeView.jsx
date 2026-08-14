@@ -5,13 +5,13 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { ChevronLeftIcon, ChevronRightIcon } from '../Common/Icons';
 import { getTagColors } from '../../utils/taskUtils';
-import styles from './CalendarView.module.css';
+import styles from '../Calendar/CalendarView.module.css';
 import { useTranslation } from 'react-i18next';
-import FilterDropdown from './FilterDropdown';
+import FilterDropdown from '../Calendar/FilterDropdown';
 import { categoryService } from '../../services/categoryService';
-import WeeklyView from './WeeklyView';
-import DailyView from './DailyView';
-import MonthlyView from './MonthlyView';
+import WeeklyView from '../Calendar/WeeklyView';
+import DailyView from '../Calendar/DailyView';
+import MonthlyView from '../Calendar/MonthlyView';
 import { motion, useMotionValue, animate } from 'framer-motion';
 
 function getWeekStart(date) {
@@ -44,7 +44,7 @@ const slideVariants = {
   }
 };
 
-const CalendarView = ({ tasks = [], roles = [], filter: initialFilter, onDayClick, tone, onCategoryClick, onChainClick }) => {
+const WeeklyPrototypeView = ({ tasks = [], roles = [], filter: initialFilter, onDayClick, tone, onCategoryClick, onChainClick }) => {
   const { t, i18n } = useTranslation('common');
   const [currentDate, setCurrentDate] = useState(new Date());
   
@@ -334,4 +334,4 @@ const CalendarView = ({ tasks = [], roles = [], filter: initialFilter, onDayClic
   );
 };
 
-export default CalendarView;
+export default WeeklyPrototypeView;
