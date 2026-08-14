@@ -170,7 +170,7 @@ const CalendarImport = ({ tone, user }) => {
 
             <h4>Microsoft Outlook</h4>
             <ol>
-              <li>outlook.live.com/calendar'a girin. Ayarlar > Takvim > Paylaşılan Takvimler'e gidin.</li>
+              <li>outlook.live.com/calendar'a girin. Ayarlar &gt; Takvim &gt; Paylaşılan Takvimler'e gidin.</li>
               <li>Takvimi yayınla kısmından izinleri ayarlayıp "Yayımla" butonuna basın. Çıkan ICS linkini kullanın.</li>
             </ol>
 
