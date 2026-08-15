@@ -189,6 +189,7 @@ namespace PlanlamaApp.API.Controllers
 
             var newMember = new WorkspaceMember
             {
+                TenantId = workspace.TenantId,
                 WorkspaceId = workspace.Id,
                 UserId = currentUserId,
                 DisplayName = request.DisplayName,

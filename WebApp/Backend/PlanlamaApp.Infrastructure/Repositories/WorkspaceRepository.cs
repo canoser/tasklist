@@ -25,12 +25,9 @@ namespace PlanlamaApp.Infrastructure.Repositories
             var sql = @"
                 SELECT w.* FROM Workspaces w
                 INNER JOIN WorkspaceMembers wm ON wm.WorkspaceId = w.Id
-                WHERE wm.UserId = @UserId AND w.IsActive = true AND w.TenantId = @TenantId AND wm.TenantId = @TenantId
+                WHERE wm.UserId = @UserId AND w.IsActive = true
             ";
-            var parameters = new DynamicParameters(new { UserId = userId });
-            parameters.Add("@TenantId", _tenantId);
-
-            return await _dbConnection.QueryAsync<Workspace>(sql, parameters);
+            return await _dbConnection.QueryAsync<Workspace>(sql, new { UserId = userId });
         }
 
         public async Task<Workspace?> GetByIdAsync(int id)
@@ -41,8 +38,9 @@ namespace PlanlamaApp.Infrastructure.Repositories
 
         public async Task<Workspace?> GetByInviteCodeAsync(string code)
         {
+            // Davet kodları globaldir, farklı bir Tenant'tan kullanıcı arayabilir. BaseRepository injection'ı bypass edilir.
             var sql = "SELECT * FROM Workspaces WHERE InviteCode = @InviteCode AND IsActive = true";
-            return await QueryFirstOrDefaultAsync<Workspace>(sql, new { InviteCode = code });
+            return await _dbConnection.QueryFirstOrDefaultAsync<Workspace>(sql, new { InviteCode = code });
         }
 
         public async Task<int> CreateAsync(Workspace workspace)
@@ -87,8 +85,9 @@ namespace PlanlamaApp.Infrastructure.Repositories
 
         public async Task<IEnumerable<WorkspaceMember>> GetMembersAsync(int workspaceId)
         {
+            // WorkspaceId zaten spesifik bir sınırdır, TenantId kısıtlamasını bypass ediyoruz
             var sql = "SELECT * FROM WorkspaceMembers WHERE WorkspaceId = @WorkspaceId AND IsActiveMember = true";
-            return await QueryAsync<WorkspaceMember>(sql, new { WorkspaceId = workspaceId });
+            return await _dbConnection.QueryAsync<WorkspaceMember>(sql, new { WorkspaceId = workspaceId });
         }
 
         public async Task<WorkspaceMember?> GetMemberByIdAsync(int memberId)
@@ -104,16 +103,22 @@ namespace PlanlamaApp.Infrastructure.Repositories
                 WHERE UserId = @ObserverId 
                   AND Role = 'Observer' 
                   AND ObserverLinkedUserId = @LinkedUserId
-                  AND TenantId = @TenantId
                 LIMIT 1";
-            var result = await QueryFirstOrDefaultAsync<int?>(sql, new { ObserverId = observerId, LinkedUserId = linkedUserId, TenantId = _tenantId });
+            var result = await _dbConnection.QueryFirstOrDefaultAsync<int?>(sql, new { ObserverId = observerId, LinkedUserId = linkedUserId });
             return result.HasValue;
         }
 
         public async Task<int> AddMemberAsync(WorkspaceMember member)
         {
             member.JoinedAt = DateTime.UtcNow;
-            member.TenantId = _tenantId;
+            
+            // Eğer TenantId dışarıdan (WorkspaceController üzerinden) verilmişse onu kullan, 
+            // verilmemişse aktif kullanıcının TenantId'sini ata.
+            if (string.IsNullOrEmpty(member.TenantId))
+            {
+                member.TenantId = _tenantId;
+            }
+
             var sql = @"
                 INSERT INTO WorkspaceMembers (TenantId, WorkspaceId, UserId, DisplayName, JoinedAt, Role, ObserverLinkedUserId, IsActiveMember)
                 VALUES (@TenantId, @WorkspaceId, @UserId, @DisplayName, @JoinedAt, @Role, @ObserverLinkedUserId, true)
@@ -121,7 +126,9 @@ namespace PlanlamaApp.Infrastructure.Repositories
                 SET IsActiveMember = true, Role = EXCLUDED.Role, JoinedAt = EXCLUDED.JoinedAt
                 RETURNING Id;
             ";
-            var id = await ExecuteScalarAsync<int>(sql, member);
+            
+            // BaseRepository'nin TenantId'yi ezmesini engellemek için doğrudan dbConnection kullanılıyor
+            var id = await _dbConnection.ExecuteScalarAsync<int>(sql, member);
             member.Id = id;
             return id;
         }
@@ -136,7 +143,7 @@ namespace PlanlamaApp.Infrastructure.Repositories
         public async Task<bool> RemoveMemberAsync(int workspaceId, string userId)
         {
             var sql = "UPDATE WorkspaceMembers SET IsActiveMember = false WHERE WorkspaceId = @WorkspaceId AND UserId = @UserId";
-            var affected = await ExecuteAsync(sql, new { WorkspaceId = workspaceId, UserId = userId });
+            var affected = await _dbConnection.ExecuteAsync(sql, new { WorkspaceId = workspaceId, UserId = userId });
             return affected > 0;
         }
     }
