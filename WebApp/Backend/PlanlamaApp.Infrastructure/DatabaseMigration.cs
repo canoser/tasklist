@@ -94,10 +94,20 @@ namespace PlanlamaApp.Infrastructure
                     Name        TEXT    NOT NULL,
                     Description TEXT,
                     InviteCode  TEXT    NOT NULL UNIQUE,
+                    Type        TEXT    NOT NULL DEFAULT 'Group',
+                    Settings    TEXT,
                     IsActive    BOOLEAN NOT NULL DEFAULT TRUE,
+                    DeletedAt   TIMESTAMPTZ,
                     CreatedAt   TIMESTAMPTZ NOT NULL,
                     UpdatedAt   TIMESTAMPTZ NOT NULL
                 );
+            ");
+
+            // Migration Update: Add missing columns if table already exists
+            connection.Execute(@"
+                ALTER TABLE Workspaces ADD COLUMN IF NOT EXISTS Type TEXT NOT NULL DEFAULT 'Group';
+                ALTER TABLE Workspaces ADD COLUMN IF NOT EXISTS Settings TEXT;
+                ALTER TABLE Workspaces ADD COLUMN IF NOT EXISTS DeletedAt TIMESTAMPTZ;
             ");
 
             // ── WorkspaceMembers ───────────────────────────────────────────
