@@ -1,0 +1,5 @@
+2026-08-15 03:19:51.842 +03:00 [INF] User profile is available. Using 'C:\Users\canos\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-08-15 03:19:51.934 +03:00 [INF] Now listening on: http://0.0.0.0:5268
+2026-08-15 03:19:51.935 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-08-15 03:19:51.936 +03:00 [INF] Hosting environment: Development
+2026-08-15 03:19:51.936 +03:00 [INF] Content root path: C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api

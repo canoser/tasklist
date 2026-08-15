@@ -9,8 +9,21 @@ using PlanlamaApp.Application.Interfaces;
 using PlanlamaApp.Infrastructure;
 using PlanlamaApp.Infrastructure.Repositories;
 using PlanlamaApp.Infrastructure.Providers;
+using Serilog;
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Serilog Yapılandırması
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day,
+        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 // 1. JWT Authentication (Local Cookie tabanlı)
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -131,6 +144,7 @@ builder.Services.AddScoped<IWorkspaceRepository, WorkspaceRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUsageTrackingRepository, UsageTrackingRepository>();
 builder.Services.AddScoped<ISystemSettingsRepository, SystemSettingsRepository>();
+builder.Services.AddScoped<ISystemErrorRepository, SystemErrorRepository>();
 builder.Services.AddScoped<ISettingsService, PlanlamaApp.Infrastructure.Services.SettingsService>();
 builder.Services.AddScoped<IQuotaManager, PlanlamaApp.Infrastructure.Services.QuotaManager>();
 builder.Services.AddScoped<IRewardValidator, PlanlamaApp.Infrastructure.Services.MockRewardValidator>();
@@ -157,6 +171,44 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+// Küresel Hata Yakalayıcı (Global Exception Handler Middleware)
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "HTTP isteği sırasında yakalanamayan bir hata oluştu: {RequestPath}", context.Request.Path);
+        
+        try
+        {
+            // Veritabanına kaydet
+            using var scope = app.Services.CreateScope();
+            var errorRepo = scope.ServiceProvider.GetRequiredService<ISystemErrorRepository>();
+            var tenantProvider = scope.ServiceProvider.GetService<ITenantProvider>();
+            
+            var sysError = new PlanlamaApp.Domain.Entities.SystemError
+            {
+                Path = context.Request.Path,
+                HttpMethod = context.Request.Method,
+                ErrorMessage = ex.Message,
+                StackTrace = ex.StackTrace ?? "",
+                TenantId = tenantProvider?.GetTenantId(),
+                UserId = context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+            };
+            await errorRepo.LogErrorAsync(sysError);
+        }
+        catch (Exception dbEx)
+        {
+            Log.Error(dbEx, "Hata veritabanına yazılırken ikincil bir hata oluştu!");
+        }
+
+        throw; // Hatanın ASP.NET Core tarafından da bilinmesi için yeniden fırlatıyoruz
+    }
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

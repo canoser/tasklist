@@ -205,6 +205,20 @@ namespace PlanlamaApp.Infrastructure
                 );
             ");
 
+            // ── SystemErrors ───────────────────────────────────────────────
+            connection.Execute(@"
+                CREATE TABLE IF NOT EXISTS SystemErrors (
+                    Id           SERIAL  PRIMARY KEY,
+                    TenantId     TEXT,
+                    UserId       TEXT,
+                    Path         TEXT    NOT NULL,
+                    HttpMethod   TEXT    NOT NULL,
+                    ErrorMessage TEXT    NOT NULL,
+                    StackTrace   TEXT    NOT NULL,
+                    CreatedAt    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                );
+            ");
+
             // Seed default settings
             var defaultSettings = new[]
             {
