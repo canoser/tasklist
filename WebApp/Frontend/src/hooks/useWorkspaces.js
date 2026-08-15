@@ -41,6 +41,17 @@ export default function useWorkspaces(userId) {
     }
   };
 
+  const deleteWorkspace = async (id) => {
+    try {
+      await workspaceService.delete(id);
+      setOwnedWorkspaces(prev => prev.filter(w => w.id !== id));
+    } catch (err) {
+      console.error(err);
+      const errorMsg = err.response?.data?.message || err.response?.data || err.message || 'Alan silinemedi';
+      throw new Error(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg));
+    }
+  };
+
   const joinWorkspace = async (code) => {
     try {
       const workspace = await workspaceService.joinWithCode(userId, code);
@@ -76,6 +87,7 @@ export default function useWorkspaces(userId) {
     loading,
     error,
     createWorkspace,
+    deleteWorkspace,
     joinWorkspace,
     assignTask,
     deleteTask,

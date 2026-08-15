@@ -45,9 +45,33 @@ const EditWorkspaceModal = ({ isOpen, onClose, onEdit, workspace, tone }) => {
               onChange={e => setDescription(e.target.value)} 
             />
           </div>
-          <button type="submit" className={styles.btnSubmit} disabled={loading}>
-            {loading ? t('loading', { context: tone }) : 'Kaydet'}
-          </button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
+            <button 
+              type="button" 
+              className={`${styles.btnSubmit} ${styles.btnDanger}`} 
+              onClick={async () => {
+                if (window.confirm(t('ws_delete_confirm', { defaultValue: 'Bu alanı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.', context: tone }))) {
+                  try {
+                    setLoading(true);
+                    await onEdit({ ...workspace, isDeleting: true });
+                    onClose();
+                  } catch (err) {
+                    console.error(err);
+                    alert('Silme başarısız');
+                  } finally {
+                    setLoading(false);
+                  }
+                }
+              }}
+              disabled={loading}
+              style={{ backgroundColor: 'var(--danger-color, #dc3545)', width: 'auto', flex: 1, marginRight: '10px' }}
+            >
+              {loading ? t('loading', { context: tone }) : t('delete', { defaultValue: 'Sil', context: tone })}
+            </button>
+            <button type="submit" className={styles.btnSubmit} disabled={loading} style={{ width: 'auto', flex: 1, marginLeft: '10px' }}>
+              {loading ? t('loading', { context: tone }) : t('save', { defaultValue: 'Kaydet', context: tone })}
+            </button>
+          </div>
         </form>
       </div>
     </BaseModal>

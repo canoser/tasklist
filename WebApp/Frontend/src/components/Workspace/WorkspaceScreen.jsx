@@ -10,7 +10,7 @@ import WorkspaceDetailScreen from './WorkspaceDetailScreen';
 
 const WorkspaceScreen = ({ user, tone }) => {
   const { t } = useTranslation('common');
-  const { ownedWorkspaces, joinedWorkspaces, loading, createWorkspace, joinWorkspace, leaveWorkspace } = useWorkspaces(user?.id || user?.uid);
+  const { ownedWorkspaces, joinedWorkspaces, loading, createWorkspace, joinWorkspace, leaveWorkspace, deleteWorkspace } = useWorkspaces(user?.id || user?.uid);
   
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
@@ -28,9 +28,14 @@ const WorkspaceScreen = ({ user, tone }) => {
           await leaveWorkspace(id);
           setActiveWorkspace(null);
         }}
-        onUpdateWorkspace={(updated) => {
-          setActiveWorkspace(updated);
-          refresh();
+        onUpdateWorkspace={async (updated) => {
+          if (updated.isDeleting) {
+            await deleteWorkspace(updated.id);
+            setActiveWorkspace(null);
+          } else {
+            setActiveWorkspace(updated);
+            refresh();
+          }
         }}
       />
     );

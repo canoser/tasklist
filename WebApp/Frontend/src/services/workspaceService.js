@@ -21,6 +21,11 @@ export const workspaceService = {
     return response.data;
   },
 
+  delete: async (workspaceId) => {
+    const response = await apiClient.delete(`/workspace/${workspaceId}`);
+    return response.data;
+  },
+
   joinWithCode: async (userId, code) => {
     // API expects InviteCode and DisplayName
     const response = await apiClient.post(`/workspace/join`, { 

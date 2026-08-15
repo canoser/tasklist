@@ -175,8 +175,12 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
         workspace={workspace}
         tone={tone}
         onEdit={async (updatedData) => {
-          await workspaceService.update(workspace.id, updatedData);
-          if (onUpdateWorkspace) onUpdateWorkspace(updatedData);
+          if (updatedData.isDeleting) {
+            if (onUpdateWorkspace) onUpdateWorkspace({ ...workspace, isDeleting: true });
+          } else {
+            await workspaceService.update(workspace.id, updatedData);
+            if (onUpdateWorkspace) onUpdateWorkspace(updatedData);
+          }
         }}
       />
     </div>
