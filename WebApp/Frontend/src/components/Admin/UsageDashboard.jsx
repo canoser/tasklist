@@ -99,18 +99,48 @@ const UsageDashboard = ({ tone }) => {
 
       {/* SYSTEM STATS CARDS */}
       {systemStats && (
-        <div className={styles.settingsGrid} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', marginBottom: '30px' }}>
-          <div className={styles.settingCard} style={{ textAlign: 'center', padding: '20px' }}>
-            <h3 style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px' }}>{t('stat_total_users', { context: tone })}</h3>
-            <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--primary-color)' }}>{systemStats.totalUsers}</div>
+        <div className={styles.settingsGrid} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', marginBottom: '30px' }}>
+          <div className={styles.settingCard} style={{ padding: '20px' }}>
+            <h3 style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '16px', textAlign: 'center' }}>{t('stat_total_users', { context: tone })}</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t('lbl_active', { context: tone, defaultValue: 'Aktif' })}</div>
+                <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--primary-color)' }}>{systemStats.totalUsers}</div>
+              </div>
+              <div style={{ width: '1px', height: '40px', background: 'var(--border-color)' }}></div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t('lbl_deleted', { context: tone, defaultValue: 'Eski' })}</div>
+                <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--text-muted)' }}>{systemStats.totalUsersDeleted}</div>
+              </div>
+            </div>
           </div>
-          <div className={styles.settingCard} style={{ textAlign: 'center', padding: '20px' }}>
-            <h3 style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px' }}>{t('stat_premium_users', { context: tone })}</h3>
-            <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#eab308' }}>{systemStats.premiumUsers}</div>
+          <div className={styles.settingCard} style={{ padding: '20px' }}>
+            <h3 style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '16px', textAlign: 'center' }}>{t('stat_premium_users', { context: tone })}</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t('lbl_active', { context: tone, defaultValue: 'Aktif' })}</div>
+                <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#eab308' }}>{systemStats.premiumUsers}</div>
+              </div>
+              <div style={{ width: '1px', height: '40px', background: 'var(--border-color)' }}></div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t('lbl_deleted', { context: tone, defaultValue: 'Eski' })}</div>
+                <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--text-muted)' }}>{systemStats.premiumUsersDeleted}</div>
+              </div>
+            </div>
           </div>
-          <div className={styles.settingCard} style={{ textAlign: 'center', padding: '20px' }}>
-            <h3 style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px' }}>{t('stat_total_workspaces', { context: tone })}</h3>
-            <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#10b981' }}>{systemStats.totalWorkspaces}</div>
+          <div className={styles.settingCard} style={{ padding: '20px' }}>
+            <h3 style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '16px', textAlign: 'center' }}>{t('stat_total_workspaces', { context: tone })}</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t('lbl_active', { context: tone, defaultValue: 'Aktif' })}</div>
+                <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#10b981' }}>{systemStats.totalWorkspaces}</div>
+              </div>
+              <div style={{ width: '1px', height: '40px', background: 'var(--border-color)' }}></div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t('lbl_deleted', { context: tone, defaultValue: 'Eski' })}</div>
+                <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--text-muted)' }}>{systemStats.totalWorkspacesDeleted}</div>
+              </div>
+            </div>
           </div>
           <div className={styles.settingCard} style={{ textAlign: 'center', padding: '20px' }}>
             <h3 style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px' }}>{t('stat_total_tasks', { context: tone })}</h3>

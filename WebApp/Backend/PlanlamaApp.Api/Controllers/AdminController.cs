@@ -113,9 +113,12 @@ namespace PlanlamaApp.Api.Controllers
         {
             var stats = new
             {
-                TotalUsers = await dbConnection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Users;"),
-                PremiumUsers = await dbConnection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Users WHERE SubscriptionPlan = 'premium';"),
-                TotalWorkspaces = await dbConnection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Workspaces;"),
+                TotalUsers = await dbConnection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Users WHERE IsActive = true;"),
+                TotalUsersDeleted = await dbConnection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Users WHERE IsActive = false;"),
+                PremiumUsers = await dbConnection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Users WHERE SubscriptionPlan = 'premium' AND IsActive = true;"),
+                PremiumUsersDeleted = await dbConnection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Users WHERE SubscriptionPlan = 'premium' AND IsActive = false;"),
+                TotalWorkspaces = await dbConnection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Workspaces WHERE IsActive = true;"),
+                TotalWorkspacesDeleted = await dbConnection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM Workspaces WHERE IsActive = false;"),
                 TotalTasks = await dbConnection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM TaskItems;")
             };
             return Ok(stats);
