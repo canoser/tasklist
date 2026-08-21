@@ -14,9 +14,9 @@
 }
 
 .modal {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-lg);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   padding: 2.5rem;
   width: 100%;
   max-width: 440px;
@@ -30,24 +30,24 @@
 }
 
 .title {
-  color: var(--text-primary);
+  color: var(--text);
   font-size: 1.75rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
 }
 
 .subtitle {
-  color: var(--text-secondary);
+  color: var(--text2);
   font-size: 0.9rem;
 }
 
 .googleBtn {
   width: 100%;
   padding: 0.75rem 1rem;
-  background-color: var(--bg-input);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-md);
+  background-color: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   font-size: 0.95rem;
   font-weight: 500;
   display: flex;
@@ -60,14 +60,14 @@
 }
 
 .googleBtn:hover {
-  background-color: var(--border-color);
+  background-color: var(--border);
 }
 
 .divider {
   display: flex;
   align-items: center;
   text-align: center;
-  color: var(--text-muted);
+  color: var(--text3);
   font-size: 0.8rem;
   margin-bottom: 1.5rem;
 }
@@ -76,7 +76,7 @@
 .divider::after {
   content: '';
   flex: 1;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border);
 }
 
 .divider span {
@@ -91,33 +91,33 @@
   display: block;
   font-size: 0.85rem;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: var(--text2);
   margin-bottom: 0.4rem;
 }
 
 .input {
   width: 100%;
   padding: 0.75rem 1rem;
-  background-color: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-sm);
-  color: var(--text-primary);
+  background-color: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
   font-size: 0.95rem;
   outline: none;
   transition: border-color var(--transition-fast);
 }
 
 .input:focus {
-  border-color: var(--accent-primary);
+  border-color: var(--accent);
 }
 
 .submitBtn {
   width: 100%;
   padding: 0.85rem 1rem;
-  background-color: var(--accent-primary);
+  background-color: var(--accent);
   color: #ffffff;
   border: none;
-  border-radius: var(--border-radius-md);
+  border-radius: var(--radius);
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -133,11 +133,11 @@
   margin-top: 1.5rem;
   text-align: center;
   font-size: 0.85rem;
-  color: var(--text-secondary);
+  color: var(--text2);
 }
 
 .toggleLink {
-  color: var(--accent-primary);
+  color: var(--accent);
   font-weight: 600;
   cursor: pointer;
   margin-left: 0.4rem;
@@ -149,10 +149,10 @@
 
 .errorAlert {
   background-color: rgba(239, 68, 68, 0.15);
-  border: 1px solid var(--danger);
-  color: var(--danger);
+  border: 1px solid var(--red);
+  color: var(--red);
   padding: 0.6rem 0.8rem;
-  border-radius: var(--border-radius-sm);
+  border-radius: var(--radius-sm);
   font-size: 0.85rem;
   margin-bottom: 1rem;
 }

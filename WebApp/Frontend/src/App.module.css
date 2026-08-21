@@ -10,8 +10,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 18px;
-  background-color: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-color);
+  background-color: var(--surface);
+  border-bottom: 1px solid var(--border);
   transition: background-color var(--transition-normal);
   flex-shrink: 0;
 }
@@ -45,7 +45,7 @@
 .dragIndicator {
   width: 40px;
   height: 4px;
-  background-color: var(--border-color);
+  background-color: var(--border);
   border-radius: 4px;
   box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
@@ -59,11 +59,11 @@
 }
 
 .logoBadge {
-  background-color: var(--accent-primary);
+  background-color: var(--accent);
   color: #fff;
   font-weight: 700;
   padding: 0.4rem 0.8rem;
-  border-radius: var(--border-radius-sm);
+  border-radius: var(--radius-sm);
   font-size: 1.1rem;
   flex-shrink: 0;
 }
@@ -71,7 +71,7 @@
 .title {
   font-size: 1.05rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -86,11 +86,11 @@
 }
 
 .themeBtn {
-  background-color: var(--bg-input);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
+  background-color: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
   padding: 0.5rem 0.75rem;
-  border-radius: var(--border-radius-md);
+  border-radius: var(--radius);
   cursor: pointer;
   font-weight: 500;
   display: flex;
@@ -100,30 +100,30 @@
 }
 
 .themeBtn:hover {
-  background-color: var(--border-color);
+  background-color: var(--border);
 }
 
 .authBtn {
-  background-color: var(--accent-primary);
+  background-color: var(--accent);
   color: #fff;
   border: none;
   padding: 0.55rem 1.2rem;
-  border-radius: var(--border-radius-md);
+  border-radius: var(--radius);
   font-weight: 600;
   cursor: pointer;
   transition: background-color var(--transition-fast);
 }
 
 .authBtn:hover {
-  background-color: var(--accent-hover);
+  background-color: var(--accent);
 }
 
 .logoutBtn {
-  background-color: var(--bg-input);
-  border: 1px solid var(--border-color);
-  color: var(--danger, #ef4444);
+  background-color: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--red);
   padding: 0.5rem 0.85rem;
-  border-radius: var(--border-radius-md);
+  border-radius: var(--radius);
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
@@ -133,7 +133,7 @@
 
 .logoutBtn:hover {
   background-color: rgba(239, 68, 68, 0.1);
-  border-color: var(--danger, #ef4444);
+  border-color: var(--red);
 }
 
 .main {
@@ -156,7 +156,7 @@
   height: 100%;
   min-height: 300px;
   gap: 12px;
-  color: var(--text-muted);
+  color: var(--text3);
 }
 
 .placeholder span {
@@ -178,11 +178,11 @@
   font-size: 2.75rem;
   font-weight: 800;
   margin-bottom: 1rem;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .heroDesc {
-  color: var(--text-secondary);
+  color: var(--text2);
   font-size: 1.1rem;
   max-width: 600px;
   margin: 0 auto;
@@ -195,9 +195,9 @@
 }
 
 .card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-lg);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   padding: 1.75rem;
   box-shadow: var(--shadow-sm);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
@@ -212,11 +212,11 @@
   font-size: 1.2rem;
   font-weight: 600;
   margin-bottom: 0.75rem;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .cardBody {
-  color: var(--text-secondary);
+  color: var(--text2);
   font-size: 0.95rem;
   line-height: 1.6;
 }
@@ -228,16 +228,16 @@
   justify-content: center;
   height: 100dvh;
   width: 100vw;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  background-color: var(--bg);
+  color: var(--text);
   gap: 1rem;
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid var(--border-color);
-  border-top-color: var(--accent-primary);
+  border: 4px solid var(--border);
+  border-top-color: var(--accent);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }

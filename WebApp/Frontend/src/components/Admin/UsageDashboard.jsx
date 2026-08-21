@@ -88,11 +88,11 @@ const UsageDashboard = ({ tone }) => {
       <div className={styles.usageHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <div>
           <h2>{t('usage_title', { context: tone })}</h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '4px' }}>
+          <p style={{ color: 'var(--text3)', fontSize: '14px', marginTop: '4px' }}>
             {t('usage_subtitle', { context: tone })}
           </p>
         </div>
-        <div style={{ background: 'var(--accent-primary)', color: 'white', padding: '10px 20px', borderRadius: '12px', fontWeight: 'bold', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ background: 'var(--accent)', color: 'white', padding: '10px 20px', borderRadius: '12px', fontWeight: 'bold', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <DollarSign size={20} /> {totalCost} USD
         </div>
       </div>
@@ -101,49 +101,49 @@ const UsageDashboard = ({ tone }) => {
       {systemStats && (
         <div className={styles.settingsGrid} style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', marginBottom: '30px' }}>
           <div className={styles.settingCard} style={{ padding: '20px' }}>
-            <h3 style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '16px', textAlign: 'center' }}>{t('stat_total_users', { context: tone })}</h3>
+            <h3 style={{ fontSize: '14px', color: 'var(--text3)', marginBottom: '16px', textAlign: 'center' }}>{t('stat_total_users', { context: tone })}</h3>
             <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t('lbl_active', { context: tone, defaultValue: 'Aktif' })}</div>
-                <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--primary-color)' }}>{systemStats.totalUsers}</div>
+                <div style={{ fontSize: '12px', color: 'var(--text2)' }}>{t('lbl_active', { context: tone, defaultValue: 'Aktif' })}</div>
+                <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--accent)' }}>{systemStats.totalUsers}</div>
               </div>
-              <div style={{ width: '1px', height: '40px', background: 'var(--border-color)' }}></div>
+              <div style={{ width: '1px', height: '40px', background: 'var(--border)' }}></div>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t('lbl_deleted', { context: tone, defaultValue: 'Eski' })}</div>
-                <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--text-muted)' }}>{systemStats.totalUsersDeleted}</div>
+                <div style={{ fontSize: '12px', color: 'var(--text2)' }}>{t('lbl_deleted', { context: tone, defaultValue: 'Eski' })}</div>
+                <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--text3)' }}>{systemStats.totalUsersDeleted}</div>
               </div>
             </div>
           </div>
           <div className={styles.settingCard} style={{ padding: '20px' }}>
-            <h3 style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '16px', textAlign: 'center' }}>{t('stat_premium_users', { context: tone })}</h3>
+            <h3 style={{ fontSize: '14px', color: 'var(--text3)', marginBottom: '16px', textAlign: 'center' }}>{t('stat_premium_users', { context: tone })}</h3>
             <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t('lbl_active', { context: tone, defaultValue: 'Aktif' })}</div>
+                <div style={{ fontSize: '12px', color: 'var(--text2)' }}>{t('lbl_active', { context: tone, defaultValue: 'Aktif' })}</div>
                 <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#eab308' }}>{systemStats.premiumUsers}</div>
               </div>
-              <div style={{ width: '1px', height: '40px', background: 'var(--border-color)' }}></div>
+              <div style={{ width: '1px', height: '40px', background: 'var(--border)' }}></div>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t('lbl_deleted', { context: tone, defaultValue: 'Eski' })}</div>
-                <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--text-muted)' }}>{systemStats.premiumUsersDeleted}</div>
+                <div style={{ fontSize: '12px', color: 'var(--text2)' }}>{t('lbl_deleted', { context: tone, defaultValue: 'Eski' })}</div>
+                <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--text3)' }}>{systemStats.premiumUsersDeleted}</div>
               </div>
             </div>
           </div>
           <div className={styles.settingCard} style={{ padding: '20px' }}>
-            <h3 style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '16px', textAlign: 'center' }}>{t('stat_total_workspaces', { context: tone })}</h3>
+            <h3 style={{ fontSize: '14px', color: 'var(--text3)', marginBottom: '16px', textAlign: 'center' }}>{t('stat_total_workspaces', { context: tone })}</h3>
             <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t('lbl_active', { context: tone, defaultValue: 'Aktif' })}</div>
+                <div style={{ fontSize: '12px', color: 'var(--text2)' }}>{t('lbl_active', { context: tone, defaultValue: 'Aktif' })}</div>
                 <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#10b981' }}>{systemStats.totalWorkspaces}</div>
               </div>
-              <div style={{ width: '1px', height: '40px', background: 'var(--border-color)' }}></div>
+              <div style={{ width: '1px', height: '40px', background: 'var(--border)' }}></div>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{t('lbl_deleted', { context: tone, defaultValue: 'Eski' })}</div>
-                <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--text-muted)' }}>{systemStats.totalWorkspacesDeleted}</div>
+                <div style={{ fontSize: '12px', color: 'var(--text2)' }}>{t('lbl_deleted', { context: tone, defaultValue: 'Eski' })}</div>
+                <div style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--text3)' }}>{systemStats.totalWorkspacesDeleted}</div>
               </div>
             </div>
           </div>
           <div className={styles.settingCard} style={{ textAlign: 'center', padding: '20px' }}>
-            <h3 style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '8px' }}>{t('stat_total_tasks', { context: tone })}</h3>
+            <h3 style={{ fontSize: '14px', color: 'var(--text3)', marginBottom: '8px' }}>{t('stat_total_tasks', { context: tone })}</h3>
             <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#8b5cf6' }}>{systemStats.totalTasks}</div>
           </div>
         </div>
@@ -173,12 +173,12 @@ const UsageDashboard = ({ tone }) => {
           return (
             <div key={metric.resourceType} className={styles.settingCard} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ padding: '10px', background: 'var(--bg-secondary)', borderRadius: '10px' }}>
+                <div style={{ padding: '10px', background: 'var(--surface)', borderRadius: '10px' }}>
                   {icon}
                 </div>
                 <div>
                   <h3 style={{ margin: 0, fontSize: '16px' }}>{label}</h3>
-                  <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <p style={{ margin: 0, fontSize: '12px', color: 'var(--text3)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <Database size={12} /> {t('msg_neon_data', { context: tone })}
                   </p>
                 </div>
@@ -186,14 +186,14 @@ const UsageDashboard = ({ tone }) => {
               
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto' }}>
                 <div>
-                  <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)' }}>{t('stat_total_usage', { context: tone })}</p>
-                  <p style={{ margin: 0, fontSize: '20px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                  <p style={{ margin: 0, fontSize: '12px', color: 'var(--text3)' }}>{t('stat_total_usage', { context: tone })}</p>
+                  <p style={{ margin: 0, fontSize: '20px', fontWeight: 'bold', color: 'var(--text)' }}>
                     {metric.totalUsedAmount.toLocaleString()} <span style={{ fontSize: '14px', fontWeight: 'normal' }}>{unit}</span>
                   </p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)' }}>{t('stat_est_cost', { context: tone })}</p>
-                  <p style={{ margin: 0, fontSize: '20px', fontWeight: 'bold', color: 'var(--accent-primary)' }}>
+                  <p style={{ margin: 0, fontSize: '12px', color: 'var(--text3)' }}>{t('stat_est_cost', { context: tone })}</p>
+                  <p style={{ margin: 0, fontSize: '20px', fontWeight: 'bold', color: 'var(--accent)' }}>
                     ${cost}
                   </p>
                 </div>
@@ -201,28 +201,28 @@ const UsageDashboard = ({ tone }) => {
 
               {/* CLOUDFLARE R2 ÖZEL BÖLÜMÜ */}
               {metric.resourceType === 'FileStorage' && (
-                <div style={{ marginTop: '15px', paddingTop: '15px', borderTop: '1px dashed var(--border-color)' }}>
+                <div style={{ marginTop: '15px', paddingTop: '15px', borderTop: '1px dashed var(--border)' }}>
                   {!cfStats ? (
                     <button 
                       onClick={handleCalculateCloudflare}
                       disabled={loadingCf}
-                      style={{ width: '100%', padding: '10px', background: 'transparent', border: '1px solid var(--accent-primary)', color: 'var(--accent-primary)', borderRadius: '8px', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', fontWeight: '500' }}
+                      style={{ width: '100%', padding: '10px', background: 'transparent', border: '1px solid var(--accent)', color: 'var(--accent)', borderRadius: '8px', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', fontWeight: '500' }}
                     >
                       {loadingCf ? <RefreshCw size={16} className={styles.spinner} /> : <Server size={16} />}
                       {loadingCf ? t('msg_calculating', { context: tone }) : t('btn_calc_cloudflare', { context: tone })}
                     </button>
                   ) : (
-                    <div style={{ background: 'var(--bg-secondary)', padding: '12px', borderRadius: '8px' }}>
-                      <h4 style={{ margin: '0 0 8px 0', fontSize: '12px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <div style={{ background: 'var(--surface)', padding: '12px', borderRadius: '8px' }}>
+                      <h4 style={{ margin: '0 0 8px 0', fontSize: '12px', color: 'var(--text3)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <Server size={12} /> {t('lbl_real_cloudflare_data', { context: tone })}
                       </h4>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <div>
-                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{t('lbl_total_size', { context: tone })}</span><br/>
+                          <span style={{ fontSize: '10px', color: 'var(--text2)' }}>{t('lbl_total_size', { context: tone })}</span><br/>
                           <strong>{(cfStats.totalSizeInBytes / (1024 * 1024)).toFixed(2)} MB</strong>
                         </div>
                         <div style={{ textAlign: 'right' }}>
-                          <span style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>{t('lbl_total_files', { context: tone })}</span><br/>
+                          <span style={{ fontSize: '10px', color: 'var(--text2)' }}>{t('lbl_total_files', { context: tone })}</span><br/>
                           <strong>{cfStats.objectCount} {t('lbl_items', { context: tone, defaultValue: 'adet' })}</strong>
                         </div>
                       </div>

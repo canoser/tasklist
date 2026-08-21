@@ -3,25 +3,25 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: var(--bg-secondary, #1e293b);
-  border-top: 1px solid var(--border-color, #334155);
+  background-color: var(--surface);
+  border-top: 1px solid var(--border);
   /* Use safe-area variable defined in index.css */
   padding-bottom: var(--safe-area-bottom);
-  z-index: 40;
+  z-index: 100;
 }
 
 .navBar {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  height: 60px;
+  height: 64px;
   position: relative;
 }
 
 .navItem {
   background: none;
   border: none;
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text3);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -33,17 +33,20 @@
 }
 
 .navItem svg {
-  margin-bottom: 4px;
+  margin-bottom: 3px;
+  width: 21px;
+  height: 21px;
 }
 
 .navItem span {
-  font-size: 0.65rem;
-  font-weight: 500;
+  font-size: 9px;
+  font-weight: 600;
+  font-family: var(--font);
 }
 
 
 .navItem.active {
-  color: var(--primary-color, #3b82f6);
+  color: var(--accent);
 }
 
 .actionButtonContainer {
@@ -53,20 +56,19 @@
   align-items: center;
   position: relative;
   /* Push it slightly up */
-  top: -15px;
+  top: -10px;
 }
 
 .actionButton {
-  width: 50px;
-  height: 50px;
-  border-radius: 20px;
-  background-color: var(--primary-color, #3b82f6);
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background-color: var(--accent);
   border: none;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
 }
 
 /* Expanded Menu Overlay */
@@ -97,7 +99,7 @@
   width: 100%;
   max-width: 400px;
   height: 60vh;
-  background-color: var(--bg-secondary, #1e293b);
+  background-color: var(--surface);
   border-radius: 30px;
   position: relative;
   z-index: 51;
@@ -108,15 +110,15 @@
 
 .expandedMenuContent {
   padding: 30px;
-  color: var(--text-primary, #f8fafc);
+  color: var(--text);
 }
 
 .closeButton {
   padding: 10px 20px;
   border-radius: 12px;
-  background-color: var(--bg-primary, #0f172a);
-  color: white;
-  border: 1px solid var(--border-color, #334155);
+  background-color: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
   cursor: pointer;
 }
 
@@ -133,8 +135,8 @@
 }
 
 .guestModal {
-  background-color: var(--bg-card);
-  border-radius: var(--border-radius-lg);
+  background-color: var(--surface);
+  border-radius: var(--radius);
   padding: 2rem;
   width: 100%;
   max-width: 340px;
@@ -151,13 +153,13 @@
 .guestModal h3 {
   margin-top: 0;
   margin-bottom: 1rem;
-  color: var(--text-primary);
+  color: var(--text);
   font-size: 1.35rem;
   font-weight: 700;
 }
 
 .guestModal p {
-  color: var(--text-secondary);
+  color: var(--text2);
   font-size: 0.95rem;
   line-height: 1.6;
   margin-bottom: 1.75rem;
@@ -174,9 +176,9 @@
   border-radius: 12px;
   font-weight: 600;
   font-size: 14px;
-  border: 1px solid var(--border-color);
-  background: var(--surface-2);
-  color: var(--text-primary);
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
   cursor: pointer;
   flex: 1;
 }
@@ -187,8 +189,8 @@
   font-weight: 600;
   font-size: 14px;
   border: none;
-  background: var(--brand-primary);
-  color: white;
+  background: var(--accent);
+  color: #fff;
   cursor: pointer;
   flex: 1;
 }

@@ -64,7 +64,7 @@ const EditWorkspaceModal = ({ isOpen, onClose, onEdit, workspace, tone }) => {
                 }
               }}
               disabled={loading}
-              style={{ backgroundColor: 'var(--danger-color, #dc3545)', width: 'auto', flex: 1, marginRight: '10px' }}
+              style={{ backgroundColor: 'var(--red-color, #dc3545)', width: 'auto', flex: 1, marginRight: '10px' }}
             >
               {loading ? t('loading', { context: tone }) : t('delete', { defaultValue: 'Sil', context: tone })}
             </button>

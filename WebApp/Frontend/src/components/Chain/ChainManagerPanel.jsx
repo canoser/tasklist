@@ -148,7 +148,7 @@ const ChainManagerPanel = ({ user }) => {
       {loading ? (
         <p>{t('loading', { defaultValue: 'Yükleniyor...' })}</p>
       ) : chains.length === 0 ? (
-        <p style={{ color: 'var(--text-muted)' }}>{t('empty_chains', { defaultValue: 'Henüz bir görev zinciriniz yok.' })}</p>
+        <p style={{ color: 'var(--text3)' }}>{t('empty_chains', { defaultValue: 'Henüz bir görev zinciriniz yok.' })}</p>
       ) : (
         chains.map(chain => {
           const firstTask = chain.tasks[0];
@@ -190,7 +190,7 @@ const ChainManagerPanel = ({ user }) => {
                       >
                         <span style={{ width: '20px' }}>{task.chainOrder}.</span>
                         <span style={{ flex: 1 }}>{task.title}</span>
-                        <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                        <span style={{ fontSize: '12px', color: 'var(--text3)' }}>
                           {new Date(task.deadline).toLocaleDateString()}
                         </span>
                       </div>

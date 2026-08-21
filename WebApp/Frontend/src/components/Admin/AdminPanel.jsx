@@ -86,7 +86,7 @@ const AdminPanel = ({ tone }) => {
           </div>
           <button 
             onClick={() => setIsGuideOpen(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--accent-primary)', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--accent)', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
           >
             <HelpCircle size={18} />
             <span>Kılavuz</span>
@@ -108,34 +108,48 @@ const AdminPanel = ({ tone }) => {
       )}
 
       {/* ── Sekmeler (Tabs) ── */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px', flexWrap: 'wrap' }}>
+      <div 
+        style={{ 
+          display: 'flex', 
+          gap: '10px', 
+          marginBottom: '20px', 
+          borderBottom: '1px solid var(--border)', 
+          paddingBottom: '10px', 
+          overflowX: 'auto', 
+          whiteSpace: 'nowrap',
+          WebkitOverflowScrolling: 'touch',
+          scrollbarWidth: 'none', // Firefox
+          msOverflowStyle: 'none' // IE 10+
+        }}
+        className={styles.hideScrollbar} // In case we want to add CSS rules
+      >
         <button 
           onClick={() => setActiveTab('settings')}
-          style={{ padding: '8px 16px', background: activeTab === 'settings' ? 'var(--accent-primary)' : 'transparent', color: activeTab === 'settings' ? 'white' : 'var(--text-secondary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+          style={{ flexShrink: 0, padding: '8px 16px', background: activeTab === 'settings' ? 'var(--accent)' : 'transparent', color: activeTab === 'settings' ? 'white' : 'var(--text2)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
         >
           {t('tab_settings', { context: tone })}
         </button>
         <button 
           onClick={() => setActiveTab('usage')}
-          style={{ padding: '8px 16px', background: activeTab === 'usage' ? 'var(--accent-primary)' : 'transparent', color: activeTab === 'usage' ? 'white' : 'var(--text-secondary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+          style={{ flexShrink: 0, padding: '8px 16px', background: activeTab === 'usage' ? 'var(--accent)' : 'transparent', color: activeTab === 'usage' ? 'white' : 'var(--text2)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
         >
           {t('tab_usage', { context: tone })}
         </button>
         <button 
           onClick={() => setActiveTab('users')}
-          style={{ padding: '8px 16px', background: activeTab === 'users' ? 'var(--accent-primary)' : 'transparent', color: activeTab === 'users' ? 'white' : 'var(--text-secondary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+          style={{ flexShrink: 0, padding: '8px 16px', background: activeTab === 'users' ? 'var(--accent)' : 'transparent', color: activeTab === 'users' ? 'white' : 'var(--text2)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
         >
           {t('tab_users', { context: tone })}
         </button>
         <button 
           onClick={() => setActiveTab('workspaces')}
-          style={{ padding: '8px 16px', background: activeTab === 'workspaces' ? 'var(--accent-primary)' : 'transparent', color: activeTab === 'workspaces' ? 'white' : 'var(--text-secondary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+          style={{ flexShrink: 0, padding: '8px 16px', background: activeTab === 'workspaces' ? 'var(--accent)' : 'transparent', color: activeTab === 'workspaces' ? 'white' : 'var(--text2)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
         >
           {t('tab_workspaces', { context: tone, defaultValue: 'Alanlar' })}
         </button>
         <button 
           onClick={() => setActiveTab('data')}
-          style={{ padding: '8px 16px', background: activeTab === 'data' ? 'var(--accent-primary)' : 'transparent', color: activeTab === 'data' ? 'white' : 'var(--text-secondary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+          style={{ flexShrink: 0, padding: '8px 16px', background: activeTab === 'data' ? 'var(--accent)' : 'transparent', color: activeTab === 'data' ? 'white' : 'var(--text2)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
         >
           {t('tab_data', { context: tone })}
         </button>

@@ -119,7 +119,7 @@ const UserApprovals = ({ settings, tone }) => {
             <div key={user.id} className={styles.settingCard}>
               <div className={styles.settingInfo}>
                 <h3 style={{ marginBottom: '5px' }}>{user.name}</h3>
-                <p style={{ color: 'var(--text-secondary)' }}>{user.email}</p>
+                <p style={{ color: 'var(--text2)' }}>{user.email}</p>
                 <small style={{ color: 'var(--text-tertiary)', display: 'block', marginTop: '10px' }}>
                   Kayıt: {new Date(user.createdAt).toLocaleString()}
                 </small>
@@ -128,7 +128,7 @@ const UserApprovals = ({ settings, tone }) => {
               <div className={styles.settingAction} style={{ flexDirection: 'column', alignItems: 'stretch', gap: '15px' }}>
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <div style={{ flex: 1 }}>
-                    <label style={{ fontSize: '12px', display: 'block', marginBottom: '5px', color: 'var(--text-secondary)' }}>
+                    <label style={{ fontSize: '12px', display: 'block', marginBottom: '5px', color: 'var(--text2)' }}>
                       AI Limiti
                     </label>
                     <input 
@@ -140,7 +140,7 @@ const UserApprovals = ({ settings, tone }) => {
                     />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <label style={{ fontSize: '12px', display: 'block', marginBottom: '5px', color: 'var(--text-secondary)' }}>
+                    <label style={{ fontSize: '12px', display: 'block', marginBottom: '5px', color: 'var(--text2)' }}>
                       Depolama (MB)
                     </label>
                     <input 

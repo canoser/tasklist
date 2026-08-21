@@ -11,7 +11,9 @@ import Profile from './components/Profile/Profile';
 import WorkspaceScreen from './components/Workspace/WorkspaceScreen';
 import { BrowserRouter } from 'react-router-dom';
 import { UndoProvider } from './components/Common/UndoContext';
+import NatureDecor from './components/Common/NatureDecor';
 import { TaskProvider } from './context/TaskContext';
+import { useTheme } from './context/ThemeContext';
 import CalendarScreen from './components/Calendar/CalendarScreen';
 import AdminPanel from './components/Admin/AdminPanel';
 
@@ -30,8 +32,7 @@ import signalrService from './services/signalrService';
 startSyncListener();
 
 export default function App() {
-  const [theme, setTheme] = useState('classic'); // 'classic', 'nature', 'lovely' vb.
-  const [appearance, setAppearance] = useState('dark'); // 'light', 'dark'
+  const { themeStyle: theme, setThemeStyle: setTheme, themeMode: appearance, toggleMode: toggleAppearance } = useTheme();
   const [user, setUser] = useState(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [guestName, setGuestName] = useState(storage.getString('guest_name') || '');
@@ -55,11 +56,6 @@ export default function App() {
 
   const isLandscape = useOrientation();
   const [isHeaderVisible, setIsHeaderVisible] = useState(false);
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    document.documentElement.setAttribute('data-appearance', appearance);
-  }, [theme, appearance]);
 
   // Handle old invite links like /workspace/join?code=XYZ
   useEffect(() => {
@@ -89,10 +85,6 @@ export default function App() {
     };
   }, []);
 
-  const toggleAppearance = () => {
-    setAppearance((prev) => (prev === 'dark' ? 'light' : 'dark'));
-  };
-
   if (isAuthLoading) {
     return (
       <div className={styles.loadingScreen}>
@@ -107,6 +99,7 @@ export default function App() {
       <UndoProvider>
         <TaskProvider>
         <MobileLayout>
+          <NatureDecor />
           <div className={styles.container}>
           {/* ── Üst Bar ─────────────────────────────────────────────────────── */}
           <motion.div

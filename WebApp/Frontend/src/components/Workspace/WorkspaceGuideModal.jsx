@@ -30,7 +30,7 @@ const WorkspaceGuideModal = ({ isOpen, onClose, tone }) => {
             <button className={styles.closeBtn} onClick={onClose}>&times;</button>
           </div>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', color: 'var(--text-secondary)' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', color: 'var(--text2)' }}>
             <p><strong>1. Alan Kurma:</strong> {t('ws_how_to_create', { context: tone })}</p>
             <p><strong>2. Ekibi Davet Etme:</strong> {t('ws_how_to_invite', { context: tone })}</p>
             <p><strong>3. Görev Atama:</strong> {t('ws_how_to_assign', { context: tone })}</p>

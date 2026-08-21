@@ -10,8 +10,8 @@
   display: flex;
   flex-direction: column;
   padding: 4px 12px;
-  border-bottom: 1px solid var(--border-color);
-  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
   flex-shrink: 0;
   position: sticky;
   top: 0;
@@ -37,7 +37,7 @@
 .timeSlot {
   display: flex;
   align-items: flex-start;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border);
   position: relative;
 }
 
@@ -48,7 +48,7 @@
 .timeLabel {
   font-size: 11px;
   font-weight: 500;
-  color: var(--text-muted);
+  color: var(--text3);
   width: 44px;
   padding: 4px 8px 0 4px;
   flex-shrink: 0;
@@ -65,7 +65,7 @@
 
 /* Görev kartı (zamansız) */
 .taskCard {
-  background: var(--bg-card);
+  background: var(--surface);
   border-radius: 8px;
   padding: 2px 8px;
   display: flex;
@@ -103,13 +103,13 @@
 .taskTitle {
   font-size: 10px;
   font-weight: 500;
-  color: var(--text-primary);
+  color: var(--text);
   flex: 1;
 }
 
 .taskMeta {
   font-size: 9px;
-  color: var(--text-muted);
+  color: var(--text3);
 }
 
 .completed {

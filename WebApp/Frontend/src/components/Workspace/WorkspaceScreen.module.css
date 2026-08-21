@@ -11,13 +11,13 @@
 .title {
   font-size: 24px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text);
   margin-bottom: 8px;
 }
 
 .subtitle {
   font-size: 14px;
-  color: var(--text-secondary);
+  color: var(--text2);
 }
 
 .actionButtons {
@@ -42,7 +42,7 @@
 }
 
 .btnCreate {
-  background: var(--brand-primary);
+  background: var(--accent);
   color: white;
 }
 
@@ -53,8 +53,8 @@
 
 .btnJoin {
   background: var(--surface-2);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
+  color: var(--text);
+  border: 1px solid var(--border);
 }
 
 .btnJoin:hover {
@@ -68,7 +68,7 @@
 .sectionTitle {
   font-size: 18px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text);
   margin-bottom: 16px;
   display: flex;
   align-items: center;
@@ -85,13 +85,13 @@
   background: var(--surface-2);
   border-radius: 20px;
   padding: 20px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   transition: all 0.2s ease;
   cursor: pointer;
 }
 
 .card:hover {
-  border-color: var(--brand-primary);
+  border-color: var(--accent);
   transform: translateY(-2px);
 }
 
@@ -105,12 +105,12 @@
 .cardTitle {
   font-size: 16px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .cardDesc {
   font-size: 14px;
-  color: var(--text-secondary);
+  color: var(--text2);
   margin-bottom: 16px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -122,8 +122,8 @@
   font-size: 12px;
   padding: 4px 8px;
   border-radius: 12px;
-  background: var(--brand-primary-light);
-  color: var(--brand-primary);
+  background: var(--accent-light);
+  color: var(--accent);
   font-weight: 500;
 }
 
@@ -132,11 +132,11 @@
   padding: 32px 20px;
   background: var(--surface-2);
   border-radius: 20px;
-  border: 1px dashed var(--border-color);
+  border: 1px dashed var(--border);
 }
 
 .emptyState p {
-  color: var(--text-secondary);
+  color: var(--text2);
   font-size: 14px;
 }
 
@@ -158,8 +158,8 @@
 }
 
 .guestModal {
-  background-color: var(--bg-card);
-  border-radius: var(--border-radius-lg);
+  background-color: var(--surface);
+  border-radius: var(--radius);
   padding: 1.5rem;
   width: 100%;
   max-width: 320px;
@@ -170,12 +170,12 @@
 .guestModal h3 {
   margin-top: 0;
   margin-bottom: 0.75rem;
-  color: var(--text-primary);
+  color: var(--text);
   font-size: 1.25rem;
 }
 
 .guestModal p {
-  color: var(--text-secondary);
+  color: var(--text2);
   font-size: 0.95rem;
   line-height: 1.5;
   margin-bottom: 1.5rem;

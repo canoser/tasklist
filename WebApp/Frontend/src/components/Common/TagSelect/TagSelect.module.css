@@ -10,9 +10,9 @@
 .inputArea {
   min-height: 44px;
   padding: 6px 10px;
-  border-radius: var(--border-radius-md);
-  border: 1.5px solid var(--border-color);
-  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  border: 1.5px solid var(--border);
+  background: var(--surface);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -24,7 +24,7 @@
 }
 
 .inputArea:focus-within {
-  border-color: var(--accent-primary);
+  border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-light);
 }
 
@@ -79,13 +79,13 @@
   border: none;
   background: transparent;
   outline: none;
-  color: var(--text-primary);
+  color: var(--text);
   font-size: 13px;
   font-family: inherit;
 }
 
 .input::placeholder {
-  color: var(--text-muted);
+  color: var(--text3);
 }
 
 /* ── Yükleme Animasyonu ───────────────────────────────────────────────────── */
@@ -93,8 +93,8 @@
   display: inline-block;
   width: 14px;
   height: 14px;
-  border: 2px solid var(--border-color);
-  border-top-color: var(--accent-primary);
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
   margin-left: 4px;
@@ -111,9 +111,9 @@
   top: calc(100% + 6px);
   left: 0;
   right: 0;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-md);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
   overflow-y: auto;
   overflow-x: hidden;
@@ -129,7 +129,7 @@
   gap: 10px;
   padding: 10px 14px;
   font-size: 13px;
-  color: var(--text-primary);
+  color: var(--text);
   cursor: pointer;
   transition: background var(--transition-fast), color var(--transition-fast);
   user-select: none;
@@ -139,7 +139,7 @@
 .dropdownItem:hover,
 .dropdownItem.highlighted {
   background: var(--accent-light);
-  color: var(--accent-primary);
+  color: var(--accent);
 }
 
 .dropdownIcon {
@@ -154,7 +154,7 @@
 
 /* "X olarak ekle" seçeneği için üst kenarlık ve grid yayılımı */
 .createOption {
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--border);
   grid-column: 1 / -1; /* İki sütunu da kapla (boydan boya) */
   justify-content: center; /* Ortala */
 }

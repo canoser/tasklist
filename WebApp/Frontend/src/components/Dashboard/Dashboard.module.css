@@ -18,7 +18,7 @@
 .greetingSub {
   font-size: 12px;
   font-weight: 600;
-  color: var(--accent-primary);
+  color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-bottom: 4px;
@@ -27,12 +27,12 @@
 .greetingTitle {
   font-size: 22px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text);
   line-height: 1.2;
 }
 
 .greetingTitle span {
-  color: var(--accent-primary);
+  color: var(--accent);
 }
 
 /* Görev sayacı satırı */
@@ -48,17 +48,17 @@
   gap: 5px;
   padding: 5px 12px;
   border-radius: 20px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-card);
+  border: 1px solid var(--border);
+  background: var(--surface);
   font-size: 12px;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: var(--text2);
 }
 
 .statPill.active {
   background: var(--accent-light);
-  border-color: var(--accent-primary);
-  color: var(--accent-primary);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .statDot {

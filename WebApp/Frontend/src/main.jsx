@@ -1,9 +1,11 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
+import './styles/tokens.css'
 import App from './App.jsx'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import { GOOGLE_CLIENT_ID } from './config/googleAuth'
+import { ThemeProvider } from './context/ThemeContext'
 
 // PWA Service Worker Registration
 import { registerSW } from 'virtual:pwa-register'
@@ -19,7 +21,9 @@ seedDummyTasks(); // Geçici görevleri yükle
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <App />
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
     </GoogleOAuthProvider>
   </StrictMode>,
 )

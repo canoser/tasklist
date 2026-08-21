@@ -6,11 +6,11 @@
 }
 
 .trigger {
-  background: var(--bg-secondary);
-  border: 1.5px solid var(--border-color);
-  color: var(--text-secondary);
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  color: var(--text2);
   padding: 6px 12px;
-  border-radius: var(--border-radius-md);
+  border-radius: var(--radius);
   font-size: 13px;
   cursor: pointer;
   display: flex;
@@ -21,18 +21,18 @@
 }
 
 .trigger:hover {
-  background: var(--bg-card);
-  border-color: var(--accent-primary);
-  color: var(--text-primary);
+  background: var(--surface);
+  border-color: var(--accent);
+  color: var(--text);
 }
 
 .dropdown {
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-md);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
   z-index: 200;
@@ -44,7 +44,7 @@
 .dropdownItem {
   padding: 10px 14px;
   font-size: 13px;
-  color: var(--text-primary);
+  color: var(--text);
   cursor: pointer;
   transition: background var(--transition-fast), color var(--transition-fast);
   user-select: none;
@@ -54,6 +54,6 @@
 .dropdownItem:hover,
 .dropdownItem.selected {
   background: var(--accent-light);
-  color: var(--accent-primary);
+  color: var(--accent);
   font-weight: 500;
 }

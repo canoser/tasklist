@@ -6,7 +6,7 @@
 
 .description {
   font-size: 13px;
-  color: var(--text-secondary);
+  color: var(--text2);
   line-height: 1.4;
   margin: 0;
 }
@@ -20,19 +20,19 @@
   flex: 1;
   padding: 10px 12px;
   border-radius: 8px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-card);
-  color: var(--text-primary);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
   font-size: 13px;
   outline: none;
 }
 
 .inputField:focus {
-  border-color: var(--accent-primary);
+  border-color: var(--accent);
 }
 
 .importBtn {
-  background: var(--accent-primary);
+  background: var(--accent);
   color: white;
   border: none;
   border-radius: 8px;
@@ -51,7 +51,7 @@
   display: flex;
   align-items: center;
   text-align: center;
-  color: var(--text-muted);
+  color: var(--text3);
   font-size: 12px;
 }
 
@@ -59,7 +59,7 @@
 .divider::after {
   content: '';
   flex: 1;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border);
 }
 
 .divider:not(:empty)::before {
@@ -76,9 +76,9 @@
 }
 
 .fileBtn {
-  background: var(--bg-card);
-  border: 1px dashed var(--border-color);
-  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  color: var(--text);
   padding: 10px 24px;
   border-radius: 8px;
   font-weight: 600;
@@ -88,8 +88,8 @@
 }
 
 .fileBtn:hover {
-  border-color: var(--accent-primary);
-  color: var(--accent-primary);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .messageBox {
@@ -113,8 +113,8 @@
 
 .howToWrap {
   margin-top: 8px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -126,7 +126,7 @@
   padding: 12px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text);
   cursor: pointer;
   background: rgba(0,0,0,0.02);
 }
@@ -134,13 +134,13 @@
 .howToBody {
   padding: 12px;
   font-size: 12px;
-  color: var(--text-secondary);
-  border-top: 1px solid var(--border-color);
+  color: var(--text2);
+  border-top: 1px solid var(--border);
 }
 
 .howToBody h4 {
   margin: 0 0 4px 0;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .howToBody ol {

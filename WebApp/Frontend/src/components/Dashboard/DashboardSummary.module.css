@@ -17,7 +17,7 @@
 .sectionTitle {
   font-size: 12px;
   font-weight: 700;
-  color: var(--text-muted);
+  color: var(--text3);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -27,9 +27,9 @@
   width: 30px;
   height: 30px;
   border-radius: 8px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-card);
-  color: var(--text-muted);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -40,8 +40,8 @@
 
 .editBtn:hover {
   background: var(--accent-light);
-  color: var(--accent-primary);
-  border-color: var(--accent-primary);
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 /* ── Üst Grid: 2 Sütun ───────────────────────────────────────────────────────── */
@@ -54,9 +54,9 @@
 
 /* ── Genel Kart ──────────────────────────────────────────────────────────────── */
 .card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   padding: 14px 12px;
   position: relative;
   overflow: hidden;
@@ -64,7 +64,7 @@
 }
 
 .card:hover {
-  border-color: var(--accent-primary);
+  border-color: var(--accent);
   box-shadow: var(--shadow-sm);
 }
 
@@ -76,9 +76,9 @@
 }
 
 .circleCard {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   padding: 12px 10px;
   display: flex;
   align-items: center;
@@ -87,7 +87,7 @@
 }
 
 .circleCard:hover {
-  border-color: var(--accent-primary);
+  border-color: var(--accent);
 }
 
 .circleWrap {
@@ -104,7 +104,7 @@
 
 .circleTrack {
   fill: none;
-  stroke: var(--border-color);
+  stroke: var(--border);
   stroke-width: 5;
 }
 
@@ -127,7 +127,7 @@
 .circlePercent {
   font-size: 12px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text);
   line-height: 1;
 }
 
@@ -141,13 +141,13 @@
 .circleTitle {
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text);
   line-height: 1.2;
 }
 
 .circleSub {
   font-size: 10px;
-  color: var(--text-muted);
+  color: var(--text3);
 }
 
 /* ── Sağ Sütun: Net Skoru Kartı ──────────────────────────────────────────────── */
@@ -160,7 +160,7 @@
 .netCardTitle {
   font-size: 12px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text);
   margin-bottom: 2px;
 }
 
@@ -172,7 +172,7 @@
 
 .netSubject {
   font-size: 10px;
-  color: var(--text-muted);
+  color: var(--text3);
   width: 36px;
   flex-shrink: 0;
   white-space: nowrap;
@@ -183,7 +183,7 @@
 .netBar {
   flex: 1;
   height: 4px;
-  background: var(--bg-input);
+  background: var(--surface2);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -197,29 +197,29 @@
 .netValue {
   font-size: 11px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text);
   min-width: 28px;
   text-align: right;
 }
 
 .netDate {
   font-size: 10px;
-  color: var(--text-muted);
+  color: var(--text3);
   margin-top: 2px;
 }
 
 /* ── Alt Bölüm: Tam Genişlik Hedefler ───────────────────────────────────────── */
 .goalsSection {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   padding: 14px;
 }
 
 .goalsSectionTitle {
   font-size: 12px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text);
   margin-bottom: 12px;
 }
 
@@ -243,19 +243,19 @@
 
 .goalLabel {
   font-size: 12px;
-  color: var(--text-secondary);
+  color: var(--text2);
   font-weight: 500;
 }
 
 .goalPercent {
   font-size: 11px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .goalBar {
   height: 5px;
-  background: var(--bg-input);
+  background: var(--surface2);
   border-radius: 3px;
   overflow: hidden;
 }

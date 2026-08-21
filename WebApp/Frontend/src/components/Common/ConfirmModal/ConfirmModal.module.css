@@ -16,9 +16,9 @@
 
 /* ── Modal Kutusu ─────────────────────────────────────────────────────────── */
 .container {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
   padding: 28px 24px 22px;
   width: 100%;
@@ -48,14 +48,14 @@
 .title {
   font-size: 15px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text);
   line-height: 1.4;
   margin: 0;
 }
 
 .description {
   font-size: 13px;
-  color: var(--text-secondary);
+  color: var(--text2);
   line-height: 1.5;
   margin: 0;
 }
@@ -73,7 +73,7 @@
 .btnWarning {
   width: 100%;
   padding: 12px 16px;
-  border-radius: var(--border-radius-md);
+  border-radius: var(--radius);
   border: 1.5px solid hsla(38, 90%, 50%, 0.35);
   background: hsla(38, 90%, 50%, 0.1);
   color: hsl(38, 95%, 65%);
@@ -94,7 +94,7 @@
 .btnDanger {
   width: 100%;
   padding: 12px 16px;
-  border-radius: var(--border-radius-md);
+  border-radius: var(--radius);
   border: 1.5px solid hsla(0, 75%, 50%, 0.35);
   background: hsla(0, 75%, 50%, 0.1);
   color: hsl(0, 85%, 70%);
@@ -115,7 +115,7 @@
 .btnCancel {
   background: transparent;
   border: none;
-  color: var(--text-muted);
+  color: var(--text3);
   font-size: 12px;
   cursor: pointer;
   font-family: inherit;
@@ -124,5 +124,5 @@
 }
 
 .btnCancel:hover {
-  color: var(--text-secondary);
+  color: var(--text2);
 }

@@ -20,7 +20,7 @@
   max-width: 600px;
   height: auto;
   max-height: 85vh;
-  background: var(--bg-primary);
+  background: var(--bg);
   border-radius: 20px;
   display: flex;
   flex-direction: column;
@@ -33,8 +33,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 20px 24px;
-  border-bottom: 1px solid var(--border-color);
-  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
 }
 
 .headerLeft {
@@ -45,32 +45,32 @@
 .dateTitle {
   font-size: 18px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .taskCount {
   font-size: 13px;
-  color: var(--text-muted);
+  color: var(--text3);
   margin-top: 2px;
 }
 
 .closeBtn {
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
+  background: var(--bg);
+  border: 1px solid var(--border);
   width: 36px;
   height: 36px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-secondary);
+  color: var(--text2);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .closeBtn:hover {
-  background: var(--border-color);
-  color: var(--text-primary);
+  background: var(--border);
+  color: var(--text);
 }
 
 .modalBody {
@@ -93,10 +93,10 @@
   gap: 8px;
   font-size: 15px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text);
   margin-bottom: 12px;
   padding-bottom: 4px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border);
 }
 
 .roleIcon {
@@ -116,7 +116,7 @@
 .categoryTitle {
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text2);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -124,12 +124,12 @@
 }
 
 .folderIcon {
-  color: var(--accent-primary);
+  color: var(--accent);
 }
 
 /* Dikey Çizgi Konteyneri (Ağaç Dalları) */
 .treeBranch {
-  border-left: 2px solid var(--border-color);
+  border-left: 2px solid var(--border);
   margin-left: 7px; /* folder ikonunun ortasına hizalamak için */
   padding-left: 16px;
   display: flex;
@@ -140,8 +140,8 @@
 /* Tekil Görev Yaprağı */
 .taskLeaf {
   position: relative;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 12px 16px;
   display: flex;
@@ -152,7 +152,7 @@
 }
 
 .taskLeaf:hover {
-  border-color: var(--accent-primary);
+  border-color: var(--accent);
 }
 
 /* Yatay Bağlantı Çizgisi */
@@ -162,7 +162,7 @@
   left: -16px;
   top: 50%;
   width: 16px;
-  border-bottom: 2px solid var(--border-color);
+  border-bottom: 2px solid var(--border);
 }
 
 /* Görev Bilgileri */
@@ -175,12 +175,12 @@
 .taskTitle {
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .taskMeta {
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text3);
 }
 
 .taskActions {
@@ -190,22 +190,22 @@
 }
 
 .actionBtn {
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
+  background: var(--bg);
+  border: 1px solid var(--border);
   width: 32px;
   height: 32px;
   border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-secondary);
+  color: var(--text2);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .actionBtn:hover {
-  background: var(--border-color);
-  color: var(--text-primary);
+  background: var(--border);
+  color: var(--text);
 }
 
 .statusBadge {
@@ -235,5 +235,5 @@
 .emptyState {
   text-align: center;
   padding: 40px;
-  color: var(--text-muted);
+  color: var(--text3);
 }

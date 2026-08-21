@@ -114,18 +114,18 @@ const WorkspaceManagement = ({ tone }) => {
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', gap: '10px', flexWrap: 'wrap' }}>
         <div style={{ position: 'relative', flex: 1, minWidth: '250px' }}>
-          <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+          <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text3)' }} />
           <input 
             type="text" 
             placeholder="Alan adı veya Kurucu Email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ width: '100%', padding: '10px 10px 10px 38px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+            style={{ width: '100%', padding: '10px 10px 10px 38px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
           />
         </div>
         <button 
           onClick={fetchWorkspaces}
-          style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 16px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 16px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', cursor: 'pointer' }}
         >
           <RefreshCw size={16} className={loading ? styles.spinner : ''} />
           Yenile
@@ -138,20 +138,20 @@ const WorkspaceManagement = ({ tone }) => {
           <p>Yükleniyor...</p>
         </div>
       ) : (
-        <div style={{ overflowX: 'auto', background: 'var(--bg-primary)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+        <div style={{ overflowX: 'auto', background: 'var(--bg)', borderRadius: '12px', border: '1px solid var(--border)' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '800px' }}>
             <thead>
-              <tr style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)' }}>
-                <th style={{ padding: '12px 16px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: '500' }}>Ad / Açıklama</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: '500' }}>Kurucu</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: '500' }}>Davet Kodu</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: '500' }}>Durum</th>
-                <th style={{ padding: '12px 16px', textAlign: 'right', color: 'var(--text-muted)', fontWeight: '500' }}>İşlemler</th>
+              <tr style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
+                <th style={{ padding: '12px 16px', textAlign: 'left', color: 'var(--text3)', fontWeight: '500' }}>Ad / Açıklama</th>
+                <th style={{ padding: '12px 16px', textAlign: 'left', color: 'var(--text3)', fontWeight: '500' }}>Kurucu</th>
+                <th style={{ padding: '12px 16px', textAlign: 'left', color: 'var(--text3)', fontWeight: '500' }}>Davet Kodu</th>
+                <th style={{ padding: '12px 16px', textAlign: 'left', color: 'var(--text3)', fontWeight: '500' }}>Durum</th>
+                <th style={{ padding: '12px 16px', textAlign: 'right', color: 'var(--text3)', fontWeight: '500' }}>İşlemler</th>
               </tr>
             </thead>
             <tbody>
               {filteredWorkspaces.map(ws => (
-                <tr key={ws.id} style={{ borderBottom: '1px solid var(--border-color)', opacity: ws.isActive ? 1 : 0.6 }}>
+                <tr key={ws.id} style={{ borderBottom: '1px solid var(--border)', opacity: ws.isActive ? 1 : 0.6 }}>
                   
                   {/* ALAN BİLGİLERİ (DÜZENLEME MODU) */}
                   <td style={{ padding: '12px 16px' }}>
@@ -161,20 +161,20 @@ const WorkspaceManagement = ({ tone }) => {
                           type="text" 
                           value={editName} 
                           onChange={(e) => setEditName(e.target.value)} 
-                          style={{ padding: '6px', borderRadius: '4px', border: '1px solid var(--border-color)' }}
+                          style={{ padding: '6px', borderRadius: '4px', border: '1px solid var(--border)' }}
                         />
                         <input 
                           type="text" 
                           value={editDesc} 
                           onChange={(e) => setEditDesc(e.target.value)} 
                           placeholder="Açıklama (opsiyonel)"
-                          style={{ padding: '6px', borderRadius: '4px', border: '1px solid var(--border-color)' }}
+                          style={{ padding: '6px', borderRadius: '4px', border: '1px solid var(--border)' }}
                         />
                       </div>
                     ) : (
                       <div>
                         <div style={{ fontWeight: 'bold' }}>{ws.name}</div>
-                        <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{ws.description || '-'}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--text2)' }}>{ws.description || '-'}</div>
                       </div>
                     )}
                   </td>
@@ -182,12 +182,12 @@ const WorkspaceManagement = ({ tone }) => {
                   {/* KURUCU */}
                   <td style={{ padding: '12px 16px' }}>
                     <div style={{ fontWeight: '500' }}>{ws.ownerName || 'Bilinmiyor'}</div>
-                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{ws.ownerEmail || '-'}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text2)' }}>{ws.ownerEmail || '-'}</div>
                   </td>
 
                   {/* DAVET KODU */}
                   <td style={{ padding: '12px 16px' }}>
-                    <code style={{ background: 'var(--bg-secondary)', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>{ws.inviteCode}</code>
+                    <code style={{ background: 'var(--surface)', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>{ws.inviteCode}</code>
                   </td>
 
                   {/* DURUM */}
@@ -208,7 +208,7 @@ const WorkspaceManagement = ({ tone }) => {
                     {editingId === ws.id ? (
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                         <button onClick={() => handleEditSave(ws.id)} style={{ padding: '6px 12px', background: '#10b981', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Kaydet</button>
-                        <button onClick={handleEditCancel} style={{ padding: '6px 12px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: 'pointer' }}>İptal</button>
+                        <button onClick={handleEditCancel} style={{ padding: '6px 12px', background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer' }}>İptal</button>
                       </div>
                     ) : (
                       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
@@ -244,7 +244,7 @@ const WorkspaceManagement = ({ tone }) => {
           </table>
           
           {filteredWorkspaces.length === 0 && (
-            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+            <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text3)' }}>
               Eşleşen çalışma alanı bulunamadı.
             </div>
           )}

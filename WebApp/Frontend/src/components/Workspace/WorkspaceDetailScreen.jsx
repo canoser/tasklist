@@ -127,13 +127,13 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
             <h1>{workspace.name}</h1>
             <button 
               onClick={() => setIsGuideOpen(true)}
-              style={{ background: 'transparent', border: 'none', color: 'var(--accent-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+              style={{ background: 'transparent', border: 'none', color: 'var(--accent)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
               title="Kullanım Kılavuzu"
             >
               <HelpCircle size={20} />
             </button>
             {isOwner && (
-              <button onClick={() => setShowEditModal(true)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }} title="Alanı Düzenle">
+              <button onClick={() => setShowEditModal(true)} style={{ background: 'none', border: 'none', color: 'var(--text2)', cursor: 'pointer' }} title="Alanı Düzenle">
                 ✏️
               </button>
             )}
@@ -169,7 +169,7 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
             </div>
             
             <div style={{ marginTop: '1rem', padding: '0.75rem', background: 'var(--surface-sunken)', borderRadius: '8px' }}>
-              <p style={{ fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Davet Linki:</p>
+              <p style={{ fontSize: '0.85rem', marginBottom: '0.5rem', color: 'var(--text2)' }}>Davet Linki:</p>
               <a href={inviteLink} style={{ fontSize: '0.9rem', color: 'var(--primary)', wordBreak: 'break-all', display: 'block', marginBottom: '0.75rem' }}>
                 {inviteLink}
               </a>

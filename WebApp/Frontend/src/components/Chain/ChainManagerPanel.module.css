@@ -1,8 +1,8 @@
 .panel {
   padding: 16px;
-  background: var(--bg-card);
-  border-radius: var(--border-radius-md);
-  border: 1px solid var(--border-color);
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
 }
 
 .panelHeader {
@@ -13,7 +13,7 @@
 }
 
 .primaryBtn {
-  background: var(--accent-primary);
+  background: var(--accent);
   color: white;
   border: none;
   border-radius: 6px;
@@ -27,9 +27,9 @@
 }
 
 .secondaryBtn {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
   border-radius: 6px;
   padding: 6px 12px;
   font-size: 13px;
@@ -37,12 +37,12 @@
 }
 
 .secondaryBtn:hover {
-  background: var(--bg-card);
+  background: var(--surface);
 }
 
 .chainCard {
   margin-bottom: 12px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 10px;
   overflow: hidden;
 }
@@ -52,28 +52,28 @@
   align-items: center;
   padding: 12px 16px;
   cursor: pointer;
-  background: var(--bg-card);
+  background: var(--surface);
   transition: background 0.2s;
 }
 
 .chainCardHeader:hover {
-  background: var(--bg-primary);
+  background: var(--bg);
 }
 
 .chainTitle {
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text);
   font-size: 14px;
 }
 
 .chainMeta {
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text3);
   margin-top: 2px;
 }
 
 .chevron {
-  color: var(--text-muted);
+  color: var(--text3);
   transition: transform 0.2s;
 }
 
@@ -83,8 +83,8 @@
 
 .taskList {
   padding: 8px 16px;
-  background: var(--bg-primary);
-  border-top: 1px solid var(--border-color);
+  background: var(--bg);
+  border-top: 1px solid var(--border);
 }
 
 .taskRow {
@@ -92,9 +92,9 @@
   gap: 12px;
   align-items: center;
   padding: 6px 0;
-  border-bottom: 1px solid var(--border-color-light, rgba(0,0,0,0.05));
+  border-bottom: 1px solid var(--border-light, rgba(0,0,0,0.05));
   font-size: 13px;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .taskRow:last-child {
@@ -107,17 +107,17 @@
 }
 
 .taskActive {
-  color: var(--accent-primary);
+  color: var(--accent);
   font-weight: 600;
 }
 
 .createForm {
   padding: 16px;
-  background: var(--bg-card);
+  background: var(--surface);
   border-radius: 10px;
   margin-top: 12px;
   margin-bottom: 16px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
 }
 
 .stepRow {
@@ -130,21 +130,21 @@
 .stepInput {
   flex: 1;
   padding: 6px 10px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 6px;
   font-size: 13px;
-  background: var(--bg-primary);
-  color: var(--text-primary);
+  background: var(--bg);
+  color: var(--text);
 }
 
 .stepDateInput {
   width: 140px;
   padding: 6px 8px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 6px;
   font-size: 13px;
-  background: var(--bg-primary);
-  color: var(--text-primary);
+  background: var(--bg);
+  color: var(--text);
 }
 
 .moveBtn {
@@ -152,7 +152,7 @@
   border: none;
   cursor: pointer;
   padding: 4px;
-  color: var(--text-muted);
+  color: var(--text3);
 }
 
 .moveBtn:disabled {

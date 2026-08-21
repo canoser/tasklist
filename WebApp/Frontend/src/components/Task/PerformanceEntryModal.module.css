@@ -23,8 +23,8 @@
 .card {
   width: 100%;
   max-width: 420px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 24px;
   padding: 24px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
@@ -43,12 +43,12 @@
 .headerTitle {
   font-size: 18px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .headerSub {
   font-size: 13px;
-  color: var(--text-muted);
+  color: var(--text3);
   margin-top: 2px;
 }
 
@@ -56,9 +56,9 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  border: 1px solid var(--border-color);
-  background: var(--bg-card);
-  color: var(--text-muted);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -68,15 +68,15 @@
 }
 
 .closeBtn:hover {
-  background: var(--bg-input);
-  color: var(--text-primary);
+  background: var(--surface2);
+  color: var(--text);
 }
 
 /* Net display box */
 .scoreDisplay {
   background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%);
-  border: 1px solid var(--accent-primary);
-  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -88,7 +88,7 @@
 .scoreLabel {
   font-size: 12px;
   font-weight: 600;
-  color: var(--accent-primary);
+  color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -96,7 +96,7 @@
 .scoreValue {
   font-size: 36px;
   font-weight: 800;
-  color: var(--text-primary);
+  color: var(--text);
   line-height: 1;
 }
 
@@ -128,16 +128,16 @@
   font-size: 18px;
   font-weight: 700;
   text-align: center;
-  background: var(--bg-card);
-  border: 1.5px solid var(--border-color);
-  border-radius: var(--border-radius-md);
-  color: var(--text-primary);
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
   outline: none;
   transition: border-color var(--transition-fast);
 }
 
 .numberInput:focus {
-  border-color: var(--accent-primary);
+  border-color: var(--accent);
 }
 
 /* Remove arrows from number input */
@@ -154,7 +154,7 @@
 .saveBtn {
   width: 100%;
   padding: 14px;
-  border-radius: var(--border-radius-md);
+  border-radius: var(--radius);
   border: none;
   background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
   color: #ffffff;

@@ -11,9 +11,9 @@
 
 /* ── Kullanıcı Kartı ───────────────────────────────────────────────────────── */
 .userCard {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   padding: 20px;
   display: flex;
   align-items: center;
@@ -25,7 +25,7 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent-primary) 0%, #a855f7 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, #a855f7 100%);
   color: #ffffff;
   font-size: 22px;
   font-weight: 700;
@@ -47,13 +47,13 @@
 .userName {
   font-size: 18px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text);
   word-break: break-word;
 }
 
 .userEmail {
   font-size: 13px;
-  color: var(--text-muted);
+  color: var(--text3);
   word-break: break-all;
 }
 
@@ -65,15 +65,15 @@
   font-size: 11px;
   font-weight: 600;
   background: var(--accent-light);
-  color: var(--accent-primary);
+  color: var(--accent);
   align-self: flex-start;
 }
 
 /* ── Bölüm Kartları ────────────────────────────────────────────────────────── */
 .sectionCard {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   display: flex;
   flex-direction: column;
 }
@@ -96,7 +96,7 @@
 .sectionTitle {
   font-size: 14px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -112,7 +112,7 @@
   padding: 3px 8px;
   border-radius: 10px;
   background: var(--accent-light);
-  color: var(--accent-primary);
+  color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -126,9 +126,9 @@
 }
 
 .themeOption {
-  background: var(--bg-secondary);
-  border: 1.5px solid var(--border-color);
-  border-radius: var(--border-radius-md);
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
   padding: 12px 10px;
   display: flex;
   flex-direction: column;
@@ -140,7 +140,7 @@
 
 .themeOption:hover,
 .themeOption.active {
-  border-color: var(--accent-primary);
+  border-color: var(--accent);
   background: var(--accent-light);
 }
 
@@ -154,12 +154,12 @@
 .themeName {
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .themeDesc {
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text3);
   line-height: 1.4;
 }
 
@@ -169,7 +169,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 10px 0;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border);
 }
 
 .settingItem:last-child {
@@ -179,12 +179,12 @@
 .settingLabel {
   font-size: 13px;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: var(--text2);
 }
 
 .settingValue {
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text3);
 }
 
 /* ── Avatar & Image ─────────────────────────────────────────────────────── */
@@ -211,12 +211,12 @@
   position: absolute;
   bottom: -2px;
   right: -2px;
-  background: var(--accent-primary);
+  background: var(--accent);
   color: white;
   font-size: 10px;
   padding: 2px 4px;
   border-radius: 50%;
-  border: 2px solid var(--bg-card);
+  border: 2px solid var(--surface);
 }
 
 /* ── Name Edit Button ────────────────────────────────────────────────────── */
@@ -258,7 +258,7 @@
 .cloudBanner {
   background: linear-gradient(135deg, rgba(79, 70, 229, 0.12) 0%, rgba(168, 85, 247, 0.12) 100%);
   border: 1px solid rgba(99, 102, 241, 0.25);
-  border-radius: var(--border-radius-lg);
+  border-radius: var(--radius);
   padding: 16px 20px;
   display: flex;
   flex-direction: column;
@@ -276,17 +276,17 @@
 .cloudBannerText {
   font-size: 13px;
   line-height: 1.5;
-  color: var(--text-primary);
+  color: var(--text);
   font-weight: 500;
 }
 
 .cloudBannerBtn {
   align-self: flex-start;
   padding: 10px 18px;
-  background: linear-gradient(135deg, var(--accent-primary) 0%, #818cf8 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, #818cf8 100%);
   color: #ffffff;
   border: none;
-  border-radius: var(--border-radius-md, 10px);
+  border-radius: var(--radius, 10px);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -312,7 +312,7 @@
   height: 42px;
   border-radius: 50%;
   background: var(--surface-2);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   font-size: 20px;
   display: flex;
   align-items: center;
@@ -346,7 +346,7 @@
 
 .accountBtn {
   background: rgba(99, 102, 241, 0.15);
-  color: var(--accent-primary);
+  color: var(--accent);
   border: 1px solid rgba(99, 102, 241, 0.3);
 }
 

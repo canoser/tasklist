@@ -60,7 +60,7 @@ const UserSearch = ({ tone }) => {
       <div className={styles.sectionDivider}>
         <h2>Kullanıcı Arama ve Limit Yönetimi</h2>
       </div>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: '15px' }}>
+      <p style={{ color: 'var(--text2)', marginBottom: '15px' }}>
         Sistemdeki herhangi bir kullanıcıyı e-posta adresiyle bulun, yetkilerini (Premium) ve özel kotalarını anında değiştirin.
       </p>
 
@@ -73,7 +73,7 @@ const UserSearch = ({ tone }) => {
           className={styles.inputField}
           style={{ flex: 1 }}
         />
-        <button type="submit" className={styles.saveBtn} style={{ background: 'var(--accent-primary)', color: 'white' }}>
+        <button type="submit" className={styles.saveBtn} style={{ background: 'var(--accent)', color: 'white' }}>
           <Search size={18} /> Ara
         </button>
       </form>
@@ -84,12 +84,12 @@ const UserSearch = ({ tone }) => {
             <div key={user.id} className={styles.settingCard}>
               <div className={styles.settingInfo}>
                 <h3 style={{ marginBottom: '5px' }}>{user.name}</h3>
-                <p style={{ color: 'var(--text-secondary)' }}>{user.email}</p>
+                <p style={{ color: 'var(--text2)' }}>{user.email}</p>
                 <div style={{ marginTop: '10px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                  <span style={{ padding: '4px 8px', background: 'var(--bg-secondary)', borderRadius: '4px', fontSize: '12px' }}>
+                  <span style={{ padding: '4px 8px', background: 'var(--surface)', borderRadius: '4px', fontSize: '12px' }}>
                     Plan: <strong>{user.subscriptionPlan}</strong>
                   </span>
-                  <span style={{ padding: '4px 8px', background: 'var(--bg-secondary)', borderRadius: '4px', fontSize: '12px' }}>
+                  <span style={{ padding: '4px 8px', background: 'var(--surface)', borderRadius: '4px', fontSize: '12px' }}>
                     Alan Limiti: <strong>{user.customWorkspaceLimit ?? 'Varsayılan'}</strong>
                   </span>
                 </div>
@@ -98,7 +98,7 @@ const UserSearch = ({ tone }) => {
                 <button 
                   onClick={() => openUserEdit(user)}
                   className={styles.saveBtn}
-                  style={{ background: 'var(--accent-primary)', color: 'white' }}
+                  style={{ background: 'var(--accent)', color: 'white' }}
                 >
                   Düzenle
                 </button>
@@ -161,7 +161,7 @@ const UserSearch = ({ tone }) => {
               <button 
                 onClick={() => setSelectedUser(null)}
                 className={styles.saveBtn}
-                style={{ background: 'transparent', color: 'var(--text-secondary)' }}
+                style={{ background: 'transparent', color: 'var(--text2)' }}
               >
                 İptal
               </button>

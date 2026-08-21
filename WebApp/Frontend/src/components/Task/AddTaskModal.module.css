@@ -18,7 +18,7 @@
 .modalContent {
   width: 100%;
   max-width: 400px;
-  background: var(--bg-primary);
+  background: var(--bg);
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 10px 40px rgba(0,0,0,0.3);
@@ -28,8 +28,8 @@
 
 .header {
   padding: 16px 20px;
-  border-bottom: 1px solid var(--border-color);
-  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -38,13 +38,13 @@
 .title {
   font-size: 16px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .closeBtn {
   background: transparent;
   border: none;
-  color: var(--text-secondary);
+  color: var(--text2);
   cursor: pointer;
   padding: 4px;
 }
@@ -65,21 +65,21 @@
 .label {
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text2);
 }
 
 .input, .select {
   padding: 10px 12px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 8px;
-  background: var(--bg-card);
-  color: var(--text-primary);
+  background: var(--surface);
+  color: var(--text);
   font-size: 14px;
   outline: none;
 }
 
 .input:focus, .select:focus {
-  border-color: var(--accent-primary);
+  border-color: var(--accent);
 }
 
 .checkboxGroup {
@@ -92,13 +92,13 @@
 .checkboxGroup input {
   width: 16px;
   height: 16px;
-  accent-color: var(--accent-primary);
+  accent-color: var(--accent);
 }
 
 .submitBtn {
   margin-top: 8px;
   padding: 12px;
-  background: var(--accent-primary);
+  background: var(--accent);
   color: white;
   border: none;
   border-radius: 8px;

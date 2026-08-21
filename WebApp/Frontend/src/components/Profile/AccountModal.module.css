@@ -15,14 +15,14 @@
 .modalTitle {
   font-size: 20px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text);
   margin: 0;
 }
 
 .closeBtn {
   background: none;
   border: none;
-  color: var(--text-secondary);
+  color: var(--text2);
   cursor: pointer;
   padding: 4px;
   border-radius: 50%;
@@ -34,13 +34,13 @@
 
 .closeBtn:hover {
   background: var(--bg-hover);
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .section {
   margin-bottom: 24px;
   padding-bottom: 24px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border);
 }
 
 .section:last-child {
@@ -52,7 +52,7 @@
 .sectionTitle {
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text2);
   margin-bottom: 16px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -74,7 +74,7 @@
 .settingLabel {
   font-size: 15px;
   font-weight: 500;
-  color: var(--text-primary);
+  color: var(--text);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -82,7 +82,7 @@
 
 .settingDesc {
   font-size: 13px;
-  color: var(--text-secondary);
+  color: var(--text2);
 }
 
 /* Premium Badge */
@@ -121,16 +121,16 @@
 .upgradeTitle {
   font-size: 15px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .upgradeDesc {
   font-size: 13px;
-  color: var(--text-secondary);
+  color: var(--text2);
 }
 
 .upgradeBtn {
-  background: var(--accent-primary);
+  background: var(--accent);
   color: white;
   border: none;
   padding: 8px 16px;
@@ -157,15 +157,15 @@
 
 .storageBarFill {
   height: 100%;
-  background: var(--accent-primary);
+  background: var(--accent);
   border-radius: 4px;
 }
 
 /* Normal Butonlar */
 .actionBtn {
   background: var(--bg-hover);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
+  color: var(--text);
+  border: 1px solid var(--border);
   padding: 8px 16px;
   border-radius: 8px;
   font-size: 14px;
@@ -178,8 +178,8 @@
 }
 
 .actionBtn:hover {
-  background: var(--bg-card);
-  border-color: var(--text-secondary);
+  background: var(--surface);
+  border-color: var(--text2);
 }
 
 /* Danger Zone */
@@ -199,7 +199,7 @@
 
 .dangerDesc {
   font-size: 13px;
-  color: var(--text-secondary);
+  color: var(--text2);
   margin-bottom: 16px;
 }
 
@@ -218,7 +218,7 @@
 
 .dangerCheckboxLabel {
   font-size: 13px;
-  color: var(--text-primary);
+  color: var(--text);
   cursor: pointer;
 }
 

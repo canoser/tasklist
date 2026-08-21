@@ -12,14 +12,14 @@
 }
 
 .levelArrow {
-  color: var(--text-muted);
+  color: var(--text3);
   font-size: 14px;
 }
 
 .select {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
   border-radius: 6px;
   padding: 6px 10px;
   outline: none;
@@ -28,24 +28,24 @@
 }
 
 .select:focus {
-  border-color: var(--accent-primary);
+  border-color: var(--accent);
 }
 
 .clearBtn {
   background: transparent;
   border: none;
-  color: var(--text-muted);
+  color: var(--text3);
   font-size: 12px;
   cursor: pointer;
   padding: 4px;
 }
 
 .clearBtn:hover {
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .loadingDot {
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text3);
   font-style: italic;
 }

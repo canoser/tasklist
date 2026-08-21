@@ -18,7 +18,7 @@
 .modalContent {
   width: 100%;
   max-width: 400px;
-  background: var(--bg-primary);
+  background: var(--bg);
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 10px 40px rgba(0,0,0,0.2);
@@ -26,8 +26,8 @@
 
 .header {
   padding: 16px 20px;
-  border-bottom: 1px solid var(--border-color);
-  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -36,13 +36,13 @@
 .title {
   font-size: 16px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .closeBtn {
   background: transparent;
   border: none;
-  color: var(--text-secondary);
+  color: var(--text2);
   cursor: pointer;
   padding: 4px;
 }
@@ -62,11 +62,11 @@
   width: 100%;
   padding: 14px;
   border-radius: 12px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-card);
+  border: 1px solid var(--border);
+  background: var(--surface);
   font-size: 15px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text);
   cursor: pointer;
   transition: all 0.2s;
   display: flex;
@@ -76,14 +76,14 @@
 }
 
 .actionBtn:hover {
-  background: var(--bg-primary);
-  border-color: var(--accent-primary);
+  background: var(--bg);
+  border-color: var(--accent);
 }
 
 .btnPrimary {
-  background: var(--accent-primary);
+  background: var(--accent);
   color: white;
-  border-color: var(--accent-primary);
+  border-color: var(--accent);
 }
 
 .btnPrimary:hover {
@@ -106,7 +106,7 @@
 .label {
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text2);
 }
 
 .inputRow {
@@ -118,31 +118,31 @@
 .numberInput {
   flex: 1;
   padding: 10px 12px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 8px;
-  background: var(--bg-card);
-  color: var(--text-primary);
+  background: var(--surface);
+  color: var(--text);
   font-size: 15px;
   outline: none;
 }
 
 .numberInput:focus {
-  border-color: var(--accent-primary);
+  border-color: var(--accent);
 }
 
 .totalText {
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-muted);
+  color: var(--text3);
 }
 
 .dateSelect {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 8px;
-  background: var(--bg-card);
-  color: var(--text-primary);
+  background: var(--surface);
+  color: var(--text);
   font-size: 14px;
   outline: none;
 }
@@ -156,10 +156,10 @@
 .cancelBtn {
   flex: 1;
   padding: 12px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   background: transparent;
   border-radius: 8px;
-  color: var(--text-secondary);
+  color: var(--text2);
   font-weight: 600;
   cursor: pointer;
 }
@@ -167,7 +167,7 @@
 .submitBtn {
   flex: 1;
   padding: 12px;
-  background: var(--accent-primary);
+  background: var(--accent);
   border: none;
   border-radius: 8px;
   color: white;

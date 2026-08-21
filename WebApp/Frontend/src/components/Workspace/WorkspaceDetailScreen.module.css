@@ -21,12 +21,12 @@
 .titleArea h1 {
   margin: 0 0 8px 0;
   font-size: 1.8rem;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .titleArea p {
   margin: 0;
-  color: var(--text-secondary);
+  color: var(--text2);
   font-size: 1rem;
 }
 
@@ -40,7 +40,7 @@
   padding: 8px 16px;
   border-radius: 8px;
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--text2);
   border: 1px solid var(--border);
   cursor: pointer;
   font-weight: 500;
@@ -57,7 +57,7 @@
 }
 
 .btnDanger {
-  background: var(--danger, #ff4d4f);
+  background: var(--red, #ff4d4f);
 }
 
 .grid {
@@ -82,7 +82,7 @@
 .card h3 {
   margin: 0 0 16px 0;
   font-size: 1.2rem;
-  color: var(--text-primary);
+  color: var(--text);
   border-bottom: 1px solid var(--border);
   padding-bottom: 8px;
 }
@@ -126,18 +126,18 @@
 
 .memberName {
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .memberRole {
   font-size: 0.85rem;
-  color: var(--text-secondary);
+  color: var(--text2);
 }
 
 .emptyState {
   padding: 32px;
   text-align: center;
-  color: var(--text-secondary);
+  color: var(--text2);
   background: var(--surface);
   border-radius: 12px;
   border: 1px dashed var(--border);

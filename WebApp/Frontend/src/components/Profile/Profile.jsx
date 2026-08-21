@@ -8,11 +8,12 @@ import storage from '../../utils/storage';
 import { logoutUser } from '../../services/authService';
 import AccountModal from './AccountModal';
 import DropdownSelect from '../Common/DropdownSelect/DropdownSelect';
+import { useTheme } from '../../context/ThemeContext';
 
 const ChevronIcon = ({ isOpen }) => (
   <svg 
     width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease', color: 'var(--text-secondary)' }}
+    style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s ease', color: 'var(--text2)' }}
   >
     <polyline points="6 9 12 15 18 9"></polyline>
   </svg>
@@ -21,6 +22,7 @@ const ChevronIcon = ({ isOpen }) => (
 const PRESET_AVATARS = ['🎓', '🦊', '🚀', '⚡', '🌟', '🎯', '🦁', '💡'];
 
 const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTheme, tone, onToneChange, openAuth, navigateToAdmin }) => {
+  const { fontFamily, setFontFamily, fontSize, setFontSize } = useTheme();
   const { t } = useTranslation('profile');
   const [openSection, setOpenSection] = useState(null); // Tek seferde sadece 1 sekme açık kalır
   const [customAvatar, setCustomAvatar] = useState(storage.getString('user_avatar') || '');
@@ -188,7 +190,7 @@ const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTh
                 </p>
 
                 {/* Görünüm (Aydınlık/Karanlık) */}
-                <h4 style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '12px' }}>{t('appearance_mode', { context: tone })}</h4>
+                <h4 style={{ fontSize: '13px', color: 'var(--text2)', marginBottom: '12px' }}>{t('appearance_mode', { context: tone })}</h4>
                 <div className={styles.themeGrid} style={{ marginBottom: '24px' }}>
                   <div
                     className={`${styles.themeOption} ${appearance === 'dark' ? styles.active : ''}`}
@@ -214,7 +216,7 @@ const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTh
                 </div>
 
                 {/* Stil (Temalar) */}
-                <h4 style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '12px' }}>{t('theme_style', { context: tone })}</h4>
+                <h4 style={{ fontSize: '13px', color: 'var(--text2)', marginBottom: '12px' }}>{t('theme_style', { context: tone })}</h4>
                 <div className={styles.themeGrid}>
                   <div
                     className={`${styles.themeOption} ${theme === 'classic' ? styles.active : ''}`}
@@ -239,6 +241,87 @@ const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTh
                     <div className={styles.themePreviewCircle} style={{ background: '#f43f5e' }} />
                     <span className={styles.themeName}>{t('theme_lovely', { context: tone })}</span>
                   </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* ── YAZI TİPİ BÖLÜMÜ ─────────────────── */}
+      <div className={styles.sectionCard}>
+        <div 
+          className={styles.sectionHeader} 
+          onClick={() => toggleSection('typography')}
+          style={{ cursor: 'pointer' }}
+        >
+          <h3 className={styles.sectionTitle}>
+            <span className={styles.sectionIcon}>✏️</span> {t('section_typography', { defaultValue: 'Yazı Tipi & Boyutu' })}
+          </h3>
+          <ChevronIcon isOpen={openSection === 'typography'} />
+        </div>
+
+        <AnimatePresence>
+          {openSection === 'typography' && (
+            <motion.div
+              initial={{ height: 0, opacity: 0, overflow: 'hidden' }}
+              animate={{ height: 'auto', opacity: 1, transitionEnd: { overflow: 'visible' } }}
+              exit={{ height: 0, opacity: 0, overflow: 'hidden' }}
+            >
+              <div className={styles.sectionBody}>
+                {/* Yazı Karakteri */}
+                <h4 style={{ fontSize: '13px', color: 'var(--text2)', marginBottom: '12px' }}>{t('font_family', { defaultValue: 'Yazı Karakteri' })}</h4>
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
+                  {['inter', 'nunito', 'georgia'].map((f) => (
+                    <div
+                      key={f}
+                      onClick={() => setFontFamily(f)}
+                      style={{
+                        flex: 1,
+                        textAlign: 'center',
+                        padding: '10px 0',
+                        borderRadius: 'var(--radius-sm)',
+                        border: `1px solid ${fontFamily === f ? 'var(--accent)' : 'var(--border)'}`,
+                        background: fontFamily === f ? 'var(--accent-t)' : 'transparent',
+                        cursor: 'pointer',
+                        fontFamily: f === 'inter' ? 'Inter, sans-serif' : f === 'nunito' ? 'Nunito, sans-serif' : 'Georgia, serif',
+                        color: fontFamily === f ? 'var(--accent)' : 'var(--text)'
+                      }}
+                    >
+                      {f.charAt(0).toUpperCase() + f.slice(1)}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Metin Boyutu */}
+                <h4 style={{ fontSize: '13px', color: 'var(--text2)', marginBottom: '12px' }}>{t('font_size', { defaultValue: 'Metin Boyutu' })}</h4>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--text)' }}>A</span>
+                  <input 
+                    type="range" 
+                    min="1" 
+                    max="3" 
+                    step="1"
+                    value={fontSize === 'sm' ? 1 : fontSize === 'lg' ? 3 : 2}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setFontSize(val === '1' ? 'sm' : val === '3' ? 'lg' : 'md');
+                    }}
+                    style={{ flex: 1, accentColor: 'var(--accent)' }}
+                  />
+                  <span style={{ fontSize: '18px', color: 'var(--text)' }}>A</span>
+                </div>
+                
+                {/* Önizleme Kutusu */}
+                <div style={{ 
+                  padding: '16px', 
+                  background: 'var(--surface2)', 
+                  borderRadius: 'var(--radius)', 
+                  border: '1px dashed var(--border)' 
+                }}>
+                  <p style={{ margin: 0, color: 'var(--text)' }}>
+                    {t('typography_preview', { defaultValue: 'Örnek metin — Bugünkü görevlerin hazır! 📚' })}
+                  </p>
                 </div>
               </div>
             </motion.div>
@@ -338,7 +421,7 @@ const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTh
                     onClick={() => setShowRoleInfo(!showRoleInfo)}
                     style={{ 
                       fontSize: '12px', 
-                      color: 'var(--accent-primary, #3b82f6)', 
+                      color: 'var(--accent, #3b82f6)', 
                       cursor: 'pointer', 
                       fontWeight: '600',
                       whiteSpace: 'nowrap',
@@ -359,12 +442,12 @@ const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTh
                     >
                       <div style={{ 
                         padding: '12px', 
-                        background: 'var(--bg-primary, #f9fafb)', 
-                        border: '1px solid var(--border-color, #e5e7eb)',
-                        borderLeft: '4px solid var(--accent-primary, #3b82f6)',
+                        background: 'var(--bg, #f9fafb)', 
+                        border: '1px solid var(--border, #e5e7eb)',
+                        borderLeft: '4px solid var(--accent, #3b82f6)',
                         borderRadius: '8px',
                         fontSize: '13px',
-                        color: 'var(--text-secondary, #4b5563)',
+                        color: 'var(--text2, #4b5563)',
                         lineHeight: '1.5'
                       }}>
                         {t('roles_how_to_use_info', { context: tone, defaultValue: 'Roller, görevlerinizi belirli kimlikler altında (Örn: Öğrenci, Müdür, Baba) organize etmenizi sağlar. Kutucuğa tıklayarak listeden bir rol seçebilir veya kendi özel rolünüzü yazıp Enter tuşuna basarak listeye yeni bir rol ekleyebilirsiniz.' })}

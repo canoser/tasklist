@@ -30,11 +30,10 @@ html, body {
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  background-color: var(--bg);
+  color: var(--text);
   line-height: 1.5;
-  transition: background-color var(--transition-normal), color var(--transition-normal);
+  transition: background-color 0.3s, color 0.3s;
   
   /* Native App Hissiyatı: Global Metin Seçimini ve İmleci (I-Beam) İptal Et */
   user-select: none;

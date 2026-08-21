@@ -1,8 +1,8 @@
 .panel {
   padding: 16px;
-  background: var(--bg-card);
-  border-radius: var(--border-radius-md);
-  border: 1px solid var(--border-color);
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
 }
 
 .panelHeader {
@@ -13,7 +13,7 @@
 }
 
 .addRootBtn {
-  background: var(--accent-primary);
+  background: var(--accent);
   color: white;
   border: none;
   border-radius: 6px;
@@ -30,7 +30,7 @@
   display: flex;
   align-items: center;
   padding: 6px 0;
-  border-bottom: 1px solid var(--border-color-light, rgba(0,0,0,0.05));
+  border-bottom: 1px solid var(--border-light, rgba(0,0,0,0.05));
 }
 
 .treeNodeIndent {
@@ -40,7 +40,7 @@
 .nodeName {
   flex: 1;
   font-size: 14px;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .nodeActions {
@@ -54,7 +54,7 @@
   cursor: pointer;
   padding: 4px 6px;
   border-radius: 4px;
-  color: var(--text-muted);
+  color: var(--text3);
 }
 
 .deleteBtn:hover {
@@ -64,7 +64,7 @@
 
 .addChildBtn:hover {
   background: rgba(99, 102, 241, 0.1);
-  color: var(--accent-primary);
+  color: var(--accent);
 }
 
 .inlineForm {
@@ -73,19 +73,19 @@
   margin-top: 8px;
   margin-bottom: 8px;
   padding: 8px;
-  background: var(--bg-primary);
+  background: var(--bg);
   border-radius: 6px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
 }
 
 .inlineInput {
   flex: 1;
   padding: 6px 10px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-radius: 6px;
   font-size: 13px;
-  background: var(--bg-card);
-  color: var(--text-primary);
+  background: var(--surface);
+  color: var(--text);
 }
 
 .saveCancelBtns {

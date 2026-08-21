@@ -1,9 +1,9 @@
 /* ── CalendarView.module.css ─────────────────────────────────────────────────── */
 
 .calendarSection {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-md);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   padding: 12px 14px 4px 14px;
   margin-bottom: 16px;
   flex: 1;
@@ -29,7 +29,7 @@
 .title {
   font-size: 16px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .monthNav {
@@ -41,20 +41,20 @@
 .navBtn {
   background: transparent;
   border: none;
-  color: var(--text-secondary);
+  color: var(--text2);
   cursor: pointer;
   padding: 4px;
   border-radius: 4px;
 }
 
 .navBtn:hover {
-  background: var(--bg-primary);
+  background: var(--bg);
 }
 
 .currentMonth {
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text);
   min-width: 90px;
   text-align: center;
 }
@@ -78,7 +78,7 @@
   }
   .viewToggle button {
     width: 100%;
-    border-radius: var(--border-radius-sm);
+    border-radius: var(--radius-sm);
   }
   .monthNav {
     flex-direction: column;
@@ -108,7 +108,7 @@
 .weekday {
   font-size: 11px;
   font-weight: 600;
-  color: var(--text-muted);
+  color: var(--text3);
   text-transform: uppercase;
 }
 
@@ -134,13 +134,13 @@
   cursor: pointer;
   border: 1px solid transparent;
   transition: all 0.2s;
-  background: var(--bg-primary);
+  background: var(--bg);
   overflow: hidden;
 }
 
 .dayCell:hover {
-  border-color: var(--border-color);
-  background: var(--bg-card);
+  border-color: var(--border);
+  background: var(--surface);
 }
 
 .dayCell.empty {
@@ -149,19 +149,19 @@
 }
 
 .dayCell.today {
-  border-color: var(--accent-primary);
+  border-color: var(--accent);
   background: rgba(99, 102, 241, 0.05);
 }
 
 .dayCell.today .dayNumber {
-  color: var(--accent-primary);
+  color: var(--accent);
   font-weight: 700;
 }
 
 .dayNumber {
   font-size: 13px;
   font-weight: 500;
-  color: var(--text-primary);
+  color: var(--text);
   margin-bottom: 4px;
 }
 
@@ -198,8 +198,8 @@
 .viewToggle {
   display: flex;
   gap: 4px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 3px;
 }
@@ -210,18 +210,18 @@
   border-radius: 6px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text2);
   background: transparent;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .toggleBtn:hover {
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .toggleBtn.active {
-  background: var(--accent-primary);
+  background: var(--accent);
   color: #fff;
   box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3);
 }
@@ -275,14 +275,14 @@
 }
 
 .navBtnPrimary {
-  background: var(--accent-primary);
+  background: var(--accent);
   color: white;
 }
 
 .navBtnSecondary {
-  background: var(--bg-card);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
 }
 
 @media (orientation: landscape) {

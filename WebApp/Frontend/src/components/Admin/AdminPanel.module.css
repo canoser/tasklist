@@ -2,12 +2,12 @@
   padding: 2rem;
   max-width: 900px;
   margin: 0 auto;
-  color: var(--text-primary, #ffffff);
+  color: var(--text, #ffffff);
 }
 
 .header {
   margin-bottom: 2rem;
-  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.1));
   padding-bottom: 1.5rem;
 }
 
@@ -32,7 +32,7 @@
 
 .headerSubtitle {
   margin: 0.5rem 0 0 0;
-  color: var(--text-secondary, #999999);
+  color: var(--text2, #999999);
   font-size: 0.95rem;
 }
 
@@ -42,7 +42,7 @@
   align-items: center;
   justify-content: center;
   height: 50vh;
-  color: var(--text-secondary);
+  color: var(--text2);
 }
 
 .spinner {
@@ -102,7 +102,7 @@
 
 .settingCard {
   background: var(--surface-bg, rgba(20, 20, 25, 0.7));
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
   border-radius: 12px;
   padding: 1.5rem;
   display: flex;
@@ -125,13 +125,13 @@
   margin: 0 0 0.5rem 0;
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .settingInfo p {
   margin: 0;
   font-size: 0.85rem;
-  color: var(--text-secondary);
+  color: var(--text2);
   line-height: 1.4;
 }
 
@@ -197,20 +197,20 @@
   padding: 3rem;
   background: rgba(255, 255, 255, 0.02);
   border-radius: 12px;
-  color: var(--text-secondary);
+  color: var(--text2);
 }
 
 .sectionDivider {
   margin-top: 3rem;
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.1));
   padding-bottom: 0.5rem;
 }
 
 .sectionDivider h2 {
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--text);
   margin: 0;
 }
 
@@ -224,3 +224,4 @@
     grid-template-columns: 1fr;
   }
 }
+.hideScrollbar::-webkit-scrollbar { display: none; }

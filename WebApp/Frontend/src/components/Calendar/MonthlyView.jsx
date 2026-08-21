@@ -69,7 +69,7 @@ const MonthlyView = ({ tasks, roles, filter, date, onDayClick, tone, t }) => {
               <div className={styles.dotsRow}>
                 <div 
                   className={styles.countBadge}
-                  style={{ backgroundColor: 'var(--accent-primary)', color: '#fff' }}
+                  style={{ backgroundColor: 'var(--accent)', color: '#fff' }}
                 >
                   {totalCount}
                 </div>
