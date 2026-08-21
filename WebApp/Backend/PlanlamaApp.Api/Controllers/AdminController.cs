@@ -135,6 +135,95 @@ namespace PlanlamaApp.Api.Controllers
             });
         }
 
+        // ==========================================
+        // WORKSPACE MANAGEMENT (ADMIN)
+        // ==========================================
+
+        [HttpGet("workspaces")]
+        public async Task<IActionResult> GetAllWorkspaces([FromServices] IDbConnection dbConnection)
+        {
+            var sql = @"
+                SELECT w.*, u.Email as OwnerEmail, u.DisplayName as OwnerName
+                FROM Workspaces w
+                LEFT JOIN Users u ON w.OwnerId = u.Id
+                ORDER BY w.Name ASC;
+            ";
+            var workspaces = await dbConnection.QueryAsync(sql);
+            return Ok(workspaces);
+        }
+
+        public class AdminUpdateWorkspaceRequest
+        {
+            public string Name { get; set; } = string.Empty;
+            public string? Description { get; set; }
+        }
+
+        [HttpPut("workspaces/{id}")]
+        [ServiceFilter(typeof(IdempotencyFilter))]
+        public async Task<IActionResult> UpdateWorkspace(string id, [FromBody] AdminUpdateWorkspaceRequest request, [FromServices] IDbConnection dbConnection)
+        {
+            if (string.IsNullOrEmpty(request.Name)) return BadRequest("Alan adı boş olamaz.");
+
+            var sql = "UPDATE Workspaces SET Name = @Name, Description = @Description, UpdatedAt = @UpdatedAt WHERE Id = @Id";
+            var affected = await dbConnection.ExecuteAsync(sql, new { 
+                Name = request.Name, 
+                Description = request.Description, 
+                UpdatedAt = System.DateTime.UtcNow,
+                Id = id 
+            });
+
+            if (affected == 0) return NotFound("Çalışma alanı bulunamadı.");
+            return Ok(new { Message = "Çalışma alanı güncellendi." });
+        }
+
+        [HttpPost("workspaces/{id}/restore")]
+        [ServiceFilter(typeof(IdempotencyFilter))]
+        public async Task<IActionResult> RestoreWorkspace(string id, [FromServices] IDbConnection dbConnection)
+        {
+            var sql = "UPDATE Workspaces SET IsActive = true, UpdatedAt = @UpdatedAt WHERE Id = @Id";
+            var affected = await dbConnection.ExecuteAsync(sql, new { UpdatedAt = System.DateTime.UtcNow, Id = id });
+
+            if (affected == 0) return NotFound("Çalışma alanı bulunamadı.");
+            return Ok(new { Message = "Çalışma alanı tekrar aktif edildi." });
+        }
+
+        [HttpDelete("workspaces/{id}")]
+        [ServiceFilter(typeof(IdempotencyFilter))]
+        public async Task<IActionResult> DeleteWorkspace(string id, [FromQuery] bool hardDelete, [FromServices] IDbConnection dbConnection)
+        {
+            dbConnection.Open();
+            using var transaction = dbConnection.BeginTransaction();
+            try 
+            {
+                if (hardDelete)
+                {
+                    // Hard Delete: Delete all members, tasks, and then workspace
+                    await dbConnection.ExecuteAsync("DELETE FROM WorkspaceMembers WHERE WorkspaceId = @Id", new { Id = id }, transaction);
+                    await dbConnection.ExecuteAsync("DELETE FROM TaskItems WHERE WorkspaceId = @Id", new { Id = id }, transaction);
+                    var affected = await dbConnection.ExecuteAsync("DELETE FROM Workspaces WHERE Id = @Id", new { Id = id }, transaction);
+                    if (affected == 0) throw new System.Exception("Çalışma alanı bulunamadı.");
+                }
+                else
+                {
+                    // Soft Delete
+                    var affected = await dbConnection.ExecuteAsync("UPDATE Workspaces SET IsActive = false, UpdatedAt = @UpdatedAt WHERE Id = @Id", new { UpdatedAt = System.DateTime.UtcNow, Id = id }, transaction);
+                    if (affected == 0) throw new System.Exception("Çalışma alanı bulunamadı.");
+                }
+                
+                transaction.Commit();
+                return Ok(new { Message = hardDelete ? "Çalışma alanı ve tüm verileri kalıcı olarak silindi." : "Çalışma alanı pasife alındı (yumuşak silme)." });
+            }
+            catch (System.Exception ex)
+            {
+                transaction.Rollback();
+                return BadRequest(new { Message = "Silme işlemi sırasında hata oluştu.", Error = ex.Message });
+            }
+            finally
+            {
+                dbConnection.Close();
+            }
+        }
+
         [HttpGet("calendar/export-template")]
         public IActionResult ExportTemplate()
         {

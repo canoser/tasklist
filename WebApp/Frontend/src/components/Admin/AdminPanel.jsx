@@ -5,6 +5,7 @@ import QuotaSimulator from './QuotaSimulator';
 import UserApprovals from './UserApprovals';
 import UserSearch from './UserSearch';
 import UsageDashboard from './UsageDashboard';
+import WorkspaceManagement from './WorkspaceManagement';
 import styles from './AdminPanel.module.css';
 
 import CalendarDataManager from './CalendarDataManager';
@@ -114,6 +115,12 @@ const AdminPanel = ({ tone }) => {
           {t('tab_users', { context: tone })}
         </button>
         <button 
+          onClick={() => setActiveTab('workspaces')}
+          style={{ padding: '8px 16px', background: activeTab === 'workspaces' ? 'var(--accent-primary)' : 'transparent', color: activeTab === 'workspaces' ? 'white' : 'var(--text-secondary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+        >
+          {t('tab_workspaces', { context: tone, defaultValue: 'Alanlar' })}
+        </button>
+        <button 
           onClick={() => setActiveTab('data')}
           style={{ padding: '8px 16px', background: activeTab === 'data' ? 'var(--accent-primary)' : 'transparent', color: activeTab === 'data' ? 'white' : 'var(--text-secondary)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
         >
@@ -181,6 +188,10 @@ const AdminPanel = ({ tone }) => {
           <UserSearch tone={tone} />
           <UserApprovals settings={settings} tone={tone} />
         </>
+      )}
+
+      {activeTab === 'workspaces' && (
+        <WorkspaceManagement tone={tone} />
       )}
 
       {activeTab === 'data' && (
