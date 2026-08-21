@@ -6,6 +6,7 @@ import UserApprovals from './UserApprovals';
 import UserSearch from './UserSearch';
 import UsageDashboard from './UsageDashboard';
 import WorkspaceManagement from './WorkspaceManagement';
+import GuideModal from '../Common/GuideModal';
 import styles from './AdminPanel.module.css';
 
 import CalendarDataManager from './CalendarDataManager';
@@ -18,7 +19,8 @@ const AdminPanel = ({ tone }) => {
   const [savingKey, setSavingKey] = useState(null);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState('');
-  const [activeTab, setActiveTab] = useState('settings'); // 'settings', 'usage', 'users', 'data'
+  const [activeTab, setActiveTab] = useState('settings'); // 'settings', 'usage', 'users', 'workspaces', 'data'
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
 
   const fetchSettings = async () => {
     try {
@@ -74,11 +76,22 @@ const AdminPanel = ({ tone }) => {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <div className={styles.headerTitle}>
-          <Settings size={28} className={styles.headerIcon} />
-          <h1>{t('admin_panel_title', { context: tone })}</h1>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
+          <div>
+            <div className={styles.headerTitle}>
+              <Settings size={28} className={styles.headerIcon} />
+              <h1>{t('admin_panel_title', { context: tone })}</h1>
+            </div>
+            <p className={styles.headerSubtitle}>{t('admin_panel_subtitle', { context: tone })}</p>
+          </div>
+          <button 
+            onClick={() => setIsGuideOpen(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--accent-primary)', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+          >
+            <HelpCircle size={18} />
+            <span>Kılavuz</span>
+          </button>
         </div>
-        <p className={styles.headerSubtitle}>{t('admin_panel_subtitle', { context: tone })}</p>
       </div>
 
       {error && (
@@ -197,6 +210,14 @@ const AdminPanel = ({ tone }) => {
       {activeTab === 'data' && (
         <CalendarDataManager tone={tone} />
       )}
+
+      <GuideModal 
+        isOpen={isGuideOpen}
+        onClose={() => setIsGuideOpen(false)}
+        titleKey={`guide_title_${activeTab}`}
+        contentKeys={[`guide_content_${activeTab}_1`, `guide_content_${activeTab}_2`, `guide_content_${activeTab}_3`]}
+        tone={tone}
+      />
     </div>
   );
 };

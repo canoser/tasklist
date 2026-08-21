@@ -6,6 +6,8 @@ import { workspaceService } from '../../services/workspaceService';
 import AssignTaskModal from './AssignTaskModal';
 import EditWorkspaceModal from './EditWorkspaceModal';
 import signalrService from '../../services/signalrService';
+import GuideModal from '../Common/GuideModal';
+import { HelpCircle } from 'lucide-react';
 
 const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdateWorkspace }) => {
   const { t } = useTranslation('common');
@@ -14,6 +16,7 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
   const [loading, setLoading] = useState(true);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -122,6 +125,13 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
         <div className={styles.titleArea}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <h1>{workspace.name}</h1>
+            <button 
+              onClick={() => setIsGuideOpen(true)}
+              style={{ background: 'transparent', border: 'none', color: 'var(--accent-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+              title="Kullanım Kılavuzu"
+            >
+              <HelpCircle size={20} />
+            </button>
             {isOwner && (
               <button onClick={() => setShowEditModal(true)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }} title="Alanı Düzenle">
                 ✏️
@@ -243,6 +253,19 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
             if (onUpdateWorkspace) onUpdateWorkspace(updatedData);
           }
         }}
+      />
+
+      <GuideModal 
+        isOpen={isGuideOpen}
+        onClose={() => setIsGuideOpen(false)}
+        titleKey="guide_title_workspace_detail"
+        contentKeys={[
+          "guide_content_workspace_detail_1",
+          "guide_content_workspace_detail_2",
+          "guide_content_workspace_detail_3",
+          "guide_content_workspace_detail_4"
+        ]}
+        tone={tone}
       />
     </div>
   );
