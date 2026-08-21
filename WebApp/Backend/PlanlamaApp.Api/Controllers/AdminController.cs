@@ -143,7 +143,7 @@ namespace PlanlamaApp.Api.Controllers
         public async Task<IActionResult> GetAllWorkspaces([FromServices] IDbConnection dbConnection)
         {
             var sql = @"
-                SELECT w.*, u.Email as OwnerEmail, u.DisplayName as OwnerName
+                SELECT w.*, u.Email as OwnerEmail, u.Name as OwnerName
                 FROM Workspaces w
                 LEFT JOIN Users u ON w.OwnerId = u.Id
                 ORDER BY w.Name ASC;
