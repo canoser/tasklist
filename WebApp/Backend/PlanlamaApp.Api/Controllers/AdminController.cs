@@ -139,6 +139,23 @@ namespace PlanlamaApp.Api.Controllers
         // WORKSPACE MANAGEMENT (ADMIN)
         // ==========================================
 
+        public class AdminWorkspaceDto
+        {
+            public int Id { get; set; }
+            public string? TenantId { get; set; }
+            public string? OwnerId { get; set; }
+            public string Name { get; set; } = string.Empty;
+            public string? Description { get; set; }
+            public string? InviteCode { get; set; }
+            public string Type { get; set; } = "Group";
+            public string? Settings { get; set; }
+            public bool IsActive { get; set; }
+            public System.DateTime CreatedAt { get; set; }
+            public System.DateTime UpdatedAt { get; set; }
+            public string OwnerEmail { get; set; } = string.Empty;
+            public string OwnerName { get; set; } = string.Empty;
+        }
+
         [HttpGet("workspaces")]
         public async Task<IActionResult> GetAllWorkspaces([FromServices] IDbConnection dbConnection)
         {
@@ -148,7 +165,7 @@ namespace PlanlamaApp.Api.Controllers
                 LEFT JOIN Users u ON w.OwnerId = u.Id
                 ORDER BY w.Name ASC;
             ";
-            var workspaces = await dbConnection.QueryAsync(sql);
+            var workspaces = await dbConnection.QueryAsync<AdminWorkspaceDto>(sql);
             return Ok(workspaces);
         }
 
@@ -160,7 +177,7 @@ namespace PlanlamaApp.Api.Controllers
 
         [HttpPut("workspaces/{id}")]
         [ServiceFilter(typeof(IdempotencyFilter))]
-        public async Task<IActionResult> UpdateWorkspace(string id, [FromBody] AdminUpdateWorkspaceRequest request, [FromServices] IDbConnection dbConnection)
+        public async Task<IActionResult> UpdateWorkspace(int id, [FromBody] AdminUpdateWorkspaceRequest request, [FromServices] IDbConnection dbConnection)
         {
             if (string.IsNullOrEmpty(request.Name)) return BadRequest("Alan adı boş olamaz.");
 
@@ -178,7 +195,7 @@ namespace PlanlamaApp.Api.Controllers
 
         [HttpPost("workspaces/{id}/restore")]
         [ServiceFilter(typeof(IdempotencyFilter))]
-        public async Task<IActionResult> RestoreWorkspace(string id, [FromServices] IDbConnection dbConnection)
+        public async Task<IActionResult> RestoreWorkspace(int id, [FromServices] IDbConnection dbConnection)
         {
             var sql = "UPDATE Workspaces SET IsActive = true, UpdatedAt = @UpdatedAt WHERE Id = @Id";
             var affected = await dbConnection.ExecuteAsync(sql, new { UpdatedAt = System.DateTime.UtcNow, Id = id });
@@ -189,7 +206,7 @@ namespace PlanlamaApp.Api.Controllers
 
         [HttpDelete("workspaces/{id}")]
         [ServiceFilter(typeof(IdempotencyFilter))]
-        public async Task<IActionResult> DeleteWorkspace(string id, [FromQuery] bool hardDelete, [FromServices] IDbConnection dbConnection)
+        public async Task<IActionResult> DeleteWorkspace(int id, [FromQuery] bool hardDelete, [FromServices] IDbConnection dbConnection)
         {
             dbConnection.Open();
             using var transaction = dbConnection.BeginTransaction();

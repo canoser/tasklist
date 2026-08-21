@@ -90,6 +90,10 @@ namespace PlanlamaApp.Infrastructure.Repositories
 
         public async Task<bool> DeleteAsync(int id)
         {
+            if (_dbConnection.State != ConnectionState.Open)
+            {
+                _dbConnection.Open();
+            }
             using var transaction = _dbConnection.BeginTransaction();
             try {
                 var sql1 = "UPDATE Workspaces SET IsActive = false, DeletedAt = @DeletedAt WHERE Id = @Id";
