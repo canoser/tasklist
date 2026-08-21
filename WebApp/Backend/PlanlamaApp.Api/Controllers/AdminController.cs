@@ -6,6 +6,8 @@ using PlanlamaApp.Application.Interfaces;
 using PlanlamaApp.Domain.Entities;
 using System.Data;
 using Dapper;
+using Microsoft.AspNetCore.SignalR;
+using PlanlamaApp.Api.Hubs;
 
 namespace PlanlamaApp.Api.Controllers
 {
@@ -15,10 +17,12 @@ namespace PlanlamaApp.Api.Controllers
     public class AdminController : ControllerBase
     {
         private readonly ISettingsService _settingsService;
+        private readonly IHubContext<AppHub> _hubContext;
 
-        public AdminController(ISettingsService settingsService)
+        public AdminController(ISettingsService settingsService, IHubContext<AppHub> hubContext)
         {
             _settingsService = settingsService;
+            _hubContext = hubContext;
         }
 
         [HttpGet("settings")]
@@ -66,6 +70,11 @@ namespace PlanlamaApp.Api.Controllers
         public async Task<IActionResult> ApproveUser(string userId, [FromBody] ApproveUserRequest request, [FromServices] IUserRepository userRepository)
         {
             await userRepository.ApproveUserAsPremiumAsync(userId, request.CustomAiLimit, request.CustomStorageLimit);
+            
+            // SignalR üzerinden onay bekleyen kullanıcı tablosunu (Admin) ve onaylanan kullanıcıyı uyar
+            await _hubContext.Clients.Group("AdminGroup").SendAsync("PendingUsersUpdated");
+            await _hubContext.Clients.User(userId).SendAsync("UserApproved");
+            
             return Ok(new { Message = "Kullanıcı başarıyla onaylandı ve Premium yapıldı." });
         }
 
@@ -190,6 +199,10 @@ namespace PlanlamaApp.Api.Controllers
             });
 
             if (affected == 0) return NotFound("Çalışma alanı bulunamadı.");
+            
+            await _hubContext.Clients.Group("AdminGroup").SendAsync("WorkspaceListUpdated");
+            await _hubContext.Clients.Group($"Workspace_{id}").SendAsync("WorkspaceDetailsUpdated", id);
+            
             return Ok(new { Message = "Çalışma alanı güncellendi." });
         }
 
@@ -201,6 +214,9 @@ namespace PlanlamaApp.Api.Controllers
             var affected = await dbConnection.ExecuteAsync(sql, new { UpdatedAt = System.DateTime.UtcNow, Id = id });
 
             if (affected == 0) return NotFound("Çalışma alanı bulunamadı.");
+            
+            await _hubContext.Clients.Group("AdminGroup").SendAsync("WorkspaceListUpdated");
+            
             return Ok(new { Message = "Çalışma alanı tekrar aktif edildi." });
         }
 
@@ -228,6 +244,10 @@ namespace PlanlamaApp.Api.Controllers
                 }
                 
                 transaction.Commit();
+                
+                await _hubContext.Clients.Group("AdminGroup").SendAsync("WorkspaceListUpdated");
+                await _hubContext.Clients.Group($"Workspace_{id}").SendAsync("WorkspaceDeleted", id);
+                
                 return Ok(new { Message = hardDelete ? "Çalışma alanı ve tüm verileri kalıcı olarak silindi." : "Çalışma alanı pasife alındı (yumuşak silme)." });
             }
             catch (System.Exception ex)

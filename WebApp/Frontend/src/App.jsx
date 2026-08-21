@@ -24,6 +24,7 @@ import GuestWelcomeModal from './components/Auth/GuestWelcomeModal';
 import { useKeyboardScrollFix } from './hooks/useKeyboardScrollFix';
 import { useOrientation } from './hooks/useOrientation';
 import { motion } from 'framer-motion';
+import signalrService from './services/signalrService';
 
 // Çevrimdışı işlem kuyruğunu ve senkronizasyonu başlat
 startSyncListener();
@@ -75,8 +76,17 @@ export default function App() {
     const unsubscribe = subscribeToAuthChanges((currentUser) => {
       setUser(currentUser);
       setIsAuthLoading(false);
+      
+      if (currentUser) {
+        signalrService.startConnection();
+      } else {
+        signalrService.stopConnection();
+      }
     });
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      signalrService.stopConnection();
+    };
   }, []);
 
   const toggleAppearance = () => {

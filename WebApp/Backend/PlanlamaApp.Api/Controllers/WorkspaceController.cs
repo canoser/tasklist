@@ -4,6 +4,8 @@ using PlanlamaApp.Api.Filters;
 using PlanlamaApp.Application.DTOs;
 using PlanlamaApp.Application.Interfaces;
 using PlanlamaApp.Domain.Entities;
+using Microsoft.AspNetCore.SignalR;
+using PlanlamaApp.Api.Hubs;
 
 namespace PlanlamaApp.API.Controllers
 {
@@ -17,19 +19,22 @@ namespace PlanlamaApp.API.Controllers
         private readonly ITaskRepository _taskRepository;
         private readonly IUserRepository _userRepository;
         private readonly ISettingsService _settingsService;
+        private readonly IHubContext<AppHub> _hubContext;
 
         public WorkspaceController(
             IWorkspaceRepository workspaceRepository,
             ITaskAssignmentRepository taskAssignmentRepository,
             ITaskRepository taskRepository,
             IUserRepository userRepository,
-            ISettingsService settingsService)
+            ISettingsService settingsService,
+            IHubContext<AppHub> hubContext)
         {
             _workspaceRepository = workspaceRepository;
             _taskAssignmentRepository = taskAssignmentRepository;
             _taskRepository = taskRepository;
             _userRepository = userRepository;
             _settingsService = settingsService;
+            _hubContext = hubContext;
         }
 
         private string? GetCurrentUserId()
@@ -104,6 +109,9 @@ namespace PlanlamaApp.API.Controllers
             workspace.UpdatedAt = DateTime.UtcNow;
 
             var id = await _workspaceRepository.CreateAsync(workspace);
+            
+            await _hubContext.Clients.Group("AdminGroup").SendAsync("WorkspaceListUpdated");
+            
             return CreatedAtAction(nameof(GetOwned), new { ownerId = workspace.OwnerId }, workspace);
         }
 
@@ -138,6 +146,10 @@ namespace PlanlamaApp.API.Controllers
 
             var result = await _workspaceRepository.DeleteAsync(id);
             if (!result) return NotFound();
+            
+            await _hubContext.Clients.Group("AdminGroup").SendAsync("WorkspaceListUpdated");
+            await _hubContext.Clients.Group($"Workspace_{id}").SendAsync("WorkspaceDeleted", id);
+            
             return NoContent();
         }
 
@@ -220,6 +232,9 @@ namespace PlanlamaApp.API.Controllers
             };
 
             await _workspaceRepository.AddMemberAsync(newMember);
+            
+            await _hubContext.Clients.Group($"Workspace_{workspace.Id}").SendAsync("WorkspaceMembersUpdated", workspace.Id);
+            
             return Ok(newMember);
         }
 
@@ -258,6 +273,15 @@ namespace PlanlamaApp.API.Controllers
 
             var result = await _workspaceRepository.UpdateMemberStatusAsync(memberId, "Approved");
             if (!result) return NotFound();
+            
+            await _hubContext.Clients.Group($"Workspace_{workspaceId}").SendAsync("WorkspaceMembersUpdated", workspaceId);
+            
+            var approvedMember = members.FirstOrDefault(m => m.Id == memberId);
+            if (approvedMember != null) 
+            {
+                await _hubContext.Clients.User(approvedMember.UserId).SendAsync("WorkspaceJoinApproved", workspaceId);
+            }
+            
             return Ok();
         }
 
@@ -370,6 +394,12 @@ namespace PlanlamaApp.API.Controllers
                     ChainId = batchId
                 };
                 await _taskRepository.CreateAsync(taskItem);
+            }
+
+            await _hubContext.Clients.Group($"Workspace_{workspaceId}").SendAsync("WorkspaceTasksUpdated", workspaceId);
+            foreach (var member in targetMembers)
+            {
+                await _hubContext.Clients.User(member.UserId).SendAsync("TaskAssigned", workspaceId);
             }
 
             return Ok(new { Message = $"{targetMembers.Count} üyeye görev atandı.", BatchId = batchId });

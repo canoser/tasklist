@@ -8,6 +8,7 @@ import {
   deleteWorkspaceAsAdmin, 
   restoreWorkspaceAsAdmin 
 } from '../../services/adminService';
+import signalrService from '../../services/signalrService';
 
 const WorkspaceManagement = ({ tone }) => {
   const { t } = useTranslation('admin');
@@ -36,6 +37,15 @@ const WorkspaceManagement = ({ tone }) => {
 
   useEffect(() => {
     fetchWorkspaces();
+
+    const handleUpdate = () => {
+      fetchWorkspaces();
+    };
+
+    signalrService.addEventListener("WorkspaceListUpdated", handleUpdate);
+    return () => {
+      signalrService.removeEventListener("WorkspaceListUpdated", handleUpdate);
+    };
   }, []);
 
   useEffect(() => {

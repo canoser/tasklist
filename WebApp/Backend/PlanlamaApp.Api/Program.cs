@@ -11,6 +11,7 @@ using PlanlamaApp.Infrastructure.Repositories;
 using PlanlamaApp.Infrastructure.Providers;
 using Serilog;
 using Serilog.Events;
+using PlanlamaApp.Api.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,7 +49,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             OnMessageReceived = context =>
             {
-                if (context.Request.Cookies.ContainsKey("auth_token"))
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+
+                // SignalR istekleri için QueryString'den token oku
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/api/hubs"))
+                {
+                    context.Token = accessToken;
+                }
+                else if (context.Request.Cookies.ContainsKey("auth_token"))
                 {
                     context.Token = context.Request.Cookies["auth_token"];
                 }
@@ -166,6 +175,7 @@ builder.Services.AddScoped<IdempotencyFilter>();
 
 // 4. Controller ve IdempotencyFilter (Global veya Controller bazlı eklenebilir, şimdilik servislere ekledik)
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -232,6 +242,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers().RequireRateLimiting("FixedPolicy");
+app.MapHub<AppHub>("/api/hubs/app");
 
 // Veritabanı migration: UserRoles ve TaskAssignments tablolarını oluştur (idempotentten)
 DatabaseMigration.Run(connectionString);

@@ -5,6 +5,7 @@ import styles from './WorkspaceDetailScreen.module.css';
 import { workspaceService } from '../../services/workspaceService';
 import AssignTaskModal from './AssignTaskModal';
 import EditWorkspaceModal from './EditWorkspaceModal';
+import signalrService from '../../services/signalrService';
 
 const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdateWorkspace }) => {
   const { t } = useTranslation('common');
@@ -34,7 +35,18 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
       }
     };
     fetchMembers();
-  }, [workspace.id]);
+
+    const handleMembersUpdated = (e) => {
+      if (e.detail.workspaceId === workspace.id) {
+        fetchMembers();
+      }
+    };
+
+    signalrService.addEventListener("WorkspaceMembersUpdated", handleMembersUpdated);
+    return () => {
+      signalrService.removeEventListener("WorkspaceMembersUpdated", handleMembersUpdated);
+    };
+  }, [workspace.id, user]);
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(workspace.inviteCode);

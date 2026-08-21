@@ -3,6 +3,7 @@ import { UserCheck, RefreshCw, AlertCircle } from 'lucide-react';
 import apiClient from '../../services/apiClient';
 import styles from './AdminPanel.module.css';
 import { useTranslation } from 'react-i18next';
+import signalrService from '../../services/signalrService';
 
 const UserApprovals = ({ settings, tone }) => {
   const { t } = useTranslation('admin');
@@ -43,6 +44,15 @@ const UserApprovals = ({ settings, tone }) => {
 
   useEffect(() => {
     fetchPendingUsers();
+
+    const handleUpdate = () => {
+      fetchPendingUsers();
+    };
+
+    signalrService.addEventListener("PendingUsersUpdated", handleUpdate);
+    return () => {
+      signalrService.removeEventListener("PendingUsersUpdated", handleUpdate);
+    };
   }, []);
 
   const handleLimitChange = (userId, field, value) => {
