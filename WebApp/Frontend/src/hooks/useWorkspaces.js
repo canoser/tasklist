@@ -52,11 +52,13 @@ export default function useWorkspaces(userId) {
     }
   };
 
-  const joinWorkspace = async (code) => {
+  const joinWorkspace = async (code, displayName) => {
     try {
-      const workspace = await workspaceService.joinWithCode(userId, code);
-      setJoinedWorkspaces(prev => [...prev, workspace]);
-      return workspace;
+      const member = await workspaceService.joinWithCode(userId, code, displayName);
+      // Backend artık Pending döndürüyor. Üye tam katılmadığı için listeyi anında güncellemiyoruz.
+      // Refresh yaparak sunucudan en güncel halini çekeriz.
+      await fetchWorkspaces();
+      return member;
     } catch (err) {
       console.error(err);
       const errorMsg = err.response?.data?.message || err.response?.data || err.message || 'Alana katılım başarısız';
@@ -76,6 +78,14 @@ export default function useWorkspaces(userId) {
     return await workspaceService.promoteMember(workspaceId, memberId);
   };
 
+  const approveMember = async (workspaceId, memberId) => {
+    return await workspaceService.approveMember(workspaceId, memberId);
+  };
+
+  const rejectMember = async (workspaceId, memberId) => {
+    return await workspaceService.rejectMember(workspaceId, memberId);
+  };
+
   const leaveWorkspace = async (workspaceId) => {
     await workspaceService.leaveWorkspace(workspaceId);
     setJoinedWorkspaces(prev => prev.filter(w => w.id !== workspaceId));
@@ -92,6 +102,8 @@ export default function useWorkspaces(userId) {
     assignTask,
     deleteTask,
     promoteMember,
+    approveMember,
+    rejectMember,
     leaveWorkspace,
     refresh: fetchWorkspaces
   };

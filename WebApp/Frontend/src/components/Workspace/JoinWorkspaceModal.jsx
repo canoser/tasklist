@@ -3,19 +3,26 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import styles from './WorkspaceModals.module.css';
 
-const JoinWorkspaceModal = ({ isOpen, onClose, onJoin, tone }) => {
+const JoinWorkspaceModal = ({ isOpen, onClose, onJoin, tone, initialCode = '' }) => {
   const { t } = useTranslation('common');
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState(initialCode);
+  const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && initialCode) {
+      setCode(initialCode);
+    }
+  }, [isOpen, initialCode]);
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!code.trim()) return;
+    if (!code.trim() || !displayName.trim()) return;
     setLoading(true);
     try {
-      await onJoin(code.trim());
+      await onJoin(code.trim(), displayName.trim());
       onClose();
     } catch (err) {
       alert(err.message);
@@ -55,6 +62,17 @@ const JoinWorkspaceModal = ({ isOpen, onClose, onJoin, tone }) => {
                 placeholder={t('ws_code_placeholder', { context: tone })}
                 required 
                 autoFocus
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Görünen Ad (Takma Ad)</label>
+              <input 
+                type="text" 
+                value={displayName} 
+                onChange={e => setDisplayName(e.target.value)} 
+                placeholder="Örn: Veli, Öğrenci 1"
+                required 
               />
             </div>
             

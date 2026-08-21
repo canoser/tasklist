@@ -60,6 +60,17 @@ export default function App() {
     document.documentElement.setAttribute('data-appearance', appearance);
   }, [theme, appearance]);
 
+  // Handle old invite links like /workspace/join?code=XYZ
+  useEffect(() => {
+    if (window.location.pathname.includes('/workspace/join')) {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      if (code) {
+        window.location.href = `/?joinCode=${code}#tab=search`;
+      }
+    }
+  }, []);
+
   useEffect(() => {
     const unsubscribe = subscribeToAuthChanges((currentUser) => {
       setUser(currentUser);

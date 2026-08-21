@@ -26,11 +26,11 @@ export const workspaceService = {
     return response.data;
   },
 
-  joinWithCode: async (userId, code) => {
+  joinWithCode: async (userId, code, displayName) => {
     // API expects InviteCode and DisplayName
     const response = await apiClient.post(`/workspace/join`, { 
       inviteCode: code, 
-      displayName: 'Yeni Üye' 
+      displayName: displayName || 'Yeni Üye' 
     });
     return response.data;
   },
@@ -38,6 +38,21 @@ export const workspaceService = {
   getMembers: async (workspaceId) => {
     const response = await apiClient.get(`/workspace/${workspaceId}/members`);
     return response.data;
+  },
+
+  getPendingMembers: async (workspaceId) => {
+    const response = await apiClient.get(`/workspace/${workspaceId}/members/pending`);
+    return response.data;
+  },
+
+  approveMember: async (workspaceId, memberId) => {
+    await apiClient.post(`/workspace/${workspaceId}/members/${memberId}/approve`);
+    return true;
+  },
+
+  rejectMember: async (workspaceId, memberId) => {
+    await apiClient.post(`/workspace/${workspaceId}/members/${memberId}/reject`);
+    return true;
   },
 
   updateMemberDisplayName: async (memberId, displayName) => {

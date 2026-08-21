@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './WorkspaceScreen.module.css';
 import useWorkspaces from '../../hooks/useWorkspaces';
@@ -16,6 +16,18 @@ const WorkspaceScreen = ({ user, tone }) => {
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [activeWorkspace, setActiveWorkspace] = useState(null);
+  const [initialJoinCode, setInitialJoinCode] = useState('');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('joinCode') || params.get('code');
+    if (code) {
+      setInitialJoinCode(code);
+      setShowJoinModal(true);
+      // Clean up URL without reloading
+      window.history.replaceState({}, '', window.location.pathname + window.location.hash);
+    }
+  }, []);
 
   if (activeWorkspace) {
     return (
@@ -128,6 +140,7 @@ const WorkspaceScreen = ({ user, tone }) => {
         onClose={() => setShowJoinModal(false)} 
         onJoin={joinWorkspace}
         tone={tone}
+        initialCode={initialJoinCode}
       />
 
       <WorkspaceGuideModal 

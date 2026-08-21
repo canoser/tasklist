@@ -25,7 +25,7 @@ namespace PlanlamaApp.Infrastructure.Repositories
             var sql = @"
                 SELECT w.* FROM Workspaces w
                 INNER JOIN WorkspaceMembers wm ON wm.WorkspaceId = w.Id
-                WHERE wm.UserId = @UserId AND w.IsActive = true
+                WHERE wm.UserId = @UserId AND w.IsActive = true AND wm.IsActiveMember = true AND wm.ApprovalStatus = 'Approved'
             ";
             return await _dbConnection.QueryAsync<Workspace>(sql, new { UserId = userId });
         }
@@ -61,6 +61,18 @@ namespace PlanlamaApp.Infrastructure.Repositories
             
             var id = await ExecuteScalarAsync<int>(sql, workspace);
             workspace.Id = id;
+
+            var memberSql = @"
+                INSERT INTO WorkspaceMembers (TenantId, WorkspaceId, UserId, DisplayName, JoinedAt, Role, IsActiveMember, ApprovalStatus)
+                VALUES (@TenantId, @WorkspaceId, @OwnerId, 'Kurucu', @JoinedAt, 'Owner', true, 'Approved')";
+            
+            await _dbConnection.ExecuteAsync(memberSql, new {
+                TenantId = workspace.TenantId,
+                WorkspaceId = id,
+                OwnerId = workspace.OwnerId,
+                JoinedAt = DateTime.UtcNow
+            });
+
             return id;
         }
 
@@ -78,15 +90,32 @@ namespace PlanlamaApp.Infrastructure.Repositories
 
         public async Task<bool> DeleteAsync(int id)
         {
-            var sql = "UPDATE Workspaces SET IsActive = false, DeletedAt = @DeletedAt WHERE Id = @Id";
-            var affected = await ExecuteAsync(sql, new { Id = id, DeletedAt = DateTime.UtcNow });
-            return affected > 0;
+            using var transaction = _dbConnection.BeginTransaction();
+            try {
+                var sql1 = "UPDATE Workspaces SET IsActive = false, DeletedAt = @DeletedAt WHERE Id = @Id";
+                await ExecuteAsync(sql1, new { Id = id, DeletedAt = DateTime.UtcNow }, transaction);
+                
+                var sql2 = "UPDATE WorkspaceMembers SET IsActiveMember = false WHERE WorkspaceId = @Id";
+                await _dbConnection.ExecuteAsync(sql2, new { Id = id }, transaction);
+                
+                transaction.Commit();
+                return true;
+            } catch {
+                transaction.Rollback();
+                return false;
+            }
         }
 
         public async Task<IEnumerable<WorkspaceMember>> GetMembersAsync(int workspaceId)
         {
             // WorkspaceId zaten spesifik bir sınırdır, TenantId kısıtlamasını bypass ediyoruz
-            var sql = "SELECT * FROM WorkspaceMembers WHERE WorkspaceId = @WorkspaceId AND IsActiveMember = true";
+            var sql = "SELECT * FROM WorkspaceMembers WHERE WorkspaceId = @WorkspaceId AND IsActiveMember = true AND ApprovalStatus = 'Approved'";
+            return await _dbConnection.QueryAsync<WorkspaceMember>(sql, new { WorkspaceId = workspaceId });
+        }
+
+        public async Task<IEnumerable<WorkspaceMember>> GetPendingMembersAsync(int workspaceId)
+        {
+            var sql = "SELECT * FROM WorkspaceMembers WHERE WorkspaceId = @WorkspaceId AND IsActiveMember = false AND ApprovalStatus = 'Pending'";
             return await _dbConnection.QueryAsync<WorkspaceMember>(sql, new { WorkspaceId = workspaceId });
         }
 
@@ -120,10 +149,14 @@ namespace PlanlamaApp.Infrastructure.Repositories
             }
 
             var sql = @"
-                INSERT INTO WorkspaceMembers (TenantId, WorkspaceId, UserId, DisplayName, JoinedAt, Role, ObserverLinkedUserId, IsActiveMember)
-                VALUES (@TenantId, @WorkspaceId, @UserId, @DisplayName, @JoinedAt, @Role, @ObserverLinkedUserId, true)
+                INSERT INTO WorkspaceMembers (TenantId, WorkspaceId, UserId, DisplayName, JoinedAt, Role, ObserverLinkedUserId, IsActiveMember, ApprovalStatus)
+                VALUES (@TenantId, @WorkspaceId, @UserId, @DisplayName, @JoinedAt, @Role, @ObserverLinkedUserId, @IsActiveMember, @ApprovalStatus)
                 ON CONFLICT(WorkspaceId, UserId) DO UPDATE 
-                SET IsActiveMember = true, Role = EXCLUDED.Role, JoinedAt = EXCLUDED.JoinedAt
+                SET ApprovalStatus = 'Pending',
+                    IsActiveMember = false,
+                    Role = EXCLUDED.Role, 
+                    JoinedAt = EXCLUDED.JoinedAt
+                WHERE WorkspaceMembers.ApprovalStatus != 'Approved'
                 RETURNING Id;
             ";
             
@@ -137,6 +170,21 @@ namespace PlanlamaApp.Infrastructure.Repositories
         {
             var sql = "UPDATE WorkspaceMembers SET DisplayName = @DisplayName WHERE Id = @Id";
             var affected = await ExecuteAsync(sql, new { Id = memberId, DisplayName = displayName });
+            return affected > 0;
+        }
+
+        public async Task<bool> UpdateMemberStatusAsync(int memberId, string status)
+        {
+            var sql = "UPDATE WorkspaceMembers SET ApprovalStatus = @Status, IsActiveMember = @IsActive WHERE Id = @Id";
+            var isActive = status == "Approved";
+            var affected = await _dbConnection.ExecuteAsync(sql, new { Id = memberId, Status = status, IsActive = isActive });
+            return affected > 0;
+        }
+
+        public async Task<bool> UpdateMemberRoleAsync(int workspaceId, string userId, string role)
+        {
+            var sql = "UPDATE WorkspaceMembers SET Role = @Role WHERE WorkspaceId = @WorkspaceId AND UserId = @UserId";
+            var affected = await _dbConnection.ExecuteAsync(sql, new { WorkspaceId = workspaceId, UserId = userId, Role = role });
             return affected > 0;
         }
 

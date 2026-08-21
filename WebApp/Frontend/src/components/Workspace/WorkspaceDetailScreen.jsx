@@ -9,6 +9,7 @@ import EditWorkspaceModal from './EditWorkspaceModal';
 const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdateWorkspace }) => {
   const { t } = useTranslation('common');
   const [members, setMembers] = useState([]);
+  const [pendingMembers, setPendingMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -18,6 +19,14 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
       try {
         const data = await workspaceService.getMembers(workspace.id);
         setMembers(data);
+
+        // Fetch pending members if current user might be admin
+        const currentUserMember = data.find(m => m.userId === (user?.id || user?.uid));
+        const isOwner = workspace.ownerId === (user?.id || user?.uid);
+        if (isOwner || (currentUserMember && currentUserMember.role === 'Admin')) {
+          const pendingData = await workspaceService.getPendingMembers(workspace.id);
+          setPendingMembers(pendingData);
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -32,7 +41,7 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
     alert(t('ws_btn_copy_code', { context: tone }) + " Kopyalandı!");
   };
 
-  const inviteLink = `${window.location.origin}/workspace/join?code=${workspace.inviteCode}`;
+  const inviteLink = `${window.location.origin}/?joinCode=${workspace.inviteCode}#tab=search`;
   
   const handleShare = async () => {
     if (navigator.share) {
@@ -68,6 +77,26 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
       setMembers(prev => prev.map(m => m.userId === targetUserId ? { ...m, role: 'Admin' } : m));
     } catch(err) {
       alert("Üye yetkilendirilemedi.");
+    }
+  };
+
+  const handleApprove = async (member) => {
+    try {
+      await workspaceService.approveMember(workspace.id, member.id);
+      setPendingMembers(prev => prev.filter(m => m.id !== member.id));
+      setMembers(prev => [...prev, { ...member, approvalStatus: 'Approved', isActiveMember: true }]);
+    } catch (err) {
+      alert("Üye onaylanamadı.");
+    }
+  };
+
+  const handleReject = async (member) => {
+    if(!window.confirm("Bu üyeyi reddetmek istediğinize emin misiniz?")) return;
+    try {
+      await workspaceService.rejectMember(workspace.id, member.id);
+      setPendingMembers(prev => prev.filter(m => m.id !== member.id));
+    } catch (err) {
+      alert("Üye reddedilemedi.");
     }
   };
 
@@ -130,6 +159,26 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
         </div>
 
         <div className={styles.rightCol}>
+          {isAdmin && pendingMembers.length > 0 && (
+            <div className={styles.card} style={{ marginBottom: '1rem', border: '1px solid #f59e0b', background: 'rgba(245, 158, 11, 0.05)' }}>
+              <h3 style={{ color: '#d97706' }}>Onay Bekleyenler ({pendingMembers.length})</h3>
+              <div className={styles.memberList}>
+                {pendingMembers.map(m => (
+                  <div key={m.id} className={styles.memberRow} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div className={styles.memberInfo}>
+                      <span className={styles.memberName}>{m.displayName}</span>
+                      <span className={styles.memberRole} style={{ color: '#d97706', fontSize: '0.8rem' }}>Bekliyor</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button onClick={() => handleApprove(m)} style={{ background: '#10b981', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '4px 8px', fontSize: '0.85rem' }}>Onayla</button>
+                      <button onClick={() => handleReject(m)} style={{ background: '#ef4444', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '4px 8px', fontSize: '0.85rem' }}>Reddet</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className={styles.card}>
             <h3>{t('ws_members', { context: tone })} ({members.length})</h3>
             {loading ? (

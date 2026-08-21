@@ -166,6 +166,24 @@ namespace PlanlamaApp.API.Controllers
             return Ok(members);
         }
 
+        [HttpGet("{workspaceId}/members/pending")]
+        public async Task<IActionResult> GetPendingMembers(int workspaceId)
+        {
+            var currentUserId = GetCurrentUserId();
+            if (currentUserId == null) return Unauthorized();
+
+            var isOwner = await IsOwnerAsync(workspaceId, currentUserId);
+            var members = await _workspaceRepository.GetMembersAsync(workspaceId);
+            var currentUserMember = members.FirstOrDefault(m => m.UserId == currentUserId);
+
+            // Only Owner or Admin can view pending members
+            if (!isOwner && (currentUserMember == null || currentUserMember.Role != "Admin"))
+                return Forbid();
+
+            var pendingMembers = await _workspaceRepository.GetPendingMembersAsync(workspaceId);
+            return Ok(pendingMembers);
+        }
+
         [HttpPost("join")]
         [ServiceFilter(typeof(IdempotencyFilter))]
         public async Task<IActionResult> Join([FromBody] JoinWorkspaceRequest request)
@@ -182,8 +200,10 @@ namespace PlanlamaApp.API.Controllers
                 return BadRequest("Zaten bu grubun yöneticisisiniz.");
 
             var members = await _workspaceRepository.GetMembersAsync(workspace.Id);
-            if (members.Any(m => m.UserId == currentUserId))
-                return BadRequest("Bu gruba zaten üyesiniz.");
+            var pendingMembers = await _workspaceRepository.GetPendingMembersAsync(workspace.Id);
+            
+            if (members.Any(m => m.UserId == currentUserId) || pendingMembers.Any(m => m.UserId == currentUserId))
+                return BadRequest("Bu gruba zaten üyesiniz veya onay bekliyorsunuz.");
 
             var role = string.IsNullOrEmpty(request.LinkedUserId) ? "Member" : "Observer";
 
@@ -194,7 +214,9 @@ namespace PlanlamaApp.API.Controllers
                 UserId = currentUserId,
                 DisplayName = request.DisplayName,
                 Role = role,
-                ObserverLinkedUserId = request.LinkedUserId
+                ObserverLinkedUserId = request.LinkedUserId,
+                ApprovalStatus = "Pending",
+                IsActiveMember = false
             };
 
             await _workspaceRepository.AddMemberAsync(newMember);
@@ -213,8 +235,49 @@ namespace PlanlamaApp.API.Controllers
             if (!await IsOwnerAsync(workspaceId, currentUserId))
                 return Forbid(); // Only owner can add members
 
+            // Admin eklediği için doğrudan onaylı kabul ediliyor
+            member.ApprovalStatus = "Approved";
+            member.IsActiveMember = true;
             await _workspaceRepository.AddMemberAsync(member);
             return Ok(member);
+        }
+
+        [HttpPost("{workspaceId}/members/{memberId}/approve")]
+        [ServiceFilter(typeof(IdempotencyFilter))]
+        public async Task<IActionResult> ApproveMember(int workspaceId, int memberId)
+        {
+            var currentUserId = GetCurrentUserId();
+            if (currentUserId == null) return Unauthorized();
+
+            var isOwner = await IsOwnerAsync(workspaceId, currentUserId);
+            var members = await _workspaceRepository.GetMembersAsync(workspaceId);
+            var currentUserMember = members.FirstOrDefault(m => m.UserId == currentUserId);
+
+            if (!isOwner && (currentUserMember == null || currentUserMember.Role != "Admin"))
+                return Forbid();
+
+            var result = await _workspaceRepository.UpdateMemberStatusAsync(memberId, "Approved");
+            if (!result) return NotFound();
+            return Ok();
+        }
+
+        [HttpPost("{workspaceId}/members/{memberId}/reject")]
+        [ServiceFilter(typeof(IdempotencyFilter))]
+        public async Task<IActionResult> RejectMember(int workspaceId, int memberId)
+        {
+            var currentUserId = GetCurrentUserId();
+            if (currentUserId == null) return Unauthorized();
+
+            var isOwner = await IsOwnerAsync(workspaceId, currentUserId);
+            var members = await _workspaceRepository.GetMembersAsync(workspaceId);
+            var currentUserMember = members.FirstOrDefault(m => m.UserId == currentUserId);
+
+            if (!isOwner && (currentUserMember == null || currentUserMember.Role != "Admin"))
+                return Forbid();
+
+            var result = await _workspaceRepository.UpdateMemberStatusAsync(memberId, "Rejected");
+            if (!result) return NotFound();
+            return Ok();
         }
 
         [HttpPut("members/{memberId}")]
@@ -330,8 +393,9 @@ namespace PlanlamaApp.API.Controllers
             if (!await IsOwnerAsync(workspaceId, currentUserId))
                 return Forbid("Sadece kurucu admin yetkisi verebilir.");
 
-            // Bu operasyon için WorkspaceRepository'de UpdateRole metodu gereklidir.
-            // Şimdilik 200 dönüyoruz (Faz 1'de repo metodu henüz yazılmadı ama API hazır)
+            var result = await _workspaceRepository.UpdateMemberRoleAsync(workspaceId, userId, "Admin");
+            if (!result) return NotFound();
+
             return Ok();
         }
 

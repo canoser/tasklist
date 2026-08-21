@@ -14,6 +14,7 @@ namespace PlanlamaApp.Domain.Entities
         public string Role { get; set; } = "Member"; // Member, Observer vs.
         public string? ObserverLinkedUserId { get; set; }
         public bool IsActiveMember { get; set; } = true;
+        public string ApprovalStatus { get; set; } = "Pending";
         public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
     }
 }

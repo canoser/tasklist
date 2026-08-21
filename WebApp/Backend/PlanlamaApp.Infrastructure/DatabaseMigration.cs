@@ -131,6 +131,7 @@ namespace PlanlamaApp.Infrastructure
                 ALTER TABLE WorkspaceMembers ADD COLUMN IF NOT EXISTS Role TEXT NOT NULL DEFAULT 'Member';
                 ALTER TABLE WorkspaceMembers ADD COLUMN IF NOT EXISTS ObserverLinkedUserId TEXT;
                 ALTER TABLE WorkspaceMembers ADD COLUMN IF NOT EXISTS IsActiveMember BOOLEAN NOT NULL DEFAULT TRUE;
+                ALTER TABLE WorkspaceMembers ADD COLUMN IF NOT EXISTS ApprovalStatus TEXT NOT NULL DEFAULT 'Approved';
             ");
 
             // ── IdempotencyKeys ────────────────────────────────────────────
