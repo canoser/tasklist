@@ -12,6 +12,8 @@ import WorkspaceScreen from './components/Workspace/WorkspaceScreen';
 import { BrowserRouter } from 'react-router-dom';
 import { UndoProvider } from './components/Common/UndoContext';
 import NatureDecor from './components/Common/NatureDecor';
+import OceanDecor from './components/Common/OceanDecor';
+import CyberpunkDecor from './components/Common/CyberpunkDecor';
 import { TaskProvider } from './context/TaskContext';
 import { useTheme } from './context/ThemeContext';
 import CalendarScreen from './components/Calendar/CalendarScreen';
@@ -100,6 +102,8 @@ export default function App() {
         <TaskProvider>
         <MobileLayout>
           <NatureDecor />
+          <OceanDecor />
+          <CyberpunkDecor />
           <div className={styles.container}>
           {/* ── Üst Bar ─────────────────────────────────────────────────────── */}
           <motion.div

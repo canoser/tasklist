@@ -30,10 +30,10 @@ html, body {
 }
 
 body {
-  background-color: var(--bg);
+  background: var(--bg);
   color: var(--text);
   line-height: 1.5;
-  transition: background-color 0.3s, color 0.3s;
+  transition: background 0.3s, color 0.3s;
   
   /* Native App Hissiyatı: Global Metin Seçimini ve İmleci (I-Beam) İptal Et */
   user-select: none;

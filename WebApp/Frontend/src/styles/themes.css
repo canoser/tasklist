@@ -1,0 +1,159 @@
+/* ════════════ KLASİK KARANLIK (Varsayılan) ════════════ */
+body.theme-classic-dark {
+  --bg:           #0F1117;
+  --surface:      #161922;
+  --surface2:     #1C2230;
+  --card-bg:      rgba(255, 255, 255, 0.1);
+  --border:       rgba(255, 255, 255, 0.07);
+  --accent:       #5B5BD6;
+  --accent-t:     rgba(91, 91, 214, 0.14);
+  --text:         #F4F4F5;
+  --text2:        #71717A;
+  --text3:        #3F3F46;
+  --green:        #22C55E;
+  --amber:        #F59E0B;
+  --red:          #EF4444;
+  --radius:       14px;
+  --radius-sm:    8px;
+  --radius-pill:  999px;
+}
+
+/* ════════════ KLASİK AYDINLIK ════════════ */
+body.theme-classic-light {
+  --bg:           #F5F6FA;
+  --surface:      #FFFFFF;
+  --surface2:     #ECEEF5;
+  --card-bg:      rgba(0, 0, 0, 0.1);
+  --border:       rgba(0, 0, 0, 0.07);
+  --accent:       #5B5BD6;
+  --accent-t:     rgba(91, 91, 214, 0.10);
+  --text:         #111118;
+  --text2:        #6B7280;
+  --text3:        #9CA3AF;
+  --green:        #16A34A;
+  --amber:        #D97706;
+  --red:          #DC2626;
+  --radius:       14px;
+  --radius-sm:    8px;
+  --radius-pill:  999px;
+}
+
+/* ════════════ DOĞA KARANLIK ════════════ */
+body.theme-nature-dark {
+  --bg:           #0A1510;
+  --surface:      #111D16;
+  --surface2:     #192B20;
+  --card-bg:      rgba(255, 255, 255, 0.1);
+  --border:       rgba(255, 255, 255, 0.07);
+  --accent:       #4ADE80;
+  --accent-t:     rgba(74, 222, 128, 0.12);
+  --text:         #ECFDF0;
+  --text2:        #6FA882;
+  --text3:        #3D6650;
+  --green:        #4ADE80;
+  --amber:        #FCD34D;
+  --red:          #F87171;
+  --radius:       18px 6px 18px 6px;
+  --radius-sm:    10px 4px 10px 4px;
+  --radius-pill:  999px;
+}
+
+/* ════════════ DOĞA AYDINLIK ════════════ */
+body.theme-nature-light {
+  --bg:           #EDF7EF;
+  --surface:      #FFFFFF;
+  --surface2:     #D9EFE0;
+  --card-bg:      rgba(0, 0, 0, 0.1);
+  --border:       rgba(0, 0, 0, 0.07);
+  --accent:       #16A34A;
+  --accent-t:     rgba(22, 163, 74, 0.10);
+  --text:         #0B1F10;
+  --text2:        #3F7A52;
+  --text3:        #82B494;
+  --green:        #16A34A;
+  --amber:        #CA8A04;
+  --red:          #DC2626;
+  --radius:       18px 6px 18px 6px;
+  --radius-sm:    10px 4px 10px 4px;
+  --radius-pill:  999px;
+}
+
+/* ════════════ OKYANUS MAVİSİ (Karanlık) ════════════ */
+body.theme-ocean-dark {
+  --bg:           #0F172A;
+  --surface:      #1E293B;
+  --surface2:     #334155;
+  --card-bg:      rgba(255, 255, 255, 0.25); /* Az şeffaf, daha opak */
+  --border:       rgba(255, 255, 255, 0.15);
+  --accent:       #38BDF8;
+  --accent-t:     rgba(56, 189, 248, 0.20);
+  --text:         #F0F9FF;
+  --text2:        #94A3B8;
+  --text3:        #475569;
+  --green:        #10B981;
+  --amber:        #F59E0B;
+  --red:          #EF4444;
+  --radius:       16px;
+  --radius-sm:    10px;
+  --radius-pill:  999px;
+}
+
+/* ════════════ OKYANUS MAVİSİ (Aydınlık) ════════════ */
+body.theme-ocean-light {
+  --bg:           #E0F2FE;
+  --surface:      #FFFFFF;
+  --surface2:     #BAE6FD;
+  --card-bg:      rgba(255, 255, 255, 0.6); /* Az şeffaf, daha opak */
+  --border:       rgba(2, 132, 199, 0.15);
+  --accent:       #0284C7;
+  --accent-t:     rgba(2, 132, 199, 0.15);
+  --text:         #082F49;
+  --text2:        #0369A1;
+  --text3:        #38BDF8;
+  --green:        #059669;
+  --amber:        #D97706;
+  --red:          #DC2626;
+  --radius:       16px;
+  --radius-sm:    10px;
+  --radius-pill:  999px;
+}
+
+/* ════════════ SİBERPUNK GECESİ (Karanlık) ════════════ */
+body.theme-cyberpunk-dark {
+  --bg:           linear-gradient(to bottom, #061033 0%, #12041A 100%);
+  --surface:      #1A0B2E;
+  --surface2:     #2D1B4E;
+  --card-bg:      rgba(255, 255, 255, 0.20); /* Daha opak */
+  --border:       rgba(217, 70, 239, 0.35);
+  --accent:       #D946EF;
+  --accent-t:     rgba(217, 70, 239, 0.18);
+  --text:         #FDF4FF;
+  --text2:        #E879F9;
+  --text3:        #A21CAF;
+  --green:        #22D3EE;
+  --amber:        #FACC15;
+  --red:          #F43F5E;
+  --radius:       4px;
+  --radius-sm:    2px;
+  --radius-pill:  999px;
+}
+
+/* ════════════ SİBERPUNK GECESİ (Aydınlık) ════════════ */
+body.theme-cyberpunk-light {
+  --bg:           linear-gradient(to bottom, #E0F2FE 0%, #FDF4FF 100%);
+  --surface:      #FAE8FF;
+  --surface2:     #F5D0FE;
+  --card-bg:      rgba(255, 255, 255, 0.75); /* Daha opak, okunaklı */
+  --border:       rgba(217, 70, 239, 0.3);
+  --accent:       #C026D3;
+  --accent-t:     rgba(192, 38, 211, 0.15);
+  --text:         #4A044E;
+  --text2:        #86198F;
+  --text3:        #D946EF;
+  --green:        #0891B2;
+  --amber:        #CA8A04;
+  --red:          #E11D48;
+  --radius:       4px;
+  --radius-sm:    2px;
+  --radius-pill:  999px;
+}

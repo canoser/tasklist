@@ -235,11 +235,19 @@ const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTh
                   </div>
 
                   <div
-                    className={`${styles.themeOption} ${theme === 'lovely' ? styles.active : ''}`}
-                    onClick={() => setTheme('lovely')}
+                    className={`${styles.themeOption} ${theme === 'ocean' ? styles.active : ''}`}
+                    onClick={() => setTheme('ocean')}
                   >
-                    <div className={styles.themePreviewCircle} style={{ background: '#f43f5e' }} />
-                    <span className={styles.themeName}>{t('theme_lovely', { context: tone })}</span>
+                    <div className={styles.themePreviewCircle} style={{ background: '#0ea5e9' }} />
+                    <span className={styles.themeName}>{t('theme_ocean', { context: tone, defaultValue: 'Okyanus' })}</span>
+                  </div>
+
+                  <div
+                    className={`${styles.themeOption} ${theme === 'cyberpunk' ? styles.active : ''}`}
+                    onClick={() => setTheme('cyberpunk')}
+                  >
+                    <div className={styles.themePreviewCircle} style={{ background: '#d946ef' }} />
+                    <span className={styles.themeName}>{t('theme_cyberpunk', { context: tone, defaultValue: 'Siberpunk' })}</span>
                   </div>
                 </div>
               </div>
