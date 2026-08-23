@@ -3,16 +3,16 @@
 /* Dashboard tüm scrollable içeriği */
 .dashboard {
   width: 100%;
-  min-height: 100%;
-  padding: 20px 18px 8px 18px;
-  will-change: transform, scroll-position;
-  transform: translateZ(0); /* Donanım hızlandırmayı zorlar */
-  -webkit-overflow-scrolling: touch; /* iOS Safari için akıcı kaydırma */
+  height: 100%;
+  position: relative;
+  z-index: 1;
 }
 
 /* Üst selamlama alanı */
 .greeting {
-  margin-bottom: 24px;
+  padding: 28px 20px 0;
+  position: relative;
+  z-index: 1;
 }
 
 .greetingSub {
@@ -39,6 +39,7 @@
 .statsRow {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
   margin-top: 12px;
 }
 

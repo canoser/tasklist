@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DersMatris — Alanlarım Önizleme</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+
+/* ─────────────────────────────────────────────────
+   GLOBAL RESET
+───────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px}
+body{
+  font-family:'Inter',sans-serif;
+  background:#0A0B0D;
+  min-height:100vh;
+  padding:24px 16px 64px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:32px;
+  overflow-x:hidden;
+}
+
+/* ─────────────────────────────────────────────────
+   THEME BAR
+───────────────────────────────────────────────── */
+.theme-bar{
+  position:sticky;top:12px;z-index:500;
+  display:flex;gap:6px;flex-wrap:wrap;justify-content:center;
+  background:rgba(10,11,13,0.94);
+  backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,0.07);
+  padding:9px 14px;border-radius:999px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.7);
+}
+.theme-bar button{
+  padding:6px 15px;border-radius:999px;
+  border:1px solid rgba(255,255,255,0.09);
+  background:transparent;color:rgba(255,255,255,0.38);
+  font-family:'Inter',sans-serif;font-size:11.5px;font-weight:600;
+  cursor:pointer;transition:all .18s;white-space:nowrap;letter-spacing:.01em;
+}
+.theme-bar button.on{
+  background:var(--btn-c,#5B5BD6);color:#fff;
+  border-color:transparent;box-shadow:0 2px 14px rgba(0,0,0,0.35);
+}
+.theme-bar button:hover:not(.on){
+  color:#fff;border-color:rgba(255,255,255,0.18);
+  background:rgba(255,255,255,0.05);
+}
+
+/* ─────────────────────────────────────────────────
+   PAGE LABEL
+───────────────────────────────────────────────── */
+.pg-label{
+  font-size:10px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:rgba(255,255,255,0.18);
+  text-align:center;
+}
+
+/* ─────────────────────────────────────────────────
+   PHONE GRID
+───────────────────────────────────────────────── */
+.phones{
+  display:flex;flex-wrap:wrap;gap:28px;justify-content:center;
+  max-width:920px;width:100%;
+}
+.phone-col{display:flex;flex-direction:column;align-items:center;gap:10px}
+.phone-col-lbl{
+  font-size:9.5px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:rgba(255,255,255,0.18);
+}
+
+/* ─────────────────────────────────────────────────
+   PHONE FRAME
+───────────────────────────────────────────────── */
+.phone{
+  width:393px;height:852px;border-radius:46px;
+  border:1.5px solid rgba(255,255,255,0.07);
+  overflow:hidden;position:relative;flex-shrink:0;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.025),
+    0 40px 100px rgba(0,0,0,0.8),
+    0 12px 32px rgba(0,0,0,0.5);
+}
+.screen{
+  width:100%;height:100%;overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:none;position:relative;
+}
+.screen::-webkit-scrollbar{display:none}
+
+/* ─────────────────────────────────────────────────
+   THEME TOKENS
+───────────────────────────────────────────────── */
+
+/* ── Classic Dark ── */
+.cd{
+  --bg:       #0F1117;
+  --s1:       #161B27;
+  --s2:       #1D2336;
+  --s3:       #232D43;
+  --b1:       rgba(255,255,255,0.055);
+  --b2:       rgba(255,255,255,0.10);
+  --ac:       #5B5BD6;
+  --acs:      rgba(91,91,214,0.12);
+  --acm:      rgba(91,91,214,0.22);
+  --tx:       #F0F2F6;
+  --tx2:      #6A7390;
+  --tx3:      #383F5A;
+  --gn:       #22C55E; --gns:rgba(34,197,94,0.12);
+  --am:       #F59E0B; --ams:rgba(245,158,11,0.12);
+  --rd:       #EF4444; --rds:rgba(239,68,68,0.10);
+  --pu:       #A78BFA; --pus:rgba(167,139,250,0.12);
+  --sk:       'Inter',sans-serif;
+  --rXL:      20px; --rLG:14px; --rMD:10px; --rSM:7px; --rPL:999px;
+  background:var(--bg);color:var(--tx);font-family:var(--sk);
+}
+
+/* ── Classic Light ── */
+.cl{
+  --bg:       #F3F5FA;
+  --s1:       #FFFFFF;
+  --s2:       #EDF0F7;
+  --s3:       #E4E8F2;
+  --b1:       rgba(0,0,0,0.055);
+  --b2:       rgba(0,0,0,0.10);
+  --ac:       #5B5BD6;
+  --acs:      rgba(91,91,214,0.08);
+  --acm:      rgba(91,91,214,0.16);
+  --tx:       #0F1117;
+  --tx2:      #6B7280;
+  --tx3:      #9CA3AF;
+  --gn:       #16A34A; --gns:rgba(22,163,74,0.09);
+  --am:       #D97706; --ams:rgba(217,119,6,0.09);
+  --rd:       #DC2626; --rds:rgba(220,38,38,0.08);
+  --pu:       #7C3AED; --pus:rgba(124,58,237,0.09);
+  --sk:       'Inter',sans-serif;
+  --rXL:      20px; --rLG:14px; --rMD:10px; --rSM:7px; --rPL:999px;
+  background:var(--bg);color:var(--tx);font-family:var(--sk);
+}
+
+/* ── Nature Dark ── */
+.nd{
+  --bg:       #070E0A;
+  --s1:       #0E1812;
+  --s2:       #142018;
+  --s3:       #1A2A1F;
+  --b1:       rgba(255,255,255,0.055);
+  --b2:       rgba(74,222,128,0.10);
+  --ac:       #4ADE80;
+  --acs:      rgba(74,222,128,0.10);
+  --acm:      rgba(74,222,128,0.20);
+  --tx:       #E4F5EB;
+  --tx2:      #578868;
+  --tx3:      #2C4D38;
+  --gn:       #4ADE80; --gns:rgba(74,222,128,0.12);
+  --am:       #FCD34D; --ams:rgba(252,211,77,0.12);
+  --rd:       #F87171; --rds:rgba(248,113,113,0.12);
+  --pu:       #86EFAC; --pus:rgba(134,239,172,0.12);
+  --sk:       'Nunito',sans-serif;
+  --rXL:      22px 7px 22px 7px; --rLG:16px 5px 16px 5px;
+  --rMD:      12px 4px 12px 4px; --rSM:8px 3px 8px 3px; --rPL:999px;
+  background:var(--bg);color:var(--tx);font-family:var(--sk);
+}
+
+/* ── Nature Light ── */
+.nl{
+  --bg:       #EDF6EF;
+  --s1:       #FFFFFF;
+  --s2:       #D9EEE0;
+  --s3:       #C9E6D2;
+  --b1:       rgba(0,0,0,0.055);
+  --b2:       rgba(22,163,74,0.10);
+  --ac:       #16A34A;
+  --acs:      rgba(22,163,74,0.08);
+  --acm:      rgba(22,163,74,0.16);
+  --tx:       #042010;
+  --tx2:      #3A6A4A;
+  --tx3:      #72A882;
+  --gn:       #16A34A; --gns:rgba(22,163,74,0.10);
+  --am:       #B45309; --ams:rgba(180,83,9,0.10);
+  --rd:       #DC2626; --rds:rgba(220,38,38,0.08);
+  --pu:       #059669; --pus:rgba(5,150,105,0.10);
+  --sk:       'Nunito',sans-serif;
+  --rXL:      22px 7px 22px 7px; --rLG:16px 5px 16px 5px;
+  --rMD:      12px 4px 12px 4px; --rSM:8px 3px 8px 3px; --rPL:999px;
+  background:var(--bg);color:var(--tx);font-family:var(--sk);
+}
+
+/* ─────────────────────────────────────────────────
+   NATURE DECORATION
+───────────────────────────────────────────────── */
+.nature-leaf{
+  position:absolute;top:0;right:0;
+  width:110px;height:170px;
+  pointer-events:none;z-index:0;
+  opacity:.6;
+}
+.cd .nature-leaf,.cl .nature-leaf{display:none}
+
+/* ─────────────────────────────────────────────────
+   PAGE SHELL
+───────────────────────────────────────────────── */
+.pg{display:flex;flex-direction:column;height:100%;position:relative}
+.scroll{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:none;padding-bottom:90px;
+}
+.scroll::-webkit-scrollbar{display:none}
+
+/* ─────────────────────────────────────────────────
+   STATUS BAR
+───────────────────────────────────────────────── */
+.sbar{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:16px 26px 0;
+  font-size:13px;font-weight:600;color:var(--tx2);flex-shrink:0;
+}
+.sbar-r{display:flex;align-items:center;gap:4px}
+.sbar-r svg{width:14px;height:14px}
+
+/* ─────────────────────────────────────────────────
+   ══ ALANLARIM — LİSTE ══
+───────────────────────────────────────────────── */
+
+/* Page header */
+.ph{padding:22px 24px 0;position:relative;z-index:1}
+.ph-top{display:flex;justify-content:space-between;align-items:flex-start}
+.ph-title{
+  font-size:28px;font-weight:800;color:var(--tx);
+  letter-spacing:-.025em;line-height:1.1;
+}
+.ph-sub{
+  font-size:13px;color:var(--tx2);margin-top:5px;
+  font-weight:400;line-height:1.45;
+}
+.icon-btn{
+  width:38px;height:38px;border-radius:var(--rMD);
+  background:var(--s2);border:1px solid var(--b1);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--tx2);flex-shrink:0;
+}
+.icon-btn svg{width:18px;height:18px}
+
+/* Search */
+.srch{
+  margin:14px 24px 0;
+  display:flex;align-items:center;gap:10px;
+  background:var(--s2);border:1px solid var(--b1);
+  border-radius:var(--rMD);padding:11px 14px;
+  position:relative;z-index:1;
+}
+.srch svg{width:15px;height:15px;color:var(--tx3);flex-shrink:0}
+.srch-ph{font-size:13.5px;color:var(--tx3);font-family:var(--sk)}
+
+/* CTA buttons */
+.ctas{
+  display:flex;gap:10px;padding:14px 24px 0;
+  position:relative;z-index:1;
+}
+.btn-ac{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  gap:7px;padding:12px;
+  background:var(--ac);color:#fff;
+  border:none;border-radius:var(--rLG);
+  font-size:13px;font-weight:700;cursor:pointer;font-family:var(--sk);
+  letter-spacing:-.01em;
+  box-shadow:0 4px 18px rgba(0,0,0,0.22);
+}
+.btn-ac svg{width:16px;height:16px}
+.btn-out{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  gap:7px;padding:12px;
+  background:var(--s2);color:var(--tx);
+  border:1.5px solid var(--b2);border-radius:var(--rLG);
+  font-size:13px;font-weight:600;cursor:pointer;font-family:var(--sk);
+  letter-spacing:-.01em;
+}
+.btn-out svg{width:16px;height:16px}
+
+/* Section head */
+.sec-hd{
+  padding:22px 24px 10px;
+  display:flex;justify-content:space-between;align-items:center;
+  position:relative;z-index:1;
+}
+.sec-hd-lbl{
+  font-size:10.5px;font-weight:700;color:var(--tx3);
+  text-transform:uppercase;letter-spacing:.09em;
+  display:flex;align-items:center;gap:5px;
+}
+.sec-hd-lbl svg{width:12px;height:12px}
+.sec-hd-cnt{
+  font-size:11px;font-weight:600;color:var(--tx3);
+  background:var(--s2);border:1px solid var(--b1);
+  padding:2px 8px;border-radius:var(--rPL);
+}
+
+/* Divider */
+.divider{
+  display:flex;align-items:center;gap:10px;
+  padding:6px 24px;position:relative;z-index:1;
+}
+.div-line{flex:1;height:1px;background:var(--b1)}
+.div-txt{
+  font-size:10px;font-weight:600;color:var(--tx3);
+  text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;
+}
+
+/* Workspace card */
+.wc{
+  margin:0 16px 10px;
+  background:var(--s1);
+  border:1px solid var(--b1);
+  border-radius:var(--rXL);
+  padding:16px 18px;
+  display:flex;align-items:center;gap:14px;
+  cursor:pointer;position:relative;z-index:1;
+  transition:border-color .2s;
+}
+.wc.sel{
+  border-color:var(--acm);
+  box-shadow:0 0 0 1px var(--acs),0 4px 20px rgba(0,0,0,0.15);
+}
+
+/* Avatar */
+.av{
+  width:46px;height:46px;
+  border-radius:var(--rMD);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;font-weight:900;flex-shrink:0;
+  letter-spacing:-.02em;
+}
+.av-p{background:rgba(91,91,214,.13); color:#5B5BD6}
+.av-g{background:rgba(34,197,94,.12);  color:#22C55E}
+.av-a{background:rgba(245,158,11,.12); color:#F59E0B}
+.av-r{background:rgba(239,68,68,.11);  color:#EF4444}
+.av-i{background:rgba(99,102,241,.12); color:#818CF8}
+/* Nature themes: use accent color for all avatars */
+.nd .av-p,.nl .av-p{background:var(--acs);color:var(--ac)}
+.nd .av-g,.nl .av-g{background:var(--acs);color:var(--ac)}
+.nd .av-a,.nl .av-a{background:var(--ams);color:var(--am)}
+
+/* Card body */
+.wc-info{flex:1;min-width:0}
+.wc-name{
+  font-size:15px;font-weight:700;color:var(--tx);
+  margin-bottom:3px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em;
+}
+.wc-meta{
+  font-size:11.5px;color:var(--tx2);
+  display:flex;align-items:center;gap:6px;
+}
+.mdot{width:3px;height:3px;border-radius:50%;background:var(--tx3);flex-shrink:0}
+.wc-right{
+  display:flex;flex-direction:column;
+  align-items:flex-end;gap:7px;flex-shrink:0;
+}
+
+/* Badges */
+.badge{
+  font-size:10px;font-weight:700;padding:3px 9px;
+  border-radius:var(--rPL);letter-spacing:.04em;white-space:nowrap;
+}
+.badge-own{background:var(--acs);color:var(--ac)}
+.badge-mem{background:var(--s2);color:var(--tx3);border:1px solid var(--b1)}
+.badge-act{background:var(--gns);color:var(--gn)}
+
+/* Code */
+.wc-code{
+  font-size:9.5px;font-weight:700;
+  font-family:'SF Mono','Fira Code',monospace;
+  background:var(--s2);color:var(--tx3);
+  padding:3px 8px;border-radius:var(--rPL);
+  letter-spacing:.06em;border:1px solid var(--b1);
+}
+
+/* Active indicator */
+.dot-live{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--gn);flex-shrink:0;
+  box-shadow:0 0 7px var(--gn);
+}
+
+/* Progress */
+.prog-wrap{display:flex;align-items:center;gap:8px;margin-top:9px}
+.prog-track{flex:1;height:3px;background:var(--s2);border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;border-radius:99px;background:var(--ac);transition:width .3s}
+.prog-lbl{font-size:10px;font-weight:700;color:var(--tx3);white-space:nowrap}
+
+/* Empty state */
+.empty{
+  margin:0 16px;
+  background:var(--s1);
+  border:1.5px dashed var(--b2);
+  border-radius:var(--rXL);
+  padding:28px 22px;text-align:center;
+  position:relative;z-index:1;
+}
+.empty-ico{font-size:28px;margin-bottom:10px;display:block}
+.empty-ttl{font-size:14px;font-weight:700;color:var(--tx);margin-bottom:5px}
+.empty-sub{font-size:12px;color:var(--tx2);line-height:1.5}
+.empty-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  margin-top:14px;padding:9px 16px;
+  background:var(--ac);color:#fff;
+  border:none;border-radius:var(--rPL);
+  font-size:12px;font-weight:700;cursor:pointer;font-family:var(--sk);
+}
+
+/* ─────────────────────────────────────────────────
+   ══ ALAN DETAYI ══
+───────────────────────────────────────────────── */
+
+/* Back bar */
+.bbar{
+  padding:22px 24px 0;
+  display:flex;align-items:center;justify-content:space-between;
+  position:relative;z-index:1;
+}
+.back-btn{
+  display:flex;align-items:center;gap:5px;
+  background:none;border:none;cursor:pointer;
+  font-size:14px;font-weight:600;color:var(--tx2);
+  font-family:var(--sk);padding:0;
+}
+.back-btn svg{width:18px;height:18px}
+.det-ac-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:8px 16px;
+  background:var(--ac);color:#fff;
+  border:none;border-radius:var(--rPL);
+  font-size:12px;font-weight:700;cursor:pointer;
+  font-family:var(--sk);white-space:nowrap;
+}
+.det-ac-btn svg{width:14px;height:14px}
+
+/* Hero */
+.hero{padding:16px 24px 0;position:relative;z-index:1}
+.hero-av{
+  width:54px;height:54px;
+  border-radius:var(--rLG);
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;font-weight:900;margin-bottom:12px;
+}
+.hero-title{
+  font-size:26px;font-weight:900;color:var(--tx);
+  letter-spacing:-.025em;line-height:1.1;
+}
+.hero-sub{
+  font-size:13px;color:var(--tx2);margin-top:6px;
+  display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+}
+.hero-sub svg{width:13px;height:13px;flex-shrink:0}
+.hero-live{color:var(--gn);font-weight:700}
+
+/* Bento stats */
+.bento{
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  gap:8px;padding:16px 24px 0;position:relative;z-index:1;
+}
+.bento-c{
+  background:var(--s1);border:1px solid var(--b1);
+  border-radius:var(--rLG);
+  padding:14px 12px;
+  display:flex;flex-direction:column;
+}
+.bv{
+  font-size:24px;font-weight:900;color:var(--tx);
+  letter-spacing:-.03em;line-height:1;margin-bottom:5px;
+}
+.bv.ac{color:var(--ac)}
+.bv.gn{color:var(--gn)}
+.bv.am{color:var(--am)}
+.bl{
+  font-size:9.5px;font-weight:700;color:var(--tx3);
+  text-transform:uppercase;letter-spacing:.07em;line-height:1.3;
+}
+
+/* Invite card */
+.inv-card{
+  margin:14px 24px 0;
+  background:var(--s1);border:1px solid var(--b1);
+  border-radius:var(--rXL);padding:16px 18px;
+  position:relative;z-index:1;
+}
+.inv-lbl{
+  font-size:10.5px;font-weight:700;color:var(--tx3);
+  text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;
+}
+.inv-row{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--s2);border-radius:var(--rMD);
+  padding:12px 14px;gap:12px;
+}
+.inv-code{
+  font-family:'SF Mono','Fira Code',monospace;
+  font-size:20px;font-weight:900;color:var(--tx);
+  letter-spacing:.1em;
+}
+.copy-btn{
+  display:flex;align-items:center;gap:5px;
+  background:var(--acs);color:var(--ac);
+  border:1px solid var(--acm);border-radius:var(--rSM);
+  padding:6px 12px;
+  font-size:11px;font-weight:700;cursor:pointer;font-family:var(--sk);
+  white-space:nowrap;
+}
+.copy-btn svg{width:12px;height:12px}
+
+/* Detail section */
+.det-sec{padding:18px 24px 0;position:relative;z-index:1}
+.det-sec-hd{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:12px;
+}
+.det-sec-ttl{
+  font-size:13.5px;font-weight:700;color:var(--tx);
+  letter-spacing:-.01em;
+}
+.det-sec-lnk{
+  font-size:12px;font-weight:600;color:var(--ac);
+  background:none;border:none;cursor:pointer;font-family:var(--sk);
+}
+
+/* Members list */
+.mem-item{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 0;border-bottom:1px solid var(--b1);
+}
+.mem-item:last-child{border-bottom:none}
+.mem-av{
+  width:37px;height:37px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:900;flex-shrink:0;
+}
+.mem-info{flex:1;min-width:0}
+.mem-name{font-size:14px;font-weight:600;color:var(--tx);letter-spacing:-.01em}
+.mem-since{font-size:11px;color:var(--tx3);margin-top:1px}
+.mem-badge{margin-left:auto;flex-shrink:0}
+
+/* Tasks preview */
+.task-item{
+  display:flex;align-items:flex-start;gap:11px;
+  padding:12px 0;border-bottom:1px solid var(--b1);
+}
+.task-item:last-child{border-bottom:none}
+.chk{
+  width:19px;height:19px;border-radius:5px;
+  border:1.5px solid var(--b2);flex-shrink:0;margin-top:1px;
+  display:flex;align-items:center;justify-content:center;
+}
+.chk.done{background:var(--gn);border-color:var(--gn)}
+.chk.done svg{width:11px;height:11px;stroke:#fff;stroke-width:3}
+.task-body{flex:1;min-width:0}
+.task-ttl{
+  font-size:14px;font-weight:500;color:var(--tx);
+  margin-bottom:4px;letter-spacing:-.01em;
+}
+.task-ttl.done{color:var(--tx3);text-decoration:line-through}
+.task-tags{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tag{
+  font-size:10px;font-weight:700;padding:2px 7px;
+  border-radius:var(--rPL);
+}
+.tag-due{background:var(--ams);color:var(--am)}
+.tag-typ{background:var(--acs);color:var(--ac)}
+.tag-dn{background:var(--gns);color:var(--gn)}
+.task-who{
+  display:flex;align-items:center;gap:4px;
+  font-size:11px;color:var(--tx3);
+}
+.who-av{
+  width:16px;height:16px;border-radius:50%;
+  font-size:8px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--acs);color:var(--ac);
+}
+.more-tasks{
+  padding:10px 0;text-align:center;
+  font-size:12px;font-weight:600;color:var(--ac);cursor:pointer;
+}
+
+/* ─────────────────────────────────────────────────
+   BOTTOM NAV
+───────────────────────────────────────────────── */
+.bnav{
+  position:absolute;bottom:0;left:0;right:0;height:82px;
+  background:var(--s1);border-top:1px solid var(--b1);
+  display:flex;align-items:flex-start;justify-content:space-around;
+  padding:10px 8px 0;z-index:100;
+}
+.nb{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:5px 10px;background:none;border:none;
+  cursor:pointer;color:var(--tx3);font-family:var(--sk);flex:1;
+  position:relative;transition:color .15s;
+}
+.nb svg{width:22px;height:22px}
+.nb span{font-size:9px;font-weight:600;letter-spacing:.04em}
+.nb.on{color:var(--ac)}
+.nb-pip{
+  position:absolute;top:-10px;left:50%;transform:translateX(-50%);
+  width:22px;height:3px;border-radius:99px;background:var(--ac);
+}
+.fab{
+  width:52px;height:52px;border-radius:50%;
+  background:var(--ac);border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;margin-top:-10px;
+  box-shadow:0 6px 22px rgba(0,0,0,0.35);
+}
+.fab svg{width:22px;height:22px;stroke:#fff;stroke-width:2.5}
+
+</style>
+</head>
+<body>
+
+<!-- ── Theme Bar ── -->
+<div class="theme-bar" id="tbar">
+  <button class="on" style="--btn-c:#5B5BD6" onclick="setTheme('cd',this)">🌙 Klasik Karanlık</button>
+  <button style="--btn-c:#5B5BD6" onclick="setTheme('cl',this)">☀️ Klasik Aydınlık</button>
+  <button style="--btn-c:#4ADE80;color:#111" onclick="setTheme('nd',this)">🌿 Doğa Karanlık</button>
+  <button style="--btn-c:#16A34A" onclick="setTheme('nl',this)">🍃 Doğa Aydınlık</button>
+</div>
+
+<div class="pg-label">Ekran Önizleme — Alanlarım (Workspace)</div>
+
+<!-- ── Phones ── -->
+<div class="phones" id="phones">
+
+  <!-- ══════════════════════════════════════════
+       EKRAN 1 — ALANLARIM LİSTE
+  ══════════════════════════════════════════ -->
+  <div class="phone-col">
+    <div class="phone-col-lbl">Alanlarım — Liste</div>
+    <div class="phone">
+      <div class="screen cd" id="s1">
+
+        <!-- Doğa Dekorasyonu -->
+        <svg class="nature-leaf" viewBox="0 0 110 170" fill="none">
+          <path d="M95 4 Q72 32 56 48 Q38 65 27 90 Q16 115 8 150" stroke="var(--ac)" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".2"/>
+          <ellipse cx="58" cy="46" rx="7" ry="12" fill="var(--ac)" opacity=".1" transform="rotate(13 58 46)"/>
+          <ellipse cx="27" cy="88" rx="5" ry="9" fill="var(--ac)" opacity=".08" transform="rotate(-7 27 88)"/>
+          <ellipse cx="93" cy="6" rx="4" ry="7" fill="var(--ac)" opacity=".1" transform="rotate(4 93 6)"/>
+          <circle cx="72" cy="30" r="2.5" fill="var(--ac)" opacity=".14"/>
+          <circle cx="42" cy="67" r="2" fill="var(--ac)" opacity=".1"/>
+        </svg>
+
+        <div class="pg">
+          <div class="scroll">
+
+            <!-- Status bar -->
+            <div class="sbar">
+              <span>15:24</span>
+              <div class="sbar-r">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1.5 8.5S5 4 12 4s10.5 4.5 10.5 4.5"/><path d="M5 12s3-2.5 7-2.5S19 12 19 12"/>
+                  <path d="M9 15.5s1.5-1 3-1 3 1 3 1"/><circle cx="12" cy="19" r="1" fill="currentColor"/>
+                </svg>
+                <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                  <rect x="2" y="7" width="15" height="10" rx="2"/>
+                  <path d="M19 10.5v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Header -->
+            <div class="ph">
+              <div class="ph-top">
+                <div>
+                  <div class="ph-title">Alanlarım</div>
+                  <div class="ph-sub">Ekip ve çalışma alanlarınızı yönetin</div>
+                </div>
+                <button class="icon-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="5" r="1" fill="currentColor"/>
+                    <circle cx="12" cy="12" r="1" fill="currentColor"/>
+                    <circle cx="12" cy="19" r="1" fill="currentColor"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Search -->
+            <div class="srch">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <span class="srch-ph">Alan adı veya davet kodu…</span>
+            </div>
+
+            <!-- CTAs -->
+            <div class="ctas">
+              <button class="btn-ac">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Yeni Alan Oluştur
+              </button>
+              <button class="btn-out">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
+                  <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
+                </svg>
+                Katıl
+              </button>
+            </div>
+
+            <!-- My workspaces -->
+            <div class="sec-hd">
+              <div class="sec-hd-lbl">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                Yönettiğim Alanlar
+              </div>
+              <span class="sec-hd-cnt">2</span>
+            </div>
+
+            <!-- Card 1 — Selected -->
+            <div class="wc sel">
+              <div class="av av-p">M</div>
+              <div class="wc-info">
+                <div class="wc-name">Misket</div>
+                <div class="wc-meta">
+                  <span>4 üye</span><span class="mdot"></span>
+                  <span>12 görev</span><span class="mdot"></span>
+                  <span>Ekip</span>
+                </div>
+                <div class="prog-wrap">
+                  <div class="prog-track"><div class="prog-fill" style="width:65%"></div></div>
+                  <span class="prog-lbl">%65</span>
+                </div>
+              </div>
+              <div class="wc-right">
+                <span class="badge badge-own">Yönetici</span>
+                <div class="dot-live"></div>
+              </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="wc">
+              <div class="av av-a">F</div>
+              <div class="wc-info">
+                <div class="wc-name">Fizik Grubu</div>
+                <div class="wc-meta">
+                  <span>8 üye</span><span class="mdot"></span>
+                  <span>34 görev</span><span class="mdot"></span>
+                  <span>Ders</span>
+                </div>
+                <div class="prog-wrap">
+                  <div class="prog-track">
+                    <div class="prog-fill" style="width:40%;background:var(--am)"></div>
+                  </div>
+                  <span class="prog-lbl">%40</span>
+                </div>
+              </div>
+              <div class="wc-right">
+                <span class="badge badge-own">Yönetici</span>
+                <span class="wc-code">FZ8K2</span>
+              </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="divider">
+              <div class="div-line"></div>
+              <span class="div-txt">Üye olduğum alanlar</span>
+              <div class="div-line"></div>
+            </div>
+
+            <!-- Card 3 — member -->
+            <div class="wc">
+              <div class="av av-g">T</div>
+              <div class="wc-info">
+                <div class="wc-name">TYT Hazırlık</div>
+                <div class="wc-meta">
+                  <span>22 üye</span><span class="mdot"></span>
+                  <span>81 görev</span><span class="mdot"></span>
+                  <span>Koçluk</span>
+                </div>
+                <div class="prog-wrap">
+                  <div class="prog-track">
+                    <div class="prog-fill" style="width:78%;background:var(--gn)"></div>
+                  </div>
+                  <span class="prog-lbl">%78</span>
+                </div>
+              </div>
+              <div class="wc-right">
+                <span class="badge badge-mem">Üye</span>
+                <span class="wc-code">TY9M1</span>
+              </div>
+            </div>
+
+            <!-- Empty state for no more joined -->
+            <div class="divider" style="margin-top:6px">
+              <div class="div-line"></div>
+            </div>
+            <div class="empty" style="margin-bottom:12px">
+              <span class="empty-ico">🔍</span>
+              <div class="empty-ttl">Başka alan bulunamadı</div>
+              <div class="empty-sub">Davet kodu ile yeni bir alana katılabilirsiniz.</div>
+              <button class="empty-btn">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
+                  <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
+                </svg>
+                Koda ile katıl
+              </button>
+            </div>
+
+          </div><!-- /scroll -->
+
+          <!-- Bottom nav -->
+          <div class="bnav">
+            <button class="nb">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+              <span>Ana Sayfa</span>
+            </button>
+            <button class="nb on">
+              <div class="nb-pip"></div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+              </svg>
+              <span>Alanlarım</span>
+            </button>
+            <button class="fab">
+              <svg viewBox="0 0 24 24" fill="none">
+                <line x1="12" y1="5" x2="12" y2="19" stroke="white" stroke-width="2.5"/>
+                <line x1="5" y1="12" x2="19" y2="12" stroke="white" stroke-width="2.5"/>
+              </svg>
+            </button>
+            <button class="nb">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              <span>Takvim</span>
+            </button>
+            <button class="nb">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+              </svg>
+              <span>Profil</span>
+            </button>
+          </div>
+        </div><!-- /pg -->
+
+      </div><!-- /screen -->
+    </div><!-- /phone -->
+  </div><!-- /col -->
+
+
+  <!-- ══════════════════════════════════════════
+       EKRAN 2 — ALAN DETAYI
+  ══════════════════════════════════════════ -->
+  <div class="phone-col">
+    <div class="phone-col-lbl">Alan Detayı</div>
+    <div class="phone">
+      <div class="screen cd" id="s2">
+
+        <svg class="nature-leaf" viewBox="0 0 110 170" fill="none">
+          <path d="M95 4 Q72 32 56 48 Q38 65 27 90 Q16 115 8 150" stroke="var(--ac)" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".2"/>
+          <ellipse cx="58" cy="46" rx="7" ry="12" fill="var(--ac)" opacity=".1" transform="rotate(13 58 46)"/>
+          <circle cx="72" cy="30" r="2.5" fill="var(--ac)" opacity=".14"/>
+        </svg>
+
+        <div class="pg">
+          <div class="scroll">
+
+            <!-- Status bar -->
+            <div class="sbar">
+              <span>15:24</span>
+              <div class="sbar-r">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1.5 8.5S5 4 12 4s10.5 4.5 10.5 4.5"/>
+                  <path d="M5 12s3-2.5 7-2.5S19 12 19 12"/>
+                  <path d="M9 15.5s1.5-1 3-1 3 1 3 1"/>
+                  <circle cx="12" cy="19" r="1" fill="currentColor"/>
+                </svg>
+                <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                  <rect x="2" y="7" width="15" height="10" rx="2"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Back bar -->
+            <div class="bbar">
+              <button class="back-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="15 18 9 12 15 6"/>
+                </svg>
+                Alanlarım
+              </button>
+              <button class="det-ac-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Görev Ata
+              </button>
+            </div>
+
+            <!-- Hero -->
+            <div class="hero">
+              <div class="hero-av av-p">M</div>
+              <div class="hero-title">Misket</div>
+              <div class="hero-sub">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 010 7.75"/>
+                </svg>
+                4 üye &nbsp;·&nbsp; Ekip alanı
+                <span class="hero-live">● Aktif</span>
+              </div>
+            </div>
+
+            <!-- Bento stats -->
+            <div class="bento">
+              <div class="bento-c">
+                <div class="bv ac">12</div>
+                <div class="bl">Toplam Görev</div>
+              </div>
+              <div class="bento-c">
+                <div class="bv gn">8</div>
+                <div class="bl">Tamamlandı</div>
+              </div>
+              <div class="bento-c">
+                <div class="bv am">4</div>
+                <div class="bl">Bekliyor</div>
+              </div>
+            </div>
+
+            <!-- Invite code -->
+            <div class="inv-card">
+              <div class="inv-lbl">Davet Kodu</div>
+              <div class="inv-row">
+                <div class="inv-code">TP0GQH</div>
+                <button class="copy-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2"/>
+                    <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                  </svg>
+                  Kopyala
+                </button>
+              </div>
+            </div>
+
+            <!-- Members -->
+            <div class="det-sec">
+              <div class="det-sec-hd">
+                <div class="det-sec-ttl">Üyeler (4)</div>
+                <button class="det-sec-lnk">Yönet →</button>
+              </div>
+
+              <div class="mem-item">
+                <div class="mem-av av-p">C</div>
+                <div class="mem-info">
+                  <div class="mem-name">canoser</div>
+                  <div class="mem-since">Eklendi: 14 Ağu 2026</div>
+                </div>
+                <span class="badge badge-own mem-badge">Yönetici</span>
+              </div>
+
+              <div class="mem-item">
+                <div class="mem-av av-g">A</div>
+                <div class="mem-info">
+                  <div class="mem-name">ayse.k</div>
+                  <div class="mem-since">Eklendi: 16 Ağu 2026</div>
+                </div>
+                <span class="badge badge-act mem-badge">Aktif</span>
+              </div>
+
+              <div class="mem-item">
+                <div class="mem-av av-a">M</div>
+                <div class="mem-info">
+                  <div class="mem-name">mert.d</div>
+                  <div class="mem-since">Eklendi: 18 Ağu 2026</div>
+                </div>
+                <span class="badge badge-mem mem-badge">Üye</span>
+              </div>
+
+              <div class="mem-item">
+                <div class="mem-av av-i">Z</div>
+                <div class="mem-info">
+                  <div class="mem-name">zeynep.y</div>
+                  <div class="mem-since">Eklendi: 20 Ağu 2026</div>
+                </div>
+                <span class="badge badge-mem mem-badge">Üye</span>
+              </div>
+            </div>
+
+            <!-- Tasks preview -->
+            <div class="det-sec" style="padding-bottom:16px">
+              <div class="det-sec-hd">
+                <div class="det-sec-ttl">Son Görevler</div>
+                <button class="det-sec-lnk">Tümünü gör →</button>
+              </div>
+
+              <div class="task-item">
+                <div class="chk done">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="task-body">
+                  <div class="task-ttl done">Fizik: 50 soru</div>
+                  <div class="task-tags">
+                    <span class="tag tag-dn">Tamamlandı</span>
+                    <div class="task-who"><div class="who-av">A</div>ayse.k</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="task-item">
+                <div class="chk"></div>
+                <div class="task-body">
+                  <div class="task-ttl">Matematik denemesi</div>
+                  <div class="task-tags">
+                    <span class="tag tag-due">Bugün 17:00</span>
+                    <span class="tag tag-typ">Deneme</span>
+                    <div class="task-who"><div class="who-av">M</div>mert.d</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="task-item">
+                <div class="chk"></div>
+                <div class="task-body">
+                  <div class="task-ttl">Kimya konu tekrarı</div>
+                  <div class="task-tags">
+                    <span class="tag tag-due">Yarın 10:00</span>
+                    <span class="tag tag-typ">Okuma</span>
+                    <div class="task-who"><div class="who-av">Z</div>zeynep.y</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="more-tasks">+ 9 görev daha göster</div>
+            </div>
+
+          </div><!-- /scroll -->
+
+          <!-- Bottom nav -->
+          <div class="bnav">
+            <button class="nb">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+              <span>Ana Sayfa</span>
+            </button>
+            <button class="nb on">
+              <div class="nb-pip"></div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+                <path d="M16 3.13a4 4 0 010 7.75"/>
+              </svg>
+              <span>Alanlarım</span>
+            </button>
+            <button class="fab">
+              <svg viewBox="0 0 24 24" fill="none">
+                <line x1="12" y1="5" x2="12" y2="19" stroke="white" stroke-width="2.5"/>
+                <line x1="5" y1="12" x2="19" y2="12" stroke="white" stroke-width="2.5"/>
+              </svg>
+            </button>
+            <button class="nb">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              <span>Takvim</span>
+            </button>
+            <button class="nb">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              <span>Profil</span>
+            </button>
+          </div>
+        </div><!-- /pg -->
+
+      </div><!-- /screen -->
+    </div><!-- /phone -->
+  </div><!-- /col -->
+
+</div><!-- /phones -->
+
+<script>
+const THEMES = ['cd','cl','nd','nl'];
+function setTheme(t, btn){
+  document.querySelectorAll('.screen').forEach(s=>{
+    THEMES.forEach(c=>s.classList.remove(c));
+    s.classList.add(t);
+  });
+  document.querySelectorAll('.theme-bar button').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+</script>
+</body>
+</html>

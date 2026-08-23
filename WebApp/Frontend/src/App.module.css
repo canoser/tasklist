@@ -227,7 +227,7 @@
   align-items: center;
   justify-content: center;
   height: 100dvh;
-  width: 100vw;
+  width: 100%;
   background-color: var(--bg);
   color: var(--text);
   gap: 1rem;

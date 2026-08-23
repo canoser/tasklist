@@ -1,8 +1,7 @@
 .container {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  animation: fadeIn 0.3s ease-out;
+  height: 100%;
+  position: relative;
+  z-index: 1;
 }
 
 @keyframes fadeIn {
@@ -11,23 +10,31 @@
 }
 
 .header {
+  padding: 20px 20px 12px;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
 }
 
 .titleArea h1 {
   margin: 0 0 8px 0;
-  font-size: 1.8rem;
+  font-size: 22px;
+  font-weight: 800;
   color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .titleArea p {
   margin: 0;
   color: var(--text2);
-  font-size: 1rem;
+  font-size: 13px;
+  margin-top: 3px;
 }
 
 .actionArea {
@@ -62,8 +69,9 @@
 
 .grid {
   display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 24px;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  padding: 0 16px 16px;
 }
 
 @media (max-width: 768px) {
@@ -74,9 +82,11 @@
 
 .card {
   background: var(--surface);
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: var(--radius);
+  padding: 16px;
   border: 1px solid var(--border);
+  position: relative;
+  z-index: 1;
 }
 
 .card h3 {

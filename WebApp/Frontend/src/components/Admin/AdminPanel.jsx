@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Save, AlertCircle, RefreshCw } from 'lucide-react';
+import { Settings, Save, AlertCircle, RefreshCw, HelpCircle } from 'lucide-react';
 import { getSettings, updateSetting } from '../../services/adminSettingsService';
 import QuotaSimulator from './QuotaSimulator';
 import UserApprovals from './UserApprovals';
