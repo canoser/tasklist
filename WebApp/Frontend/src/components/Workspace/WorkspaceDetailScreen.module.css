@@ -1,154 +1,581 @@
+/* ─────────────────────────────────────────────────
+   PAGE SHELL & LAYOUT
+───────────────────────────────────────────────── */
 .container {
+  display: flex;
+  flex-direction: column;
   height: 100%;
   position: relative;
-  z-index: 1;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+/* NATURE DECORATION */
+.natureLeaf {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 140px;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: visible;
 }
 
-.header {
-  padding: 20px 20px 12px;
+.scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  padding-bottom: 90px;
+}
+.scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* ─────────────────────────────────────────────────
+   BACK BAR
+───────────────────────────────────────────────── */
+.bbar {
+  padding: 22px 24px 0;
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  gap: 10px;
   position: relative;
   z-index: 1;
 }
 
-.titleArea h1 {
-  margin: 0 0 8px 0;
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--text);
+.backBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tx2, var(--text2));
+  font-family: var(--sk, inherit);
+  padding: 0;
+}
+
+.backBtn svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.detAcBtn {
   display: flex;
   align-items: center;
   gap: 6px;
-}
-
-.titleArea p {
-  margin: 0;
-  color: var(--text2);
-  font-size: 13px;
-  margin-top: 3px;
-}
-
-.actionArea {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.btnBack {
   padding: 8px 16px;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--text2);
-  border: 1px solid var(--border);
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.btnAction {
-  padding: 8px 16px;
-  border-radius: 8px;
-  background: var(--primary);
-  color: white;
+  background: var(--ac, var(--accent));
+  color: #fff;
   border: none;
+  border-radius: var(--rPL, var(--radius-pill, 999px));
+  font-size: 12px;
+  font-weight: 700;
   cursor: pointer;
-  font-weight: 600;
+  font-family: var(--sk, inherit);
+  white-space: nowrap;
 }
 
-.btnDanger {
-  background: var(--red, #ff4d4f);
+.detAcBtn svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-  padding: 0 16px 16px;
-}
-
-@media (max-width: 768px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.card {
-  background: var(--surface);
-  border-radius: var(--radius);
-  padding: 16px;
-  border: 1px solid var(--border);
+/* ─────────────────────────────────────────────────
+   HERO: inline avatar + title + settings
+───────────────────────────────────────────────── */
+.hero {
+  padding: 16px 24px 0;
   position: relative;
   z-index: 1;
 }
 
-.card h3 {
-  margin: 0 0 16px 0;
-  font-size: 1.2rem;
-  color: var(--text);
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 8px;
+.heroRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: nowrap;
 }
 
-.codeBox {
+.heroAv {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--rLG, var(--radius-lg, 14px));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.heroText {
+  flex: 1;
+  min-width: 0;
+}
+
+.heroTitle {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--tx, var(--text));
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.heroSub {
+  font-size: 12px;
+  color: var(--tx2, var(--text2));
+  margin-top: 3px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.heroSub svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.heroLive {
+  color: var(--gn, var(--green));
+  font-weight: 700;
+}
+
+.settingsBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--rMD, var(--radius-md, 10px));
+  background: var(--s2, var(--surface2));
+  border: 1px solid var(--b1, var(--border));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--tx2, var(--text2));
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.settingsBtn:hover {
+  background: var(--s3, var(--surface3));
+}
+
+.settingsBtn svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+
+/* ─────────────────────────────────────────────────
+   COMPACT INVITE STRIP
+───────────────────────────────────────────────── */
+.inviteStrip {
+  margin: 12px 24px 0;
+  background: var(--card-bg, var(--surface));
+  border: 1.5px solid var(--b2, var(--border2));
+  border-radius: var(--rMD, var(--radius-md, 10px));
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+.invLabelCol {
+  padding: 9px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-right: 1px solid var(--b1, var(--border));
+  flex-shrink: 0;
+}
+
+.invLabelCol svg {
+  width: 13px;
+  height: 13px;
+  color: var(--tx3, var(--text3));
+  flex-shrink: 0;
+}
+
+.invLabelTxt {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--tx3, var(--text3));
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  white-space: nowrap;
+}
+
+.invCodeInline {
+  flex: 1;
+  padding: 9px 10px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--tx, var(--text));
+  letter-spacing: 0.08em;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.invActions {
+  display: flex;
+  align-items: stretch;
+  border-left: 1px solid var(--b1, var(--border));
+  flex-shrink: 0;
+}
+
+.invIconBtn {
+  width: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-right: 1px solid var(--b1, var(--border));
+  cursor: pointer;
+  color: var(--tx2, var(--text2));
+  transition: background 0.15s;
+}
+
+.invIconBtn:last-child {
+  border-right: none;
+}
+
+.invIconBtn:hover {
+  background: var(--s3, var(--surface3));
+}
+
+.invIconBtn svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* ─────────────────────────────────────────────────
+   BENTO STATS
+───────────────────────────────────────────────── */
+.bento {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  padding: 12px 24px 0;
+  position: relative;
+  z-index: 1;
+}
+
+.bentoC {
+  background: var(--card-bg, var(--surface));
+  border: 1.5px solid var(--b2, var(--border2));
+  border-radius: var(--rLG, var(--radius-lg, 14px));
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.bv {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--tx, var(--text));
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.bvAc { color: var(--ac, var(--accent)); }
+.bvGn { color: var(--gn, var(--green)); }
+.bvAm { color: var(--am, var(--amber)); }
+
+.bl {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--tx3, var(--text3));
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  line-height: 1.3;
+}
+
+/* ─────────────────────────────────────────────────
+   COLLAPSIBLE ACCORDIONS
+───────────────────────────────────────────────── */
+.acc {
+  margin: 12px 24px 0;
+  background: var(--card-bg, var(--surface));
+  border: 1.5px solid var(--b2, var(--border2));
+  border-radius: var(--rXL, var(--radius-xl, 20px));
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+.accHead {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--background);
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 16px;
+  padding: 13px 16px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-.codeBox code {
-  font-size: 1.2rem;
-  font-weight: bold;
-  letter-spacing: 2px;
-  color: var(--primary);
-}
-
-.memberList {
+.accHeadLeft {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.memberRow {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 12px;
-  background: var(--background);
-  border-radius: 8px;
+  gap: 8px;
 }
 
-.memberInfo {
+.accTtl {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--tx, var(--text));
+  letter-spacing: -0.01em;
+}
+
+.accCnt {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--tx3, var(--text3));
+  background: var(--s2, var(--surface2));
+  border: 1px solid var(--b1, var(--border));
+  padding: 2px 8px;
+  border-radius: var(--rPL, var(--radius-pill, 999px));
+}
+
+.accRight {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 
-.memberName {
+.accLink {
+  font-size: 12px;
   font-weight: 600;
-  color: var(--text);
+  color: var(--ac, var(--accent));
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--sk, inherit);
+  padding: 0;
 }
 
-.memberRole {
-  font-size: 0.85rem;
-  color: var(--text2);
+.accChevron {
+  width: 18px;
+  height: 18px;
+  color: var(--tx3, var(--text3));
+  transition: transform 0.22s ease;
+  flex-shrink: 0;
 }
 
-.emptyState {
-  padding: 32px;
+.accChevron.open {
+  transform: rotate(180deg);
+}
+
+.accBody {
+  border-top: 1px solid var(--b1, var(--border));
+  padding: 0 16px;
+  overflow: hidden;
+  max-height: 1000px;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+.accBody.closed {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-top: none;
+}
+
+/* ─────────────────────────────────────────────────
+   MEMBERS LIST
+───────────────────────────────────────────────── */
+.memItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--b1, var(--border));
+}
+
+.memItem:last-child {
+  border-bottom: none;
+}
+
+.memAv {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.memInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.memName {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--tx, var(--text));
+  letter-spacing: -0.01em;
+}
+
+.memSince {
+  font-size: 11px;
+  color: var(--tx3, var(--text3));
+  margin-top: 1px;
+}
+
+.memBadge {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* ─────────────────────────────────────────────────
+   TASKS PREVIEW
+───────────────────────────────────────────────── */
+.taskItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--b1, var(--border));
+}
+
+.taskItem:last-child {
+  border-bottom: none;
+}
+
+.chk {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid var(--b2, var(--border2));
+  flex-shrink: 0;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chkDone {
+  background: var(--gn, var(--green));
+  border-color: var(--gn, var(--green));
+}
+
+.chkDone svg {
+  width: 10px;
+  height: 10px;
+  stroke: #fff;
+  stroke-width: 3;
+  flex-shrink: 0;
+}
+
+.taskBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.taskTtl {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--tx, var(--text));
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+
+.taskTtlDone {
+  color: var(--tx3, var(--text3));
+  text-decoration: line-through;
+}
+
+.taskTags {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--rPL, var(--radius-pill, 999px));
+}
+
+.tagDue { background: var(--ams, rgba(245,158,11,0.12)); color: var(--am, var(--amber)); }
+.tagTyp { background: var(--acs, rgba(91,91,214,0.12)); color: var(--ac, var(--accent)); }
+.tagDn { background: var(--gns, rgba(34,197,94,0.12)); color: var(--gn, var(--green)); }
+
+.taskWho {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--tx3, var(--text3));
+}
+
+.whoAv {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 8px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--acs, rgba(91,91,214,0.12));
+  color: var(--ac, var(--accent));
+  flex-shrink: 0;
+}
+
+.moreTasks {
+  padding: 10px 0;
   text-align: center;
-  color: var(--text2);
-  background: var(--surface);
-  border-radius: 12px;
-  border: 1px dashed var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ac, var(--accent));
+  cursor: pointer;
+}
+
+/* Badges */
+.badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: var(--rPL, var(--radius-pill, 999px));
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.badgeOwn {
+  background: var(--acs, var(--accent-t));
+  color: var(--ac, var(--accent));
+}
+
+.badgeMem {
+  background: var(--s2, var(--surface2));
+  color: var(--tx3, var(--text3));
+  border: 1px solid var(--b1, var(--border));
+}
+
+.badgeAct {
+  background: var(--gns, rgba(34,197,94,0.12));
+  color: var(--gn, var(--green));
 }
