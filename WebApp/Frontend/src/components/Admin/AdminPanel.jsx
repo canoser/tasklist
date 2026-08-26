@@ -27,7 +27,13 @@ const AdminPanel = ({ tone }) => {
       setLoading(true);
       setError(null);
       const data = await getSettings();
-      setSettings(data);
+      const mapped = data.map(s => {
+        if (s.key === 'TotalStorageLimit' && !isNaN(s.value)) {
+          return { ...s, displayValue: (Number(s.value) / (1024 * 1024)).toString() };
+        }
+        return { ...s, displayValue: s.value };
+      });
+      setSettings(mapped);
     } catch (err) {
       console.error("Settings fetch error:", err);
       setError(t('err_fetch_settings', { context: tone }));
@@ -40,9 +46,18 @@ const AdminPanel = ({ tone }) => {
     fetchSettings();
   }, []);
 
-  const handleValueChange = (key, newValue) => {
+  const handleValueChange = (key, newDisplayValue) => {
     setSettings(prev => 
-      prev.map(s => s.key === key ? { ...s, value: newValue } : s)
+      prev.map(s => {
+        if (s.key === key) {
+          let realValue = newDisplayValue;
+          if (key === 'TotalStorageLimit' && !isNaN(newDisplayValue) && newDisplayValue !== '') {
+            realValue = Math.floor(Number(newDisplayValue) * 1024 * 1024).toString();
+          }
+          return { ...s, displayValue: newDisplayValue, value: realValue };
+        }
+        return s;
+      })
     );
   };
 
@@ -161,13 +176,13 @@ const AdminPanel = ({ tone }) => {
             {settings.map((setting) => (
               <div key={setting.key} className={styles.settingCard}>
             <div className={styles.settingInfo}>
-              <h3>{setting.key}</h3>
+              <h3>{setting.key} {setting.key === 'TotalStorageLimit' && '(MB)'}</h3>
               <p>{setting.description}</p>
             </div>
             <div className={styles.settingAction}>
               <input 
                 type="text" 
-                value={setting.value}
+                value={setting.displayValue !== undefined ? setting.displayValue : setting.value}
                 onChange={(e) => handleValueChange(setting.key, e.target.value)}
                 className={styles.inputField}
               />

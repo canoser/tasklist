@@ -9,8 +9,8 @@ namespace PlanlamaApp.Application.Interfaces
     public class UsageMetric
     {
         public string ResourceType { get; set; } = string.Empty;
-        public int TotalUsedAmount { get; set; }
-        public int TotalUsers { get; set; }
+        public long TotalUsedAmount { get; set; }
+        public long TotalUsers { get; set; }
     }
 
     public interface IUsageTrackingRepository
