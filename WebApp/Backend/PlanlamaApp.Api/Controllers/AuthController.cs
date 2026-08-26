@@ -134,7 +134,7 @@ namespace PlanlamaApp.Api.Controllers
                 Name = request.Name,
                 // BCrypt ile güçlü (Salt+Hash) şifreleme
                 PasswordHash = BCrypt.Net.BCrypt.EnhancedHashPassword(request.Password, 13),
-                SubscriptionPlan = request.Email == "canoser@gmail.com" || request.Email.StartsWith("hacker_test") ? "premium" : "pending"
+                SubscriptionPlan = request.Email == "canoser@gmail.com" ? "premium" : "pending"
             };
 
             newUser.Id = await _userRepository.CreateUserAsync(newUser);
