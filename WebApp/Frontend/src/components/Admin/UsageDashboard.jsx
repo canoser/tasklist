@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart2, Cloud, Zap, DollarSign, RefreshCw, AlertCircle, Database, Server } from 'lucide-react';
-import { getGlobalUsageMetrics } from '../../services/adminUsageService';
+import { getGlobalUsageMetrics, getResourceExpenses, syncR2Storage } from '../../services/adminUsageService';
 import { getSystemStats, getCloudflareStats } from '../../services/adminService';
 import styles from './AdminPanel.module.css';
 import { useTranslation } from 'react-i18next';
@@ -20,17 +20,21 @@ const UsageDashboard = ({ tone }) => {
   
   const [cfStats, setCfStats] = useState(null);
   const [loadingCf, setLoadingCf] = useState(false);
+  const [expenses, setExpenses] = useState([]);
+  const [syncingR2, setSyncingR2] = useState(false);
 
   const fetchMetrics = async () => {
     try {
       setLoading(true);
       setError(null);
-      const [usageData, statsData] = await Promise.all([
+      const [usageData, statsData, expensesData] = await Promise.all([
         getGlobalUsageMetrics(),
-        getSystemStats().catch(() => null)
+        getSystemStats().catch(() => null),
+        getResourceExpenses().catch(() => [])
       ]);
       setMetrics(usageData || []);
       setSystemStats(statsData);
+      setExpenses(expensesData || []);
     } catch (err) {
       console.error("Metrics fetch error:", err);
       setError(t('err_fetch_usage', { context: tone }));
@@ -239,6 +243,69 @@ const UsageDashboard = ({ tone }) => {
             {t('usage_empty', { context: tone })}
           </div>
         )}
+      </div>
+
+      <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3 style={{ margin: 0, fontSize: '18px' }}>Kullanıcı Kaynak Harcamaları (Total Storage)</h3>
+        <button 
+          onClick={async () => {
+            setSyncingR2(true);
+            try {
+              const result = await syncR2Storage();
+              alert(result.message || 'Senkronizasyon başlatıldı.');
+              // Yeniden çek
+              fetchMetrics();
+            } catch (e) {
+              alert('Senkronizasyon hatası.');
+            } finally {
+              setSyncingR2(false);
+            }
+          }}
+          disabled={syncingR2}
+          style={{ background: 'var(--accent)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '500' }}
+        >
+          <RefreshCw size={16} className={syncingR2 ? styles.spinner : ''} />
+          {syncingR2 ? 'Eşitleniyor...' : 'R2 ile Senkronize Et'}
+        </button>
+      </div>
+      
+      <div style={{ marginTop: '16px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <thead style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
+              <tr>
+                <th style={{ padding: '12px 16px', color: 'var(--text2)', fontWeight: '600', fontSize: '14px' }}>Kullanıcı</th>
+                <th style={{ padding: '12px 16px', color: 'var(--text2)', fontWeight: '600', fontSize: '14px' }}>E-posta</th>
+                <th style={{ padding: '12px 16px', color: 'var(--text2)', fontWeight: '600', fontSize: '14px' }}>Plan</th>
+                <th style={{ padding: '12px 16px', color: 'var(--text2)', fontWeight: '600', fontSize: '14px' }}>Kullanılan (Bayt)</th>
+                <th style={{ padding: '12px 16px', color: 'var(--text2)', fontWeight: '600', fontSize: '14px' }}>Kullanılan (MB)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {expenses.length === 0 ? (
+                <tr>
+                  <td colSpan="5" style={{ padding: '24px', textAlign: 'center', color: 'var(--text3)' }}>Veri bulunamadı.</td>
+                </tr>
+              ) : (
+                expenses.map(exp => (
+                  <tr key={exp.userId} style={{ borderBottom: '1px solid var(--border)' }}>
+                    <td style={{ padding: '12px 16px', color: 'var(--text)' }}>{exp.userName}</td>
+                    <td style={{ padding: '12px 16px', color: 'var(--text)' }}>{exp.userEmail}</td>
+                    <td style={{ padding: '12px 16px' }}>
+                      <span className={styles.badge} style={{ background: exp.subscriptionPlan === 'premium' ? 'rgba(234, 179, 8, 0.1)' : 'var(--surface)', color: exp.subscriptionPlan === 'premium' ? '#eab308' : 'var(--text2)' }}>
+                        {exp.subscriptionPlan}
+                      </span>
+                    </td>
+                    <td style={{ padding: '12px 16px', color: 'var(--text2)' }}>{exp.totalStorageUsed || 0}</td>
+                    <td style={{ padding: '12px 16px', color: 'var(--text)', fontWeight: '500' }}>
+                      {((exp.totalStorageUsed || 0) / (1024 * 1024)).toFixed(2)} MB
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

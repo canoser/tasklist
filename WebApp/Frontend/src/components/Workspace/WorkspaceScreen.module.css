@@ -327,7 +327,7 @@
 
 .badgeMem {
   background: var(--s2, var(--surface2));
-  color: var(--tx3, var(--text3));
+  color: var(--tx2, var(--text2));
   border: 1px solid var(--b1, var(--border));
 }
 
@@ -342,7 +342,7 @@
   font-weight: 700;
   font-family: 'SF Mono', 'Fira Code', monospace;
   background: var(--s2, var(--surface2));
-  color: var(--tx3, var(--text3));
+  color: var(--tx2, var(--text2));
   padding: 3px 8px;
   border-radius: var(--rPL, var(--radius-pill, 999px));
   letter-spacing: 0.06em;

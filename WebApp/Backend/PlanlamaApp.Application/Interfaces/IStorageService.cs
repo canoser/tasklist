@@ -28,6 +28,12 @@ namespace PlanlamaApp.Application.Interfaces
         Task DeleteFileAsync(string objectKey);
 
         /// <summary>
+        /// Retrieves the size (in bytes) of an object from the bucket. Returns null if not found.
+        /// </summary>
+        /// <param name="objectKey">The unique key/path of the file.</param>
+        Task<long?> GetObjectInfoAsync(string objectKey);
+
+        /// <summary>
         /// Calculates the total size and object count of the bucket by iterating over objects.
         /// </summary>
         Task<(long TotalSizeInBytes, int ObjectCount)> GetBucketStatsAsync();

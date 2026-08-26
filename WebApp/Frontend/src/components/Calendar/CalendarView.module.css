@@ -59,33 +59,7 @@
   text-align: center;
 }
 
-@media (orientation: landscape) {
-  .calendarSection {
-    flex-direction: row-reverse;
-    gap: 12px;
-  }
-  .header {
-    flex-direction: column;
-    justify-content: flex-start;
-    width: 150px;
-    margin-bottom: 0;
-    gap: 20px;
-    flex-shrink: 0;
-  }
-  .viewToggle {
-    flex-direction: column;
-    width: 100%;
-  }
-  .viewToggle button {
-    width: 100%;
-    border-radius: var(--radius-sm);
-  }
-  .monthNav {
-    flex-direction: column;
-    width: 100%;
-    gap: 8px;
-  }
-}
+
 
 /* Aylık Görünüm Sarmalayıcısı */
 .monthlyWrapper {
@@ -285,18 +259,3 @@
   border: 1px solid var(--border);
 }
 
-@media (orientation: landscape) {
-  .filterWrapper {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .navButtons {
-    margin-left: 0;
-    flex-direction: column;
-    width: 100%;
-  }
-  .navBtnPrimary, .navBtnSecondary {
-    width: 100%;
-    text-align: center;
-  }
-}

@@ -117,7 +117,7 @@ namespace PlanlamaApp.Api.Controllers
                 bool isTeacher = callerMember != null && (callerMember.Role == "Owner" || callerMember.Role == "Teacher" || callerMember.Role == "Admin" || callerMember.Role == "Leader");
 
                 // 1. Kota düşüşü yap (Transaction içinde)
-                var quotaDeducted = await _quotaManager.TryDeductAsync(tenantId, "Free", "AiCommand", transaction);
+                var quotaDeducted = await _quotaManager.TryDeductAsync(tenantId, "Free", "AiCommand", 1, transaction);
                 if (!quotaDeducted)
                 {
                     transaction.Rollback();

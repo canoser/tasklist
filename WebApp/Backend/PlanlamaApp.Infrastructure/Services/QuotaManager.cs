@@ -18,7 +18,7 @@ namespace PlanlamaApp.Infrastructure.Services
             _userRepository = userRepository;
         }
 
-        public async Task<bool> TryDeductAsync(string tenantId, string plan, string resourceType, System.Data.IDbTransaction? transaction = null)
+        public async Task<bool> TryDeductAsync(string tenantId, string plan, string resourceType, long amount = 1, System.Data.IDbTransaction? transaction = null)
         {
             var user = await _userRepository.GetUserByIdAsync(tenantId);
             int maxLimit = 0;
@@ -34,8 +34,9 @@ namespace PlanlamaApp.Infrastructure.Services
                         hasCustomLimit = true;
                     }
                 }
-                else if (resourceType.Equals("FileStorage", StringComparison.OrdinalIgnoreCase))
+                else if (resourceType.Equals("TotalStorage", StringComparison.OrdinalIgnoreCase) || resourceType.Equals("FileStorage", StringComparison.OrdinalIgnoreCase))
                 {
+                    resourceType = "TotalStorage"; // Ensure it's tracked under TotalStorage
                     if (user.CustomStorageLimit.HasValue)
                     {
                         maxLimit = user.CustomStorageLimit.Value;
@@ -51,7 +52,14 @@ namespace PlanlamaApp.Infrastructure.Services
                     return true;
 
                 // Ayarları DB'den (veya Cache'den) oku
-                maxLimit = await _settingsService.GetSettingAsIntAsync(resourceType, 0);
+                if (resourceType == "TotalStorage")
+                {
+                    maxLimit = await _settingsService.GetSettingAsIntAsync("TotalStorageLimit", 524288000); // 500 MB default
+                }
+                else 
+                {
+                    maxLimit = await _settingsService.GetSettingAsIntAsync(resourceType, 0);
+                }
             }
 
             // Eğer ayar hiç girilmemişse AiCommand için varsayılan bir limit verelim ki sistem kilitlenmesin (Bulgu 4)
@@ -70,20 +78,29 @@ namespace PlanlamaApp.Infrastructure.Services
 
             var resetDate = DateTime.UtcNow.Date.AddDays(1);
 
+            // TotalStorage için resetleme yapılmamalı (Kümülatif). Bu yüzden resetDate'i çok uzak bir tarih yapalım.
+            if (resourceType == "TotalStorage")
+            {
+                resetDate = new DateTime(2099, 12, 31, 0, 0, 0, DateTimeKind.Utc);
+            }
+
             // DB'de atomik düş (eğer limit elveriyorsa)
-            return await _usageTrackingRepository.IncrementUsageAsync(tenantId, resourceType, maxLimit, resetDate, transaction);
+            return await _usageTrackingRepository.IncrementUsageAsync(tenantId, resourceType, maxLimit, resetDate, amount, transaction);
         }
 
-        public async Task<bool> RefundAsync(string tenantId, string plan, string resourceType, System.Data.IDbTransaction? transaction = null)
+        public async Task<bool> RefundAsync(string tenantId, string plan, string resourceType, long amount = 1, System.Data.IDbTransaction? transaction = null)
         {
+            if (resourceType.Equals("FileStorage", StringComparison.OrdinalIgnoreCase))
+                resourceType = "TotalStorage";
+
             // Premium zaten düşülmemişti, iadeye gerek yok
             if (plan.Equals("premium", StringComparison.OrdinalIgnoreCase))
                 return true;
 
-            return await _usageTrackingRepository.DecrementUsageAsync(tenantId, resourceType, transaction);
+            return await _usageTrackingRepository.DecrementUsageAsync(tenantId, resourceType, amount, transaction);
         }
 
-        public async Task<bool> GrantRewardAsync(string tenantId, string resourceType, int amount, DateTime expirationDate)
+        public async Task<bool> GrantRewardAsync(string tenantId, string resourceType, long amount, DateTime expirationDate)
         {
             return await _usageTrackingRepository.AddEarnedLimitAsync(tenantId, resourceType, amount, expirationDate);
         }

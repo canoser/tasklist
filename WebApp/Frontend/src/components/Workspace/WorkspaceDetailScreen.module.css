@@ -203,14 +203,14 @@
 .invLabelCol svg {
   width: 13px;
   height: 13px;
-  color: var(--tx3, var(--text3));
+  color: var(--tx2, var(--text2));
   flex-shrink: 0;
 }
 
 .invLabelTxt {
   font-size: 10.5px;
   font-weight: 700;
-  color: var(--tx3, var(--text3));
+  color: var(--tx2, var(--text2));
   text-transform: uppercase;
   letter-spacing: 0.07em;
   white-space: nowrap;
@@ -299,11 +299,11 @@
 .bvAm { color: var(--am, var(--amber)); }
 
 .bl {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
-  color: var(--tx3, var(--text3));
+  color: var(--tx2, var(--text2));
   text-transform: uppercase;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.06em;
   line-height: 1.3;
 }
 
@@ -346,7 +346,7 @@
 .accCnt {
   font-size: 10.5px;
   font-weight: 700;
-  color: var(--tx3, var(--text3));
+  color: var(--tx2, var(--text2));
   background: var(--s2, var(--surface2));
   border: 1px solid var(--b1, var(--border));
   padding: 2px 8px;
@@ -357,6 +357,36 @@
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.accBtnAc {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  background: var(--ac, var(--accent));
+  color: #ffffff;
+  border: none;
+  border-radius: var(--rPL, var(--radius-pill, 999px));
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--sk, inherit);
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.accBtnAc:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.accBtnAc svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
 }
 
 .accLink {
@@ -373,7 +403,7 @@
 .accChevron {
   width: 18px;
   height: 18px;
-  color: var(--tx3, var(--text3));
+  color: var(--tx2, var(--text2));
   transition: transform 0.22s ease;
   flex-shrink: 0;
 }
@@ -437,9 +467,9 @@
 }
 
 .memSince {
-  font-size: 11px;
-  color: var(--tx3, var(--text3));
-  margin-top: 1px;
+  font-size: 11.5px;
+  color: var(--tx2, var(--text2));
+  margin-top: 2px;
 }
 
 .memBadge {
@@ -528,7 +558,7 @@
   align-items: center;
   gap: 4px;
   font-size: 11px;
-  color: var(--tx3, var(--text3));
+  color: var(--tx2, var(--text2));
 }
 
 .whoAv {
@@ -571,11 +601,146 @@
 
 .badgeMem {
   background: var(--s2, var(--surface2));
-  color: var(--tx3, var(--text3));
+  color: var(--tx2, var(--text2));
   border: 1px solid var(--b1, var(--border));
 }
 
 .badgeAct {
   background: var(--gns, rgba(34,197,94,0.12));
   color: var(--gn, var(--green));
+}
+
+/* ─────────────────────────────────────────────────
+   FILES PREVIEW
+───────────────────────────────────────────────── */
+.fileItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--b1, var(--border));
+}
+
+.fileItem:last-child {
+  border-bottom: none;
+}
+
+.fileIconBox {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm, 8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  flex-shrink: 0;
+  letter-spacing: 0.04em;
+  background: var(--s2, var(--surface2));
+  border: 1px solid var(--b1, var(--border));
+}
+
+.fileInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.fileName {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--tx, var(--text));
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+
+.fileMeta {
+  font-size: 11px;
+  color: var(--tx2, var(--text2));
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fileActionBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--s2, var(--surface2));
+  border: 1px solid var(--b1, var(--border));
+  color: var(--tx2, var(--text2));
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.fileActionBtn:hover {
+  background: var(--surface);
+  color: var(--ac, var(--accent));
+  border-color: var(--ac, var(--accent));
+}
+
+.fileActionBtn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ─────────────────────────────────────────────────
+   STORAGE USAGE ROW (Inside files accordion)
+───────────────────────────────────────────────── */
+.storageUsageRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 2px;
+  border-bottom: 1px dashed var(--b1, var(--border));
+  margin-bottom: 2px;
+}
+
+.storageUsageLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--tx2, var(--text2));
+}
+
+.storageUsageLabel svg {
+  color: var(--tx2, var(--text2));
+  flex-shrink: 0;
+}
+
+.storageUsageRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.storageUsageTrack {
+  width: 64px;
+  height: 4px;
+  background: var(--s2, var(--surface2));
+  border: 1px solid var(--b1, var(--border));
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.storageUsageFill {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--ac, var(--accent));
+  transition: width 0.3s ease;
+}
+
+.storageUsagePercent {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--tx, var(--text));
+  letter-spacing: 0.02em;
 }

@@ -45,3 +45,10 @@ Uygulamamızın IndexedDB tabanlı Offline-First mekanizması PWA olarak web üz
 ## [MOBILE_PORT_TODO]: Takvim Kaydırma (Swipe) Animasyonları
 - **Framer Motion Kullanımı**: Web ortamında (WebApp) ve WebView tabanlı Capacitor derlemelerinde (iOS/Android) ramer-motion ile geliştirdiğimiz momentum-scrolling (kaydırma) yapısı mükemmel ve akıcı çalışmaktadır. Ek bir değişikliğe gerek yoktur.
 - **React Native Portu**: Eğer uygulama ileride Capacitor'dan vazgeçilip tamamen saf **React Native**'e taşınırsa, ramer-motion (DOM tabanlı olduğu için) kullanılamayacaktır. Bu durumda eact-native-reanimated ve eact-native-gesture-handler kullanılarak benzer ivmeli kaydırma yapısı yeniden yazılmalıdır veya ScrollView bileşeninin pagingEnabled={true} özelliği kullanılmalıdır. (İlgili kod CalendarView.jsx içinde [MOBILE_PORT_TODO] ile işaretlenmiştir).
+
+### Storage & File Uploads
+- **Dosya Seçimi (File Picker)**: Web'te <input type='file'> kullanıldı. Native'de (iOS/Android) kamera ruloları ve cihaz dosya sistemi için @capacitor/camera veya @capacitor/filesystem ile entegrasyon yapılmalıdır (FileUploadModal.jsx).
+- **Dosya Yükleme Ağı**: Mevcut yapı presigned URL ile XMLHttpRequest üzerinden doğrudan R2'ye yükler. Native tarafta arka plan yüklemeleri (background uploads) veya Capacitor Http eklentisi (CORS atlatmak için) gerekebilir.
+- **Davet Kodu Kopyalama/Paylaşma**: Web'te 
+avigator.clipboard ve 
+avigator.share kullanıldı. Native tarafta @capacitor/clipboard ve @capacitor/share eklentileri zorunludur (WorkspaceDetailScreen.jsx).

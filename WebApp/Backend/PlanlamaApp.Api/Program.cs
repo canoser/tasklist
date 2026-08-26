@@ -159,7 +159,10 @@ builder.Services.AddScoped<IQuotaManager, PlanlamaApp.Infrastructure.Services.Qu
 builder.Services.AddScoped<IRewardValidator, PlanlamaApp.Infrastructure.Services.MockRewardValidator>();
 builder.Services.AddScoped<IStorageService, PlanlamaApp.Infrastructure.Services.R2StorageService>();
 
-// AI Provider DI
+// Register Background Services
+builder.Services.AddHostedService<PlanlamaApp.Infrastructure.Services.StorageMaintenanceService>();
+
+// Configure AI Providers DI
 var activeAiProvider = builder.Configuration["AiSettings:ActiveProvider"]?.ToLower();
 if (activeAiProvider == "gemini")
 {

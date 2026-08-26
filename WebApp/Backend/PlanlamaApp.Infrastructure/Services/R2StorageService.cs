@@ -72,6 +72,24 @@ namespace PlanlamaApp.Infrastructure.Services
             await _s3Client.DeleteObjectAsync(request);
         }
 
+        public async Task<long?> GetObjectInfoAsync(string objectKey)
+        {
+            try
+            {
+                var request = new GetObjectMetadataRequest
+                {
+                    BucketName = _bucketName,
+                    Key = objectKey
+                };
+                var response = await _s3Client.GetObjectMetadataAsync(request);
+                return response.ContentLength;
+            }
+            catch (AmazonS3Exception ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+        }
+
         public async Task<(long TotalSizeInBytes, int ObjectCount)> GetBucketStatsAsync()
         {
             long totalSize = 0;

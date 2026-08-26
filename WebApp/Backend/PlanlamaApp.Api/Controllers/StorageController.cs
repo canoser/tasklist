@@ -3,87 +3,145 @@ using Microsoft.AspNetCore.Mvc;
 using PlanlamaApp.Application.Interfaces;
 using PlanlamaApp.Api.Filters;
 using System.Security.Claims;
+using Dapper;
+using PlanlamaApp.Domain.Entities;
+using System.Data;
 
 namespace PlanlamaApp.Api.Controllers
 {
+    public class UploadUrlRequest
+    {
+        public string FileName { get; set; } = string.Empty;
+        public long FileSizeInBytes { get; set; }
+        public string ContentType { get; set; } = string.Empty;
+        public int WorkspaceId { get; set; }
+    }
+
+    public class ConfirmUploadRequest
+    {
+        public int FileId { get; set; }
+    }
+
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
     public class StorageController : ControllerBase
     {
         private readonly IStorageService _storageService;
+        private readonly IQuotaManager _quotaManager;
+        private readonly IDbConnection _dbConnection;
 
-        public StorageController(IStorageService storageService)
+        public StorageController(IStorageService storageService, IQuotaManager quotaManager, IDbConnection dbConnection)
         {
             _storageService = storageService;
+            _quotaManager = quotaManager;
+            _dbConnection = dbConnection;
         }
 
-        [HttpGet("upload-url")]
-        public IActionResult GetUploadUrl([FromQuery] string filename, [FromQuery] string contentType)
+        [HttpPost("upload-url")]
+        public async Task<IActionResult> GetUploadUrl([FromBody] UploadUrlRequest request)
         {
-            if (string.IsNullOrWhiteSpace(filename) || string.IsNullOrWhiteSpace(contentType))
-                return BadRequest("Filename and contentType are required.");
+            if (string.IsNullOrWhiteSpace(request.FileName) || string.IsNullOrWhiteSpace(request.ContentType))
+                return BadRequest("FileName and ContentType are required.");
 
-            var allowedTypes = new Dictionary<string, string[]>
-            {
-                { "image/jpeg", new[] { ".jpg", ".jpeg" } },
-                { "image/png", new[] { ".png" } },
-                { "application/pdf", new[] { ".pdf" } }
-            };
+            // 1. Uzantı Kontrolü (Whitelist)
+            var allowedExtensions = new[] { ".pdf", ".docx", ".xlsx", ".pptx", ".png", ".jpg", ".jpeg", ".zip", ".mp4" };
+            var extension = Path.GetExtension(request.FileName).ToLowerInvariant();
+            if (!allowedExtensions.Contains(extension))
+                return BadRequest($"Desteklenmeyen dosya türü: {extension}");
 
-            var ext = Path.GetExtension(filename).ToLowerInvariant();
-            var lowerContentType = contentType.ToLowerInvariant();
-
-            if (!allowedTypes.ContainsKey(lowerContentType))
-                return BadRequest("Invalid content type. Only JPEG, PNG, and PDF are allowed.");
-
-            if (!allowedTypes[lowerContentType].Contains(ext))
-                return BadRequest("File extension does not match the provided content type.");
+            // 2. Boyut Kontrolü (Örn: Maksimum 100 MB tekil dosya)
+            const long MAX_FILE_SIZE = 100 * 1024 * 1024;
+            if (request.FileSizeInBytes > MAX_FILE_SIZE)
+                return BadRequest($"Dosya boyutu 100MB'ı aşamaz.");
 
             var tenantId = User.FindFirstValue("tenant_id") ?? "default_tenant";
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "unknown_user";
 
-            // Benzersiz ve güvenli bir anahtar (Object Key) oluşturuyoruz.
-            // Bu sayede klasörleme (Tenant/User bazlı) ve çakışma önleme sağlıyoruz.
-            var safeFilename = Path.GetFileName(filename); // Dizin geçişi (Path Traversal) ataklarını önle
-            var uniqueId = Guid.NewGuid().ToString("N").Substring(0, 8);
-            var objectKey = $"{tenantId}/{userId}/{uniqueId}-{safeFilename}";
+            // 3. Kota Rezervasyonu
+            var success = await _quotaManager.TryDeductAsync(tenantId, "free", "TotalStorage", request.FileSizeInBytes);
+            if (!success)
+                return BadRequest("Yetersiz depolama alanı. Lütfen bazı dosyaları silin veya planınızı yükseltin.");
 
-            // [MOBILE_PORT_TODO]: Bu endpoint tek seferde (single PUT) presigned URL döndürür. 5MB altı dosyalar için yeterlidir.
-            // 5MB üzeri (özellikle mobil ağda 100MB+ dosyalar) için S3 Multipart Upload'a geçilmeli. Yapılacaklar:
-            //
-            // 1) IStorageService.cs ve R2StorageService.cs'e şu 3 metot eklenmeli:
-            //    - Task<string> InitiateMultipartUploadAsync(string objectKey)
-            //      → R2'ye "çok parçalı yükleme başlatıyorum" sinyali gönderir, bir uploadId döner.
-            //    - Task<string> GeneratePartUrlAsync(string objectKey, string uploadId, int partNumber)
-            //      → Her 5MB parçası için ayrı imzalı PUT URL'si döner (partNumber 1'den başlar).
-            //    - Task CompleteMultipartUploadAsync(string objectKey, string uploadId, List<(int PartNumber, string ETag)> parts)
-            //      → Tüm parçaların ETag listesiyle R2'ye "birleştir" komutu verir.
-            //
-            // 2) Bu controller'a 3 yeni endpoint eklenmeli:
-            //    - POST /api/storage/multipart/initiate      → { objectKey } alır, { uploadId, objectKey } döner
-            //    - POST /api/storage/multipart/part-url      → { objectKey, uploadId, partNumber } alır, { partUrl } döner
-            //    - POST /api/storage/multipart/complete      → { objectKey, uploadId, parts: [{partNumber, eTag}] } alır
-            //
-            // 3) Frontend storageService.js'de (henüz yazılmadı) dosyayı 5MB chunk'lara bölen,
-            //    her chunk için part-url çeken ve sırayla PUT eden bir fonksiyon yazılmalı.
-            //    Son olarak complete endpoint'i çağrılmalı.
-            //
-            // NOT: Capacitor/iOS/Android'de binary PUT için @capacitor/filesystem + @capacitor/http kullanılmalı.
-            // Detaylar: PORTABILITY.md > 'Dosya Yükleme (Storage) Mimarisi Notu'
-            // 15 dakikalık yükleme izni
-            var url = _storageService.GenerateUploadUrl(objectKey, contentType, TimeSpan.FromMinutes(15));
+            // 4. Object Key Üretimi
+            var safeFilename = Path.GetFileName(request.FileName);
+            var uniqueId = Guid.NewGuid().ToString("N").Substring(0, 8);
+            var objectKey = $"workspaces/{tenantId}/{request.WorkspaceId}/{uniqueId}-{safeFilename}";
+
+            // 5. Veritabanına Pending Kaydı (Taslak)
+            var sql = @"
+                INSERT INTO WorkspaceFiles (TenantId, WorkspaceId, UploaderId, FileName, FileUrl, FileSizeInBytes, FileType, UploadStatus, CreatedAt, UpdatedAt)
+                VALUES (@TenantId, @WorkspaceId, @UploaderId, @FileName, @FileUrl, @FileSizeInBytes, @FileType, 'Pending', @Now, @Now)
+                RETURNING Id;
+            ";
+            
+            var p = new {
+                TenantId = tenantId,
+                WorkspaceId = request.WorkspaceId,
+                UploaderId = userId,
+                FileName = safeFilename,
+                FileUrl = objectKey,
+                FileSizeInBytes = request.FileSizeInBytes,
+                FileType = extension,
+                Now = DateTime.UtcNow
+            };
+
+            var fileId = await _dbConnection.ExecuteScalarAsync<int>(sql, p);
+
+            // 6. R2'den 15 Dakikalık Yükleme URL'si
+            var uploadUrl = _storageService.GenerateUploadUrl(objectKey, request.ContentType, TimeSpan.FromMinutes(15));
 
             return Ok(new
             {
-                UploadUrl = url,
+                UploadUrl = uploadUrl,
+                FileId = fileId,
                 ObjectKey = objectKey,
                 ExpiresInMinutes = 15
             });
         }
 
+        [HttpPost("confirm-upload")]
+        [ServiceFilter(typeof(IdempotencyFilter))]
+        public async Task<IActionResult> ConfirmUpload([FromBody] ConfirmUploadRequest request)
+        {
+            var tenantId = User.FindFirstValue("tenant_id") ?? "default_tenant";
+
+            // DB'den pending dosyayı bul
+            var file = await _dbConnection.QueryFirstOrDefaultAsync<WorkspaceFile>(
+                "SELECT * FROM WorkspaceFiles WHERE Id = @Id AND TenantId = @TenantId AND UploadStatus = 'Pending'",
+                new { Id = request.FileId, TenantId = tenantId });
+
+            if (file == null)
+                return NotFound("Dosya kaydı bulunamadı veya süresi geçmiş.");
+
+            // R2'den gerçekten yüklenip yüklenmediğini ve boyutunu kontrol et
+            var actualSize = await _storageService.GetObjectInfoAsync(file.FileUrl);
+            
+            if (actualSize == null || actualSize.Value != file.FileSizeInBytes)
+            {
+                // Hileli yükleme veya dosya yok! İşlemi iptal et ve kotayı iade et.
+                if (actualSize != null) 
+                    await _storageService.DeleteFileAsync(file.FileUrl);
+
+                await _dbConnection.ExecuteAsync(
+                    "UPDATE WorkspaceFiles SET UploadStatus = 'Failed' WHERE Id = @Id", 
+                    new { Id = file.Id });
+                
+                await _quotaManager.RefundAsync(tenantId, "free", "TotalStorage", file.FileSizeInBytes);
+                
+                return BadRequest("Dosya boyutu uyuşmazlığı. Yükleme iptal edildi.");
+            }
+
+            // Başarılı!
+            await _dbConnection.ExecuteAsync(
+                "UPDATE WorkspaceFiles SET UploadStatus = 'Uploaded', UpdatedAt = @Now WHERE Id = @Id", 
+                new { Id = file.Id, Now = DateTime.UtcNow });
+
+            return Ok(new { Message = "Upload confirmed successfully." });
+        }
+
         [HttpGet("download-url")]
-        public IActionResult GetDownloadUrl([FromQuery] string objectKey)
+        public async Task<IActionResult> GetDownloadUrl([FromQuery] string objectKey)
         {
             if (string.IsNullOrWhiteSpace(objectKey))
                 return BadRequest("ObjectKey is required.");
@@ -91,16 +149,24 @@ namespace PlanlamaApp.Api.Controllers
             var tenantId = User.FindFirstValue("tenant_id") ?? "default_tenant";
 
             // Sadece kendi tenant'ına ait dosyaları indirebilsin
-            if (!objectKey.StartsWith($"{tenantId}/"))
-                return Forbid("You do not have permission to access this file.");
+            if (!objectKey.StartsWith($"workspaces/{tenantId}/"))
+                return Forbid();
+                
+            // Sadece Uploaded statüsündeki dosyalar indirilebilir
+            var file = await _dbConnection.QueryFirstOrDefaultAsync<WorkspaceFile>(
+                "SELECT * FROM WorkspaceFiles WHERE FileUrl = @FileUrl AND UploadStatus = 'Uploaded' AND IsDeleted = FALSE",
+                new { FileUrl = objectKey });
+                
+            if (file == null)
+                return NotFound();
 
-            // 60 dakikalık okuma izni
-            var url = _storageService.GenerateDownloadUrl(objectKey, TimeSpan.FromMinutes(60));
+            // 10 dakikalık okuma izni
+            var url = _storageService.GenerateDownloadUrl(objectKey, TimeSpan.FromMinutes(10));
 
             return Ok(new
             {
                 DownloadUrl = url,
-                ExpiresInMinutes = 60
+                ExpiresInMinutes = 10
             });
         }
     }

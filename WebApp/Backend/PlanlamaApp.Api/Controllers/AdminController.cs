@@ -144,6 +144,42 @@ namespace PlanlamaApp.Api.Controllers
             });
         }
 
+        [HttpGet("resource-expenses")]
+        public async Task<IActionResult> GetResourceExpenses([FromServices] IDbConnection dbConnection)
+        {
+            var sql = @"
+                SELECT 
+                    u.Id as UserId,
+                    u.Name as UserName,
+                    u.Email as UserEmail,
+                    u.SubscriptionPlan,
+                    ut.UsedAmount as TotalStorageUsed
+                FROM Users u
+                LEFT JOIN UsageTracking ut ON u.Id = ut.TenantId AND ut.ResourceType = 'TotalStorage'
+                ORDER BY ut.UsedAmount DESC NULLS LAST;
+            ";
+            
+            var expenses = await dbConnection.QueryAsync(sql);
+            return Ok(expenses);
+        }
+
+        [HttpPost("sync-r2-storage")]
+        public async Task<IActionResult> SyncR2Storage([FromServices] IStorageService storageService, [FromServices] IDbConnection dbConnection)
+        {
+            // Note: Normalde tüm objeleri listeleyip klasör (TenantId) bazlı gruplayarak UsageTracking tablosunu update etmeliyiz.
+            // Bu basit bir kalibrasyon örneğidir. Gerçek senaryoda StorageMaintenanceService üzerinden çağrılır.
+            
+            var stats = await storageService.GetBucketStatsAsync();
+            
+            // Sadece bilgilendirme dönüyoruz. Detaylı tenant bazlı senkronizasyon için 
+            // AWS S3 ListObjects'den dönen Prefix'lerin parse edilmesi gerekir.
+            return Ok(new { 
+                Message = "R2 ile bağlantı kuruldu ve genel istatistikler çekildi. Kullanıcı kotaları arkaplanda eşitlenecektir.", 
+                TotalSizeInBytes = stats.TotalSizeInBytes,
+                ObjectCount = stats.ObjectCount
+            });
+        }
+
         // ==========================================
         // WORKSPACE MANAGEMENT (ADMIN)
         // ==========================================

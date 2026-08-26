@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './WorkspaceDetailScreen.module.css';
 import { useTranslation } from 'react-i18next';
+import FileUploadModal from './FileUploadModal';
 
 // --- Botanical SVG Decoration ---
 const NatureLeaf = () => (
@@ -64,8 +65,10 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
   const { t } = useTranslation('common');
   const isOwner = workspace.ownerId === (user?.id || user?.uid);
   
-  const [isMembersOpen, setIsMembersOpen] = useState(true);
-  const [isTasksOpen, setIsTasksOpen] = useState(true);
+  const [isMembersOpen, setIsMembersOpen] = useState(false);
+  const [isTasksOpen, setIsTasksOpen] = useState(false);
+  const [isFilesOpen, setIsFilesOpen] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   // Fallback initial character for Workspace
   const initial = workspace.name ? workspace.name.charAt(0).toUpperCase() : '?';
@@ -102,6 +105,13 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
     { id: 't1', title: 'Fizik: 50 soru', done: true, tagLabel: t('ws_task_done', { context: tone, defaultValue: 'Tamamlandı' }), tagClass: styles.tagDn, assignee: { name: 'ayse.k', initial: 'A' } },
     { id: 't2', title: 'Matematik denemesi', done: false, tagLabel: 'Bugün 17:00', tagClass: styles.tagDue, assignee: { name: 'mert.d', initial: 'M' } },
     { id: 't3', title: 'Kimya konu tekrarı', done: false, tagLabel: 'Yarın 10:00', tagClass: styles.tagDue, assignee: { name: 'Kullanıcı', initial: 'K' } },
+  ];
+
+  // Mock files for visual completeness
+  const mockFiles = [
+    { id: 'f1', name: 'Haftalık_Çalışma_Programı.pdf', size: '1.4 MB', ext: 'PDF', date: '21 Ağu 2026', uploader: 'ayse.k', badgeColor: '#EF4444', badgeBg: 'rgba(239, 68, 68, 0.12)' },
+    { id: 'f2', name: 'Matematik_Formül_Özeti.docx', size: '620 KB', ext: 'DOC', date: '19 Ağu 2026', uploader: 'mert.d', badgeColor: '#3B82F6', badgeBg: 'rgba(59, 130, 246, 0.12)' },
+    { id: 'f3', name: 'Fizik_Deneme_Analizi.xlsx', size: '890 KB', ext: 'XLS', date: '16 Ağu 2026', uploader: 'Kullanıcı', badgeColor: '#10B981', badgeBg: 'rgba(16, 185, 129, 0.12)' }
   ];
 
   return (
@@ -219,9 +229,6 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
               <span className={styles.accCnt}>{workspace.memberCount || 4}</span>
             </div>
             <div className={styles.accRight}>
-              <button className={styles.accLink} onClick={(e) => { e.stopPropagation(); /* handle management */}}>
-                {t('ws_acc_manage', { context: tone, defaultValue: 'Yönet' })}
-              </button>
               <svg className={`${styles.accChevron} ${isMembersOpen ? styles.open : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <polyline points="6 9 12 15 18 9"></polyline>
               </svg>
@@ -258,16 +265,13 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
         </div>
 
         {/* COLLAPSIBLE: Tasks */}
-        <div className={styles.acc} style={{marginBottom: '16px'}}>
+        <div className={styles.acc}>
           <div className={styles.accHead} onClick={() => setIsTasksOpen(!isTasksOpen)}>
             <div className={styles.accHeadLeft}>
               <span className={styles.accTtl}>{t('ws_acc_recent_tasks', { context: tone, defaultValue: 'Son Görevler' })}</span>
               <span className={styles.accCnt}>12</span>
             </div>
             <div className={styles.accRight}>
-              <button className={styles.accLink} onClick={(e) => { e.stopPropagation(); /* view all */}}>
-                {t('ws_acc_view_all', { context: tone, defaultValue: 'Tümü' })}
-              </button>
               <svg className={`${styles.accChevron} ${isTasksOpen ? styles.open : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <polyline points="6 9 12 15 18 9"></polyline>
               </svg>
@@ -302,7 +306,84 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
           </div>
         </div>
 
+        {/* COLLAPSIBLE: Files */}
+        <div className={styles.acc} style={{marginBottom: '24px'}}>
+          <div className={styles.accHead} onClick={() => setIsFilesOpen(!isFilesOpen)}>
+            <div className={styles.accHeadLeft}>
+              <span className={styles.accTtl}>{t('ws_acc_files', { context: tone, defaultValue: 'Dosyalar' })}</span>
+              <span className={styles.accCnt}>{mockFiles.length}</span>
+            </div>
+            <div className={styles.accRight}>
+              <button className={styles.accBtnAc} onClick={(e) => { e.stopPropagation(); setIsUploadModalOpen(true); }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{width: 12, height: 12}}>
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                {t('ws_acc_upload_file', { context: tone, defaultValue: 'Yükle' })}
+              </button>
+              <svg className={`${styles.accChevron} ${isFilesOpen ? styles.open : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+          </div>
+          
+          <div className={`${styles.accBody} ${!isFilesOpen ? styles.closed : ''}`}>
+            {/* Storage Usage row (first slim row) */}
+            <div className={styles.storageUsageRow}>
+              <div className={styles.storageUsageLabel}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 13, height: 13 }}>
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                </svg>
+                <span>{t('ws_storage_used_label', { context: tone, defaultValue: 'Kullanılan Alan' })}</span>
+              </div>
+              <div className={styles.storageUsageRight}>
+                <div className={styles.storageUsageTrack}>
+                  <div className={styles.storageUsageFill} style={{ width: '30%' }}></div>
+                </div>
+                <span className={styles.storageUsagePercent}>%30</span>
+              </div>
+            </div>
+
+            {mockFiles.map((f) => (
+              <div key={f.id} className={styles.fileItem}>
+                <div className={styles.fileIconBox} style={{ color: f.badgeColor, background: f.badgeBg, borderColor: f.badgeColor }}>
+                  {f.ext}
+                </div>
+                <div className={styles.fileInfo}>
+                  <div className={styles.fileName}>{f.name}</div>
+                  <div className={styles.fileMeta}>
+                    <span>{f.size}</span>
+                    <span>·</span>
+                    <span>{f.date}</span>
+                    <span>·</span>
+                    <span>{f.uploader}</span>
+                  </div>
+                </div>
+                <button className={styles.fileActionBtn} title={t('download', { context: tone, defaultValue: 'İndir' })}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
+
+      <FileUploadModal 
+        isOpen={isUploadModalOpen} 
+        onClose={() => setIsUploadModalOpen(false)} 
+        workspaceId={workspace.id} 
+        tone={tone}
+        onSuccess={(fileId) => {
+          console.log("Dosya yüklendi: ", fileId);
+          // [MOBILE_PORT_TODO]: Yükleme sonrası listeyi yenile.
+        }}
+      />
     </motion.div>
   );
 };

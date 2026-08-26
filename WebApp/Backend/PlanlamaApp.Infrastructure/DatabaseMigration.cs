@@ -210,6 +210,39 @@ namespace PlanlamaApp.Infrastructure
                 );
             ");
 
+            // ── WorkspaceFiles ─────────────────────────────────────────────
+            connection.Execute(@"
+                CREATE TABLE IF NOT EXISTS WorkspaceFiles (
+                    Id              SERIAL  PRIMARY KEY,
+                    TenantId        TEXT    NOT NULL,
+                    WorkspaceId     INTEGER NOT NULL,
+                    UploaderId      TEXT    NOT NULL,
+                    FileName        TEXT    NOT NULL,
+                    FileUrl         TEXT    NOT NULL,
+                    FileSizeInBytes BIGINT  NOT NULL,
+                    FileType        TEXT    NOT NULL,
+                    Description     TEXT,
+                    UploadStatus    TEXT    NOT NULL DEFAULT 'Pending',
+                    IsDeleted       BOOLEAN NOT NULL DEFAULT FALSE,
+                    DeletedAt       TIMESTAMPTZ,
+                    CreatedAt       TIMESTAMPTZ NOT NULL,
+                    UpdatedAt       TIMESTAMPTZ NOT NULL
+                );
+            ");
+
+            // ── TaskFileAttachments ────────────────────────────────────────
+            connection.Execute(@"
+                CREATE TABLE IF NOT EXISTS TaskFileAttachments (
+                    Id              SERIAL  PRIMARY KEY,
+                    TenantId        TEXT    NOT NULL,
+                    TaskId          INTEGER NOT NULL,
+                    FileId          INTEGER NOT NULL,
+                    AttachedAt      TIMESTAMPTZ NOT NULL,
+                    AttachedBy      TEXT    NOT NULL,
+                    UNIQUE(TaskId, FileId)
+                );
+            ");
+
             // ── SystemSettings ─────────────────────────────────────────────
             connection.Execute(@"
                 CREATE TABLE IF NOT EXISTS SystemSettings (
@@ -238,7 +271,7 @@ namespace PlanlamaApp.Infrastructure
             var defaultSettings = new[]
             {
                 new { Key = "AiTaskCreation", Value = "5", Description = "Günlük ücretsiz AI ile görev oluşturma limiti" },
-                new { Key = "FileStorage", Value = "50", Description = "Günlük ücretsiz dosya yükleme limiti (MB)" },
+                new { Key = "TotalStorageLimit", Value = "524288000", Description = "Ücretsiz kümülatif dosya yükleme limiti (Byte) - Varsayılan: 500 MB" },
                 new { Key = "RewardedAdWatches", Value = "3", Description = "Günlük maksimum ödüllü reklam izleme sınırı" }
             };
 

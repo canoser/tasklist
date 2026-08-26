@@ -16,7 +16,7 @@ namespace PlanlamaApp.Infrastructure.Repositories
             _dbConnection = dbConnection;
         }
 
-        public async Task<bool> IncrementUsageAsync(string tenantId, string resourceType, int maxLimit, DateTime resetDate, System.Data.IDbTransaction? transaction = null)
+        public async Task<bool> IncrementUsageAsync(string tenantId, string resourceType, long maxLimit, DateTime resetDate, long amount = 1, System.Data.IDbTransaction? transaction = null)
         {
             var now = DateTime.UtcNow;
             var p = new
@@ -26,22 +26,23 @@ namespace PlanlamaApp.Infrastructure.Repositories
                 ResourceType = resourceType,
                 MaxLimit = maxLimit,
                 ResetDate = resetDate,
+                Amount = amount,
                 Now = now
             };
 
             var sql = @"
                 INSERT INTO UsageTracking (Id, TenantId, ResourceType, UsedAmount, MaxLimit, ResetDate, EarnedLimit, EarnedLimitExpiration)
-                VALUES (@Id, @TenantId, @ResourceType, 1, @MaxLimit, @ResetDate, 0, NULL)
+                VALUES (@Id, @TenantId, @ResourceType, @Amount, @MaxLimit, @ResetDate, 0, NULL)
                 ON CONFLICT(TenantId, ResourceType) DO UPDATE SET 
                     UsedAmount = CASE 
-                                    WHEN UsageTracking.ResetDate < @Now THEN 1 
-                                    ELSE UsageTracking.UsedAmount + 1 
+                                    WHEN UsageTracking.ResetDate < @Now THEN @Amount 
+                                    ELSE UsageTracking.UsedAmount + @Amount 
                                  END,
                     MaxLimit = @MaxLimit,
                     ResetDate = CASE 
                                     WHEN UsageTracking.ResetDate < @Now THEN @ResetDate 
                                     ELSE UsageTracking.ResetDate 
-                                END,
+                                 END,
                     EarnedLimit = CASE
                                     WHEN UsageTracking.EarnedLimitExpiration IS NOT NULL AND UsageTracking.EarnedLimitExpiration < @Now THEN 0
                                     ELSE UsageTracking.EarnedLimit
@@ -53,21 +54,24 @@ namespace PlanlamaApp.Infrastructure.Repositories
             return rowsAffected > 0;
         }
 
-        public async Task<bool> DecrementUsageAsync(string tenantId, string resourceType, System.Data.IDbTransaction? transaction = null)
+        public async Task<bool> DecrementUsageAsync(string tenantId, string resourceType, long amount = 1, System.Data.IDbTransaction? transaction = null)
         {
-            var p = new { TenantId = tenantId, ResourceType = resourceType };
+            var p = new { TenantId = tenantId, ResourceType = resourceType, Amount = amount };
             
             var sql = @"
                 UPDATE UsageTracking 
-                SET UsedAmount = UsedAmount - 1
-                WHERE TenantId = @TenantId AND ResourceType = @ResourceType AND UsedAmount > 0;
+                SET UsedAmount = CASE 
+                                    WHEN UsedAmount - @Amount < 0 THEN 0 
+                                    ELSE UsedAmount - @Amount 
+                                 END
+                WHERE TenantId = @TenantId AND ResourceType = @ResourceType;
             ";
             
             var rowsAffected = await _dbConnection.ExecuteAsync(sql, p, transaction);
             return rowsAffected > 0;
         }
 
-        public async Task<bool> AddEarnedLimitAsync(string tenantId, string resourceType, int amount, DateTime expirationDate)
+        public async Task<bool> AddEarnedLimitAsync(string tenantId, string resourceType, long amount, DateTime expirationDate)
         {
             var now = DateTime.UtcNow;
             var nextDay = now.AddDays(1);

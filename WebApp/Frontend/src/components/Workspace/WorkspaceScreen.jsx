@@ -192,10 +192,10 @@ const WorkspaceScreen = ({ user, tone }) => {
               onClick={() => setShowGuideModal(true)}
               title={t('ws_how_to_title', { context: tone })}
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{width: 18, height: 18, flexShrink: 0}}>
-                <circle cx="12" cy="5" r="1" fill="currentColor"></circle>
-                <circle cx="12" cy="12" r="1" fill="currentColor"></circle>
-                <circle cx="12" cy="19" r="1" fill="currentColor"></circle>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{width: 18, height: 18, flexShrink: 0}}>
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
               </svg>
             </button>
           </div>
@@ -242,14 +242,10 @@ const WorkspaceScreen = ({ user, tone }) => {
         ) : (
           <>
             {/* Owned Section */}
-            <div className={styles.secHd}>
-              <div className={styles.secHdLbl}>
-                <svg viewBox="0 0 24 24" fill="currentColor" style={{width: 12, height: 12, flexShrink: 0}}>
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                </svg>
-                {t('ws_section_owned', { context: tone, defaultValue: 'Yönettiğim Alanlar' })}
-              </div>
-              <span className={styles.secHdCnt}>{filteredOwned.length}</span>
+            <div className={styles.divider} style={{marginTop: '16px', marginBottom: '8px'}}>
+              <div className={styles.divLine}></div>
+              <div className={styles.divTxt}>{t('ws_section_owned', { context: tone, defaultValue: 'Yönettiğim Alanlar' })}</div>
+              <div className={styles.divLine}></div>
             </div>
             
             {filteredOwned.length === 0 && searchQuery === '' ? (
@@ -270,9 +266,9 @@ const WorkspaceScreen = ({ user, tone }) => {
             )}
 
             {/* Joined Section */}
-            <div className={styles.divider} style={{marginTop: filteredOwned.length ? '0' : '10px'}}>
+            <div className={styles.divider} style={{marginTop: filteredOwned.length ? '18px' : '10px', marginBottom: '8px'}}>
               <div className={styles.divLine}></div>
-              <div className={styles.divTxt}>{t('ws_section_joined', { context: tone, defaultValue: 'Üye olduğum alanlar' })}</div>
+              <div className={styles.divTxt}>{t('ws_section_joined', { context: tone, defaultValue: 'Üye Olduğum Alanlar' })}</div>
               <div className={styles.divLine}></div>
             </div>
 

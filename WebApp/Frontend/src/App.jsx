@@ -4,8 +4,7 @@ import styles from './App.module.css';
 import AuthModal from './components/Auth/AuthModal';
 import { subscribeToAuthChanges, logoutUser } from './services/authService';
 import { startSyncListener } from './services/syncService';
-import MobileLayout from './components/Layout/MobileLayout';
-import BottomNav from './components/Navigation/BottomNav';
+import AppLayout from './components/Layout/AppLayout';
 import Dashboard from './components/Dashboard/Dashboard';
 import Profile from './components/Profile/Profile';
 import WorkspaceScreen from './components/Workspace/WorkspaceScreen';
@@ -100,7 +99,13 @@ export default function App() {
     <BrowserRouter>
       <UndoProvider>
         <TaskProvider>
-        <MobileLayout>
+        <AppLayout
+          activeTab={activeTab}
+          onTabChange={setTab}
+          tone={tone}
+          user={user}
+          openAuth={() => openModal('auth')}
+        >
           <NatureDecor />
           <OceanDecor />
           <CyberpunkDecor />
@@ -199,18 +204,9 @@ export default function App() {
           <AuthModal isOpen={isModalOpen('auth')} onClose={() => closeModal('auth')} tone={tone} />
           {!user && <GuestWelcomeModal tone={tone} onToneChange={handleToneChange} onComplete={(name) => setGuestName(name)} />}
         </div>
-      </MobileLayout>
-
-      {/* BottomNav, tab seçimini App'e bildirir */}
-      <BottomNav 
-        activeTab={activeTab} 
-        onTabChange={setTab} 
-        tone={tone} 
-        user={user} 
-        openAuth={() => openModal('auth')} 
-      />
-        </TaskProvider>
-      </UndoProvider>
-    </BrowserRouter>
+      </AppLayout>
+      </TaskProvider>
+    </UndoProvider>
+  </BrowserRouter>
   );
 }
