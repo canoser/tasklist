@@ -13,6 +13,7 @@ Aasagidaki tablo, Takvim (Ayik/Haftalik/Gunluk) gorunumlerinde Web standartlari 
 | 5 | `CalendarScreen.jsx` | `clientHeight` / `100dvh` | `Capacitor.Plugins.StatusBar` + `SafeArea` | Mobil centik (notch) ve durum cubugu yukseklikleri Safe Area API ile dinlenmelidir. |
 | 6 | `taskUtils.js` | `JSON.parse(metadata)` | Platform Agnostik | `Metadata` JSON formatinda oldugu icin JS motorlarinda dogrudan calisir, porting gerektirmez. |
 | 7 | `DailyView.jsx` | `new Date(deadline)` UTC parsing | `date-fns-tz` / Zoned Time | Kullanicinin cihazindaki yerel saat dilimi (Timezone offset) ile sunucu UTC saati farki icin yerel saat dilimi koruyucu kullanilmalidir. |
+| 8 | `.env` (Frontend) | Gizli Anahtarlar (Secrets) | SIFIR GIZLI ANAHTAR KURALI | Native (APK/IPA) uygulamalari kolayca tersine muhendislikle (decompile) kirilabilir. Veritabani (Neon) ve Storage (R2) sifreleri **KESINLIKLE** mobil uygulamaya gomulmemelidir (Secretless Client). Tum islemler Backend uzerinden Bearer token veya Presigned URL ile gecirilmelidir. |
 
 ---
 

@@ -26,6 +26,7 @@ namespace PlanlamaApp.Infrastructure
                     SubscriptionPlan TEXT   NOT NULL DEFAULT 'free',
                     CustomAiLimit   INTEGER,
                     CustomStorageLimit INTEGER,
+                    CustomWorkspaceLimit INTEGER,
                     IsActive        BOOLEAN NOT NULL DEFAULT TRUE,
                     DeletedAt       TIMESTAMPTZ,
                     CreatedAt       TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -37,6 +38,7 @@ namespace PlanlamaApp.Infrastructure
                 ALTER TABLE Users ADD COLUMN IF NOT EXISTS SubscriptionPlan TEXT NOT NULL DEFAULT 'free';
                 ALTER TABLE Users ADD COLUMN IF NOT EXISTS CustomAiLimit INTEGER;
                 ALTER TABLE Users ADD COLUMN IF NOT EXISTS CustomStorageLimit INTEGER;
+                ALTER TABLE Users ADD COLUMN IF NOT EXISTS CustomWorkspaceLimit INTEGER;
                 ALTER TABLE Users ADD COLUMN IF NOT EXISTS IsActive BOOLEAN NOT NULL DEFAULT TRUE;
                 ALTER TABLE Users ADD COLUMN IF NOT EXISTS DeletedAt TIMESTAMPTZ;
             ");

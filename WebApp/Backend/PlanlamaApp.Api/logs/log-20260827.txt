@@ -1,0 +1,558 @@
+2026-08-27 01:12:54.570 +03:00 [INF] User profile is available. Using 'C:\Users\canos\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-08-27 01:12:54.624 +03:00 [INF] Storage Maintenance Service is starting.
+2026-08-27 01:12:54.716 +03:00 [INF] Now listening on: http://0.0.0.0:5268
+2026-08-27 01:12:54.717 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-08-27 01:12:54.717 +03:00 [INF] Hosting environment: Development
+2026-08-27 01:12:54.717 +03:00 [INF] Content root path: C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api
+2026-08-27 01:13:09.873 +03:00 [INF] Request starting HTTP/1.1 POST http://localhost:5268/api/Auth/register - application/json 85
+2026-08-27 01:13:09.951 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Register (PlanlamaApp.Api)'
+2026-08-27 01:13:09.971 +03:00 [INF] Route matched with {action = "Register", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Register(PlanlamaApp.Domain.Entities.RegisterRequest) on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-27 01:13:11.257 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Register (PlanlamaApp.Api) in 1283.2897ms
+2026-08-27 01:13:11.264 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Register (PlanlamaApp.Api)'
+2026-08-27 01:13:11.267 +03:00 [ERR] HTTP isteği sırasında yakalanamayan bir hata oluştu: /api/Auth/register
+Npgsql.PostgresException (0x80004005): 42703: column "customworkspacelimit" of relation "users" does not exist
+
+POSITION: 114
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+   at Dapper.SqlMapper.ExecuteImplAsync(IDbConnection cnn, CommandDefinition command, Object param) in /_/Dapper/SqlMapper.Async.cs:line 663
+   at PlanlamaApp.Infrastructure.Repositories.UserRepository.CreateUserAsync(User user) in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Infrastructure\Repositories\UserRepository.cs:line 66
+   at PlanlamaApp.Api.Controllers.AuthController.Register(RegisterRequest request) in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api\Controllers\AuthController.cs:line 140
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|7_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.RateLimiting.RateLimitingMiddleware.InvokeInternal(HttpContext context, EnableRateLimitingAttribute enableRateLimitingAttribute)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Program.<>c__DisplayClass0_0.<<<Main>$>b__5>d.MoveNext() in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api\Program.cs:line 208
+  Exception data:
+    Severity: ERROR
+    SqlState: 42703
+    MessageText: column "customworkspacelimit" of relation "users" does not exist
+    Position: 114
+    File: parse_target.c
+    Line: 1068
+    Routine: checkInsertTargets
+2026-08-27 01:13:11.344 +03:00 [ERR] An unhandled exception has occurred while executing the request.
+Npgsql.PostgresException (0x80004005): 42703: column "customworkspacelimit" of relation "users" does not exist
+
+POSITION: 114
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+   at Dapper.SqlMapper.ExecuteImplAsync(IDbConnection cnn, CommandDefinition command, Object param) in /_/Dapper/SqlMapper.Async.cs:line 663
+   at PlanlamaApp.Infrastructure.Repositories.UserRepository.CreateUserAsync(User user) in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Infrastructure\Repositories\UserRepository.cs:line 66
+   at PlanlamaApp.Api.Controllers.AuthController.Register(RegisterRequest request) in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api\Controllers\AuthController.cs:line 140
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|7_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.RateLimiting.RateLimitingMiddleware.InvokeInternal(HttpContext context, EnableRateLimitingAttribute enableRateLimitingAttribute)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Program.<>c__DisplayClass0_0.<<<Main>$>b__5>d.MoveNext() in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api\Program.cs:line 208
+--- End of stack trace from previous location ---
+   at Program.<>c__DisplayClass0_0.<<<Main>$>b__5>d.MoveNext() in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api\Program.cs:line 237
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context)
+  Exception data:
+    Severity: ERROR
+    SqlState: 42703
+    MessageText: column "customworkspacelimit" of relation "users" does not exist
+    Position: 114
+    File: parse_target.c
+    Line: 1068
+    Routine: checkInsertTargets
+2026-08-27 01:13:11.360 +03:00 [INF] Request finished HTTP/1.1 POST http://localhost:5268/api/Auth/register - 500 null text/plain; charset=utf-8 1488.9944ms
+2026-08-27 01:13:13.411 +03:00 [INF] Request starting HTTP/1.1 POST http://localhost:5268/api/Auth/login - application/json 85
+2026-08-27 01:13:13.414 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Login (PlanlamaApp.Api)'
+2026-08-27 01:13:13.431 +03:00 [INF] Route matched with {action = "Login", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(PlanlamaApp.Domain.Entities.LoginRequest) on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-27 01:13:13.981 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type 'System.String'.
+2026-08-27 01:13:13.982 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Login (PlanlamaApp.Api) in 550.3623ms
+2026-08-27 01:13:13.982 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Login (PlanlamaApp.Api)'
+2026-08-27 01:13:13.982 +03:00 [INF] Request finished HTTP/1.1 POST http://localhost:5268/api/Auth/login - 401 null text/plain; charset=utf-8 571.9572ms
+2026-08-27 01:14:08.462 +03:00 [INF] Request starting HTTP/1.1 POST http://localhost:5268/api/Auth/register - application/json 94
+2026-08-27 01:14:08.465 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Register (PlanlamaApp.Api)'
+2026-08-27 01:14:08.465 +03:00 [INF] Route matched with {action = "Register", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Register(PlanlamaApp.Domain.Entities.RegisterRequest) on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-27 01:14:09.514 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Register (PlanlamaApp.Api) in 1049.1992ms
+2026-08-27 01:14:09.514 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Register (PlanlamaApp.Api)'
+2026-08-27 01:14:09.515 +03:00 [ERR] HTTP isteği sırasında yakalanamayan bir hata oluştu: /api/Auth/register
+Npgsql.PostgresException (0x80004005): 42703: column "customworkspacelimit" of relation "users" does not exist
+
+POSITION: 114
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+   at Dapper.SqlMapper.ExecuteImplAsync(IDbConnection cnn, CommandDefinition command, Object param) in /_/Dapper/SqlMapper.Async.cs:line 663
+   at PlanlamaApp.Infrastructure.Repositories.UserRepository.CreateUserAsync(User user) in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Infrastructure\Repositories\UserRepository.cs:line 66
+   at PlanlamaApp.Api.Controllers.AuthController.Register(RegisterRequest request) in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api\Controllers\AuthController.cs:line 140
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|7_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.RateLimiting.RateLimitingMiddleware.InvokeInternal(HttpContext context, EnableRateLimitingAttribute enableRateLimitingAttribute)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Program.<>c__DisplayClass0_0.<<<Main>$>b__5>d.MoveNext() in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api\Program.cs:line 208
+  Exception data:
+    Severity: ERROR
+    SqlState: 42703
+    MessageText: column "customworkspacelimit" of relation "users" does not exist
+    Position: 114
+    File: parse_target.c
+    Line: 1068
+    Routine: checkInsertTargets
+2026-08-27 01:14:09.557 +03:00 [ERR] An unhandled exception has occurred while executing the request.
+Npgsql.PostgresException (0x80004005): 42703: column "customworkspacelimit" of relation "users" does not exist
+
+POSITION: 114
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteNonQuery(Boolean async, CancellationToken cancellationToken)
+   at Dapper.SqlMapper.ExecuteImplAsync(IDbConnection cnn, CommandDefinition command, Object param) in /_/Dapper/SqlMapper.Async.cs:line 663
+   at PlanlamaApp.Infrastructure.Repositories.UserRepository.CreateUserAsync(User user) in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Infrastructure\Repositories\UserRepository.cs:line 66
+   at PlanlamaApp.Api.Controllers.AuthController.Register(RegisterRequest request) in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api\Controllers\AuthController.cs:line 140
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|7_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.RateLimiting.RateLimitingMiddleware.InvokeInternal(HttpContext context, EnableRateLimitingAttribute enableRateLimitingAttribute)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Program.<>c__DisplayClass0_0.<<<Main>$>b__5>d.MoveNext() in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api\Program.cs:line 208
+--- End of stack trace from previous location ---
+   at Program.<>c__DisplayClass0_0.<<<Main>$>b__5>d.MoveNext() in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api\Program.cs:line 237
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context)
+  Exception data:
+    Severity: ERROR
+    SqlState: 42703
+    MessageText: column "customworkspacelimit" of relation "users" does not exist
+    Position: 114
+    File: parse_target.c
+    Line: 1068
+    Routine: checkInsertTargets
+2026-08-27 01:14:09.563 +03:00 [INF] Request finished HTTP/1.1 POST http://localhost:5268/api/Auth/register - 500 null text/plain; charset=utf-8 1100.2419ms
+2026-08-27 01:14:11.619 +03:00 [INF] Request starting HTTP/1.1 POST http://localhost:5268/api/Auth/login - application/json 94
+2026-08-27 01:14:11.619 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Login (PlanlamaApp.Api)'
+2026-08-27 01:14:11.619 +03:00 [INF] Route matched with {action = "Login", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(PlanlamaApp.Domain.Entities.LoginRequest) on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-27 01:14:12.171 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type 'System.String'.
+2026-08-27 01:14:12.171 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Login (PlanlamaApp.Api) in 552.0606ms
+2026-08-27 01:14:12.171 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Login (PlanlamaApp.Api)'
+2026-08-27 01:14:12.172 +03:00 [INF] Request finished HTTP/1.1 POST http://localhost:5268/api/Auth/login - 401 null text/plain; charset=utf-8 552.9428ms
+2026-08-27 01:15:35.833 +03:00 [INF] User profile is available. Using 'C:\Users\canos\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-08-27 01:15:35.887 +03:00 [INF] Storage Maintenance Service is starting.
+2026-08-27 01:15:35.922 +03:00 [INF] Now listening on: http://0.0.0.0:5268
+2026-08-27 01:15:35.922 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-08-27 01:15:35.923 +03:00 [INF] Hosting environment: Development
+2026-08-27 01:15:35.923 +03:00 [INF] Content root path: C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api
+2026-08-27 01:16:22.291 +03:00 [INF] User profile is available. Using 'C:\Users\canos\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-08-27 01:16:22.339 +03:00 [INF] Storage Maintenance Service is starting.
+2026-08-27 01:16:22.373 +03:00 [INF] Now listening on: http://0.0.0.0:5268
+2026-08-27 01:16:22.373 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-08-27 01:16:22.373 +03:00 [INF] Hosting environment: Development
+2026-08-27 01:16:22.373 +03:00 [INF] Content root path: C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api
+2026-08-27 01:16:37.487 +03:00 [INF] Request starting HTTP/1.1 POST http://localhost:5268/api/Auth/register - application/json 94
+2026-08-27 01:16:37.539 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Register (PlanlamaApp.Api)'
+2026-08-27 01:16:37.553 +03:00 [INF] Route matched with {action = "Register", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Register(PlanlamaApp.Domain.Entities.RegisterRequest) on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-27 01:16:38.832 +03:00 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType9`3[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType10`3[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-27 01:16:38.848 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Register (PlanlamaApp.Api) in 1293.0498ms
+2026-08-27 01:16:38.856 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Register (PlanlamaApp.Api)'
+2026-08-27 01:16:38.859 +03:00 [INF] Request finished HTTP/1.1 POST http://localhost:5268/api/Auth/register - 200 null application/json; charset=utf-8 1373.525ms
+2026-08-27 01:16:40.893 +03:00 [INF] Request starting HTTP/1.1 POST http://localhost:5268/api/Storage/upload-url - application/json 125
+2026-08-27 01:16:40.927 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.StorageController.GetUploadUrl (PlanlamaApp.Api)'
+2026-08-27 01:16:40.930 +03:00 [INF] Route matched with {action = "GetUploadUrl", controller = "Storage"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUploadUrl(PlanlamaApp.Api.Controllers.UploadUrlRequest) on controller PlanlamaApp.Api.Controllers.StorageController (PlanlamaApp.Api).
+2026-08-27 01:16:40.964 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.StorageController.GetUploadUrl (PlanlamaApp.Api) in 33.6809ms
+2026-08-27 01:16:40.964 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.StorageController.GetUploadUrl (PlanlamaApp.Api)'
+2026-08-27 01:16:40.965 +03:00 [ERR] HTTP isteği sırasında yakalanamayan bir hata oluştu: /api/Storage/upload-url
+Amazon.Runtime.AmazonClientException: Value for ServiceURL is not a valid URL: https://<ACCOUNT_ID>.r2.cloudflarestorage.com
+   at Amazon.Runtime.ClientConfig.NormalizeServiceURL(String value)
+   at Amazon.Runtime.ClientConfig.set_ServiceURL(String value)
+   at PlanlamaApp.Infrastructure.Services.R2StorageService..ctor(IConfiguration configuration) in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Infrastructure\Services\R2StorageService.cs:line 28
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at System.Reflection.RuntimeConstructorInfo.Invoke(BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitCache(ServiceCallSite callSite, RuntimeResolverContext context, ServiceProviderEngineScope serviceProviderEngine, RuntimeResolverLock lockType)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitScopeCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.Resolve(ServiceCallSite callSite, ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.DynamicServiceProviderEngine.<>c__DisplayClass2_0.<RealizeService>b__0(ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(ServiceIdentifier serviceIdentifier, ServiceProviderEngineScope serviceProviderEngineScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at lambda_method32(Closure, IServiceProvider, Object[])
+   at Microsoft.AspNetCore.Mvc.Controllers.ControllerFactoryProvider.<>c__DisplayClass6_0.<CreateControllerFactory>g__CreateController|0(ControllerContext controllerContext)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.InvokeInnerFilterAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|7_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.RateLimiting.RateLimitingMiddleware.InvokeInternal(HttpContext context, EnableRateLimitingAttribute enableRateLimitingAttribute)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Program.<>c__DisplayClass0_0.<<<Main>$>b__5>d.MoveNext() in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api\Program.cs:line 208
+2026-08-27 01:16:41.029 +03:00 [ERR] An unhandled exception has occurred while executing the request.
+Amazon.Runtime.AmazonClientException: Value for ServiceURL is not a valid URL: https://<ACCOUNT_ID>.r2.cloudflarestorage.com
+   at Amazon.Runtime.ClientConfig.NormalizeServiceURL(String value)
+   at Amazon.Runtime.ClientConfig.set_ServiceURL(String value)
+   at PlanlamaApp.Infrastructure.Services.R2StorageService..ctor(IConfiguration configuration) in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Infrastructure\Services\R2StorageService.cs:line 28
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at System.Reflection.RuntimeConstructorInfo.Invoke(BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitCache(ServiceCallSite callSite, RuntimeResolverContext context, ServiceProviderEngineScope serviceProviderEngine, RuntimeResolverLock lockType)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitScopeCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.Resolve(ServiceCallSite callSite, ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.DynamicServiceProviderEngine.<>c__DisplayClass2_0.<RealizeService>b__0(ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(ServiceIdentifier serviceIdentifier, ServiceProviderEngineScope serviceProviderEngineScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at lambda_method32(Closure, IServiceProvider, Object[])
+   at Microsoft.AspNetCore.Mvc.Controllers.ControllerFactoryProvider.<>c__DisplayClass6_0.<CreateControllerFactory>g__CreateController|0(ControllerContext controllerContext)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.InvokeInnerFilterAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|7_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.RateLimiting.RateLimitingMiddleware.InvokeInternal(HttpContext context, EnableRateLimitingAttribute enableRateLimitingAttribute)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Program.<>c__DisplayClass0_0.<<<Main>$>b__5>d.MoveNext() in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api\Program.cs:line 208
+--- End of stack trace from previous location ---
+   at Program.<>c__DisplayClass0_0.<<<Main>$>b__5>d.MoveNext() in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api\Program.cs:line 237
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context)
+2026-08-27 01:16:41.033 +03:00 [INF] Request finished HTTP/1.1 POST http://localhost:5268/api/Storage/upload-url - 500 null text/plain; charset=utf-8 140.8022ms
+2026-08-27 01:16:43.075 +03:00 [INF] Request starting HTTP/1.1 POST http://localhost:5268/api/Storage/upload-url - application/json 119
+2026-08-27 01:16:43.079 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.StorageController.GetUploadUrl (PlanlamaApp.Api)'
+2026-08-27 01:16:43.079 +03:00 [INF] Route matched with {action = "GetUploadUrl", controller = "Storage"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUploadUrl(PlanlamaApp.Api.Controllers.UploadUrlRequest) on controller PlanlamaApp.Api.Controllers.StorageController (PlanlamaApp.Api).
+2026-08-27 01:16:43.080 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.StorageController.GetUploadUrl (PlanlamaApp.Api) in 0.2598ms
+2026-08-27 01:16:43.080 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.StorageController.GetUploadUrl (PlanlamaApp.Api)'
+2026-08-27 01:16:43.080 +03:00 [ERR] HTTP isteği sırasında yakalanamayan bir hata oluştu: /api/Storage/upload-url
+Amazon.Runtime.AmazonClientException: Value for ServiceURL is not a valid URL: https://<ACCOUNT_ID>.r2.cloudflarestorage.com
+   at Amazon.Runtime.ClientConfig.NormalizeServiceURL(String value)
+   at Amazon.Runtime.ClientConfig.set_ServiceURL(String value)
+   at PlanlamaApp.Infrastructure.Services.R2StorageService..ctor(IConfiguration configuration) in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Infrastructure\Services\R2StorageService.cs:line 28
+   at InvokeStub_R2StorageService..ctor(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at System.Reflection.RuntimeConstructorInfo.Invoke(BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitCache(ServiceCallSite callSite, RuntimeResolverContext context, ServiceProviderEngineScope serviceProviderEngine, RuntimeResolverLock lockType)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitScopeCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.Resolve(ServiceCallSite callSite, ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.DynamicServiceProviderEngine.<>c__DisplayClass2_0.<RealizeService>b__0(ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(ServiceIdentifier serviceIdentifier, ServiceProviderEngineScope serviceProviderEngineScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at lambda_method32(Closure, IServiceProvider, Object[])
+   at Microsoft.AspNetCore.Mvc.Controllers.ControllerFactoryProvider.<>c__DisplayClass6_0.<CreateControllerFactory>g__CreateController|0(ControllerContext controllerContext)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.InvokeInnerFilterAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|7_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.RateLimiting.RateLimitingMiddleware.InvokeInternal(HttpContext context, EnableRateLimitingAttribute enableRateLimitingAttribute)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Program.<>c__DisplayClass0_0.<<<Main>$>b__5>d.MoveNext() in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api\Program.cs:line 208
+2026-08-27 01:16:43.120 +03:00 [ERR] An unhandled exception has occurred while executing the request.
+Amazon.Runtime.AmazonClientException: Value for ServiceURL is not a valid URL: https://<ACCOUNT_ID>.r2.cloudflarestorage.com
+   at Amazon.Runtime.ClientConfig.NormalizeServiceURL(String value)
+   at Amazon.Runtime.ClientConfig.set_ServiceURL(String value)
+   at PlanlamaApp.Infrastructure.Services.R2StorageService..ctor(IConfiguration configuration) in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Infrastructure\Services\R2StorageService.cs:line 28
+   at InvokeStub_R2StorageService..ctor(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at System.Reflection.RuntimeConstructorInfo.Invoke(BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitCache(ServiceCallSite callSite, RuntimeResolverContext context, ServiceProviderEngineScope serviceProviderEngine, RuntimeResolverLock lockType)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitScopeCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.Resolve(ServiceCallSite callSite, ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.DynamicServiceProviderEngine.<>c__DisplayClass2_0.<RealizeService>b__0(ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(ServiceIdentifier serviceIdentifier, ServiceProviderEngineScope serviceProviderEngineScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at lambda_method32(Closure, IServiceProvider, Object[])
+   at Microsoft.AspNetCore.Mvc.Controllers.ControllerFactoryProvider.<>c__DisplayClass6_0.<CreateControllerFactory>g__CreateController|0(ControllerContext controllerContext)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.InvokeInnerFilterAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|7_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.RateLimiting.RateLimitingMiddleware.InvokeInternal(HttpContext context, EnableRateLimitingAttribute enableRateLimitingAttribute)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Program.<>c__DisplayClass0_0.<<<Main>$>b__5>d.MoveNext() in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api\Program.cs:line 208
+--- End of stack trace from previous location ---
+   at Program.<>c__DisplayClass0_0.<<<Main>$>b__5>d.MoveNext() in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api\Program.cs:line 237
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context)
+2026-08-27 01:16:43.123 +03:00 [INF] Request finished HTTP/1.1 POST http://localhost:5268/api/Storage/upload-url - 500 null text/plain; charset=utf-8 47.3958ms
+2026-08-27 01:16:45.178 +03:00 [INF] Request starting HTTP/1.1 POST http://localhost:5268/api/Storage/confirm-upload - application/json 16
+2026-08-27 01:16:45.178 +03:00 [INF] Request starting HTTP/1.1 POST http://localhost:5268/api/Storage/confirm-upload - application/json 16
+2026-08-27 01:16:45.180 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.StorageController.ConfirmUpload (PlanlamaApp.Api)'
+2026-08-27 01:16:45.180 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.StorageController.ConfirmUpload (PlanlamaApp.Api)'
+2026-08-27 01:16:45.183 +03:00 [INF] Route matched with {action = "ConfirmUpload", controller = "Storage"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] ConfirmUpload(PlanlamaApp.Api.Controllers.ConfirmUploadRequest) on controller PlanlamaApp.Api.Controllers.StorageController (PlanlamaApp.Api).
+2026-08-27 01:16:45.183 +03:00 [INF] Route matched with {action = "ConfirmUpload", controller = "Storage"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] ConfirmUpload(PlanlamaApp.Api.Controllers.ConfirmUploadRequest) on controller PlanlamaApp.Api.Controllers.StorageController (PlanlamaApp.Api).
+2026-08-27 01:16:45.184 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.StorageController.ConfirmUpload (PlanlamaApp.Api) in 0.2077ms
+2026-08-27 01:16:45.184 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.StorageController.ConfirmUpload (PlanlamaApp.Api) in 0.2389ms
+2026-08-27 01:16:45.184 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.StorageController.ConfirmUpload (PlanlamaApp.Api)'
+2026-08-27 01:16:45.184 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.StorageController.ConfirmUpload (PlanlamaApp.Api)'
+2026-08-27 01:16:45.184 +03:00 [ERR] HTTP isteği sırasında yakalanamayan bir hata oluştu: /api/Storage/confirm-upload
+Amazon.Runtime.AmazonClientException: Value for ServiceURL is not a valid URL: https://<ACCOUNT_ID>.r2.cloudflarestorage.com
+   at Amazon.Runtime.ClientConfig.NormalizeServiceURL(String value)
+   at Amazon.Runtime.ClientConfig.set_ServiceURL(String value)
+   at PlanlamaApp.Infrastructure.Services.R2StorageService..ctor(IConfiguration configuration) in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Infrastructure\Services\R2StorageService.cs:line 28
+   at InvokeStub_R2StorageService..ctor(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at System.Reflection.RuntimeConstructorInfo.Invoke(BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitCache(ServiceCallSite callSite, RuntimeResolverContext context, ServiceProviderEngineScope serviceProviderEngine, RuntimeResolverLock lockType)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitScopeCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.Resolve(ServiceCallSite callSite, ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.DynamicServiceProviderEngine.<>c__DisplayClass2_0.<RealizeService>b__0(ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at lambda_method47(Closure, IServiceProvider, Object[])
+   at Microsoft.AspNetCore.Mvc.Controllers.ControllerFactoryProvider.<>c__DisplayClass6_0.<CreateControllerFactory>g__CreateController|0(ControllerContext controllerContext)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.InvokeInnerFilterAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|7_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.RateLimiting.RateLimitingMiddleware.InvokeInternal(HttpContext context, EnableRateLimitingAttribute enableRateLimitingAttribute)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Program.<>c__DisplayClass0_0.<<<Main>$>b__5>d.MoveNext() in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api\Program.cs:line 208
+2026-08-27 01:16:45.184 +03:00 [ERR] HTTP isteği sırasında yakalanamayan bir hata oluştu: /api/Storage/confirm-upload
+Amazon.Runtime.AmazonClientException: Value for ServiceURL is not a valid URL: https://<ACCOUNT_ID>.r2.cloudflarestorage.com
+   at Amazon.Runtime.ClientConfig.NormalizeServiceURL(String value)
+   at Amazon.Runtime.ClientConfig.set_ServiceURL(String value)
+   at PlanlamaApp.Infrastructure.Services.R2StorageService..ctor(IConfiguration configuration) in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Infrastructure\Services\R2StorageService.cs:line 28
+   at InvokeStub_R2StorageService..ctor(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at System.Reflection.RuntimeConstructorInfo.Invoke(BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitCache(ServiceCallSite callSite, RuntimeResolverContext context, ServiceProviderEngineScope serviceProviderEngine, RuntimeResolverLock lockType)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitScopeCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.Resolve(ServiceCallSite callSite, ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.DynamicServiceProviderEngine.<>c__DisplayClass2_0.<RealizeService>b__0(ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at lambda_method48(Closure, IServiceProvider, Object[])
+   at Microsoft.AspNetCore.Mvc.Controllers.ControllerFactoryProvider.<>c__DisplayClass6_0.<CreateControllerFactory>g__CreateController|0(ControllerContext controllerContext)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.InvokeInnerFilterAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|7_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.RateLimiting.RateLimitingMiddleware.InvokeInternal(HttpContext context, EnableRateLimitingAttribute enableRateLimitingAttribute)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Program.<>c__DisplayClass0_0.<<<Main>$>b__5>d.MoveNext() in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api\Program.cs:line 208
+2026-08-27 01:16:45.227 +03:00 [ERR] An unhandled exception has occurred while executing the request.
+Amazon.Runtime.AmazonClientException: Value for ServiceURL is not a valid URL: https://<ACCOUNT_ID>.r2.cloudflarestorage.com
+   at Amazon.Runtime.ClientConfig.NormalizeServiceURL(String value)
+   at Amazon.Runtime.ClientConfig.set_ServiceURL(String value)
+   at PlanlamaApp.Infrastructure.Services.R2StorageService..ctor(IConfiguration configuration) in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Infrastructure\Services\R2StorageService.cs:line 28
+   at InvokeStub_R2StorageService..ctor(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at System.Reflection.RuntimeConstructorInfo.Invoke(BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitCache(ServiceCallSite callSite, RuntimeResolverContext context, ServiceProviderEngineScope serviceProviderEngine, RuntimeResolverLock lockType)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitScopeCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.Resolve(ServiceCallSite callSite, ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.DynamicServiceProviderEngine.<>c__DisplayClass2_0.<RealizeService>b__0(ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at lambda_method48(Closure, IServiceProvider, Object[])
+   at Microsoft.AspNetCore.Mvc.Controllers.ControllerFactoryProvider.<>c__DisplayClass6_0.<CreateControllerFactory>g__CreateController|0(ControllerContext controllerContext)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.InvokeInnerFilterAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|7_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.RateLimiting.RateLimitingMiddleware.InvokeInternal(HttpContext context, EnableRateLimitingAttribute enableRateLimitingAttribute)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Program.<>c__DisplayClass0_0.<<<Main>$>b__5>d.MoveNext() in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api\Program.cs:line 208
+--- End of stack trace from previous location ---
+   at Program.<>c__DisplayClass0_0.<<<Main>$>b__5>d.MoveNext() in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api\Program.cs:line 237
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context)
+2026-08-27 01:16:45.229 +03:00 [INF] Request finished HTTP/1.1 POST http://localhost:5268/api/Storage/confirm-upload - 500 null text/plain; charset=utf-8 50.6555ms
+2026-08-27 01:16:45.491 +03:00 [ERR] An unhandled exception has occurred while executing the request.
+Amazon.Runtime.AmazonClientException: Value for ServiceURL is not a valid URL: https://<ACCOUNT_ID>.r2.cloudflarestorage.com
+   at Amazon.Runtime.ClientConfig.NormalizeServiceURL(String value)
+   at Amazon.Runtime.ClientConfig.set_ServiceURL(String value)
+   at PlanlamaApp.Infrastructure.Services.R2StorageService..ctor(IConfiguration configuration) in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Infrastructure\Services\R2StorageService.cs:line 28
+   at InvokeStub_R2StorageService..ctor(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at System.Reflection.RuntimeConstructorInfo.Invoke(BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSiteMain(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitCache(ServiceCallSite callSite, RuntimeResolverContext context, ServiceProviderEngineScope serviceProviderEngine, RuntimeResolverLock lockType)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.VisitScopeCache(ServiceCallSite callSite, RuntimeResolverContext context)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteVisitor`2.VisitCallSite(ServiceCallSite callSite, TArgument argument)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteRuntimeResolver.Resolve(ServiceCallSite callSite, ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.DynamicServiceProviderEngine.<>c__DisplayClass2_0.<RealizeService>b__0(ServiceProviderEngineScope scope)
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.ServiceProviderEngineScope.GetService(Type serviceType)
+   at lambda_method47(Closure, IServiceProvider, Object[])
+   at Microsoft.AspNetCore.Mvc.Controllers.ControllerFactoryProvider.<>c__DisplayClass6_0.<CreateControllerFactory>g__CreateController|0(ControllerContext controllerContext)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.InvokeInnerFilterAsync()
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|7_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.RateLimiting.RateLimitingMiddleware.InvokeInternal(HttpContext context, EnableRateLimitingAttribute enableRateLimitingAttribute)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at Program.<>c__DisplayClass0_0.<<<Main>$>b__5>d.MoveNext() in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api\Program.cs:line 208
+--- End of stack trace from previous location ---
+   at Program.<>c__DisplayClass0_0.<<<Main>$>b__5>d.MoveNext() in C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api\Program.cs:line 237
+--- End of stack trace from previous location ---
+   at Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddlewareImpl.Invoke(HttpContext context)
+2026-08-27 01:16:45.492 +03:00 [INF] Request finished HTTP/1.1 POST http://localhost:5268/api/Storage/confirm-upload - 500 null text/plain; charset=utf-8 313.725ms
+2026-08-27 01:17:33.040 +03:00 [INF] User profile is available. Using 'C:\Users\canos\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-08-27 01:17:33.087 +03:00 [INF] Storage Maintenance Service is starting.
+2026-08-27 01:17:33.115 +03:00 [INF] Now listening on: http://0.0.0.0:5268
+2026-08-27 01:17:33.116 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-08-27 01:17:33.116 +03:00 [INF] Hosting environment: Development
+2026-08-27 01:17:33.116 +03:00 [INF] Content root path: C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api
+2026-08-27 01:17:42.998 +03:00 [INF] Request starting HTTP/1.1 POST http://localhost:5268/api/Auth/register - application/json 94
+2026-08-27 01:17:43.047 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Register (PlanlamaApp.Api)'
+2026-08-27 01:17:43.060 +03:00 [INF] Route matched with {action = "Register", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Register(PlanlamaApp.Domain.Entities.RegisterRequest) on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-27 01:17:44.319 +03:00 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType9`3[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType10`3[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-27 01:17:44.338 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Register (PlanlamaApp.Api) in 1275.5824ms
+2026-08-27 01:17:44.347 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Register (PlanlamaApp.Api)'
+2026-08-27 01:17:44.351 +03:00 [INF] Request finished HTTP/1.1 POST http://localhost:5268/api/Auth/register - 200 null application/json; charset=utf-8 1353.7486ms
+2026-08-27 01:17:46.391 +03:00 [INF] Request starting HTTP/1.1 POST http://localhost:5268/api/Storage/upload-url - application/json 125
+2026-08-27 01:17:46.437 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.StorageController.GetUploadUrl (PlanlamaApp.Api)'
+2026-08-27 01:17:46.440 +03:00 [INF] Route matched with {action = "GetUploadUrl", controller = "Storage"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUploadUrl(PlanlamaApp.Api.Controllers.UploadUrlRequest) on controller PlanlamaApp.Api.Controllers.StorageController (PlanlamaApp.Api).
+2026-08-27 01:17:46.544 +03:00 [INF] Executing BadRequestObjectResult, writing value of type 'System.String'.
+2026-08-27 01:17:46.544 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.StorageController.GetUploadUrl (PlanlamaApp.Api) in 103.7909ms
+2026-08-27 01:17:46.545 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.StorageController.GetUploadUrl (PlanlamaApp.Api)'
+2026-08-27 01:17:46.545 +03:00 [INF] Request finished HTTP/1.1 POST http://localhost:5268/api/Storage/upload-url - 400 null text/plain; charset=utf-8 154.047ms
+2026-08-27 01:17:48.598 +03:00 [INF] Request starting HTTP/1.1 POST http://localhost:5268/api/Storage/upload-url - application/json 119
+2026-08-27 01:17:48.604 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.StorageController.GetUploadUrl (PlanlamaApp.Api)'
+2026-08-27 01:17:48.604 +03:00 [INF] Route matched with {action = "GetUploadUrl", controller = "Storage"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUploadUrl(PlanlamaApp.Api.Controllers.UploadUrlRequest) on controller PlanlamaApp.Api.Controllers.StorageController (PlanlamaApp.Api).
+2026-08-27 01:17:48.609 +03:00 [INF] Executing BadRequestObjectResult, writing value of type 'System.String'.
+2026-08-27 01:17:48.609 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.StorageController.GetUploadUrl (PlanlamaApp.Api) in 4.7239ms
+2026-08-27 01:17:48.609 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.StorageController.GetUploadUrl (PlanlamaApp.Api)'
+2026-08-27 01:17:48.609 +03:00 [INF] Request finished HTTP/1.1 POST http://localhost:5268/api/Storage/upload-url - 400 null text/plain; charset=utf-8 10.9522ms
+2026-08-27 01:17:50.664 +03:00 [INF] Request starting HTTP/1.1 POST http://localhost:5268/api/Storage/confirm-upload - application/json 16
+2026-08-27 01:17:50.664 +03:00 [INF] Request starting HTTP/1.1 POST http://localhost:5268/api/Storage/confirm-upload - application/json 16
+2026-08-27 01:17:50.666 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.StorageController.ConfirmUpload (PlanlamaApp.Api)'
+2026-08-27 01:17:50.666 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.StorageController.ConfirmUpload (PlanlamaApp.Api)'
+2026-08-27 01:17:50.670 +03:00 [INF] Route matched with {action = "ConfirmUpload", controller = "Storage"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] ConfirmUpload(PlanlamaApp.Api.Controllers.ConfirmUploadRequest) on controller PlanlamaApp.Api.Controllers.StorageController (PlanlamaApp.Api).
+2026-08-27 01:17:50.670 +03:00 [INF] Route matched with {action = "ConfirmUpload", controller = "Storage"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] ConfirmUpload(PlanlamaApp.Api.Controllers.ConfirmUploadRequest) on controller PlanlamaApp.Api.Controllers.StorageController (PlanlamaApp.Api).
+2026-08-27 01:17:50.790 +03:00 [INF] Executing NotFoundObjectResult, writing value of type 'System.String'.
+2026-08-27 01:17:50.791 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.StorageController.ConfirmUpload (PlanlamaApp.Api) in 120.7643ms
+2026-08-27 01:17:50.791 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.StorageController.ConfirmUpload (PlanlamaApp.Api)'
+2026-08-27 01:17:50.791 +03:00 [INF] Request finished HTTP/1.1 POST http://localhost:5268/api/Storage/confirm-upload - 404 null text/plain; charset=utf-8 126.8903ms
+2026-08-27 01:17:50.870 +03:00 [INF] Executing NotFoundObjectResult, writing value of type 'System.String'.
+2026-08-27 01:17:50.871 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.StorageController.ConfirmUpload (PlanlamaApp.Api) in 200.6674ms
+2026-08-27 01:17:50.871 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.StorageController.ConfirmUpload (PlanlamaApp.Api)'
+2026-08-27 01:17:50.871 +03:00 [INF] Request finished HTTP/1.1 POST http://localhost:5268/api/Storage/confirm-upload - 404 null text/plain; charset=utf-8 206.829ms
+2026-08-27 01:43:49.275 +03:00 [INF] User profile is available. Using 'C:\Users\canos\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-08-27 01:43:49.324 +03:00 [INF] Storage Maintenance Service is starting.
+2026-08-27 01:43:49.362 +03:00 [INF] Now listening on: http://0.0.0.0:5268
+2026-08-27 01:43:49.362 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-08-27 01:43:49.362 +03:00 [INF] Hosting environment: Development
+2026-08-27 01:43:49.362 +03:00 [INF] Content root path: C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api
+2026-08-27 02:08:05.960 +03:00 [INF] Request starting HTTP/1.1 POST http://localhost:5268/api/Auth/register - application/json 92
+2026-08-27 02:08:06.022 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Register (PlanlamaApp.Api)'
+2026-08-27 02:08:06.034 +03:00 [INF] Route matched with {action = "Register", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Register(PlanlamaApp.Domain.Entities.RegisterRequest) on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-27 02:08:07.443 +03:00 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType9`3[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType10`3[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-27 02:08:07.459 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Register (PlanlamaApp.Api) in 1422.3427ms
+2026-08-27 02:08:07.466 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Register (PlanlamaApp.Api)'
+2026-08-27 02:08:07.469 +03:00 [INF] Request finished HTTP/1.1 POST http://localhost:5268/api/Auth/register - 200 null application/json; charset=utf-8 1509.8034ms
+2026-08-27 02:08:09.524 +03:00 [INF] Request starting HTTP/1.1 POST http://localhost:5268/api/Storage/upload-url - application/json 103
+2026-08-27 02:08:09.551 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.StorageController.GetUploadUrl (PlanlamaApp.Api)'
+2026-08-27 02:08:09.554 +03:00 [INF] Route matched with {action = "GetUploadUrl", controller = "Storage"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetUploadUrl(PlanlamaApp.Api.Controllers.UploadUrlRequest) on controller PlanlamaApp.Api.Controllers.StorageController (PlanlamaApp.Api).
+2026-08-27 02:08:09.917 +03:00 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType23`4[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-08-27 02:08:09.919 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.StorageController.GetUploadUrl (PlanlamaApp.Api) in 365.2388ms
+2026-08-27 02:08:09.920 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.StorageController.GetUploadUrl (PlanlamaApp.Api)'
+2026-08-27 02:08:09.920 +03:00 [INF] Request finished HTTP/1.1 POST http://localhost:5268/api/Storage/upload-url - 200 null application/json; charset=utf-8 396.2884ms
