@@ -42,6 +42,9 @@ namespace PlanlamaApp.Infrastructure.Services
                 Key = objectKey,
                 Verb = HttpVerb.PUT,
                 Expires = DateTime.UtcNow.Add(expiresIn),
+                // GÜVENLİK (Content-Type Spoofing Koruması):
+                // İstemci tam olarak bu Content-Type'ı göndermek ZORUNDADIR.
+                // Aksi takdirde R2/S3 imza (signature) hatası verip yüklemeyi reddedecektir.
                 ContentType = contentType
             };
 

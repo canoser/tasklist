@@ -71,6 +71,15 @@ namespace PlanlamaApp.Infrastructure.Services
                 
                 _logger.LogInformation($"Expired pending file reservation refunded. TenantId: {file.TenantId}, Size: {file.FileSizeInBytes}");
             }
+
+            // GÜVENLİK: 24 saatten eski Idempotency Key'leri temizle
+            var idempotencyThreshold = DateTime.UtcNow.AddDays(-1);
+            var deletedKeys = await dbConnection.ExecuteAsync(
+                "DELETE FROM IdempotencyKeys WHERE CreatedAt < @Threshold", 
+                new { Threshold = idempotencyThreshold });
+            
+            if (deletedKeys > 0)
+                _logger.LogInformation($"Cleaned up {deletedKeys} expired idempotency keys.");
         }
     }
 }

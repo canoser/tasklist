@@ -89,16 +89,31 @@ builder.Services.AddCors(options =>
     });
 });
 
-// 3. IP Bazlı Rate Limiting
+// 3. IP/Kullanıcı Bazlı Rate Limiting (Partitioned)
 builder.Services.AddRateLimiter(options =>
 {
-    options.AddFixedWindowLimiter("FixedPolicy", opt =>
+    options.AddPolicy("FixedPolicy", context =>
     {
-        opt.PermitLimit = 100; // Dakikada 100 istek
-        opt.Window = TimeSpan.FromMinutes(1);
-        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        opt.QueueLimit = 2; // Sınır aşıldığında bekletilecek kuyruk boyutu
+        // Token varsa UserId (NameIdentifier), yoksa IP adresini kullan
+        var identity = context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
+                       ?? context.Connection.RemoteIpAddress?.ToString() 
+                       ?? "anonymous";
+
+        return RateLimitPartition.GetFixedWindowLimiter(identity, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 100, // Her kullanıcı/IP için ayrı ayrı dakikada 100 istek
+            Window = TimeSpan.FromMinutes(1),
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            QueueLimit = 2
+        });
     });
+    
+    // Geri dönüş (429 Too Many Requests)
+    options.OnRejected = async (context, token) =>
+    {
+        context.HttpContext.Response.StatusCode = 429;
+        await context.HttpContext.Response.WriteAsync("Çok fazla istek gönderdiniz. Lütfen biraz bekleyin.", cancellationToken: token);
+    };
 });
 
 // 4. MemoryCache (Settings Cache için)

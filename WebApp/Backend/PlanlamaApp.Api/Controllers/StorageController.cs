@@ -146,6 +146,11 @@ namespace PlanlamaApp.Api.Controllers
             if (string.IsNullOrWhiteSpace(objectKey))
                 return BadRequest("ObjectKey is required.");
 
+            // Path Traversal ve URL Decode Güvenlik Kontrolü
+            var decodedKey = Uri.UnescapeDataString(objectKey);
+            if (decodedKey.Contains("..") || decodedKey.Contains("%2e%2e", StringComparison.OrdinalIgnoreCase))
+                return BadRequest("Geçersiz veya tehlikeli dosya yolu.");
+
             var tenantId = User.FindFirstValue("tenant_id") ?? "default_tenant";
 
             // Sadece kendi tenant'ına ait dosyaları indirebilsin

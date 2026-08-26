@@ -13,9 +13,11 @@ namespace PlanlamaApp.Infrastructure.Repositories
 
         public async Task<bool> ExistsAsync(string key)
         {
-            var sql = "SELECT COUNT(1) FROM IdempotencyKeys WHERE Key = @Key";
+            // GÜVENLİK: Sadece son 24 saat içinde oluşturulmuş key'leri geçerli kabul ediyoruz (Replay Attack Expiry)
+            var threshold = DateTime.UtcNow.AddDays(-1);
+            var sql = "SELECT COUNT(1) FROM IdempotencyKeys WHERE Key = @Key AND CreatedAt > @Threshold";
             // BaseRepository will safely inject 'AND TenantId = @TenantId' to the end.
-            var count = await QueryFirstOrDefaultAsync<int>(sql, new { Key = key });
+            var count = await QueryFirstOrDefaultAsync<int>(sql, new { Key = key, Threshold = threshold });
             return count > 0;
         }
 
