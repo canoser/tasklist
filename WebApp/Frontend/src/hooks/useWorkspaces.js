@@ -2,48 +2,17 @@ import { useState, useEffect, useCallback } from 'react';
 import { workspaceService } from '../services/workspaceService';
 import storage from '../utils/storage';
 
-const DEFAULT_MOCK_OWNED = [
-  {
-    id: 'mock-ws-1',
-    name: 'YKS 2026 Çalışma Grubu',
-    ownerId: 'guest',
-    memberCount: 4,
-    tasksCount: 12,
-    inviteCode: 'YKS26',
-    description: 'Hedef ilk 1000! Günlük soru ve deneme takibi.'
-  },
-  {
-    id: 'mock-ws-2',
-    name: 'Yazılım & Proje Ekibi',
-    ownerId: 'guest',
-    memberCount: 3,
-    tasksCount: 8,
-    inviteCode: 'DEV01',
-    description: 'Mobil uygulama sprint planlaması.'
-  }
-];
-
-const DEFAULT_MOCK_JOINED = [
-  {
-    id: 'mock-ws-3',
-    name: 'Matematik Kulübü',
-    ownerId: 'other-user',
-    memberCount: 6,
-    tasksCount: 15,
-    description: 'Haftalık problem çözümleri ve tartışmalar.'
-  }
-];
 
 export default function useWorkspaces(userId) {
   const [ownedWorkspaces, setOwnedWorkspaces] = useState(() => {
     if (!userId) {
-      return storage.get('guest_owned_workspaces') || DEFAULT_MOCK_OWNED;
+      return storage.get('guest_owned_workspaces') || [];
     }
     return [];
   });
   const [joinedWorkspaces, setJoinedWorkspaces] = useState(() => {
     if (!userId) {
-      return storage.get('guest_joined_workspaces') || DEFAULT_MOCK_JOINED;
+      return storage.get('guest_joined_workspaces') || [];
     }
     return [];
   });
@@ -52,8 +21,8 @@ export default function useWorkspaces(userId) {
 
   const fetchWorkspaces = useCallback(async () => {
     if (!userId) {
-      const owned = storage.get('guest_owned_workspaces') || DEFAULT_MOCK_OWNED;
-      const joined = storage.get('guest_joined_workspaces') || DEFAULT_MOCK_JOINED;
+      const owned = storage.get('guest_owned_workspaces') || [];
+      const joined = storage.get('guest_joined_workspaces') || [];
       setOwnedWorkspaces(owned);
       setJoinedWorkspaces(joined);
       return;

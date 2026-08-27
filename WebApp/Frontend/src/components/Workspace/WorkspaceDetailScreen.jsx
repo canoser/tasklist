@@ -56,26 +56,12 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
     }
   };
 
-  // Mock members for visual completeness based on prototype
-  const mockMembers = [
-    { id: '1', name: user?.displayName || user?.email?.split('@')[0] || 'Kullanıcı', role: 'owner', initials: 'K', since: '14 Ağu 2026' },
-    { id: '2', name: 'ayse.k', role: 'member', isActive: true, initials: 'A', since: '16 Ağu 2026' },
-    { id: '3', name: 'mert.d', role: 'member', initials: 'M', since: '18 Ağu 2026' },
-  ];
+  // Empty arrays since no actual API fetches are implemented in this view yet
+  const mockMembers = [];
 
-  // Mock tasks for visual completeness
-  const mockTasks = [
-    { id: 't1', title: 'Fizik: 50 soru', done: true, tagLabel: t('ws_task_done', { context: tone, defaultValue: 'Tamamlandı' }), tagClass: styles.tagDn, assignee: { name: 'ayse.k', initial: 'A' } },
-    { id: 't2', title: 'Matematik denemesi', done: false, tagLabel: 'Bugün 17:00', tagClass: styles.tagDue, assignee: { name: 'mert.d', initial: 'M' } },
-    { id: 't3', title: 'Kimya konu tekrarı', done: false, tagLabel: 'Yarın 10:00', tagClass: styles.tagDue, assignee: { name: 'Kullanıcı', initial: 'K' } },
-  ];
+  const mockTasks = [];
 
-  // Mock files for visual completeness
-  const mockFiles = [
-    { id: 'f1', name: 'Haftalık_Çalışma_Programı.pdf', size: '1.4 MB', ext: 'PDF', date: '21 Ağu 2026', uploader: 'ayse.k', badgeColor: '#EF4444', badgeBg: 'rgba(239, 68, 68, 0.12)' },
-    { id: 'f2', name: 'Matematik_Formül_Özeti.docx', size: '620 KB', ext: 'DOC', date: '19 Ağu 2026', uploader: 'mert.d', badgeColor: '#3B82F6', badgeBg: 'rgba(59, 130, 246, 0.12)' },
-    { id: 'f3', name: 'Fizik_Deneme_Analizi.xlsx', size: '890 KB', ext: 'XLS', date: '16 Ağu 2026', uploader: 'Kullanıcı', badgeColor: '#10B981', badgeBg: 'rgba(16, 185, 129, 0.12)' }
-  ];
+  const mockFiles = [];
 
   return (
     <motion.div 

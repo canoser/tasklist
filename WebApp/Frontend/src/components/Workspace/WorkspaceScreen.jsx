@@ -120,7 +120,7 @@ const WorkspaceScreen = ({ user, tone }) => {
 
   const renderWorkspaceCard = (w, isOwner) => {
     const initial = w.name ? w.name.charAt(0).toUpperCase() : '?';
-    const progress = Math.min(100, Math.max(10, (String(w.id).length * 7) % 100)); // Mock progress
+    const progress = 0; // Will be calculated from real tasks later
     
     // Calculate deterministic avatar color
     const colorIdx = w.id ? String(w.id).charCodeAt(0) % AVATAR_COLORS.length : 0;
