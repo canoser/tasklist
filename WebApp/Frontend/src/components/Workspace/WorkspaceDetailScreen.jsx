@@ -338,7 +338,7 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
           <div className={styles.accHead} onClick={() => setIsFilesOpen(!isFilesOpen)}>
             <div className={styles.accHeadLeft}>
               <span className={styles.accTtl}>{t('ws_acc_files', { context: tone, defaultValue: 'Dosyalar' })}</span>
-              <span className={styles.accCnt}>{mockFiles.length}</span>
+              <span className={styles.accCnt}>{files.length}</span>
             </div>
             <div className={styles.accRight}>
               <button className={styles.accBtnAc} onClick={(e) => { e.stopPropagation(); setIsUploadModalOpen(true); }}>

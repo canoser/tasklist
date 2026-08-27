@@ -5,6 +5,7 @@ namespace PlanlamaApp.Application.Interfaces
     public interface IUserRepository
     {
         Task<bool> DeleteAllUserDataAsync(string userId);
+        Task<bool> DeleteUserAsync(string userId);
         Task<PlanlamaApp.Domain.Entities.User?> GetUserByEmailAsync(string email);
         Task<PlanlamaApp.Domain.Entities.User?> GetUserByGoogleIdAsync(string googleId);
         Task<PlanlamaApp.Domain.Entities.User?> GetUserByIdAsync(string id);

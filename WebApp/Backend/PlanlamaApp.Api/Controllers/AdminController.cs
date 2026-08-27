@@ -78,6 +78,23 @@ namespace PlanlamaApp.Api.Controllers
             return Ok(new { Message = "Kullanıcı başarıyla onaylandı ve Premium yapıldı." });
         }
 
+        [HttpDelete("users/{userId}")]
+        [ServiceFilter(typeof(IdempotencyFilter))]
+        public async Task<IActionResult> RejectUser(string userId, [FromServices] IUserRepository userRepository)
+        {
+            var success = await userRepository.DeleteUserAsync(userId);
+            if (!success)
+            {
+                return BadRequest(new { Message = "Kullanıcı silinemedi." });
+            }
+
+            // SignalR ile Admin'leri ve Kullanıcıyı uyar (Eğer WebSocket'e hala bağlıysa)
+            await _hubContext.Clients.Group("AdminGroup").SendAsync("PendingUsersUpdated");
+            await _hubContext.Clients.User(userId).SendAsync("UserRejected"); // Opsiyonel, genelde bağlı olmaz
+            
+            return Ok(new { Message = "Kullanıcı reddedildi ve silindi." });
+        }
+
         [HttpGet("users/search")]
         public async Task<IActionResult> SearchUsers([FromQuery] string email, [FromServices] IUserRepository userRepository)
         {

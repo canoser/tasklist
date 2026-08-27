@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { UserCheck, RefreshCw, AlertCircle } from 'lucide-react';
+import { UserCheck, UserX, RefreshCw, AlertCircle } from 'lucide-react';
 import apiClient from '../../services/apiClient';
 import styles from './AdminPanel.module.css';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +11,7 @@ const UserApprovals = ({ settings, tone }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [approvingId, setApprovingId] = useState(null);
+  const [rejectingId, setRejectingId] = useState(null);
 
   // Default values from settings
   const defaultAiLimit = settings.find(s => s.key === 'AiTaskCreation')?.value || '5';
@@ -87,6 +88,25 @@ const UserApprovals = ({ settings, tone }) => {
     }
   };
 
+  const handleReject = async (userId) => {
+    if (!window.confirm("Bu kullanıcıyı tamamen silmek istediğinize emin misiniz?")) {
+      return;
+    }
+    
+    try {
+      setRejectingId(userId);
+      await apiClient.delete(`/admin/users/${userId}`);
+      
+      // Remove from list
+      setPendingUsers(prev => prev.filter(u => u.id !== userId));
+    } catch (err) {
+      console.error("Reject error:", err);
+      alert("Kullanıcı silinirken bir hata oluştu.");
+    } finally {
+      setRejectingId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -153,21 +173,38 @@ const UserApprovals = ({ settings, tone }) => {
                   </div>
                 </div>
                 
-                <button 
-                  onClick={() => handleApprove(user.id)}
-                  disabled={approvingId === user.id}
-                  className={styles.saveBtn}
-                  style={{ width: '100%', justifyContent: 'center', backgroundColor: '#10b981', color: '#fff' }}
-                >
-                  {approvingId === user.id ? (
-                    <RefreshCw size={18} className={styles.spinner} />
-                  ) : (
-                    <>
-                      <UserCheck size={18} />
-                      <span>{t('user_approvals_btn_approve', { context: tone })}</span>
-                    </>
-                  )}
-                </button>
+                <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
+                  <button 
+                    onClick={() => handleApprove(user.id)}
+                    disabled={approvingId === user.id || rejectingId === user.id}
+                    className={styles.saveBtn}
+                    style={{ flex: 1, justifyContent: 'center', backgroundColor: '#10b981', color: '#fff' }}
+                  >
+                    {approvingId === user.id ? (
+                      <RefreshCw size={18} className={styles.spinner} />
+                    ) : (
+                      <>
+                        <UserCheck size={18} />
+                        <span>{t('user_approvals_btn_approve', { context: tone, defaultValue: 'Onayla' })}</span>
+                      </>
+                    )}
+                  </button>
+                  <button 
+                    onClick={() => handleReject(user.id)}
+                    disabled={approvingId === user.id || rejectingId === user.id}
+                    className={styles.saveBtn}
+                    style={{ flex: 1, justifyContent: 'center', backgroundColor: '#ef4444', color: '#fff' }}
+                  >
+                    {rejectingId === user.id ? (
+                      <RefreshCw size={18} className={styles.spinner} />
+                    ) : (
+                      <>
+                        <UserX size={18} />
+                        <span>{t('user_approvals_btn_reject', { context: tone, defaultValue: 'Sil' })}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           ))}

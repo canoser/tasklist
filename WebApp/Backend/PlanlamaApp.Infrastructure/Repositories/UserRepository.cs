@@ -41,6 +41,38 @@ namespace PlanlamaApp.Infrastructure.Repositories
             }
         }
 
+        public async Task<bool> DeleteUserAsync(string userId)
+        {
+            if (_dbConnection.State != ConnectionState.Open)
+                _dbConnection.Open();
+
+            using var transaction = _dbConnection.BeginTransaction();
+            try
+            {
+                var p = new { UserId = userId };
+                var pt = new { UserId = userId, TenantId = _tenantId };
+
+                // Delete related data first
+                await ExecuteAsync("DELETE FROM TaskItems WHERE UserId = @UserId", pt, transaction);
+                await ExecuteAsync("DELETE FROM PerformanceRecords WHERE UserId = @UserId", pt, transaction);
+                await ExecuteAsync("DELETE FROM UserRoles WHERE UserId = @UserId", pt, transaction);
+                await ExecuteAsync("DELETE FROM Workspaces WHERE OwnerId = @UserId", pt, transaction);
+                await ExecuteAsync("DELETE FROM WorkspaceMembers WHERE UserId = @UserId", pt, transaction);
+                
+                // Then delete the user itself from Users table
+                var rows = await _dbConnection.ExecuteAsync("DELETE FROM Users WHERE Id = @UserId", p, transaction);
+                
+                transaction.Commit();
+                return rows > 0;
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                Console.WriteLine($"Kullanıcı silinirken hata oluştu: {ex.Message}");
+                return false;
+            }
+        }
+
         public async Task<PlanlamaApp.Domain.Entities.User?> GetUserByEmailAsync(string email)
         {
             var sql = "SELECT * FROM Users WHERE Email = @Email";
