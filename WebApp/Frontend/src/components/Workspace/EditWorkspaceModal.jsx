@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import BaseModal from '../Common/BaseModal';
 import { useTranslation } from 'react-i18next';
-import styles from './WorkspaceModals.module.css';
+import BaseModal from '../Common/BaseModal';
+import modalStyles from '../Common/BaseModal.module.css';
 
 const EditWorkspaceModal = ({ isOpen, onClose, onEdit, workspace, tone }) => {
   const { t } = useTranslation('common');
@@ -17,65 +17,86 @@ const EditWorkspaceModal = ({ isOpen, onClose, onEdit, workspace, tone }) => {
       onClose();
     } catch (err) {
       console.error(err);
-      alert('Güncelleme başarısız');
+      alert(t('ws_err_update_failed', { context: tone, defaultValue: 'Güncelleme başarısız' }));
     } finally {
       setLoading(false);
     }
   };
 
+  const handleDelete = async () => {
+    if (window.confirm(t('ws_delete_confirm', { defaultValue: 'Bu alanı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.', context: tone }))) {
+      try {
+        setLoading(true);
+        await onEdit({ ...workspace, isDeleting: true });
+        onClose();
+      } catch (err) {
+        console.error(err);
+        alert(t('ws_err_delete_failed', { context: tone, defaultValue: 'Silme başarısız' }));
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
   return (
-    <BaseModal isOpen={isOpen} onClose={onClose}>
-      <div className={styles.modalContent}>
-        <h2>Alanı Düzenle</h2>
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.formGroup}>
-            <label>{t('ws_lbl_name', { context: tone })}</label>
-            <input 
-              type="text" 
-              value={name} 
-              onChange={e => setName(e.target.value)} 
-              required 
-            />
-          </div>
-          <div className={styles.formGroup}>
-            <label>{t('ws_lbl_desc', { context: tone })}</label>
-            <input 
-              type="text" 
-              value={description} 
-              onChange={e => setDescription(e.target.value)} 
-            />
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
+    <BaseModal 
+      isOpen={isOpen} 
+      onClose={onClose}
+      title={t('ws_edit_title', { context: tone, defaultValue: 'Alanı Düzenle' })}
+      preventClose={loading}
+      maxWidth="440px"
+    >
+      <form onSubmit={handleSubmit} className={modalStyles.form}>
+        <div className={modalStyles.formGroup}>
+          <label className={modalStyles.label}>{t('ws_lbl_name', { context: tone, defaultValue: 'Alan Adı' })}</label>
+          <input 
+            type="text" 
+            className={modalStyles.input}
+            value={name} 
+            onChange={e => setName(e.target.value)} 
+            required 
+          />
+        </div>
+        <div className={modalStyles.formGroup}>
+          <label className={modalStyles.label}>{t('ws_lbl_desc', { context: tone, defaultValue: 'Açıklama' })}</label>
+          <textarea 
+            className={modalStyles.textarea}
+            value={description} 
+            onChange={e => setDescription(e.target.value)} 
+            rows={3}
+          />
+        </div>
+        <div className={modalStyles.actions} style={{ justifyContent: 'space-between' }}>
+          <button 
+            type="button" 
+            className={modalStyles.btnDanger} 
+            onClick={handleDelete}
+            disabled={loading}
+          >
+            {loading ? t('loading', { context: tone, defaultValue: 'Yükleniyor...' }) : t('btn_delete', { defaultValue: 'Sil', context: tone })}
+          </button>
+          <div style={{ display: 'flex', gap: '8px' }}>
             <button 
               type="button" 
-              className={`${styles.btnSubmit} ${styles.btnDanger}`} 
-              onClick={async () => {
-                if (window.confirm(t('ws_delete_confirm', { defaultValue: 'Bu alanı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.', context: tone }))) {
-                  try {
-                    setLoading(true);
-                    await onEdit({ ...workspace, isDeleting: true });
-                    onClose();
-                  } catch (err) {
-                    console.error(err);
-                    alert('Silme başarısız');
-                  } finally {
-                    setLoading(false);
-                  }
-                }
-              }}
+              className={modalStyles.btnSecondary} 
+              onClick={onClose}
               disabled={loading}
-              style={{ backgroundColor: 'var(--red-color, #dc3545)', width: 'auto', flex: 1, marginRight: '10px' }}
             >
-              {loading ? t('loading', { context: tone }) : t('delete', { defaultValue: 'Sil', context: tone })}
+              {t('btn_cancel', { context: tone, defaultValue: 'İptal' })}
             </button>
-            <button type="submit" className={styles.btnSubmit} disabled={loading} style={{ width: 'auto', flex: 1, marginLeft: '10px' }}>
-              {loading ? t('loading', { context: tone }) : t('save', { defaultValue: 'Kaydet', context: tone })}
+            <button 
+              type="submit" 
+              className={modalStyles.btnPrimary} 
+              disabled={loading}
+            >
+              {loading ? t('loading', { context: tone, defaultValue: 'Yükleniyor...' }) : t('btn_save', { defaultValue: 'Kaydet', context: tone })}
             </button>
           </div>
-        </form>
-      </div>
+        </div>
+      </form>
     </BaseModal>
   );
 };
 
 export default EditWorkspaceModal;
+

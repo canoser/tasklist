@@ -71,7 +71,7 @@
   background: var(--ac, var(--accent));
   color: #fff;
   border: none;
-  border-radius: var(--rPL, var(--radius-pill, 999px));
+  border-radius: var(--radius, 999px);
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
@@ -104,7 +104,7 @@
 .heroAv {
   width: 48px;
   height: 48px;
-  border-radius: var(--rLG, var(--radius-lg, 14px));
+  border-radius: var(--radius-sm, 10px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -153,7 +153,7 @@
 .settingsBtn {
   width: 36px;
   height: 36px;
-  border-radius: var(--rMD, var(--radius-md, 10px));
+  border-radius: var(--radius-sm, 8px);
   background: var(--s2, var(--surface2));
   border: 1px solid var(--b1, var(--border));
   display: flex;
@@ -182,7 +182,7 @@
   margin: 12px 24px 0;
   background: var(--card-bg, var(--surface));
   border: 1.5px solid var(--b2, var(--border2));
-  border-radius: var(--rMD, var(--radius-md, 10px));
+  border-radius: var(--radius-sm, 10px);
   display: flex;
   align-items: center;
   gap: 0;
@@ -198,12 +198,13 @@
   gap: 6px;
   border-right: 1px solid var(--b1, var(--border));
   flex-shrink: 0;
+  background: var(--s2, var(--surface2));
 }
 
 .invLabelCol svg {
   width: 13px;
   height: 13px;
-  color: var(--tx2, var(--text2));
+  color: var(--ac, var(--accent));
   flex-shrink: 0;
 }
 
@@ -248,6 +249,7 @@
   cursor: pointer;
   color: var(--tx2, var(--text2));
   transition: background 0.15s;
+  border-radius: var(--radius-sm, 6px);
 }
 
 .invIconBtn:last-child {
@@ -279,7 +281,7 @@
 .bentoC {
   background: var(--card-bg, var(--surface));
   border: 1.5px solid var(--b2, var(--border2));
-  border-radius: var(--rLG, var(--radius-lg, 14px));
+  border-radius: var(--radius-sm, 10px);
   padding: 12px 10px;
   display: flex;
   flex-direction: column;
@@ -314,7 +316,7 @@
   margin: 12px 24px 0;
   background: var(--card-bg, var(--surface));
   border: 1.5px solid var(--b2, var(--border2));
-  border-radius: var(--rXL, var(--radius-xl, 20px));
+  border-radius: var(--radius, 16px);
   overflow: hidden;
   position: relative;
   z-index: 1;

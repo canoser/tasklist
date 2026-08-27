@@ -11,7 +11,7 @@
   flex-direction: column;
   padding: 4px 12px;
   border-bottom: 1px solid var(--border);
-  background: var(--bg);
+  background: rgba(0, 0, 0, 0.15);
   flex-shrink: 0;
   position: sticky;
   top: 0;

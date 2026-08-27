@@ -59,12 +59,7 @@ const TaskActionModal = ({ isOpen, onClose, task, onComplete, onPartialComplete,
   const totalTarget = parseInt(task.targetCount || task.count || 10, 10);
 
   return (
-    <BaseModal isOpen={isOpen} onClose={handleClose}>
-      <div className={styles.header}>
-        <span className={styles.title}>{task.title}</span>
-        <button className={styles.closeBtn} onClick={handleClose}><CloseIcon /></button>
-      </div>
-
+    <BaseModal isOpen={isOpen} onClose={handleClose} title={task.title} maxWidth="440px">
       <div className={styles.body}>
         {/* 1. Menü Modu */}
         {mode === 'menu' && (

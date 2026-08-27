@@ -59,3 +59,25 @@ input, textarea {
   -webkit-user-select: auto;
   cursor: text;
 }
+
+/* ── ORTAK KART VE KUTU STİLLERİ ───────────────────────────── */
+/* ==========================================================================
+   [AGENT GUIDELINE]
+   Eğer tüm kartların (Alanlarım, Takvim, Profil, Dashboard) YAPISAL özelliklerini
+   (örn: hepsinden border'ı kaldırmak, ortak bir box-shadow eklemek) değiştireceksen
+   BURADAKİ .shared-glass-panel sınıfını düzenle.
+   Ancak sadece renk veya opaklık değerini değiştireceksen önce src/styles/themes.css
+   dosyasına git, çünkü bu sınıflar oradaki css değişkenlerini (var) kullanır!
+   ========================================================================== */
+.shared-glass-panel {
+  background: var(--card-bg, var(--surface));
+  border: 1.5px solid var(--b2, var(--border));
+  border-radius: var(--radius, 16px);
+  position: relative;
+  z-index: 1;
+}
+
+/* Takvim içindeki gün kutucukları gibi iç paneller */
+.shared-inner-box {
+  background: var(--inner-box, rgba(0, 0, 0, 0.15));
+}

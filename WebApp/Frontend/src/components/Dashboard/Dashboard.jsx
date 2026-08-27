@@ -51,7 +51,7 @@ const Dashboard = ({ user, guestName, tone }) => {
         </motion.div>
 
         {/* Dikey Zaman Çizelgesi */}
-        <Timeline user={user} onStatsChange={setTaskStats} />
+        <Timeline user={user} tone={tone} onStatsChange={setTaskStats} />
 
         {/* Alt Özet Kartları — scroll ile görünür */}
         <DashboardSummary />

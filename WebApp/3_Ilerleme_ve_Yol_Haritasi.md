@@ -144,6 +144,13 @@ Bu dosya, projenin başından itibaren tamamlanan adımları ve gelecekte yapıl
   - `IdempotencyFilter.cs` üzerinde **Race Condition (Milisaniyelik Çift Tıklama)** testi (Mutation Testing) yapıldı. Ciddi bir güvenlik/veri çakışması açığı (500 Error) tespit edildi.
   - Filtre içerisine `SemaphoreSlim` ile "In-Memory Lock (Bellek İçi Kilitleme)" kurgulandı. Aynı saniyede gelen mükerrer istekler %100 başarıyla `409 Conflict` dönerek durduruldu.
 
+### 5. Ekstra İleri Seviye Özellikler (Gizli Tamamlananlar)
+- [x] **SignalR WebSocket (Real-Time):** `AppHub.cs` üzerinden Çalışma Alanı bazlı anlık iletişim omurgası kuruldu.
+- [x] **AI Asistan (Gemini & OpenAI) Altyapısı:** `AiController.cs`, kotalar, IDOR güvenlik testleri ve OpenAI `GeneratePlan` entegrasyonu eksiksiz kodlandı.
+- [x] **R2 Storage Çöp Toplayıcı (Cron Job):** `StorageMaintenanceService.cs` ile her 1 saatte bir öksüz/yarım kalmış dosyaları temizleyen arkaplan servisi (Background Service) yazıldı.
+- [x] **Zincirleme Görev Altyapısı:** `TaskRepository.cs` üzerinde `ChainId` ve `ChainOrder` ile görevlerin yarına devredilmesi/ertelenmesi için veritabanı ve Dapper iskeleti kuruldu.
+- [x] **Fly.io Cloud Deployment:** Sunucu Docker imajları ve CI/CD `fly.toml` bulut dağıtım altyapısı hazırlandı.
+
 ---
 
 ## 🟡 Sıradaki Aşamalar (Yol Haritası)
@@ -194,6 +201,7 @@ Bu dosya, projenin başından itibaren tamamlanan adımları ve gelecekte yapıl
 ### Faz 6: İleri Düzey SaaS Özellikleri
 - [ ] **İleri Düzey Analitik & Gelişim Grafikleri:** Öğrencilerin haftalık net değişimlerini, konu bazlı başarı oranlarını ve hedef sapmalarını gösteren grafiksel analizler.
 - [ ] **Ödeme Altyapısı Entegrasyonu (Iyzico / Stripe):** Abonelik modeli ve ödeme altyapısı entegrasyonu hazırlıkları.
+- [ ] **Gemini API JSON Haritalaması:** AI Asistan altyapısının büyük kısmı bitmiş olmasına rağmen, OpenAI JSON şema standartlarının Gemini'ın `functionDeclarations` formatına çevrilmesi (`GeminiProvider.cs`) kodlanacak.
 
 ---
 *Son Güncelleme Tarihi: 27 Ağustos 2026*

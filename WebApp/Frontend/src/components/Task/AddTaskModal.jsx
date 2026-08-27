@@ -62,12 +62,12 @@ const AddTaskModal = ({ isOpen, onClose, tone }) => {
   };
 
   return (
-    <BaseModal isOpen={isOpen} onClose={onClose}>
-      <div className={styles.header}>
-        <span className={styles.title}>{t('modal_title', { context: tone })}</span>
-        <button className={styles.closeBtn} onClick={onClose}><CloseIcon /></button>
-      </div>
-
+    <BaseModal 
+      isOpen={isOpen} 
+      onClose={onClose} 
+      title={t('modal_title', { context: tone })}
+      preventClose={loading}
+    >
       <div className={styles.body}>
         <div className={styles.formGroup}>
           <label className={styles.label}>{t('field_title', { context: tone })}</label>

@@ -2,7 +2,7 @@
 
 .summarySection {
   margin-top: 28px;
-  padding-top: 4px;
+  padding: 4px 16px 0;
 }
 
 /* ── Bölüm Başlığı Satırı ────────────────────────────────────────────────────── */
@@ -54,7 +54,7 @@
 
 /* ── Genel Kart ──────────────────────────────────────────────────────────────── */
 .card {
-  background: var(--surface);
+  background: var(--card-bg, var(--surface));
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 14px 12px;
@@ -76,7 +76,7 @@
 }
 
 .circleCard {
-  background: var(--surface);
+  background: var(--card-bg, var(--surface));
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 12px 10px;

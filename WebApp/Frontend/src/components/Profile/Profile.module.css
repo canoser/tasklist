@@ -11,9 +11,7 @@
 
 /* ── Kullanıcı Kartı ───────────────────────────────────────────────────────── */
 .userCard {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  composes: shared-glass-panel from global;
   padding: 20px;
   display: flex;
   align-items: center;
@@ -71,9 +69,7 @@
 
 /* ── Bölüm Kartları ────────────────────────────────────────────────────────── */
 .sectionCard {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  composes: shared-glass-panel from global;
   display: flex;
   flex-direction: column;
 }

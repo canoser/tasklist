@@ -101,7 +101,7 @@ const TaskCard = ({ task, onClick, currentLang }) => {
 };
 
 // ── Ana Timeline Bileşeni ─────────────────────────────────────────────────────
-const Timeline = ({ user, tasks: initialPropsTasks, onStatsChange }) => {
+const Timeline = ({ user, tasks: initialPropsTasks, onStatsChange, tone }) => {
   const { lastAddedTask } = useTaskContext();
   const [taskList, setTaskList] = useState(initialPropsTasks || INITIAL_TASKS);
   const [loading, setLoading] = useState(false);
@@ -235,7 +235,7 @@ const Timeline = ({ user, tasks: initialPropsTasks, onStatsChange }) => {
             <circle cx="12" cy="12" r="10" />
             <path d="M8 12h8M12 8v8" />
           </svg>
-          <p>Bugün için görev yok. Harika! 🎉</p>
+          <p>{t('timeline_empty', { context: tone, defaultValue: 'Bugün için görev yok. Harika! 🎉' })}</p>
         </div>
       ) : (
         <motion.div

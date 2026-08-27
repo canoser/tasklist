@@ -10,9 +10,9 @@
 
 /* Üst selamlama alanı */
 .greeting {
-  padding: 28px 20px 0;
-  position: relative;
-  z-index: 1;
+  composes: shared-glass-panel from global;
+  margin: 16px 16px 0;
+  padding: 16px 18px;
 }
 
 .greetingSub {

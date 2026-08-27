@@ -1,9 +1,7 @@
 /* ── CalendarView.module.css ─────────────────────────────────────────────────── */
 
 .calendarSection {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  composes: shared-glass-panel from global;
   padding: 12px 14px 4px 14px;
   margin-bottom: 16px;
   flex: 1;

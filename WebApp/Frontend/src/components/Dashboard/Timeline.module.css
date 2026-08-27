@@ -2,7 +2,7 @@
 
 /* Wrapper: scroll edilebilir alan */
 .timelineWrapper {
-  padding: 8px 0 24px 0;
+  padding: 8px 16px 24px 16px;
   /* FIX: Framer Motion animasyonları scroll'u bloklamamalı */
   touch-action: pan-y;
 }
@@ -235,30 +235,37 @@
 
 /* ── Boş Durum ───────────────────────────────────────────────────────────────── */
 .emptyState {
+  composes: shared-glass-panel from global;
+  margin: 0 16px;
+  padding: 28px 22px;
   text-align: center;
-  padding: 40px 24px;
-  color: var(--text3);
+  border-style: dashed;
 }
 
 .emptyState svg {
-  margin-bottom: 12px;
-  opacity: 0.4;
+  margin-bottom: 8px;
+  color: var(--accent);
+  opacity: 0.8;
 }
 
 .emptyState p {
-  font-size: 14px;
+  font-size: 13.5px;
+  color: var(--text2);
+  margin: 0;
 }
 
 .loadingState,
 .errorState {
+  margin: 0 16px;
+  background: var(--card-bg, var(--surface));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 22px;
   text-align: center;
-  padding: 40px 24px;
   color: var(--text3);
   font-size: 14px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
+  position: relative;
+  z-index: 1;
 }
 
 .errorState {

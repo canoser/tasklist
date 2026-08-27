@@ -51,13 +51,13 @@
   cursor: pointer;
   border: 1px solid transparent;
   transition: all 0.2s;
-  background: var(--bg);
+  background: rgba(0, 0, 0, 0.15);
   overflow: hidden;
 }
 
 .dayCell:hover {
   border-color: var(--border);
-  background: var(--surface);
+  background: rgba(0, 0, 0, 0.25);
 }
 
 .dayCell.empty {

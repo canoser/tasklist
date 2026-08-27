@@ -246,7 +246,7 @@ const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTh
                     className={`${styles.themeOption} ${theme === 'cyberpunk' ? styles.active : ''}`}
                     onClick={() => setTheme('cyberpunk')}
                   >
-                    <div className={styles.themePreviewCircle} style={{ background: '#d946ef' }} />
+                    <div className={styles.themePreviewCircle} style={{ background: '#a855f7' }} />
                     <span className={styles.themeName}>{t('theme_cyberpunk', { context: tone, defaultValue: 'Siberpunk' })}</span>
                   </div>
                 </div>

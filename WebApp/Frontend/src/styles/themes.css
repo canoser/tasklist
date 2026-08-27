@@ -1,10 +1,18 @@
+/* ==========================================================================
+   [AGENT GUIDELINE]
+   Eğer arayüzdeki "Cam/Kart Opaklığı", "Kenar Yuvarlaklığı (Radius)", "Gölgeler"
+   veya "Renkler" gibi tasarımsal (kozmetik) değerleri değiştirmek isteniyorsa 
+   İLK BURAYA BAK. Uygulamadaki tüm ana kartlar bu değişkenlerden beslenir.
+   Yapısal şablon değişiklikleri için src/index.css (shared-glass-panel) dosyasına git.
+   ========================================================================== */
+
 /* ════════════ KLASİK KARANLIK (Varsayılan) ════════════ */
 body.theme-classic-dark {
   --bg:           #0F1117;
   --surface:      #161922;
   --surface2:     #1C2230;
-  --card-bg:      rgba(255, 255, 255, 0.1);
-  --border:       rgba(255, 255, 255, 0.07);
+  --card-bg:      rgba(22, 25, 34, 0.80);
+  --border:       rgba(255, 255, 255, 0.08);
   --accent:       #5B5BD6;
   --accent-t:     rgba(91, 91, 214, 0.14);
   --text:         #F4F4F5;
@@ -23,8 +31,8 @@ body.theme-classic-light {
   --bg:           #F5F6FA;
   --surface:      #FFFFFF;
   --surface2:     #ECEEF5;
-  --card-bg:      rgba(0, 0, 0, 0.1);
-  --border:       rgba(0, 0, 0, 0.07);
+  --card-bg:      rgba(255, 255, 255, 0.82);
+  --border:       rgba(0, 0, 0, 0.08);
   --accent:       #5B5BD6;
   --accent-t:     rgba(91, 91, 214, 0.10);
   --text:         #111118;
@@ -43,8 +51,8 @@ body.theme-nature-dark {
   --bg:           #0A1510;
   --surface:      #111D16;
   --surface2:     #192B20;
-  --card-bg:      rgba(255, 255, 255, 0.1);
-  --border:       rgba(255, 255, 255, 0.07);
+  --card-bg:      rgba(17, 29, 22, 0.72);
+  --border:       rgba(74, 222, 128, 0.18);
   --accent:       #4ADE80;
   --accent-t:     rgba(74, 222, 128, 0.12);
   --text:         #ECFDF0;
@@ -63,8 +71,8 @@ body.theme-nature-light {
   --bg:           #EDF7EF;
   --surface:      #FFFFFF;
   --surface2:     #D9EFE0;
-  --card-bg:      rgba(0, 0, 0, 0.1);
-  --border:       rgba(0, 0, 0, 0.07);
+  --card-bg:      rgba(255, 255, 255, 0.75);
+  --border:       rgba(22, 163, 74, 0.18);
   --accent:       #16A34A;
   --accent-t:     rgba(22, 163, 74, 0.10);
   --text:         #0B1F10;
@@ -83,7 +91,7 @@ body.theme-ocean-dark {
   --bg:           #0F172A;
   --surface:      #1E293B;
   --surface2:     #334155;
-  --card-bg:      rgba(255, 255, 255, 0.25); /* Az şeffaf, daha opak */
+  --card-bg:      rgba(30, 41, 59, 0.72);
   --border:       rgba(255, 255, 255, 0.15);
   --accent:       #38BDF8;
   --accent-t:     rgba(56, 189, 248, 0.20);
@@ -103,7 +111,7 @@ body.theme-ocean-light {
   --bg:           #E0F2FE;
   --surface:      #FFFFFF;
   --surface2:     #BAE6FD;
-  --card-bg:      rgba(255, 255, 255, 0.6); /* Az şeffaf, daha opak */
+  --card-bg:      rgba(255, 255, 255, 0.75);
   --border:       rgba(2, 132, 199, 0.15);
   --accent:       #0284C7;
   --accent-t:     rgba(2, 132, 199, 0.15);
@@ -120,16 +128,16 @@ body.theme-ocean-light {
 
 /* ════════════ SİBERPUNK GECESİ (Karanlık) ════════════ */
 body.theme-cyberpunk-dark {
-  --bg:           linear-gradient(to bottom, #061033 0%, #12041A 100%);
-  --surface:      #1A0B2E;
-  --surface2:     #2D1B4E;
-  --card-bg:      rgba(255, 255, 255, 0.20); /* Daha opak */
-  --border:       rgba(217, 70, 239, 0.35);
-  --accent:       #D946EF;
-  --accent-t:     rgba(217, 70, 239, 0.18);
+  --bg:           linear-gradient(to bottom, #090620 0%, #15082E 100%);
+  --surface:      #1A0F38;
+  --surface2:     #2B1754;
+  --card-bg:      rgba(26, 15, 56, 0.78);
+  --border:       rgba(168, 85, 247, 0.35);
+  --accent:       #A855F7;
+  --accent-t:     rgba(168, 85, 247, 0.20);
   --text:         #FDF4FF;
-  --text2:        #F0ABFC;
-  --text3:        #E879F9;
+  --text2:        #DDD6FE;
+  --text3:        #A78BFA;
   --green:        #22D3EE;
   --amber:        #FACC15;
   --red:          #F43F5E;
@@ -140,16 +148,16 @@ body.theme-cyberpunk-dark {
 
 /* ════════════ SİBERPUNK GECESİ (Aydınlık) ════════════ */
 body.theme-cyberpunk-light {
-  --bg:           linear-gradient(to bottom, #E0F2FE 0%, #FDF4FF 100%);
-  --surface:      #FAE8FF;
-  --surface2:     #F5D0FE;
-  --card-bg:      rgba(255, 255, 255, 0.75); /* Daha opak, okunaklı */
-  --border:       rgba(217, 70, 239, 0.3);
-  --accent:       #C026D3;
-  --accent-t:     rgba(192, 38, 211, 0.15);
-  --text:         #4A044E;
-  --text2:        #701A75;
-  --text3:        #A21CAF;
+  --bg:           linear-gradient(to bottom, #EDE9FE 0%, #F5F3FF 100%);
+  --surface:      #F5F3FF;
+  --surface2:     #EDE9FE;
+  --card-bg:      rgba(245, 243, 255, 0.82);
+  --border:       rgba(139, 92, 246, 0.28);
+  --accent:       #7C3AED;
+  --accent-t:     rgba(124, 58, 237, 0.15);
+  --text:         #2E1065;
+  --text2:        #5B21B6;
+  --text3:        #7C3AED;
   --green:        #0891B2;
   --amber:        #CA8A04;
   --red:          #E11D48;
@@ -157,3 +165,4 @@ body.theme-cyberpunk-light {
   --radius-sm:    2px;
   --radius-pill:  999px;
 }
+
