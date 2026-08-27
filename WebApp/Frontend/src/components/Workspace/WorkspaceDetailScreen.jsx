@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './WorkspaceDetailScreen.module.css';
 import { useTranslation } from 'react-i18next';
