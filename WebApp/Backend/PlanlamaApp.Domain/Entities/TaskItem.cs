@@ -71,5 +71,10 @@ namespace PlanlamaApp.Domain.Entities
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Göreve eklenmiş dosyalar (DB'ye kaydedilmez, sadece DTO olarak taşınır).
+        /// </summary>
+        public List<WorkspaceFile> Attachments { get; set; } = new List<WorkspaceFile>();
     }
 }

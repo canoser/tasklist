@@ -9,12 +9,13 @@ export const storageService = {
   /**
    * Yükleme URL'si alır (Pending kaydı oluşur)
    */
-  getUploadUrl: async (workspaceId, fileName, contentType, fileSizeInBytes) => {
+  getUploadUrl: async (workspaceId, fileName, contentType, fileSizeInBytes, description = '') => {
     const response = await apiClient.post('/api/storage/upload-url', {
       workspaceId,
       fileName,
       contentType,
       fileSizeInBytes,
+      description,
     });
     return response.data; // { uploadUrl, fileId, objectKey, expiresInMinutes }
   },

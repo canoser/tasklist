@@ -493,3 +493,20 @@ Her işlem türünün nasıl geri alındığı:
 - **Zaman sınırı:** İşlemden **24 saat** sonra geri alma hakkı düşer (isteğe bağlı konfigüre edilebilir).
 - **Finansal işlemler geri alınamaz** — Kural 11.4'te belirtildiği gibi.
 - **Başkası değiştirdiyse:** Bir görev geri alınmak isteniyor ama başka bir kullanıcı o görevi zaten tamamladıysa, sistem "Bu göreve başka bir kullanıcı müdahale etti, yine de geri almak ister misiniz?" uyarısı gösterir.
+
+---
+
+### 12. Dosya Yükleme (File Upload) ve Görev (Task) Entegrasyonu
+
+#### 12.1. Native Dosya Seçici ve Popup (Modal)
+- Kullanıcılar dosya yüklemek istediklerinde ekrana şık bir Popup (Modal) pencere açılır.
+- Bu pencerede bir **"Dosya Seç/Ekle"** butonu yer alır.
+- Bu buton kesinlikle `<input type="file" />` standardını kullanmalıdır ki kullanıcı bilgisayarda, tablette veya mobil telefonda tıkladığında **cihazın kendi yerel (native) dosya seçici ekranı** sorunsuz açılsın.
+
+#### 12.2. Dosya Açıklaması ve Yükleme Akışı
+- Popup penceresinde dosyanın ne olduğuyla ilgili kısa bir not girilebilecek bir **Açıklama (Description)** metin kutusu bulunmalıdır.
+- Yükleme akışı Cloudflare R2 üzerinden 3 adımlı (upload-url -> R2'ye doğrudan PUT -> confirm-upload) şekilde çalışmalı ve işlem bitince kayıt `WorkspaceFiles` tablosuna işlenmelidir.
+
+#### 12.3. Görevlere Düğümleme (Attachment) ve Takvim Görünümü
+- Dosya yüklenirken veya daha sonrasında dosyalar, özel ara tablo olan `TaskFileAttachments` üzerinden spesifik görevlere (Task) bağlanır (düğümlenir).
+- **Takvim Entegrasyonu:** Takvim sekmesi (Calendar) üzerinden bir görevin detayına tıklandığında, görevle ilişkilendirilmiş (düğümlenmiş) tüm dosyalar detay panelinde görünür (Açıklamasıyla birlikte) ve indirilebilir olmalıdır.

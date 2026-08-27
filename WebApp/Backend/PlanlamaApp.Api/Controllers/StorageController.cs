@@ -15,6 +15,7 @@ namespace PlanlamaApp.Api.Controllers
         public long FileSizeInBytes { get; set; }
         public string ContentType { get; set; } = string.Empty;
         public int WorkspaceId { get; set; }
+        public string? Description { get; set; }
     }
 
     public class ConfirmUploadRequest
@@ -70,8 +71,8 @@ namespace PlanlamaApp.Api.Controllers
 
             // 5. Veritabanına Pending Kaydı (Taslak)
             var sql = @"
-                INSERT INTO WorkspaceFiles (TenantId, WorkspaceId, UploaderId, FileName, FileUrl, FileSizeInBytes, FileType, UploadStatus, CreatedAt, UpdatedAt)
-                VALUES (@TenantId, @WorkspaceId, @UploaderId, @FileName, @FileUrl, @FileSizeInBytes, @FileType, 'Pending', @Now, @Now)
+                INSERT INTO WorkspaceFiles (TenantId, WorkspaceId, UploaderId, FileName, FileUrl, FileSizeInBytes, FileType, Description, UploadStatus, CreatedAt, UpdatedAt)
+                VALUES (@TenantId, @WorkspaceId, @UploaderId, @FileName, @FileUrl, @FileSizeInBytes, @FileType, @Description, 'Pending', @Now, @Now)
                 RETURNING Id;
             ";
             
@@ -83,6 +84,7 @@ namespace PlanlamaApp.Api.Controllers
                 FileUrl = objectKey,
                 FileSizeInBytes = request.FileSizeInBytes,
                 FileType = extension,
+                Description = request.Description,
                 Now = DateTime.UtcNow
             };
 

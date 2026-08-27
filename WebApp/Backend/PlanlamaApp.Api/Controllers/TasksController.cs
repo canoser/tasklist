@@ -6,6 +6,7 @@ using PlanlamaApp.Application.Interfaces;
 using PlanlamaApp.Domain.Entities;
 using System.Data;
 using System.Security.Claims;
+using Dapper;
 
 namespace PlanlamaApp.Api.Controllers
 {
@@ -101,6 +102,16 @@ namespace PlanlamaApp.Api.Controllers
             if (task.UserId != currentUserId)
                 return NotFound(); // Sahiplik kontrolü - IDOR koruması
 
+            var tenantId = User.FindFirstValue("tenant_id") ?? "default_tenant";
+            var attachmentsSql = @"
+                SELECT f.* 
+                FROM WorkspaceFiles f
+                INNER JOIN TaskFileAttachments tfa ON f.Id = tfa.FileId
+                WHERE tfa.TaskId = @TaskId AND f.TenantId = @TenantId AND f.UploadStatus = 'Uploaded' AND f.IsDeleted = FALSE;
+            ";
+            var attachments = await _dbConnection.QueryAsync<WorkspaceFile>(attachmentsSql, new { TaskId = id, TenantId = tenantId });
+            task.Attachments = attachments.ToList();
+
             return Ok(task);
         }
 
@@ -161,6 +172,50 @@ namespace PlanlamaApp.Api.Controllers
             if (!success)
                 return NotFound();
             return NoContent();
+        }
+
+        public class AttachFileRequest
+        {
+            public int FileId { get; set; }
+        }
+
+        /// <summary>
+        /// Bir dosyayı bir göreve bağlar.
+        /// </summary>
+        [HttpPost("{id:int}/attach-file")]
+        [ServiceFilter(typeof(IdempotencyFilter))]
+        public async Task<IActionResult> AttachFile(int id, [FromBody] AttachFileRequest request)
+        {
+            var existingTask = await _taskRepository.GetByIdAsync(id);
+            if (existingTask == null) return NotFound("Görev bulunamadı.");
+
+            var currentUserId = GetCurrentUserId();
+            if (existingTask.UserId != currentUserId && existingTask.AssignedBy != currentUserId) 
+                return Forbid(); 
+
+            var tenantId = User.FindFirstValue("tenant_id") ?? "default_tenant";
+
+            var file = await _dbConnection.QueryFirstOrDefaultAsync<WorkspaceFile>(
+                "SELECT * FROM WorkspaceFiles WHERE Id = @FileId AND TenantId = @TenantId AND UploadStatus = 'Uploaded' AND IsDeleted = FALSE",
+                new { FileId = request.FileId, TenantId = tenantId });
+
+            if (file == null) return NotFound("Dosya bulunamadı veya henüz yüklenmemiş.");
+
+            var sql = @"
+                INSERT INTO TaskFileAttachments (TenantId, TaskId, FileId, AttachedAt, AttachedBy)
+                VALUES (@TenantId, @TaskId, @FileId, @AttachedAt, @AttachedBy)
+                ON CONFLICT (TaskId, FileId) DO NOTHING;
+            ";
+
+            await _dbConnection.ExecuteAsync(sql, new {
+                TenantId = tenantId,
+                TaskId = id,
+                FileId = request.FileId,
+                AttachedAt = DateTime.UtcNow,
+                AttachedBy = currentUserId
+            });
+
+            return Ok(new { Message = "Dosya göreve başarıyla bağlandı." });
         }
 
         // ── DELETE ───────────────────────────────────────────────────────────────

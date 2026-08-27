@@ -219,6 +219,27 @@ export const taskService = {
       throw err;
     }
   },
+
+  attachFile: async (taskId, fileId) => {
+    if (!currentUser) return { success: false, message: 'Misafir kullanıcılar dosya yükleyemez.' };
+
+    try {
+      // UUID for idempotency
+      const idempotencyKey = typeof crypto !== 'undefined' && crypto.randomUUID 
+        ? crypto.randomUUID() 
+        : `idempotency-${Date.now()}`;
+
+      const response = await apiClient.post(
+        `/tasks/${taskId}/attach-file`, 
+        { fileId },
+        { headers: { 'Idempotency-Key': idempotencyKey } }
+      );
+      return { success: true, data: response.data };
+    } catch (err) {
+      console.error('Göreve dosya bağlama hatası:', err);
+      throw err;
+    }
+  }
 };
 
 export default taskService;

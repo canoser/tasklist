@@ -149,17 +149,28 @@ Bu dosya, projenin başından itibaren tamamlanan adımları ve gelecekte yapıl
 ## 🟡 Sıradaki Aşamalar (Yol Haritası)
 
 ### Faz 3: Çoklu Kullanıcı (Multi-Tenant) ve Yönetim Paneli
-- [ ] **Adım 1: Firebase Authentication Entegrasyonu:**
+- [x] **Adım 1: Firebase Authentication Entegrasyonu:**
   - Firebase projeye dahil edilecek, kullanıcı kayıt ve giriş mekanizması kurulacak.
-- [ ] **Adım 2: Admin Paneli ve Rol Yönetimi:**
+- [x] **Adım 2: Admin Paneli ve Rol Yönetimi:**
   - Ana kullanıcı (Siz) sisteme "Admin" rolüyle ekleneceksiniz.
   - Diğer normal kullanıcıların (öğrenciler/veliler) sisteme eklenebileceği form ve altyapı hazırlanacak.
   - Admin için, tüm kullanıcıların özet verilerini / kayıtlarını yönetebileceği temel bir Yönetici (Dashboard) paneli tasarlanacak.
-- [ ] **Adım 3: Canlı Veri İzolasyonu Testi:**
+- [x] **Adım 3: Canlı Veri İzolasyonu Testi:**
   - Eklenen yeni kullanıcılarla birlikte sistemde kısa bir canlı test yapılıp, her kullanıcının sadece kendi verisini gördüğü doğrulanacak (Multi-tenant izolasyonu).
+- [x] **Adım 4: Güvenlik, R2 Depolama (Storage) ve Kullanım İzleme (Usage Metrics):**
+  - Neon veritabanı entegre edildi. Cloudflare R2 için S3 uyumlu dosya yükleme servisi yazıldı.
+  - Path traversal, Idempotency expiry, Partitioned RateLimiter gibi ileri güvenlik yamaları eklendi.
+  - AuthController'dan "hacker_test" açık kapısı (backdoor) kaldırıldı.
+  - Admin panelinde kullanıcıların dosya depolama kullanım kapasitesi (Byte -> MB dönüştürülerek) gösterildi.
 
 ### Faz 4: İş Mantığı, Görev Detayları ve Rol Tabanlı Özellikler (Domain Logic)
-- [ ] **Görev (Task) Yönetimi ve Detaylandırma:** 
+- [x] **Görev (Task) Yönetimi ve Dosya Entegrasyonu:**
+  - [x] Dosya Yükleme (File Upload) Popup ve Native Seçici entegrasyonu (Description desteği ile).
+  - [x] R2 Storage için `upload-url`, doğrudan PUT yükleme ve `confirm-upload` ile veritabanına (`WorkspaceFiles`) yazılması.
+  - [x] Dosyaları `TaskFileAttachments` tablosuna bağlamak için Backend mantığı.
+  - [x] Takvim/Görev detay ekranında "Ekli Dosyalar" gösterimi ve indirme / presigned URL mantığı.
+  - [x] Davet Kodlarının (Invite Codes) ve `JoinWorkspaceModal` akışının test edilip doğrulanması.
+- [ ] **Görev Aksiyonları ve Gelişmiş Takip:**
   - Görev ekleme/çıkarma detaylarının geliştirilmesi.
   - Görev erteleme, öteleme, süre uzatma gibi aksiyonların kodlanması.
     - *(Mimari Fikir: Görevlere sadece `DueDate` değil, `OriginalDueDate` alanı da koyularak ertelemeler takip edilebilir. Sürekli erteleme yapan öğrenci için öğretmene giden bir "Disiplin Puanı" alarmı üretilebilir.)*
@@ -185,4 +196,4 @@ Bu dosya, projenin başından itibaren tamamlanan adımları ve gelecekte yapıl
 - [ ] **Ödeme Altyapısı Entegrasyonu (Iyzico / Stripe):** Abonelik modeli ve ödeme altyapısı entegrasyonu hazırlıkları.
 
 ---
-*Son Güncelleme Tarihi: 30 Temmuz 2026*
+*Son Güncelleme Tarihi: 27 Ağustos 2026*

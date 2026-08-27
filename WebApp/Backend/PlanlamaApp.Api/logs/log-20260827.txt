@@ -576,3 +576,5 @@ Amazon.Runtime.AmazonClientException: Value for ServiceURL is not a valid URL: h
 2026-08-27 02:08:53.444 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.StorageController.GetUploadUrl (PlanlamaApp.Api) in 313.8542ms
 2026-08-27 02:08:53.444 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.StorageController.GetUploadUrl (PlanlamaApp.Api)'
 2026-08-27 02:08:53.445 +03:00 [INF] Request finished HTTP/1.1 POST http://localhost:5268/api/Storage/upload-url - 200 null application/json; charset=utf-8 345.14ms
+2026-08-27 02:28:45.299 +03:00 [INF] Expired pending file reservation refunded. TenantId: 11a76af7-9400-40be-b8ef-ae5115618f1e, Size: 51200
+2026-08-27 02:38:45.822 +03:00 [INF] Expired pending file reservation refunded. TenantId: 2c8124e7-3df5-4379-989d-8e03403a3820, Size: 51200

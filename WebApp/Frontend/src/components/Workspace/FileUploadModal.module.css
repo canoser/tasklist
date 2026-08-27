@@ -257,3 +257,28 @@
   cursor: not-allowed;
   transform: none;
 }
+
+/* Description */
+.descContainer {
+  margin-top: 16px;
+}
+
+.descInput {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #e5e7eb);
+  background: var(--bg-secondary, #f9fafb);
+  color: var(--text-primary, #111827);
+  font-family: inherit;
+  font-size: 0.9rem;
+  resize: vertical;
+  min-height: 60px;
+  max-height: 120px;
+  transition: border-color 0.2s ease;
+}
+
+.descInput:focus {
+  outline: none;
+  border-color: var(--accent, #5B5BD6);
+}

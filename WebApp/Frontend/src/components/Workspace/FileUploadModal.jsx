@@ -2,14 +2,16 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { storageService } from '../../services/storageService';
+import { taskService } from '../../services/taskService';
 import { v4 as uuidv4 } from 'uuid';
 import styles from './FileUploadModal.module.css';
 
-const FileUploadModal = ({ isOpen, onClose, workspaceId, tone, onSuccess }) => {
+const FileUploadModal = ({ isOpen, onClose, workspaceId, taskId, tone, onSuccess }) => {
   const { t } = useTranslation('common');
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [description, setDescription] = useState('');
   const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
 
@@ -19,6 +21,7 @@ const FileUploadModal = ({ isOpen, onClose, workspaceId, tone, onSuccess }) => {
       setFile(null);
       setUploading(false);
       setProgress(0);
+      setDescription('');
       setError(null);
     }
   }, [isOpen]);
@@ -61,7 +64,8 @@ const FileUploadModal = ({ isOpen, onClose, workspaceId, tone, onSuccess }) => {
         workspaceId,
         file.name,
         file.type || 'application/octet-stream',
-        file.size
+        file.size,
+        description
       );
 
       // 2. Doğrudan R2'ye yükle
@@ -72,6 +76,11 @@ const FileUploadModal = ({ isOpen, onClose, workspaceId, tone, onSuccess }) => {
       // 3. Backend'e onayı bildir (Idempotency Key ile)
       const idempotencyKey = uuidv4();
       await storageService.confirmUpload(fileId, idempotencyKey);
+
+      // 4. Göreve bağla (Eğer taskId varsa)
+      if (taskId) {
+        await taskService.attachFile(taskId, fileId);
+      }
 
       // Başarılı
       if (onSuccess) {
@@ -162,6 +171,18 @@ const FileUploadModal = ({ isOpen, onClose, workspaceId, tone, onSuccess }) => {
                     )}
                   </div>
                   
+                  {!uploading && (
+                    <div className={styles.descContainer}>
+                      <textarea 
+                        className={styles.descInput}
+                        placeholder={t('ws_file_desc_placeholder', { context: tone, defaultValue: 'Bu dosya hakkında kısa bir açıklama ekleyin (isteğe bağlı)...' })}
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        rows={2}
+                      />
+                    </div>
+                  )}
+
                   {uploading && (
                     <div className={styles.progressContainer}>
                       <div className={styles.progressBar}>
