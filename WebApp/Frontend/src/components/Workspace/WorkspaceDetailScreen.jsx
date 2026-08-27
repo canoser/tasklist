@@ -160,11 +160,11 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
             <div className={styles.bl}>{t('ws_stats_total', { context: tone, defaultValue: 'Toplam' })}</div>
           </div>
           <div className={styles.bentoC}>
-            <div className={`${styles.bv} ${styles.bvGn}`}>8</div>
+            <div className={`${styles.bv} ${styles.bvGn}`}>0</div>
             <div className={styles.bl}>{t('ws_stats_done', { context: tone, defaultValue: 'Tamam' })}</div>
           </div>
           <div className={styles.bentoC}>
-            <div className={`${styles.bv} ${styles.bvAm}`}>4</div>
+            <div className={`${styles.bv} ${styles.bvAm}`}>{workspace.tasksCount ?? 0}</div>
             <div className={styles.bl}>{t('ws_stats_pending', { context: tone, defaultValue: 'Bekliyor' })}</div>
           </div>
         </div>
@@ -217,7 +217,7 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
           <div className={styles.accHead} onClick={() => setIsTasksOpen(!isTasksOpen)}>
             <div className={styles.accHeadLeft}>
               <span className={styles.accTtl}>{t('ws_acc_recent_tasks', { context: tone, defaultValue: 'Son Görevler' })}</span>
-              <span className={styles.accCnt}>12</span>
+              <span className={styles.accCnt}>{workspace.tasksCount ?? 0}</span>
             </div>
             <div className={styles.accRight}>
               <svg className={`${styles.accChevron} ${isTasksOpen ? styles.open : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
