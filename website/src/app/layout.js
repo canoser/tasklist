@@ -1,8 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import StructuredData from "@/shared/ui/StructuredData";
-import Header from "@/shared/ui/Header";
-import Footer from "@/shared/ui/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -50,12 +48,10 @@ export default function RootLayout({ children }) {
       <head>
         <StructuredData />
       </head>
-      <body className="min-h-full flex flex-col bg-white text-slate-900">
-        <Header />
-        <main className="flex-1 w-full">
+      <body className="min-h-full flex flex-col bg-black text-white m-0 p-0 overflow-hidden">
+        <main className="flex-1 w-full h-screen flex items-center justify-center">
           {children}
         </main>
-        <Footer />
       </body>
     </html>
   );
