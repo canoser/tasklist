@@ -21,9 +21,9 @@ namespace PlanlamaApp.Infrastructure.Repositories
                        (SELECT COUNT(*) FROM WorkspaceMembers WHERE WorkspaceId = w.Id AND IsActiveMember = true AND ApprovalStatus = 'Approved') as MemberCount,
                        (SELECT COUNT(*) FROM TaskItems WHERE AssignedByWorkspaceId = w.Id) as TasksCount
                 FROM Workspaces w 
-                WHERE w.OwnerId = @OwnerId AND w.IsActive = true
+                WHERE w.OwnerId = @OwnerId AND w.IsActive = true AND w.TenantId = @TenantId
             ";
-            return await QueryAsync<Workspace>(sql, new { OwnerId = ownerId });
+            return await QueryAsync<Workspace>(sql, new { OwnerId = ownerId, TenantId = _tenantId });
         }
 
         public async Task<IEnumerable<Workspace>> GetMemberOfAsync(string userId)
@@ -34,9 +34,9 @@ namespace PlanlamaApp.Infrastructure.Repositories
                        (SELECT COUNT(*) FROM TaskItems t WHERE t.AssignedByWorkspaceId = w.Id) as TasksCount
                 FROM Workspaces w
                 INNER JOIN WorkspaceMembers wm ON wm.WorkspaceId = w.Id
-                WHERE wm.UserId = @UserId AND w.IsActive = true AND wm.IsActiveMember = true AND wm.ApprovalStatus = 'Approved'
+                WHERE wm.UserId = @UserId AND w.IsActive = true AND wm.IsActiveMember = true AND wm.ApprovalStatus = 'Approved' AND w.TenantId = @TenantId
             ";
-            return await _dbConnection.QueryAsync<Workspace>(sql, new { UserId = userId });
+            return await QueryAsync<Workspace>(sql, new { UserId = userId, TenantId = _tenantId });
         }
 
         public async Task<Workspace?> GetByIdAsync(int id)
@@ -46,9 +46,9 @@ namespace PlanlamaApp.Infrastructure.Repositories
                        (SELECT COUNT(*) FROM WorkspaceMembers WHERE WorkspaceId = w.Id AND IsActiveMember = true AND ApprovalStatus = 'Approved') as MemberCount,
                        (SELECT COUNT(*) FROM TaskItems WHERE AssignedByWorkspaceId = w.Id) as TasksCount
                 FROM Workspaces w 
-                WHERE w.Id = @Id AND w.IsActive = true
+                WHERE w.Id = @Id AND w.IsActive = true AND w.TenantId = @TenantId
             ";
-            return await QueryFirstOrDefaultAsync<Workspace>(sql, new { Id = id });
+            return await QueryFirstOrDefaultAsync<Workspace>(sql, new { Id = id, TenantId = _tenantId });
         }
 
         public async Task<Workspace?> GetByInviteCodeAsync(string code)
