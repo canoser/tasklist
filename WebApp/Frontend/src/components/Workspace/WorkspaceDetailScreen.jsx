@@ -303,7 +303,7 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
           <div className={`${styles.accBody} ${!isTasksOpen ? styles.closed : ''}`}>
             {tasks.map((t) => {
               const assignee = members.find(m => m.userId === t.userId);
-              const assigneeName = assignee ? (assignee.displayName || assignee.email) : 'Bilinmiyor';
+              const assigneeName = assignee ? (assignee.displayName || assignee.email || 'Bilinmiyor') : 'Bilinmiyor';
               const initial = assigneeName.charAt(0).toUpperCase();
 
               return (
@@ -375,7 +375,7 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
             {files.map((f) => (
               <div key={f.id} className={styles.fileItem}>
                 <div className={styles.fileIconBox} style={getAvatarStyle(f.fileType, isNatureTheme)}>
-                  {f.fileType?.replace('.', '').substring(0,3).toUpperCase()}
+                  {(f.fileType || '').replace('.', '').substring(0,3).toUpperCase()}
                 </div>
                 <div className={styles.fileInfo}>
                   <div className={styles.fileName}>{f.fileName}</div>
