@@ -227,13 +227,23 @@ namespace PlanlamaApp.API.Controllers
                 DisplayName = request.DisplayName,
                 Role = role,
                 ObserverLinkedUserId = request.LinkedUserId,
-                ApprovalStatus = "Pending",
-                IsActiveMember = false
+                ApprovalStatus = workspace.RequiresApproval ? "Pending" : "Approved",
+                IsActiveMember = !workspace.RequiresApproval
             };
 
             await _workspaceRepository.AddMemberAsync(newMember);
             
             await _hubContext.Clients.Group($"Workspace_{workspace.Id}").SendAsync("WorkspaceMembersUpdated", workspace.Id);
+            
+            if (newMember.IsActiveMember)
+            {
+                await _hubContext.Clients.User(currentUserId).SendAsync("WorkspaceJoinApproved", workspace.Id);
+                await _hubContext.Clients.User(workspace.OwnerId).SendAsync("MemberJoinedAlert", workspace.Id, newMember.DisplayName);
+            }
+            else
+            {
+                await _hubContext.Clients.User(workspace.OwnerId).SendAsync("MemberPendingAlert", workspace.Id, newMember.DisplayName);
+            }
             
             return Ok(newMember);
         }

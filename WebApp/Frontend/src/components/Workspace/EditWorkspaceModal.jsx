@@ -7,13 +7,14 @@ const EditWorkspaceModal = ({ isOpen, onClose, onEdit, workspace, tone }) => {
   const { t } = useTranslation('common');
   const [name, setName] = useState(workspace?.name || '');
   const [description, setDescription] = useState(workspace?.description || '');
+  const [requiresApproval, setRequiresApproval] = useState(workspace?.requiresApproval ?? true);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await onEdit({ ...workspace, name, description });
+      await onEdit({ ...workspace, name, description, requiresApproval });
       onClose();
     } catch (err) {
       console.error(err);
@@ -65,6 +66,18 @@ const EditWorkspaceModal = ({ isOpen, onClose, onEdit, workspace, tone }) => {
             onChange={e => setDescription(e.target.value)} 
             rows={3}
           />
+        </div>
+        <div className={modalStyles.formGroup} style={{ flexDirection: 'row', alignItems: 'center', gap: '0.5rem' }}>
+          <input 
+            type="checkbox" 
+            id="requiresApprovalEdit"
+            checked={requiresApproval} 
+            onChange={e => setRequiresApproval(e.target.checked)} 
+            style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+          />
+          <label htmlFor="requiresApprovalEdit" className={modalStyles.label} style={{ marginBottom: 0, cursor: 'pointer' }}>
+            {t('ws_lbl_requires_approval', { context: tone, defaultValue: 'Katılım Onaya Tabi Olsun (Hemen Giremesinler)' })}
+          </label>
         </div>
         <div className={modalStyles.actions} style={{ justifyContent: 'space-between' }}>
           <button 

@@ -85,6 +85,14 @@ class SignalRService {
             this.dispatchEvent("WorkspaceJoinApproved", { workspaceId });
         });
 
+        this.connection.on("MemberJoinedAlert", (workspaceId, displayName) => {
+            this.dispatchEvent("MemberJoinedAlert", { workspaceId, displayName });
+        });
+
+        this.connection.on("MemberPendingAlert", (workspaceId, displayName) => {
+            this.dispatchEvent("MemberPendingAlert", { workspaceId, displayName });
+        });
+
         this.connection.on("WorkspaceTasksUpdated", (workspaceId) => {
             this.dispatchEvent("WorkspaceTasksUpdated", { workspaceId });
         });

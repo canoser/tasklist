@@ -102,6 +102,7 @@ namespace PlanlamaApp.Infrastructure
                     InviteCode  TEXT    NOT NULL UNIQUE,
                     Type        TEXT    NOT NULL DEFAULT 'Group',
                     Settings    TEXT,
+                    RequiresApproval BOOLEAN NOT NULL DEFAULT TRUE,
                     IsActive    BOOLEAN NOT NULL DEFAULT TRUE,
                     DeletedAt   TIMESTAMPTZ,
                     CreatedAt   TIMESTAMPTZ NOT NULL,
@@ -113,6 +114,7 @@ namespace PlanlamaApp.Infrastructure
             connection.Execute(@"
                 ALTER TABLE Workspaces ADD COLUMN IF NOT EXISTS Type TEXT NOT NULL DEFAULT 'Group';
                 ALTER TABLE Workspaces ADD COLUMN IF NOT EXISTS Settings TEXT;
+                ALTER TABLE Workspaces ADD COLUMN IF NOT EXISTS RequiresApproval BOOLEAN NOT NULL DEFAULT TRUE;
                 ALTER TABLE Workspaces ADD COLUMN IF NOT EXISTS DeletedAt TIMESTAMPTZ;
             ");
 

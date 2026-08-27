@@ -8,6 +8,7 @@ const CreateWorkspaceModal = ({ isOpen, onClose, onCreate, tone }) => {
   const [name, setName] = useState('');
   const [role, setRole] = useState('');
   const [desc, setDesc] = useState('');
+  const [requiresApproval, setRequiresApproval] = useState(true);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -15,7 +16,7 @@ const CreateWorkspaceModal = ({ isOpen, onClose, onCreate, tone }) => {
     if (!name.trim() || !role.trim()) return;
     setLoading(true);
     try {
-      await onCreate({ name, description: desc, settings: JSON.stringify({ role }) }); 
+      await onCreate({ name, description: desc, requiresApproval, settings: JSON.stringify({ role }) }); 
       onClose();
     } catch (err) {
       alert(err.message);
@@ -66,6 +67,19 @@ const CreateWorkspaceModal = ({ isOpen, onClose, onCreate, tone }) => {
             onChange={e => setDesc(e.target.value)} 
             rows={3}
           />
+        </div>
+
+        <div className={modalStyles.formGroup} style={{ flexDirection: 'row', alignItems: 'center', gap: '0.5rem' }}>
+          <input 
+            type="checkbox" 
+            id="requiresApproval"
+            checked={requiresApproval} 
+            onChange={e => setRequiresApproval(e.target.checked)} 
+            style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+          />
+          <label htmlFor="requiresApproval" className={modalStyles.label} style={{ marginBottom: 0, cursor: 'pointer' }}>
+            {t('ws_lbl_requires_approval', { context: tone, defaultValue: 'Katılım Onaya Tabi Olsun (Hemen Giremesinler)' })}
+          </label>
         </div>
 
         <div className={modalStyles.actions}>

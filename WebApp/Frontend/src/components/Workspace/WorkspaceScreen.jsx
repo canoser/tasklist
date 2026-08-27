@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import styles from './WorkspaceScreen.module.css';
 import useWorkspaces from '../../hooks/useWorkspaces';
 import { useTranslation } from 'react-i18next';
+import toast from 'react-hot-toast';
+import signalrService from '../../services/signalrService';
 import CreateWorkspaceModal from './CreateWorkspaceModal';
 import JoinWorkspaceModal from './JoinWorkspaceModal';
 import WorkspaceGuideModal from './WorkspaceGuideModal';
@@ -56,8 +58,39 @@ const WorkspaceScreen = ({ user, tone }) => {
     checkTheme();
     const observer = new MutationObserver(checkTheme);
     observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
-    return () => observer.disconnect();
-  }, []);
+
+    const handleMemberJoined = (e) => {
+      const { displayName } = e.detail;
+      toast.success(t('ws_toast_member_joined', { context: tone, defaultValue: `${displayName} alana katıldı!` }), {
+        style: {
+          background: 'var(--surface, #1e1e2d)',
+          color: 'var(--text-1, #e2e8f0)',
+          border: '1px solid var(--border-color, #2d2d3d)'
+        }
+      });
+    };
+
+    const handleMemberPending = (e) => {
+      const { displayName } = e.detail;
+      toast(t('ws_toast_member_pending', { context: tone, defaultValue: `${displayName} katılmak için onayınızı bekliyor.` }), {
+        icon: '⏳',
+        style: {
+          background: 'var(--surface, #1e1e2d)',
+          color: 'var(--text-1, #e2e8f0)',
+          border: '1px solid var(--border-color, #2d2d3d)'
+        }
+      });
+    };
+
+    signalrService.addEventListener("MemberJoinedAlert", handleMemberJoined);
+    signalrService.addEventListener("MemberPendingAlert", handleMemberPending);
+
+    return () => {
+      observer.disconnect();
+      signalrService.removeEventListener("MemberJoinedAlert", handleMemberJoined);
+      signalrService.removeEventListener("MemberPendingAlert", handleMemberPending);
+    };
+  }, [tone, t]);
 
   if (activeWorkspace) {
     return (

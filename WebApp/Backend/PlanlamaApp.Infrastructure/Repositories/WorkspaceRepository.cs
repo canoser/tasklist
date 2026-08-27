@@ -54,8 +54,8 @@ namespace PlanlamaApp.Infrastructure.Repositories
 
             workspace.TenantId = _tenantId;
             var sql = @"
-                INSERT INTO Workspaces (TenantId, OwnerId, Name, Description, InviteCode, Type, Settings, IsActive, CreatedAt, UpdatedAt)
-                VALUES (@TenantId, @OwnerId, @Name, @Description, @InviteCode, @Type, @Settings, @IsActive, @CreatedAt, @UpdatedAt)
+                INSERT INTO Workspaces (TenantId, OwnerId, Name, Description, InviteCode, Type, Settings, RequiresApproval, IsActive, CreatedAt, UpdatedAt)
+                VALUES (@TenantId, @OwnerId, @Name, @Description, @InviteCode, @Type, @Settings, @RequiresApproval, @IsActive, @CreatedAt, @UpdatedAt)
                 RETURNING Id;
             ";
             
@@ -81,7 +81,7 @@ namespace PlanlamaApp.Infrastructure.Repositories
             workspace.UpdatedAt = DateTime.UtcNow;
             var sql = @"
                 UPDATE Workspaces 
-                SET Name = @Name, Description = @Description, Type = @Type, Settings = @Settings, UpdatedAt = @UpdatedAt
+                SET Name = @Name, Description = @Description, Type = @Type, Settings = @Settings, RequiresApproval = @RequiresApproval, UpdatedAt = @UpdatedAt
                 WHERE Id = @Id
             ";
             var affected = await ExecuteAsync(sql, workspace);
@@ -156,8 +156,8 @@ namespace PlanlamaApp.Infrastructure.Repositories
                 INSERT INTO WorkspaceMembers (TenantId, WorkspaceId, UserId, DisplayName, JoinedAt, Role, ObserverLinkedUserId, IsActiveMember, ApprovalStatus)
                 VALUES (@TenantId, @WorkspaceId, @UserId, @DisplayName, @JoinedAt, @Role, @ObserverLinkedUserId, @IsActiveMember, @ApprovalStatus)
                 ON CONFLICT(WorkspaceId, UserId) DO UPDATE 
-                SET ApprovalStatus = 'Pending',
-                    IsActiveMember = false,
+                SET ApprovalStatus = EXCLUDED.ApprovalStatus,
+                    IsActiveMember = EXCLUDED.IsActiveMember,
                     Role = EXCLUDED.Role, 
                     JoinedAt = EXCLUDED.JoinedAt
                 WHERE WorkspaceMembers.ApprovalStatus != 'Approved'

@@ -12,6 +12,7 @@ namespace PlanlamaApp.Domain.Entities
         public string? InviteCode { get; set; }    // Davet kodu (6 hane rastgele)
         public string Type { get; set; } = "Group";               // "Personal", "Group", "Class"
         public string? Settings { get; set; }                     // JSON settings
+        public bool RequiresApproval { get; set; } = true;
         public bool IsActive { get; set; } = true;
         public DateTime? DeletedAt { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

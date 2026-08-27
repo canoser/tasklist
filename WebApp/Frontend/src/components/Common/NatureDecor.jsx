@@ -1,95 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useTheme } from '../../context/ThemeContext';
-
-const getMoonPhase = () => {
-  const date = new Date();
-  const knownNewMoon = 947182440000;
-  const lunarDays = 29.53058770576;
-  const msPerDay = 1000 * 60 * 60 * 24;
-  const diffDays = (date.getTime() - knownNewMoon) / msPerDay;
-  const phase = (diffDays % lunarDays) / lunarDays;
-  return phase < 0 ? phase + 1 : phase;
-};
-
-const getTargetSunY = () => {
-  const date = new Date();
-  const hour = date.getHours() + date.getMinutes() / 60;
-  if (hour < 5 || hour > 19) return 360;
-  const progress = (hour - 12) / 7;
-  return 60 + 300 * (1 - Math.cos(progress * Math.PI / 2));
-};
+import SkyDecor from './SkyDecor';
 
 export default function NatureDecor() {
   const { themeStyle, themeMode } = useTheme();
 
-  // For Moon
-  const [targetPhase] = useState(() => getMoonPhase());
-  const [currentPhase, setCurrentPhase] = useState(0);
-
-  // For Sun
-  const [targetY] = useState(() => getTargetSunY());
-  const [currentY, setCurrentY] = useState(360);
-
-  useEffect(() => {
-    if (themeStyle !== 'nature') return;
-
-    if (themeMode === 'dark') {
-      let startTimestamp = null;
-      const duration = 2500;
-      const totalPhaseToAnimate = 1 + targetPhase;
-      const step = (timestamp) => {
-        if (!startTimestamp) startTimestamp = timestamp;
-        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-        const easeOut = 1 - Math.pow(1 - progress, 4);
-        const currentVal = easeOut * totalPhaseToAnimate;
-        setCurrentPhase(currentVal % 1);
-        if (progress < 1) requestAnimationFrame(step);
-        else setCurrentPhase(targetPhase);
-      };
-      const animId = requestAnimationFrame(step);
-      return () => cancelAnimationFrame(animId);
-    } else {
-      let startTimestamp = null;
-      const duration = 2500;
-      const startY = 360;
-      const distance = startY - targetY;
-      if (distance <= 0) {
-        setCurrentY(targetY);
-        return;
-      }
-      const step = (timestamp) => {
-        if (!startTimestamp) startTimestamp = timestamp;
-        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-        const easeOut = 1 - Math.pow(1 - progress, 4);
-        setCurrentY(startY - distance * easeOut);
-        if (progress < 1) requestAnimationFrame(step);
-        else setCurrentY(targetY);
-      };
-      const animId = requestAnimationFrame(step);
-      return () => cancelAnimationFrame(animId);
-    }
-  }, [themeStyle, themeMode, targetPhase, targetY]);
 
   if (themeStyle !== 'nature') return null;
-
-  const isDark = themeMode === 'dark';
-
-  // Moon Drawing
-  const baseCircle = <circle cx="70" cy="120" r="60" fill="#F0F9FF" opacity=".08" />;
-  let brightPart = null;
-  const p = currentPhase;
-  if (p > 0.01 && p < 0.99) {
-    if (Math.abs(p - 0.5) < 0.01) {
-      brightPart = <circle cx="70" cy="120" r="60" fill="#F0F9FF" opacity=".55" />;
-    } else {
-      const rx = Math.max(0.01, 60 * Math.abs(Math.cos(p * 2 * Math.PI)));
-      const outerSweep = p <= 0.5 ? 1 : 0;
-      let innerSweep = 0;
-      if ((p > 0.25 && p <= 0.5) || (p > 0.75)) innerSweep = 1;
-      const d = `M 70 60 A 60 60 0 0 ${outerSweep} 70 180 A ${rx} 60 0 0 ${innerSweep} 70 60 Z`;
-      brightPart = <path d={d} fill="#F0F9FF" opacity=".55" />;
-    }
-  }
 
   return (
     <div style={{
@@ -163,20 +80,7 @@ export default function NatureDecor() {
       </svg>
 
       {/* Gökyüzü (Güneş/Ay) */}
-      <svg 
-        style={{ position: 'absolute', top: 0, left: 0, right: 'auto', width: '200px', height: '300px' }} 
-        viewBox="0 0 200 300" 
-        fill="none"
-      >
-        {isDark ? (
-          <>
-            {baseCircle}
-            {brightPart}
-          </>
-        ) : (
-          <circle cx="70" cy={currentY} r="60" fill="#FDE047" opacity=".55" />
-        )}
-      </svg>
+      <SkyDecor />
 
       {/* Background Branch (Fainter, smaller, slower) */}
       <svg 
