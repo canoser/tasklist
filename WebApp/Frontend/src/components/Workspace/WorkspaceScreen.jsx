@@ -138,9 +138,9 @@ const WorkspaceScreen = ({ user, tone }) => {
         <div className={styles.wcInfo}>
           <div className={styles.wcName}>{w.name}</div>
           <div className={styles.wcMeta}>
-            <span>{w.memberCount || 1} {t('ws_members_label', { context: tone, defaultValue: 'üye' })}</span>
+            <span>{w.memberCount ?? 0} {t('ws_members_label', { context: tone, defaultValue: 'üye' })}</span>
             <span className={styles.mdot}></span>
-            <span>{w.tasksCount || 0} {t('ws_tasks_label', { context: tone, defaultValue: 'görev' })}</span>
+            <span>{w.tasksCount ?? 0} {t('ws_tasks_label', { context: tone, defaultValue: 'görev' })}</span>
             <span className={styles.mdot}></span>
             <span>{t('ws_type_team', { context: tone, defaultValue: 'Ekip' })}</span>
           </div>

@@ -16,14 +16,23 @@ namespace PlanlamaApp.Infrastructure.Repositories
 
         public async Task<IEnumerable<Workspace>> GetOwnedAsync(string ownerId)
         {
-            var sql = "SELECT * FROM Workspaces WHERE OwnerId = @OwnerId AND IsActive = true";
+            var sql = @"
+                SELECT w.*, 
+                       (SELECT COUNT(*) FROM WorkspaceMembers WHERE WorkspaceId = w.Id AND IsActiveMember = true AND ApprovalStatus = 'Approved') as MemberCount,
+                       (SELECT COUNT(*) FROM TaskItems WHERE AssignedByWorkspaceId = w.Id) as TasksCount
+                FROM Workspaces w 
+                WHERE w.OwnerId = @OwnerId AND w.IsActive = true
+            ";
             return await QueryAsync<Workspace>(sql, new { OwnerId = ownerId });
         }
 
         public async Task<IEnumerable<Workspace>> GetMemberOfAsync(string userId)
         {
             var sql = @"
-                SELECT w.* FROM Workspaces w
+                SELECT w.*,
+                       (SELECT COUNT(*) FROM WorkspaceMembers m WHERE m.WorkspaceId = w.Id AND m.IsActiveMember = true AND m.ApprovalStatus = 'Approved') as MemberCount,
+                       (SELECT COUNT(*) FROM TaskItems t WHERE t.AssignedByWorkspaceId = w.Id) as TasksCount
+                FROM Workspaces w
                 INNER JOIN WorkspaceMembers wm ON wm.WorkspaceId = w.Id
                 WHERE wm.UserId = @UserId AND w.IsActive = true AND wm.IsActiveMember = true AND wm.ApprovalStatus = 'Approved'
             ";
@@ -32,7 +41,13 @@ namespace PlanlamaApp.Infrastructure.Repositories
 
         public async Task<Workspace?> GetByIdAsync(int id)
         {
-            var sql = "SELECT * FROM Workspaces WHERE Id = @Id AND IsActive = true";
+            var sql = @"
+                SELECT w.*,
+                       (SELECT COUNT(*) FROM WorkspaceMembers WHERE WorkspaceId = w.Id AND IsActiveMember = true AND ApprovalStatus = 'Approved') as MemberCount,
+                       (SELECT COUNT(*) FROM TaskItems WHERE AssignedByWorkspaceId = w.Id) as TasksCount
+                FROM Workspaces w 
+                WHERE w.Id = @Id AND w.IsActive = true
+            ";
             return await QueryFirstOrDefaultAsync<Workspace>(sql, new { Id = id });
         }
 

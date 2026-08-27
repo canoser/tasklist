@@ -17,5 +17,9 @@ namespace PlanlamaApp.Domain.Entities
         public DateTime? DeletedAt { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+        // Extra info mapped by Dapper
+        public int MemberCount { get; set; }
+        public int TasksCount { get; set; }
     }
 }

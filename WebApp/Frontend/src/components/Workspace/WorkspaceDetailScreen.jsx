@@ -106,7 +106,7 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
                   <path d="M23 21v-2a4 4 0 00-3-3.87"></path>
                   <path d="M16 3.13a4 4 0 010 7.75"></path>
                 </svg>
-                {workspace.memberCount || 1} {t('ws_members_label', { context: tone, defaultValue: 'üye' })} · {t('ws_type_team', { context: tone, defaultValue: 'Ekip' })}
+                {workspace.memberCount ?? 0} {t('ws_members_label', { context: tone, defaultValue: 'üye' })} · {t('ws_type_team', { context: tone, defaultValue: 'Ekip' })}
                 <span className={styles.heroLive}>● {t('ws_badge_active', { context: tone, defaultValue: 'Aktif' })}</span>
               </div>
             </div>
@@ -156,7 +156,7 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
         {/* Bento stats */}
         <div className={styles.bento}>
           <div className={styles.bentoC}>
-            <div className={`${styles.bv} ${styles.bvAc}`}>{workspace.tasksCount || 12}</div>
+            <div className={`${styles.bv} ${styles.bvAc}`}>{workspace.tasksCount ?? 0}</div>
             <div className={styles.bl}>{t('ws_stats_total', { context: tone, defaultValue: 'Toplam' })}</div>
           </div>
           <div className={styles.bentoC}>
@@ -174,7 +174,7 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
           <div className={styles.accHead} onClick={() => setIsMembersOpen(!isMembersOpen)}>
             <div className={styles.accHeadLeft}>
               <span className={styles.accTtl}>{t('ws_acc_members', { context: tone, defaultValue: 'Üyeler' })}</span>
-              <span className={styles.accCnt}>{workspace.memberCount || 4}</span>
+              <span className={styles.accCnt}>{workspace.memberCount ?? 0}</span>
             </div>
             <div className={styles.accRight}>
               <svg className={`${styles.accChevron} ${isMembersOpen ? styles.open : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
