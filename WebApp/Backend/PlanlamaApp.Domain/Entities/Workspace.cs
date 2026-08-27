@@ -19,7 +19,7 @@ namespace PlanlamaApp.Domain.Entities
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         // Extra info mapped by Dapper
-        public int MemberCount { get; set; }
-        public int TasksCount { get; set; }
+        public long MemberCount { get; set; }
+        public long TasksCount { get; set; }
     }
 }

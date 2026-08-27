@@ -31,13 +31,26 @@ class Program
         }
 
         Console.WriteLine("----------------");
-        using (var cmd3 = new NpgsqlCommand("SELECT \"errormessage\", \"createdat\" FROM \"systemerrors\" ORDER BY \"createdat\" DESC LIMIT 10", conn))
-        using (var reader3 = cmd3.ExecuteReader())
+        try
         {
-            while (reader3.Read())
+            using (var cmd4 = new NpgsqlCommand(@"
+                SELECT w.*, 
+                       (SELECT COUNT(*) FROM WorkspaceMembers WHERE WorkspaceId = w.Id AND IsActiveMember = true AND ApprovalStatus = 'Approved') as MemberCount,
+                       (SELECT COUNT(*) FROM TaskItems WHERE AssignedByWorkspaceId = w.Id) as TasksCount
+                FROM Workspaces w 
+                WHERE w.IsActive = true
+            ", conn))
+            using (var reader4 = cmd4.ExecuteReader())
             {
-                Console.WriteLine($"TIME: {reader3["createdat"]}, ERR: {reader3["errormessage"]}");
+                while (reader4.Read())
+                {
+                    Console.WriteLine($"W_Id: {reader4["id"]}, OwnerId: {reader4["ownerid"]}, Name: {reader4["name"]}, MemCnt: {reader4["MemberCount"]}, TaskCnt: {reader4["TasksCount"]}");
+                }
             }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("QUERY ERROR: " + ex.Message);
         }
     }
 }
