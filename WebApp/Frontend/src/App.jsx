@@ -170,7 +170,7 @@ export default function App() {
             {activeTab === 'home' && <Dashboard user={user} guestName={guestName} tone={tone} />}
 
             {activeTab === 'search' && (
-              <WorkspaceScreen user={user} tone={tone} />
+              <WorkspaceScreen user={user} tone={tone} openAuth={() => openModal('auth')} />
             )}
 
             {activeTab === 'calendar' && (

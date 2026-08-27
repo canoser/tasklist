@@ -6,6 +6,8 @@ using PlanlamaApp.Application.Interfaces;
 using PlanlamaApp.Domain.Entities;
 using Microsoft.AspNetCore.SignalR;
 using PlanlamaApp.Api.Hubs;
+using System.Security.Claims;
+using Dapper;
 
 namespace PlanlamaApp.API.Controllers
 {
@@ -362,11 +364,7 @@ namespace PlanlamaApp.API.Controllers
             if (!isOwner && !members.Any(m => m.UserId == currentUserId))
                 return Forbid(); 
 
-            // Backend returns TaskItems that were assigned from this workspace. 
-            // The frontend groups them by ChainId.
-            // But right now we can query TaskAssignment, or better: query TaskItems.
-            // Since we don't have GetByWorkspaceId in TaskRepository yet, let's keep the existing line but maybe it needs fixing later.
-            var tasks = await _taskAssignmentRepository.GetByWorkspaceIdAsync(workspaceId);
+            var tasks = await _taskRepository.GetByAssignedWorkspaceIdAsync(workspaceId);
             return Ok(tasks);
         }
 
@@ -386,7 +384,7 @@ namespace PlanlamaApp.API.Controllers
 
             var batchId = "ws-batch-" + Guid.NewGuid().ToString("N");
             var targetMembers = request.TargetUserIds != null && request.TargetUserIds.Any()
-                ? members.Where(m => request.TargetUserIds.Contains(m.UserId)).ToList()
+                ? members.Where(m => request.TargetUserIds.Contains(m.UserId) && m.IsActiveMember).ToList()
                 : members.Where(m => m.IsActiveMember).ToList();
 
             foreach (var member in targetMembers)
@@ -421,6 +419,70 @@ namespace PlanlamaApp.API.Controllers
             // İleride TaskRepository'ye DeleteByChainIdAsync eklenebilir. 
             // Şimdilik sadece metod imzasını bırakıyoruz, çünkü frontend ChainId kullanacak.
             return Ok(new { Message = "Görev iptal edildi." });
+        }
+
+        // --- Workspace Files ---
+        [HttpGet("{workspaceId}/files")]
+        public async Task<IActionResult> GetWorkspaceFiles(int workspaceId, [FromServices] System.Data.IDbConnection db)
+        {
+            var currentUserId = GetCurrentUserId();
+            if (currentUserId == null) return Unauthorized();
+
+            var isOwner = await IsOwnerAsync(workspaceId, currentUserId);
+            var members = await _workspaceRepository.GetMembersAsync(workspaceId);
+
+            if (!isOwner && !members.Any(m => m.UserId == currentUserId && m.IsActiveMember))
+                return Forbid();
+
+            var tenantId = User.FindFirstValue("tenant_id") ?? "default_tenant";
+            
+            var files = await db.QueryAsync<WorkspaceFile>(
+                "SELECT * FROM WorkspaceFiles WHERE WorkspaceId = @WorkspaceId AND TenantId = @TenantId AND IsDeleted = FALSE ORDER BY CreatedAt DESC",
+                new { WorkspaceId = workspaceId, TenantId = tenantId });
+
+            return Ok(files);
+        }
+
+        [HttpDelete("{workspaceId}/files/{fileId}")]
+        public async Task<IActionResult> DeleteWorkspaceFile(int workspaceId, int fileId, [FromServices] System.Data.IDbConnection db, [FromServices] PlanlamaApp.Application.Interfaces.IStorageService storageService, [FromServices] PlanlamaApp.Application.Interfaces.IQuotaManager quotaManager)
+        {
+            var currentUserId = GetCurrentUserId();
+            if (currentUserId == null) return Unauthorized();
+
+            var tenantId = User.FindFirstValue("tenant_id") ?? "default_tenant";
+
+            var file = await db.QueryFirstOrDefaultAsync<WorkspaceFile>(
+                "SELECT * FROM WorkspaceFiles WHERE Id = @Id AND WorkspaceId = @WorkspaceId AND TenantId = @TenantId AND IsDeleted = FALSE",
+                new { Id = fileId, WorkspaceId = workspaceId, TenantId = tenantId });
+
+            if (file == null) return NotFound();
+
+            var isOwner = await IsOwnerAsync(workspaceId, currentUserId);
+            var members = await _workspaceRepository.GetMembersAsync(workspaceId);
+            var currentUserMember = members.FirstOrDefault(m => m.UserId == currentUserId);
+
+            // Sadece alan sahibi, Admin veya dosyayı yükleyen kişi silebilir.
+            if (!isOwner && file.UploaderId != currentUserId && (currentUserMember == null || currentUserMember.Role != "Admin"))
+                return Forbid("Bu dosyayı silme yetkiniz yok.");
+
+            // R2'den fiziksel silme denemesi (Hata verirse yine de DB'den sileceğiz)
+            try {
+                if (!string.IsNullOrEmpty(file.FileUrl))
+                    await storageService.DeleteFileAsync(file.FileUrl);
+            } catch { /* loglanabilir */ }
+
+            // DB'den Soft Delete
+            await db.ExecuteAsync(
+                "UPDATE WorkspaceFiles SET IsDeleted = TRUE, UpdatedAt = @Now WHERE Id = @Id",
+                new { Id = fileId, Now = DateTime.UtcNow });
+
+            // Kotayı iade et
+            if (file.UploadStatus == "Uploaded" || file.UploadStatus == "Pending")
+            {
+                await quotaManager.RefundAsync(tenantId, "free", "TotalStorage", file.FileSizeInBytes);
+            }
+
+            return Ok();
         }
 
         [HttpPost("{workspaceId}/members/{userId}/promote")]

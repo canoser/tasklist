@@ -33,18 +33,12 @@ class Program
         Console.WriteLine("----------------");
         try
         {
-            using (var cmd4 = new NpgsqlCommand(@"
-                SELECT w.*, 
-                       (SELECT COUNT(*) FROM WorkspaceMembers WHERE WorkspaceId = w.Id AND IsActiveMember = true AND ApprovalStatus = 'Approved') as MemberCount,
-                       (SELECT COUNT(*) FROM TaskItems WHERE AssignedByWorkspaceId = w.Id) as TasksCount
-                FROM Workspaces w 
-                WHERE w.IsActive = true
-            ", conn))
+            using (var cmd4 = new NpgsqlCommand("SELECT \"id\", \"email\" FROM \"users\"", conn))
             using (var reader4 = cmd4.ExecuteReader())
             {
                 while (reader4.Read())
                 {
-                    Console.WriteLine($"W_Id: {reader4["id"]}, OwnerId: {reader4["ownerid"]}, Name: {reader4["name"]}, MemCnt: {reader4["MemberCount"]}, TaskCnt: {reader4["TasksCount"]}");
+                    Console.WriteLine($"UserId: {reader4["id"]}, Email: {reader4["email"]}");
                 }
             }
         }

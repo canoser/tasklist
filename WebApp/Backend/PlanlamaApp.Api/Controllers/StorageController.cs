@@ -31,12 +31,14 @@ namespace PlanlamaApp.Api.Controllers
         private readonly IStorageService _storageService;
         private readonly IQuotaManager _quotaManager;
         private readonly IDbConnection _dbConnection;
+        private readonly IWorkspaceRepository _workspaceRepository;
 
-        public StorageController(IStorageService storageService, IQuotaManager quotaManager, IDbConnection dbConnection)
+        public StorageController(IStorageService storageService, IQuotaManager quotaManager, IDbConnection dbConnection, IWorkspaceRepository workspaceRepository)
         {
             _storageService = storageService;
             _quotaManager = quotaManager;
             _dbConnection = dbConnection;
+            _workspaceRepository = workspaceRepository;
         }
 
         [HttpPost("upload-url")]
@@ -51,6 +53,20 @@ namespace PlanlamaApp.Api.Controllers
             if (!allowedExtensions.Contains(extension))
                 return BadRequest($"Desteklenmeyen dosya türü: {extension}");
 
+            // 1.1 Güvenlik: ContentType doğrulaması (XSS Engelleme)
+            var cType = request.ContentType.ToLowerInvariant();
+            if ((extension == ".png" && !cType.Contains("image/png")) ||
+                (extension == ".jpg" && !cType.Contains("image/jpeg")) ||
+                (extension == ".jpeg" && !cType.Contains("image/jpeg")) ||
+                (extension == ".pdf" && !cType.Contains("application/pdf")))
+            {
+                // Strict check for basic types to prevent masquerading
+                if (extension == ".png" || extension == ".jpg" || extension == ".jpeg" || extension == ".pdf")
+                {
+                    return BadRequest("Dosya uzantısı ile içerik tipi eşleşmiyor.");
+                }
+            }
+
             // 2. Boyut Kontrolü (Örn: Maksimum 100 MB tekil dosya)
             const long MAX_FILE_SIZE = 100 * 1024 * 1024;
             if (request.FileSizeInBytes > MAX_FILE_SIZE)
@@ -58,6 +74,19 @@ namespace PlanlamaApp.Api.Controllers
 
             var tenantId = User.FindFirstValue("tenant_id") ?? "default_tenant";
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "unknown_user";
+
+            // 2.5 Güvenlik: Kullanıcının Çalışma Alanına üyeliğini kontrol et
+            var workspace = await _workspaceRepository.GetByIdAsync(request.WorkspaceId);
+            if (workspace == null) return NotFound("Çalışma alanı bulunamadı.");
+
+            if (workspace.OwnerId != userId)
+            {
+                var members = await _workspaceRepository.GetMembersAsync(request.WorkspaceId);
+                if (!members.Any(m => m.UserId == userId && m.IsActiveMember))
+                {
+                    return Forbid("Bu alana dosya yükleme yetkiniz yok.");
+                }
+            }
 
             // 3. Kota Rezervasyonu
             var success = await _quotaManager.TryDeductAsync(tenantId, "free", "TotalStorage", request.FileSizeInBytes);
@@ -154,6 +183,7 @@ namespace PlanlamaApp.Api.Controllers
                 return BadRequest("Geçersiz veya tehlikeli dosya yolu.");
 
             var tenantId = User.FindFirstValue("tenant_id") ?? "default_tenant";
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "unknown_user";
 
             // Sadece kendi tenant'ına ait dosyaları indirebilsin
             if (!objectKey.StartsWith($"workspaces/{tenantId}/"))
@@ -166,6 +196,19 @@ namespace PlanlamaApp.Api.Controllers
                 
             if (file == null)
                 return NotFound();
+
+            // Güvenlik: İndirecek kullanıcının dosyanın ait olduğu alana aktif üye olup olmadığını kontrol et
+            var workspace = await _workspaceRepository.GetByIdAsync(file.WorkspaceId);
+            if (workspace == null) return NotFound();
+
+            if (workspace.OwnerId != userId)
+            {
+                var members = await _workspaceRepository.GetMembersAsync(file.WorkspaceId);
+                if (!members.Any(m => m.UserId == userId && m.IsActiveMember))
+                {
+                    return Forbid("Bu dosyayı indirme yetkiniz yok.");
+                }
+            }
 
             // 10 dakikalık okuma izni
             var url = _storageService.GenerateDownloadUrl(objectKey, TimeSpan.FromMinutes(10));

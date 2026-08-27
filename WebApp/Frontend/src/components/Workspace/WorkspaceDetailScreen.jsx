@@ -3,6 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import styles from './WorkspaceDetailScreen.module.css';
 import { useTranslation } from 'react-i18next';
 import FileUploadModal from './FileUploadModal';
+import AssignTaskModal from './AssignTaskModal';
+import { workspaceService } from '../../services/workspaceService';
+import { storageService } from '../../services/storageService';
 
 // Global decorators NatureDecor and OceanDecor now handle the background SVGs
 
@@ -56,12 +59,83 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
     }
   };
 
-  // Empty arrays since no actual API fetches are implemented in this view yet
-  const mockMembers = [];
+  const [members, setMembers] = useState([]);
+  const [tasks, setTasks] = useState([]);
+  const [files, setFiles] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
 
-  const mockTasks = [];
+  useEffect(() => {
+    let mounted = true;
+    
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const [fetchedMembers, fetchedTasks, fetchedFiles] = await Promise.all([
+          workspaceService.getMembers(workspace.id).catch(() => []),
+          workspaceService.getWorkspaceTasks(workspace.id).catch(() => []),
+          workspaceService.getWorkspaceFiles(workspace.id).catch(() => [])
+        ]);
 
-  const mockFiles = [];
+        if (mounted) {
+          setMembers(fetchedMembers);
+          setTasks(fetchedTasks);
+          setFiles(fetchedFiles);
+        }
+      } catch (err) {
+        console.error("Veriler yüklenemedi:", err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    if (workspace?.id) {
+      loadData();
+    }
+
+    return () => { mounted = false; };
+  }, [workspace.id]);
+
+  const handleAssignTask = async (taskData) => {
+    try {
+      await workspaceService.assignTask(workspace.id, taskData);
+      // Refresh tasks
+      const fetchedTasks = await workspaceService.getWorkspaceTasks(workspace.id);
+      setTasks(fetchedTasks);
+    } catch (err) {
+      throw err; // AssignTaskModal will catch and show error
+    }
+  };
+
+  const handleDownloadFile = async (fileUrl) => {
+    try {
+      const { downloadUrl } = await storageService.getDownloadUrl(fileUrl);
+      window.open(downloadUrl, '_blank');
+    } catch (err) {
+      alert("Dosya indirilemedi: " + err.message);
+    }
+  };
+
+  const handleDeleteFile = async (fileId) => {
+    if (!window.confirm(t('ws_confirm_delete_file', { context: tone, defaultValue: 'Dosyayı silmek istediğinize emin misiniz?' }))) return;
+    try {
+      await workspaceService.deleteWorkspaceFile(workspace.id, fileId);
+      setFiles(files.filter(f => f.id !== fileId));
+    } catch (err) {
+      alert("Dosya silinemedi: " + err.message);
+    }
+  };
+
+  const handleUploadSuccess = async (fileId) => {
+    console.log("Dosya yüklendi: ", fileId);
+    const fetchedFiles = await workspaceService.getWorkspaceFiles(workspace.id);
+    setFiles(fetchedFiles);
+  };
+
+  // Derived stats
+  const pendingTasksCount = tasks.filter(t => !t.isCompleted).length;
+  const completedTasksCount = tasks.filter(t => t.isCompleted).length;
+  const totalTasksCount = tasks.length;
 
   return (
     <motion.div 
@@ -82,7 +156,7 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
             {t('ws_title', { context: tone, defaultValue: 'Alanlarım' })}
           </button>
           
-          <button className={styles.detAcBtn}>
+          <button className={styles.detAcBtn} onClick={() => setIsAssignModalOpen(true)}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{width: 14, height: 14, flexShrink: 0}}>
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -156,15 +230,15 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
         {/* Bento stats */}
         <div className={styles.bento}>
           <div className={styles.bentoC}>
-            <div className={`${styles.bv} ${styles.bvAc}`}>{workspace.tasksCount ?? 0}</div>
+            <div className={`${styles.bv} ${styles.bvAc}`}>{totalTasksCount}</div>
             <div className={styles.bl}>{t('ws_stats_total', { context: tone, defaultValue: 'Toplam' })}</div>
           </div>
           <div className={styles.bentoC}>
-            <div className={`${styles.bv} ${styles.bvGn}`}>0</div>
+            <div className={`${styles.bv} ${styles.bvGn}`}>{completedTasksCount}</div>
             <div className={styles.bl}>{t('ws_stats_done', { context: tone, defaultValue: 'Tamam' })}</div>
           </div>
           <div className={styles.bentoC}>
-            <div className={`${styles.bv} ${styles.bvAm}`}>{workspace.tasksCount ?? 0}</div>
+            <div className={`${styles.bv} ${styles.bvAm}`}>{pendingTasksCount}</div>
             <div className={styles.bl}>{t('ws_stats_pending', { context: tone, defaultValue: 'Bekliyor' })}</div>
           </div>
         </div>
@@ -184,26 +258,26 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
           </div>
           
           <div className={`${styles.accBody} ${!isMembersOpen ? styles.closed : ''}`}>
-            {mockMembers.map((m) => {
-              const memStyle = getAvatarStyle(m.name, isNatureTheme);
+            {members.map((m) => {
+              const memStyle = getAvatarStyle(m.displayName || m.email, isNatureTheme);
               return (
                 <div key={m.id} className={styles.memItem}>
-                  <div className={styles.memAv} style={memStyle}>{m.initials}</div>
+                  <div className={styles.memAv} style={memStyle}>{(m.displayName || m.email || '?').charAt(0).toUpperCase()}</div>
                   <div className={styles.memInfo}>
-                    <div className={styles.memName}>{m.name}</div>
-                    <div className={styles.memSince}>{m.since}</div>
+                    <div className={styles.memName}>{m.displayName || m.email}</div>
+                    <div className={styles.memSince}>{new Date(m.joinedAt).toLocaleDateString()}</div>
                   </div>
-                  {m.role === 'owner' ? (
+                  {m.role === 'Admin' || m.role === 'Owner' ? (
                     <span className={`${styles.badge} ${styles.badgeOwn} ${styles.memBadge}`}>
                       {t('ws_role_owner', { context: tone, defaultValue: 'Yönetici' })}
                     </span>
-                  ) : m.isActive ? (
+                  ) : m.isActiveMember ? (
                     <span className={`${styles.badge} ${styles.badgeAct} ${styles.memBadge}`}>
                       {t('ws_badge_active', { context: tone, defaultValue: 'Aktif' })}
                     </span>
                   ) : (
                     <span className={`${styles.badge} ${styles.badgeMem} ${styles.memBadge}`}>
-                      {t('ws_role_member', { context: tone, defaultValue: 'Üye' })}
+                      {t('ws_role_member', { context: tone, defaultValue: 'Pasif' })}
                     </span>
                   )}
                 </div>
@@ -227,27 +301,32 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
           </div>
           
           <div className={`${styles.accBody} ${!isTasksOpen ? styles.closed : ''}`}>
-            {mockTasks.map((t) => (
+            {tasks.map((t) => {
+              const assignee = members.find(m => m.userId === t.userId);
+              const assigneeName = assignee ? (assignee.displayName || assignee.email) : 'Bilinmiyor';
+              const initial = assigneeName.charAt(0).toUpperCase();
+
+              return (
               <div key={t.id} className={styles.taskItem}>
-                <div className={`${styles.chk} ${t.done ? styles.chkDone : ''}`}>
-                  {t.done && (
+                <div className={`${styles.chk} ${t.isCompleted ? styles.chkDone : ''}`}>
+                  {t.isCompleted && (
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                       <polyline points="20 6 9 17 4 12"></polyline>
                     </svg>
                   )}
                 </div>
                 <div className={styles.taskBody}>
-                  <div className={`${styles.taskTtl} ${t.done ? styles.taskTtlDone : ''}`}>{t.title}</div>
+                  <div className={`${styles.taskTtl} ${t.isCompleted ? styles.taskTtlDone : ''}`}>{t.title}</div>
                   <div className={styles.taskTags}>
-                    <span className={`${styles.tag} ${t.tagClass}`}>{t.tagLabel}</span>
+                    <span className={`${styles.tag} ${t.isCompleted ? styles.tagSuccess : styles.tagPrimary}`}>{t.taskType || 'Görev'}</span>
                     <div className={styles.taskWho}>
-                      <div className={styles.whoAv} style={getAvatarStyle(t.assignee.name, isNatureTheme)}>{t.assignee.initial}</div>
-                      {t.assignee.name}
+                      <div className={styles.whoAv} style={getAvatarStyle(assigneeName, isNatureTheme)}>{initial}</div>
+                      {assigneeName}
                     </div>
                   </div>
                 </div>
               </div>
-            ))}
+            )})}
             <div className={styles.moreTasks}>
               {t('ws_more_tasks_count', { context: tone, count: 9, defaultValue: '+ 9 görev daha göster' })}
             </div>
@@ -293,28 +372,34 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
               </div>
             </div>
 
-            {mockFiles.map((f) => (
+            {files.map((f) => (
               <div key={f.id} className={styles.fileItem}>
-                <div className={styles.fileIconBox} style={{ color: f.badgeColor, background: f.badgeBg, borderColor: f.badgeColor }}>
-                  {f.ext}
+                <div className={styles.fileIconBox} style={getAvatarStyle(f.fileType, isNatureTheme)}>
+                  {f.fileType?.replace('.', '').substring(0,3).toUpperCase()}
                 </div>
                 <div className={styles.fileInfo}>
-                  <div className={styles.fileName}>{f.name}</div>
+                  <div className={styles.fileName}>{f.fileName}</div>
                   <div className={styles.fileMeta}>
-                    <span>{f.size}</span>
+                    <span>{(f.fileSizeInBytes / 1024 / 1024).toFixed(2)} MB</span>
                     <span>·</span>
-                    <span>{f.date}</span>
-                    <span>·</span>
-                    <span>{f.uploader}</span>
+                    <span>{new Date(f.createdAt).toLocaleDateString()}</span>
                   </div>
                 </div>
-                <button className={styles.fileActionBtn} title={t('download', { context: tone, defaultValue: 'İndir' })}>
+                <button className={styles.fileActionBtn} onClick={() => handleDownloadFile(f.fileUrl)} title={t('download', { context: tone, defaultValue: 'İndir' })}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                     <polyline points="7 10 12 15 17 10"></polyline>
                     <line x1="12" y1="15" x2="12" y2="3"></line>
                   </svg>
                 </button>
+                {(isOwner || f.uploaderId === (user?.id || user?.uid)) && (
+                  <button className={styles.fileActionBtn} style={{color: 'var(--red)'}} onClick={() => handleDeleteFile(f.id)} title={t('delete', { context: tone, defaultValue: 'Sil' })}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -327,10 +412,15 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
         onClose={() => setIsUploadModalOpen(false)} 
         workspaceId={workspace.id} 
         tone={tone}
-        onSuccess={(fileId) => {
-          console.log("Dosya yüklendi: ", fileId);
-          // [MOBILE_PORT_TODO]: Yükleme sonrası listeyi yenile.
-        }}
+        onSuccess={handleUploadSuccess}
+      />
+
+      <AssignTaskModal 
+        isOpen={isAssignModalOpen}
+        onClose={() => setIsAssignModalOpen(false)}
+        onAssign={handleAssignTask}
+        members={members}
+        tone={tone}
       />
     </motion.div>
   );

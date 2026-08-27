@@ -62,13 +62,29 @@ export const workspaceService = {
     return true;
   },
 
-  assignTask: async (workspaceId, taskData) => {
-    const response = await apiClient.post(`/workspace/${workspaceId}/tasks`, taskData);
+  getWorkspaceTasks: async (workspaceId) => {
+    const response = await apiClient.get(`/workspace/${workspaceId}/tasks`);
+    return response.data;
+  },
+
+  assignTask: async (workspaceId, taskData, idempotencyKey = null) => {
+    const headers = idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {};
+    const response = await apiClient.post(`/workspace/${workspaceId}/tasks`, taskData, { headers });
     return response.data;
   },
 
   deleteTask: async (workspaceId, batchId) => {
     const response = await apiClient.delete(`/workspace/${workspaceId}/tasks/${batchId}`);
+    return response.data;
+  },
+
+  getWorkspaceFiles: async (workspaceId) => {
+    const response = await apiClient.get(`/workspace/${workspaceId}/files`);
+    return response.data;
+  },
+
+  deleteWorkspaceFile: async (workspaceId, fileId) => {
+    const response = await apiClient.delete(`/workspace/${workspaceId}/files/${fileId}`);
     return response.data;
   },
 

@@ -57,6 +57,12 @@ namespace PlanlamaApp.Infrastructure.Repositories
             return await QueryFirstOrDefaultAsync<TaskItem>(sql, new { Id = id });
         }
 
+        public async Task<IEnumerable<TaskItem>> GetByAssignedWorkspaceIdAsync(int workspaceId)
+        {
+            var sql = @"SELECT * FROM TaskItems WHERE AssignedByWorkspaceId = @WorkspaceId ORDER BY CreatedAt DESC";
+            return await QueryAsync<TaskItem>(sql, new { WorkspaceId = workspaceId });
+        }
+
         public async Task<int> CreateAsync(TaskItem task, System.Data.IDbTransaction? transaction = null)
         {
             // INSERT: TenantId kolonu sorguda bulunmak zorunda (BaseRepository kural).

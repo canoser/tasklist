@@ -21,7 +21,7 @@ const AVATAR_COLORS = [
   { bg: 'rgba(99,102,241,0.12)', color: '#818CF8' }, // Indigo
 ];
 
-const WorkspaceScreen = ({ user, tone }) => {
+const WorkspaceScreen = ({ user, tone, openAuth }) => {
   const { t } = useTranslation('common');
   const { ownedWorkspaces, joinedWorkspaces, loading, createWorkspace, joinWorkspace, leaveWorkspace, deleteWorkspace } = useWorkspaces(user?.id || user?.uid);
   
@@ -91,6 +91,21 @@ const WorkspaceScreen = ({ user, tone }) => {
       signalrService.removeEventListener("MemberPendingAlert", handleMemberPending);
     };
   }, [tone, t]);
+
+  if (!user) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.empty} style={{ height: '100%', justifyContent: 'center' }}>
+          <span className={styles.emptyIco}>🔒</span>
+          <div className={styles.emptyTtl}>{t('ws_login_required_title', { context: tone, defaultValue: 'Giriş Yapmalısınız' })}</div>
+          <p className={styles.emptySub}>{t('ws_login_required_sub', { context: tone, defaultValue: 'Çalışma alanlarını görüntülemek ve yeni alan oluşturmak için lütfen giriş yapın.' })}</p>
+          <button className={styles.emptyBtn} onClick={openAuth}>
+            {t('login', { context: tone, defaultValue: 'Giriş Yap' })}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (activeWorkspace) {
     return (

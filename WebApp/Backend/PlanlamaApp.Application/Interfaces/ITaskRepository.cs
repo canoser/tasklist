@@ -23,6 +23,9 @@ namespace PlanlamaApp.Application.Interfaces
         /// <summary>Tek bir görevi Id ile getirir.</summary>
         Task<TaskItem?> GetByIdAsync(int id);
 
+        /// <summary>Çalışma alanından atanmış tüm görevleri getirir.</summary>
+        Task<IEnumerable<TaskItem>> GetByAssignedWorkspaceIdAsync(int workspaceId);
+
         /// <summary>Yeni görev oluşturur. TenantId doldurulmuş olmalıdır.</summary>
         Task<int> CreateAsync(TaskItem task, System.Data.IDbTransaction? transaction = null);
 
