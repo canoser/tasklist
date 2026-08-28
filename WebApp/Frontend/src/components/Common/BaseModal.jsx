@@ -63,7 +63,7 @@ const BaseModal = ({
               </div>
             )}
           </motion.div>
-        </div>
+        </motion.div>
       )}
     </AnimatePresence>
   );
