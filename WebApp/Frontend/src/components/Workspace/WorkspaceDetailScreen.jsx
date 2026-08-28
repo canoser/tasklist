@@ -28,14 +28,13 @@ const getAvatarStyle = (str, isNatureTheme) => {
   return { background: colorObj.bg, color: colorObj.color };
 };
 
-const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdateWorkspace, isNatureTheme, isOceanLight, isOceanDark }) => {
+const WorkspaceDetailScreen = ({ workspace, user, tone, navigation, onBack, onLeave, onUpdateWorkspace, isNatureTheme, isOceanLight, isOceanDark }) => {
   const { t } = useTranslation('common');
   const isOwner = workspace.ownerId === (user?.id || user?.uid);
   
   const [isMembersOpen, setIsMembersOpen] = useState(false);
   const [isTasksOpen, setIsTasksOpen] = useState(false);
   const [isFilesOpen, setIsFilesOpen] = useState(false);
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   // Fallback initial character for Workspace
   const initial = workspace.name ? workspace.name.charAt(0).toUpperCase() : '?';
@@ -65,8 +64,38 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
   const [tasks, setTasks] = useState([]);
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
+
+  useEffect(() => {
+    if (!navigation?.isModalOpen('ws_member_detail') && selectedMember) {
+      setSelectedMember(null);
+    }
+  }, [navigation?.isModalOpen('ws_member_detail'), selectedMember]);
+
+  const handleOpenMember = (m) => {
+    setSelectedMember(m);
+    navigation?.openModal('ws_member_detail');
+  };
+
+  const handleCloseMember = () => {
+    if (navigation?.isModalOpen('ws_member_detail')) {
+      navigation.closeModal('ws_member_detail');
+    } else {
+      setSelectedMember(null);
+    }
+  };
+
+  const handleCloseUpload = () => {
+    if (navigation?.isModalOpen('ws_upload_file')) {
+      navigation.closeModal('ws_upload_file');
+    }
+  };
+
+  const handleCloseAssign = () => {
+    if (navigation?.isModalOpen('ws_assign_task')) {
+      navigation.closeModal('ws_assign_task');
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -192,7 +221,7 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
             {t('ws_title', { context: tone, defaultValue: 'Alanlarım' })}
           </button>
           
-          <button className={styles.detAcBtn} onClick={() => setIsAssignModalOpen(true)}>
+          <button className={styles.detAcBtn} onClick={() => navigation?.openModal('ws_assign_task')}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{width: 14, height: 14, flexShrink: 0}}>
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -293,7 +322,7 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
               {pendingMembers.map((m) => {
                 const memStyle = getAvatarStyle(m.displayName || m.email, isNatureTheme);
                 return (
-                  <div key={m.id} className={styles.memItem} onClick={() => setSelectedMember(m)} title={t('ws_view_member_detail', { context: tone, defaultValue: 'Üye detayını gör' })}>
+                  <div key={m.id} className={styles.memItem} onClick={() => handleOpenMember(m)} title={t('ws_view_member_detail', { context: tone, defaultValue: 'Üye detayını gör' })}>
                     <div className={styles.memAv} style={memStyle}>{(m.displayName || m.email || '?').charAt(0).toUpperCase()}</div>
                     <div className={styles.memInfo}>
                       <div className={styles.memName}>{m.displayName || m.email || 'İsimsiz'}</div>
@@ -332,7 +361,7 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
             {members.map((m) => {
               const memStyle = getAvatarStyle(m.displayName || m.email, isNatureTheme);
               return (
-                <div key={m.id} className={styles.memItem} onClick={() => setSelectedMember(m)} title={t('ws_view_member_detail', { context: tone, defaultValue: 'Üye detayını gör' })}>
+                <div key={m.id} className={styles.memItem} onClick={() => handleOpenMember(m)} title={t('ws_view_member_detail', { context: tone, defaultValue: 'Üye detayını gör' })}>
                   <div className={styles.memAv} style={memStyle}>{(m.displayName || m.email || '?').charAt(0).toUpperCase()}</div>
                   <div className={styles.memInfo}>
                     <div className={styles.memName}>{m.displayName || m.email || 'İsimsiz'}</div>
@@ -419,7 +448,7 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
               <span className={styles.accCnt}>{files.length}</span>
             </div>
             <div className={styles.accRight}>
-              <button className={styles.accBtnAc} onClick={(e) => { e.stopPropagation(); setIsUploadModalOpen(true); }}>
+              <button className={styles.accBtnAc} onClick={(e) => { e.stopPropagation(); navigation?.openModal('ws_upload_file'); }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{width: 12, height: 12}}>
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                   <polyline points="17 8 12 3 7 8"></polyline>
@@ -491,24 +520,24 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
       </div>
 
       <FileUploadModal 
-        isOpen={isUploadModalOpen} 
-        onClose={() => setIsUploadModalOpen(false)} 
+        isOpen={!!navigation?.isModalOpen('ws_upload_file')} 
+        onClose={handleCloseUpload} 
         workspaceId={workspace.id} 
         tone={tone}
         onSuccess={handleUploadSuccess}
       />
 
       <AssignTaskModal 
-        isOpen={isAssignModalOpen}
-        onClose={() => setIsAssignModalOpen(false)}
+        isOpen={!!navigation?.isModalOpen('ws_assign_task')}
+        onClose={handleCloseAssign}
         onAssign={handleAssignTask}
         members={members}
         tone={tone}
       />
 
       <MemberDetailModal
-        isOpen={!!selectedMember}
-        onClose={() => setSelectedMember(null)}
+        isOpen={!!selectedMember && !!navigation?.isModalOpen('ws_member_detail')}
+        onClose={handleCloseMember}
         member={selectedMember}
         tasks={tasks}
         tone={tone}

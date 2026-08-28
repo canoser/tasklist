@@ -21,7 +21,7 @@ const AVATAR_COLORS = [
   { bg: 'rgba(99,102,241,0.12)', color: '#818CF8' }, // Indigo
 ];
 
-const WorkspaceScreen = ({ user, tone, openAuth }) => {
+const WorkspaceScreen = ({ user, tone, navigation, openAuth }) => {
   const { t } = useTranslation('common');
   const { ownedWorkspaces, joinedWorkspaces, loading, createWorkspace, joinWorkspace, leaveWorkspace, deleteWorkspace } = useWorkspaces(user?.id || user?.uid);
   
@@ -34,6 +34,33 @@ const WorkspaceScreen = ({ user, tone, openAuth }) => {
   const [isNatureTheme, setIsNatureTheme] = useState(false);
   const [isOceanLight, setIsOceanLight] = useState(false);
   const [isOceanDark, setIsOceanDark] = useState(false);
+
+  // Sync URL with activeWorkspace
+  useEffect(() => {
+    const wsId = navigation?.queryParams?.ws;
+    if (wsId) {
+      if (!activeWorkspace || activeWorkspace.id !== wsId) {
+        const w = ownedWorkspaces.find(x => x.id === wsId) || joinedWorkspaces.find(x => x.id === wsId);
+        if (w) setActiveWorkspace(w);
+      }
+    } else if (activeWorkspace) {
+      setActiveWorkspace(null);
+    }
+  }, [navigation?.queryParams?.ws, ownedWorkspaces, joinedWorkspaces, activeWorkspace]);
+
+  const handleWorkspaceClick = (w) => {
+    setActiveWorkspace(w);
+    if (navigation?.setParam) {
+      navigation.setParam('ws', w.id);
+    }
+  };
+
+  const handleBackToWorkspaces = () => {
+    if (navigation?.clearAllModalsAndParams) {
+      navigation.clearAllModalsAndParams();
+    }
+    setActiveWorkspace(null);
+  };
 
   // Parse join code and check theme
   useEffect(() => {
@@ -113,15 +140,16 @@ const WorkspaceScreen = ({ user, tone, openAuth }) => {
         workspace={activeWorkspace} 
         user={user} 
         tone={tone}
-        onBack={() => setActiveWorkspace(null)}
+        navigation={navigation}
+        onBack={handleBackToWorkspaces}
         onLeave={async (id) => {
           await leaveWorkspace(id);
-          setActiveWorkspace(null);
+          handleBackToWorkspaces();
         }}
         onUpdateWorkspace={async (updated) => {
           if (updated.isDeleting) {
             await deleteWorkspace(updated.id);
-            setActiveWorkspace(null);
+            handleBackToWorkspaces();
           } else {
             setActiveWorkspace(updated);
           }
@@ -147,7 +175,7 @@ const WorkspaceScreen = ({ user, tone, openAuth }) => {
       : { background: avatarColor.bg, color: avatarColor.color };
 
     return (
-      <motion.div key={w.id} className={styles.wc} whileTap={{ scale: 0.98 }} onClick={() => setActiveWorkspace(w)}>
+      <motion.div key={w.id} className={styles.wc} whileTap={{ scale: 0.98 }} onClick={() => handleWorkspaceClick(w)}>
         <div className={styles.av} style={avatarStyle}>{initial}</div>
         
         <div className={styles.wcInfo}>

@@ -10,6 +10,7 @@ import { useState, useEffect, useCallback } from 'react';
 export function useAppNavigation(defaultTab = 'home') {
   const [activeTab, setActiveTabState] = useState(defaultTab);
   const [activeModals, setActiveModals] = useState([]);
+  const [queryParams, setQueryParams] = useState({});
 
   // URL Hash senkronizasyonu
   useEffect(() => {
@@ -19,6 +20,7 @@ export function useAppNavigation(defaultTab = 'home') {
       if (!hash) {
         setActiveTabState('home');
         setActiveModals([]);
+        setQueryParams({});
         return;
       }
 
@@ -26,7 +28,16 @@ export function useAppNavigation(defaultTab = 'home') {
       const tab = params.get('tab') || 'home';
       const modalsStr = params.get('modals');
       
+      const newQueryParams = {};
+      for (const [key, value] of params.entries()) {
+        if (key !== 'tab' && key !== 'modals') {
+          newQueryParams[key] = value;
+        }
+      }
+
       setActiveTabState(tab);
+      setQueryParams(newQueryParams);
+      
       if (modalsStr) {
         setActiveModals(modalsStr.split(','));
       } else {
@@ -45,34 +56,41 @@ export function useAppNavigation(defaultTab = 'home') {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  const buildHash = (tab, modals) => {
+  const buildHash = (tab, modals, extraParams = {}) => {
     const params = new URLSearchParams();
     params.set('tab', tab);
-    if (modals.length > 0) {
+    if (modals && modals.length > 0) {
       params.set('modals', modals.join(','));
     }
+    Object.keys(extraParams).forEach(key => {
+      if (extraParams[key] !== null && extraParams[key] !== undefined) {
+        params.set(key, extraParams[key]);
+      }
+    });
     return `#${params.toString()}`;
   };
 
   const setTab = useCallback((tab) => {
     if (tab === activeTab) return;
-    const newHash = buildHash(tab, []);
+    // Tab değiştiğinde modal ve param'ları sıfırla
+    const newHash = buildHash(tab, [], {});
     window.history.pushState(null, '', newHash);
     setActiveTabState(tab);
     setActiveModals([]);
+    setQueryParams({});
   }, [activeTab]);
 
   const openModal = useCallback((modalId) => {
     if (activeModals.includes(modalId)) return;
     const newModals = [...activeModals, modalId];
-    const newHash = buildHash(activeTab, newModals);
+    const newHash = buildHash(activeTab, newModals, queryParams);
     window.history.pushState(null, '', newHash);
     setActiveModals(newModals);
-  }, [activeTab, activeModals]);
+  }, [activeTab, activeModals, queryParams]);
 
   const closeModal = useCallback((modalId) => {
     if (!activeModals.includes(modalId)) return;
-    // Geri tuşunu simüle et
+    // Sadece state olarak silmiyoruz, native geri tuşu simülasyonu yapıyoruz
     window.history.back();
   }, [activeModals]);
 
@@ -80,11 +98,37 @@ export function useAppNavigation(defaultTab = 'home') {
     return activeModals.includes(modalId);
   }, [activeModals]);
 
+  const setParam = useCallback((key, value) => {
+    const newParams = { ...queryParams, [key]: value };
+    const newHash = buildHash(activeTab, activeModals, newParams);
+    window.history.pushState(null, '', newHash);
+    setQueryParams(newParams);
+  }, [activeTab, activeModals, queryParams]);
+
+  const removeParam = useCallback((key) => {
+    const newParams = { ...queryParams };
+    delete newParams[key];
+    const newHash = buildHash(activeTab, activeModals, newParams);
+    window.history.pushState(null, '', newHash);
+    setQueryParams(newParams);
+  }, [activeTab, activeModals, queryParams]);
+  
+  const clearAllModalsAndParams = useCallback(() => {
+    const newHash = buildHash(activeTab, [], {});
+    window.history.pushState(null, '', newHash);
+    setActiveModals([]);
+    setQueryParams({});
+  }, [activeTab]);
+
   return {
     activeTab,
     setTab,
     openModal,
     closeModal,
-    isModalOpen
+    isModalOpen,
+    queryParams,
+    setParam,
+    removeParam,
+    clearAllModalsAndParams
   };
 }

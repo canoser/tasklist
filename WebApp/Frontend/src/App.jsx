@@ -50,7 +50,7 @@ export default function App() {
 
   const { t } = useTranslation('common');
   // Merkezi Navigasyon Yöneticisi (URL Hash tabanlı)
-  const { activeTab, setTab, openModal, closeModal, isModalOpen } = useAppNavigation('home');
+  const { activeTab, setTab, openModal, closeModal, isModalOpen, queryParams, setParam, removeParam, clearAllModalsAndParams } = useAppNavigation('home');
 
   // Mobil klavye açıldığında input'un arkada kalmasını engelleyen global hook
   useKeyboardScrollFix();
@@ -170,7 +170,7 @@ export default function App() {
             {activeTab === 'home' && <Dashboard user={user} guestName={guestName} tone={tone} />}
 
             {activeTab === 'search' && (
-              <WorkspaceScreen user={user} tone={tone} openAuth={() => openModal('auth')} />
+              <WorkspaceScreen user={user} tone={tone} navigation={{ activeTab, setTab, openModal, closeModal, isModalOpen, queryParams, setParam, removeParam, clearAllModalsAndParams }} openAuth={() => openModal('auth')} />
             )}
 
             {activeTab === 'calendar' && (
