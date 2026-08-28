@@ -48,7 +48,7 @@ namespace PlanlamaApp.Api.Controllers
                 return BadRequest("FileName and ContentType are required.");
 
             // 1. Uzantı Kontrolü (Whitelist)
-            var allowedExtensions = new[] { ".pdf", ".docx", ".xlsx", ".pptx", ".png", ".jpg", ".jpeg", ".zip", ".mp4" };
+            var allowedExtensions = new[] { ".pdf", ".docx", ".xlsx", ".pptx", ".png", ".jpg", ".jpeg", ".zip", ".mp4", ".txt" };
             var extension = Path.GetExtension(request.FileName).ToLowerInvariant();
             if (!allowedExtensions.Contains(extension))
                 return BadRequest($"Desteklenmeyen dosya türü: {extension}");
