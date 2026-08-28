@@ -34,6 +34,14 @@ const FileUploadModal = ({ isOpen, onClose, workspaceId, taskId, tone, onSuccess
         setError(t('err_file_too_large', { context: tone, defaultValue: 'Dosya boyutu 50MB sınırını aşıyor.' }));
         return;
       }
+      
+      const allowedExtensions = ['.pdf', '.docx', '.xlsx', '.pptx', '.png', '.jpg', '.jpeg', '.zip', '.rar', '.mp4', '.txt'];
+      const fileNameStr = selectedFile.name.toLowerCase();
+      const hasValidExt = allowedExtensions.some(ext => fileNameStr.endsWith(ext));
+      if (!hasValidExt) {
+        setError(t('err_unsupported_file', { context: tone, defaultValue: `Desteklenmeyen dosya türü. Lütfen izin verilen formatları kullanın.` }));
+        return;
+      }
       setFile(selectedFile);
       setError(null);
     }
@@ -45,6 +53,14 @@ const FileUploadModal = ({ isOpen, onClose, workspaceId, taskId, tone, onSuccess
       const droppedFile = e.dataTransfer.files[0];
       if (droppedFile.size > 50 * 1024 * 1024) {
         setError(t('err_file_too_large', { context: tone, defaultValue: 'Dosya boyutu 50MB sınırını aşıyor.' }));
+        return;
+      }
+
+      const allowedExtensions = ['.pdf', '.docx', '.xlsx', '.pptx', '.png', '.jpg', '.jpeg', '.zip', '.rar', '.mp4', '.txt'];
+      const fileNameStr = droppedFile.name.toLowerCase();
+      const hasValidExt = allowedExtensions.some(ext => fileNameStr.endsWith(ext));
+      if (!hasValidExt) {
+        setError(t('err_unsupported_file', { context: tone, defaultValue: `Desteklenmeyen dosya türü. Lütfen izin verilen formatları kullanın.` }));
         return;
       }
       setFile(droppedFile);
@@ -89,7 +105,21 @@ const FileUploadModal = ({ isOpen, onClose, workspaceId, taskId, tone, onSuccess
       onClose();
     } catch (err) {
       console.error('Yükleme hatası:', err);
-      setError(err.response?.data?.Message || err.message || t('err_upload_failed', { context: tone, defaultValue: 'Yükleme başarısız oldu.' }));
+      let errorMsg = t('err_upload_failed', { context: tone, defaultValue: 'Yükleme başarısız oldu.' });
+      
+      if (err.response?.data) {
+        if (typeof err.response.data === 'string') {
+          errorMsg = err.response.data;
+        } else if (err.response.data.Message) {
+          errorMsg = err.response.data.Message;
+        } else if (err.response.data.title) {
+          errorMsg = err.response.data.title;
+        }
+      } else if (err.message) {
+        errorMsg = err.message;
+      }
+      
+      setError(errorMsg);
     } finally {
       setUploading(false);
     }
