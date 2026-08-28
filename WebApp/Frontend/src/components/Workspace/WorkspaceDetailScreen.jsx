@@ -307,7 +307,7 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
           </div>
           
           <div className={`${styles.accBody} ${!isTasksOpen ? styles.closed : ''}`}>
-            {tasks.map((t) => {
+            {tasks.slice(0, 5).map((t) => {
               const assignee = members.find(m => m.userId === t.userId);
               const assigneeName = assignee ? (assignee.displayName || assignee.email || 'Bilinmiyor') : 'Bilinmiyor';
               const initial = assigneeName.charAt(0).toUpperCase();
@@ -333,9 +333,11 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
                 </div>
               </div>
             )})}
-            <div className={styles.moreTasks}>
-              {t('ws_more_tasks_count', { context: tone, count: 9, defaultValue: '+ 9 görev daha göster' })}
-            </div>
+            {tasks.length > 5 && (
+              <div className={styles.moreTasks}>
+                {t('ws_more_tasks_count', { context: tone, count: tasks.length - 5, defaultValue: `+ ${tasks.length - 5} görev daha göster` })}
+              </div>
+            )}
           </div>
         </div>
 
