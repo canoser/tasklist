@@ -26,7 +26,7 @@ import storage from './utils/storage';
 import GuestWelcomeModal from './components/Auth/GuestWelcomeModal';
 import { useKeyboardScrollFix } from './hooks/useKeyboardScrollFix';
 import { useOrientation } from './hooks/useOrientation';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import signalrService from './services/signalrService';
 
 // Çevrimdışı işlem kuyruğunu ve senkronizasyonu başlat
@@ -167,38 +167,52 @@ export default function App() {
 
           {/* ── Ana İçerik Alanı ────────────────────────────────────────────── */}
           <main className={styles.main}>
-            {activeTab === 'home' && <Dashboard user={user} guestName={guestName} tone={tone} />}
+            <AnimatePresence mode="wait">
+              {activeTab === 'home' && (
+                <motion.div key="home" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeOut', duration: 0.2 }}>
+                  <Dashboard user={user} guestName={guestName} tone={tone} />
+                </motion.div>
+              )}
 
-            {activeTab === 'search' && (
-              <WorkspaceScreen user={user} tone={tone} navigation={{ activeTab, setTab, openModal, closeModal, isModalOpen, queryParams, setParam, removeParam, clearAllModalsAndParams }} openAuth={() => openModal('auth')} />
-            )}
+              {activeTab === 'search' && (
+                <motion.div key="search" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeOut', duration: 0.2 }}>
+                  <WorkspaceScreen user={user} tone={tone} navigation={{ activeTab, setTab, openModal, closeModal, isModalOpen, queryParams, setParam, removeParam, clearAllModalsAndParams }} openAuth={() => openModal('auth')} />
+                </motion.div>
+              )}
 
-            {activeTab === 'calendar' && (
-              <CalendarScreen 
-                user={user} 
-                navigation={{ openModal, closeModal, isModalOpen }} 
-                tone={tone}
-              />
-            )}
+              {activeTab === 'calendar' && (
+                <motion.div key="calendar" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeOut', duration: 0.2 }}>
+                  <CalendarScreen 
+                    user={user} 
+                    navigation={{ openModal, closeModal, isModalOpen }} 
+                    tone={tone}
+                  />
+                </motion.div>
+              )}
 
-            {activeTab === 'profile' && (
-              <Profile 
-                user={user} 
-                guestName={guestName}
-                appearance={appearance} 
-                onToggleAppearance={toggleAppearance} 
-                theme={theme}
-                setTheme={setTheme}
-                tone={tone}
-                onToneChange={handleToneChange}
-                openAuth={() => openModal('auth')}
-                navigateToAdmin={() => setTab('admin')}
-              />
-            )}
+              {activeTab === 'profile' && (
+                <motion.div key="profile" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeOut', duration: 0.2 }}>
+                  <Profile 
+                    user={user} 
+                    guestName={guestName}
+                    appearance={appearance} 
+                    onToggleAppearance={toggleAppearance} 
+                    theme={theme}
+                    setTheme={setTheme}
+                    tone={tone}
+                    onToneChange={handleToneChange}
+                    openAuth={() => openModal('auth')}
+                    navigateToAdmin={() => setTab('admin')}
+                  />
+                </motion.div>
+              )}
 
-            {activeTab === 'admin' && user?.email === 'canoser@gmail.com' && (
-              <AdminPanel tone={tone} />
-            )}
+              {activeTab === 'admin' && user?.email === 'canoser@gmail.com' && (
+                <motion.div key="admin" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeOut', duration: 0.2 }}>
+                  <AdminPanel tone={tone} />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </main>
 
           <AuthModal isOpen={isModalOpen('auth')} onClose={() => closeModal('auth')} tone={tone} />
