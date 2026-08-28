@@ -11,8 +11,41 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="/pwa-192x192.png">
     <title>Planlama App</title>
+    <!-- Prevent FOUC (Flash of Unstyled Content) by setting theme classes synchronously -->
+    <script>
+      (function() {
+        try {
+          var style = localStorage.getItem('app_theme_style') || 'classic';
+          var mode = localStorage.getItem('app_theme_mode') || 'dark';
+          var font = localStorage.getItem('app_font_family') || 'inter';
+          var size = localStorage.getItem('app_font_size') || 'md';
+          
+          document.documentElement.setAttribute('data-theme', style);
+          document.documentElement.setAttribute('data-appearance', mode);
+          
+          // Apply initial classes so body gets correct background color from CSS
+          var themeClass = 'theme-' + style + '-' + mode + ' font-' + font + ' font-size-' + size;
+          document.documentElement.className = themeClass; // Fallback
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
+    <script>
+      // Body is available now, apply classes to body directly
+      (function() {
+        try {
+          var style = localStorage.getItem('app_theme_style') || 'classic';
+          var mode = localStorage.getItem('app_theme_mode') || 'dark';
+          var font = localStorage.getItem('app_font_family') || 'inter';
+          var size = localStorage.getItem('app_font_size') || 'md';
+          document.body.className = 'theme-' + style + '-' + mode + ' font-' + font + ' font-size-' + size;
+          
+          // Fallback static color if CSS hasn't loaded yet
+          document.body.style.backgroundColor = mode === 'dark' ? '#0b0f19' : '#f8fafc';
+        } catch (e) {}
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

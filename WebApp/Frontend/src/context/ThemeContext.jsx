@@ -14,8 +14,9 @@ export const ThemeProvider = ({ children }) => {
   useEffect(() => {
     const body = document.body;
     
-    // Clear old classes
+    // Clear old classes and any inline styles from index.html anti-flicker script
     body.className = '';
+    body.style.backgroundColor = '';
     
     // Add new classes
     body.classList.add(`theme-${themeStyle}-${themeMode}`);
