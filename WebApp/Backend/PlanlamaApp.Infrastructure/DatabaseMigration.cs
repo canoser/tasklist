@@ -287,6 +287,23 @@ namespace PlanlamaApp.Infrastructure
                     ON CONFLICT (Key) DO NOTHING
                 ", new { setting.Key, setting.Value, setting.Description, UpdatedAt = DateTime.UtcNow });
             }
+
+            // ── Data Cleanup ───────────────────────────────────────────────
+            // Delete legacy tasks that were accidentally assigned to workspace owners
+            try 
+            {
+                connection.Execute(@"
+                    DELETE FROM TaskItems 
+                    WHERE AssignedByWorkspaceId IS NOT NULL 
+                      AND UserId IN (
+                          SELECT OwnerId FROM Workspaces WHERE Workspaces.Id = TaskItems.AssignedByWorkspaceId
+                      )
+                ");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Cleanup migration failed (safe to ignore if columns don't exist yet): " + ex.Message);
+            }
         }
     }
 }
