@@ -136,6 +136,7 @@ const FileUploadModal = ({ isOpen, onClose, workspaceId, taskId, tone, onSuccess
             className={styles.hiddenInput} 
             ref={fileInputRef} 
             onChange={handleFileChange}
+            accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain,.zip,.rar"
             // [MOBILE_PORT_TODO]: Mobil uygulamalarda @capacitor/filesystem veya @capacitor/camera
             // kullanarak native dosya seçici entegre edilmelidir.
           />
