@@ -74,6 +74,11 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, navigation, onBack, onLe
     const singles = [];
     
     tasks.forEach(t => {
+      // Eskiden verilmiş görevlerde kurucuyu gizlemek için:
+      if (t.userId === workspace.ownerId) {
+        return;
+      }
+
       if (t.chainId) {
         const key = `${t.chainId}_${t.chainOrder || 0}`;
         if (!groups.has(key)) {
@@ -101,8 +106,12 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, navigation, onBack, onLe
       }
     });
     
-    return [...Array.from(groups.values()), ...singles].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  }, [tasks]);
+    // Eğer tüm atamalar kurucuya yapılmışsa ve geriye kimse kalmamışsa o grubu da göstermeyelim (length > 0 olanlar kalsın)
+    const validGroups = Array.from(groups.values()).filter(g => g._assignedUsers.length > 0);
+    const validSingles = singles.filter(s => s._assignedUsers.length > 0);
+
+    return [...validGroups, ...validSingles].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }, [tasks, workspace.ownerId]);
 
   useEffect(() => {
     if (!navigation?.isModalOpen('ws_member_detail') && selectedMember) {
