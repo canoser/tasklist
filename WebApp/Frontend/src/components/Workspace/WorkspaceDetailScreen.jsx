@@ -68,6 +68,13 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, navigation, onBack, onLe
   const [selectedMember, setSelectedMember] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
 
+  // O(1) Member Lookup Map for Performance
+  const membersMap = useMemo(() => {
+    const map = new Map();
+    members.forEach(m => map.set(m.userId, m));
+    return map;
+  }, [members]);
+
   // Group tasks by ChainId so assignments to multiple people appear as one task
   const groupedTasks = useMemo(() => {
     const groups = new Map();
@@ -477,7 +484,7 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, navigation, onBack, onLe
                     <div className={styles.taskTags}>
                       <div className={styles.taskWho} style={{ display: 'flex' }}>
                         {t._assignedUsers.slice(0, 3).map((uid, idx) => {
-                          const assignee = members.find(m => m.userId === uid);
+                          const assignee = membersMap.get(uid);
                           const aName = assignee ? (assignee.displayName || assignee.email || 'Bilinmiyor') : 'Bilinmiyor';
                           return (
                             <div key={uid} className={styles.whoAv} style={{...getAvatarStyle(aName, isNatureTheme), zIndex: 10 - idx, marginLeft: idx > 0 ? '-8px' : '0'}} title={aName}>
