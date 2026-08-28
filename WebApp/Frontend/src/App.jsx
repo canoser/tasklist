@@ -114,7 +114,7 @@ export default function App() {
           <motion.div
             initial={false}
             animate={{ y: isLandscape ? (isHeaderVisible ? 0 : '-100%') : 0 }}
-            transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
+            transition={{ type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.3 }}
             style={{ 
               position: isLandscape ? 'absolute' : 'relative', 
               width: '100%', 

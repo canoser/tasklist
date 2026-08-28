@@ -150,7 +150,7 @@ const TagSelect = ({
                 initial={{ scale: 0.6, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.6, opacity: 0 }}
-                transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+                transition={{ type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.2 }}
                 layout
               >
                 {name}

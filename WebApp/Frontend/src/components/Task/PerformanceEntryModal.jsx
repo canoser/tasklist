@@ -59,7 +59,7 @@ export default function PerformanceEntryModal({ task, isOpen, onClose, onSavePer
               initial={{ scale: 0.85, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.85, opacity: 0 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              transition={{ type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.25 }}
             >
               <div className={styles.header}>
                 <div>

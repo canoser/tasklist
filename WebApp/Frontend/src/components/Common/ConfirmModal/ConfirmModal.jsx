@@ -40,7 +40,7 @@ const ConfirmModal = ({ isOpen, title, description, actions = [], onCancel, tone
             initial={{ scale: 0.92, opacity: 0, y: 16 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.92, opacity: 0, y: 16 }}
-            transition={{ type: 'spring', damping: 26, stiffness: 220 }}
+            transition={{ type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.25, opacity: { duration: 0.15 } }}
             onClick={(e) => e.stopPropagation()}
             role="alertdialog"
             aria-modal="true"
