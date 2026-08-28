@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './WorkspaceDetailScreen.module.css';
 import { useTranslation } from 'react-i18next';
@@ -65,6 +65,43 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, navigation, onBack, onLe
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
+  const [expandedTaskId, setExpandedTaskId] = useState(null);
+
+  // Group tasks by ChainId so assignments to multiple people appear as one task
+  const groupedTasks = useMemo(() => {
+    const groups = new Map();
+    const singles = [];
+    
+    tasks.forEach(t => {
+      if (t.chainId) {
+        const key = `${t.chainId}_${t.chainOrder || 0}`;
+        if (!groups.has(key)) {
+          groups.set(key, { 
+            ...t, 
+            _assignedUsers: [t.userId], 
+            _allCompleted: t.isCompleted, 
+            _subTasks: [t] 
+          });
+        } else {
+          const g = groups.get(key);
+          if (!g._assignedUsers.includes(t.userId)) {
+            g._assignedUsers.push(t.userId);
+            g._subTasks.push(t);
+            if (!t.isCompleted) g._allCompleted = false;
+          }
+        }
+      } else {
+        singles.push({ 
+          ...t, 
+          _assignedUsers: [t.userId], 
+          _allCompleted: t.isCompleted, 
+          _subTasks: [t] 
+        });
+      }
+    });
+    
+    return [...Array.from(groups.values()), ...singles].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }, [tasks]);
 
   useEffect(() => {
     if (!navigation?.isModalOpen('ws_member_detail') && selectedMember) {
@@ -192,9 +229,9 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, navigation, onBack, onLe
   };
 
   // Derived stats
-  const pendingTasksCount = tasks.filter(t => !t.isCompleted).length;
-  const completedTasksCount = tasks.filter(t => t.isCompleted).length;
-  const totalTasksCount = tasks.length;
+  const pendingTasksCount = groupedTasks.filter(t => !t._allCompleted).length;
+  const completedTasksCount = groupedTasks.filter(t => t._allCompleted).length;
+  const totalTasksCount = groupedTasks.length;
 
   // Calculate Storage usage
   const totalStorageBytes = files.reduce((sum, f) => sum + (f.fileSizeInBytes || 0), 0);
@@ -391,7 +428,7 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, navigation, onBack, onLe
           <div className={styles.accHead} onClick={() => setIsTasksOpen(!isTasksOpen)}>
             <div className={styles.accHeadLeft}>
               <span className={styles.accTtl}>{t('ws_acc_tasks', { context: tone, defaultValue: 'Görevler' })}</span>
-              <span className={styles.accCnt}>{workspace.tasksCount ?? 0}</span>
+              <span className={styles.accCnt}>{totalTasksCount}</span>
             </div>
             <div className={styles.accRight}>
               <svg className={`${styles.accChevron} ${isTasksOpen ? styles.open : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -401,40 +438,79 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, navigation, onBack, onLe
           </div>
           
           <div className={`${styles.accBody} ${!isTasksOpen ? styles.closed : ''}`}>
-            {tasks.slice(0, 5).map((t) => {
-              const assignee = members.find(m => m.userId === t.userId);
-              const assigneeName = assignee ? (assignee.displayName || assignee.email || 'Bilinmiyor') : 'Bilinmiyor';
-              const initial = assigneeName.charAt(0).toUpperCase();
+            {groupedTasks.slice(0, expandedTaskId ? groupedTasks.length : 5).map((t) => {
+              const isExpanded = expandedTaskId === t.id;
 
               return (
-              <div key={t.id} className={styles.taskItem}>
-                <div className={`${styles.chk} ${t.isCompleted ? styles.chkDone : ''}`}>
-                  {t.isCompleted && (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                  )}
-                </div>
-                <div className={styles.taskBody}>
-                  <div className={`${styles.taskTtl} ${t.isCompleted ? styles.taskTtlDone : ''}`}>{t.title}</div>
-                  <div className={styles.taskTags}>
-                    <span className={`${styles.tag} ${t.isCompleted ? styles.tagSuccess : styles.tagPrimary}`}>{t.taskType || 'Görev'}</span>
-                    <div className={styles.taskWho}>
-                      <div className={styles.whoAv} style={getAvatarStyle(assigneeName, isNatureTheme)}>{initial}</div>
-                      {assigneeName}
+              <div key={t.id} className={styles.taskItem} onClick={() => setExpandedTaskId(isExpanded ? null : t.id)} style={{ cursor: 'pointer', flexDirection: 'column', alignItems: 'flex-start' }}>
+                <div style={{ display: 'flex', width: '100%', gap: '12px' }}>
+                  <div className={`${styles.chk} ${t._allCompleted ? styles.chkDone : ''}`}>
+                    {t._allCompleted && (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    )}
+                  </div>
+                  <div className={styles.taskBody} style={{ flex: 1 }}>
+                    <div className={`${styles.taskTtl} ${t._allCompleted ? styles.taskTtlDone : ''}`}>{t.title}</div>
+                    <div className={styles.taskTags}>
+                      <span className={`${styles.tag} ${t._allCompleted ? styles.tagSuccess : styles.tagPrimary}`}>{t.taskType || 'Görev'}</span>
+                      
+                      {!isExpanded && (
+                        <div className={styles.taskWho} style={{ display: 'flex' }}>
+                          {t._assignedUsers.slice(0, 3).map((uid, idx) => {
+                            const assignee = members.find(m => m.userId === uid);
+                            const aName = assignee ? (assignee.displayName || assignee.email || 'Bilinmiyor') : 'Bilinmiyor';
+                            return (
+                              <div key={uid} className={styles.whoAv} style={{...getAvatarStyle(aName, isNatureTheme), zIndex: 10 - idx, marginLeft: idx > 0 ? '-8px' : '0'}} title={aName}>
+                                {aName.charAt(0).toUpperCase()}
+                              </div>
+                            );
+                          })}
+                          {t._assignedUsers.length > 3 && (
+                            <div className={styles.whoAv} style={{...getAvatarStyle('more', isNatureTheme), zIndex: 7, marginLeft: '-8px'}} title="Tümü">
+                              +{t._assignedUsers.length - 3}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
+
+                {/* EXPANDED CONTENT */}
+                {isExpanded && (
+                  <div style={{ width: '100%', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ fontSize: '12px', color: 'var(--text-2)' }}>Kimlere verildi:</div>
+                    {t._assignedUsers.map(uid => {
+                      const assignee = members.find(m => m.userId === uid);
+                      const aName = assignee ? (assignee.displayName || assignee.email || 'Bilinmiyor') : 'Bilinmiyor';
+                      const subTask = t._subTasks.find(st => st.userId === uid);
+                      const isDone = subTask?.isCompleted;
+                      return (
+                        <div key={uid} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: '8px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div className={styles.whoAv} style={getAvatarStyle(aName, isNatureTheme)}>{aName.charAt(0).toUpperCase()}</div>
+                            <span style={{ fontSize: '13px', color: 'var(--text-1)' }}>{aName}</span>
+                          </div>
+                          <span style={{ fontSize: '12px', color: isDone ? 'var(--green)' : 'var(--text-3)' }}>
+                            {isDone ? 'Tamamladı' : 'Bekliyor'}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )})}
-            {tasks.length === 0 && (
+            {groupedTasks.length === 0 && (
               <div className={styles.emptyState}>
                 {t('ws_no_tasks_found', { context: tone, defaultValue: 'Henüz bir görev eklenmemiş.' })}
               </div>
             )}
-            {tasks.length > 5 && (
+            {groupedTasks.length > 5 && !expandedTaskId && (
               <div className={styles.moreTasks}>
-                {t('ws_more_tasks_count', { context: tone, count: tasks.length - 5, defaultValue: `+ ${tasks.length - 5} görev daha göster` })}
+                {t('ws_more_tasks_count', { context: tone, count: groupedTasks.length - 5, defaultValue: `+ ${groupedTasks.length - 5} görev daha göster` })}
               </div>
             )}
           </div>
