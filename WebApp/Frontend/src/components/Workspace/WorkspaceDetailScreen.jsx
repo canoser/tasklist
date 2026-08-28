@@ -137,6 +137,12 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
   const completedTasksCount = tasks.filter(t => t.isCompleted).length;
   const totalTasksCount = tasks.length;
 
+  // Calculate Storage usage
+  const totalStorageBytes = files.reduce((sum, f) => sum + (f.fileSizeInBytes || 0), 0);
+  const quotaBytes = 500 * 1024 * 1024; // 500MB default limit
+  const storageUsagePercent = Math.min(100, Math.round((totalStorageBytes / quotaBytes) * 100));
+  const storageUsageFormatted = (totalStorageBytes / (1024 * 1024)).toFixed(1);
+
   return (
     <motion.div 
       className={styles.container}
@@ -365,10 +371,10 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
                 <span>{t('ws_storage_used_label', { context: tone, defaultValue: 'Kullanılan Alan' })}</span>
               </div>
               <div className={styles.storageUsageRight}>
-                <div className={styles.storageUsageTrack}>
-                  <div className={styles.storageUsageFill} style={{ width: '30%' }}></div>
+                <div className={styles.storageUsageTrack} title={`${storageUsageFormatted} MB / 500 MB`}>
+                  <div className={styles.storageUsageFill} style={{ width: `${storageUsagePercent}%` }}></div>
                 </div>
-                <span className={styles.storageUsagePercent}>%30</span>
+                <span className={styles.storageUsagePercent}>%{storageUsagePercent}</span>
               </div>
             </div>
 
