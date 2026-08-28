@@ -13,17 +13,22 @@ const AssignTaskModal = ({ isOpen, onClose, onAssign, members = [], tone }) => {
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const assignableMembers = members.filter(m => m.role !== 'Owner');
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim() || !deadline) return;
 
     let targetUserIds = [];
+
     if (assignMode === 'specific') {
       if (selectedMembers.length === 0) {
         alert(t('ws_err_select_member', { context: tone, defaultValue: 'Lütfen en az bir üye seçin.' }));
         return;
       }
       targetUserIds = selectedMembers;
+    } else {
+      targetUserIds = assignableMembers.map(m => m.userId);
     }
 
     setLoading(true);
@@ -102,7 +107,7 @@ const AssignTaskModal = ({ isOpen, onClose, onAssign, members = [], tone }) => {
 
         {assignMode === 'specific' && (
           <div className={modalStyles.formGroup} style={{ maxHeight: '120px', overflowY: 'auto', border: '1px solid var(--border)', padding: '10px', borderRadius: 'var(--radius-sm, 8px)', background: 'var(--surface2)' }}>
-            {members.map(m => (
+            {assignableMembers.map(m => (
               <label key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', fontSize: '0.85rem', color: 'var(--text)', cursor: 'pointer' }}>
                 <input 
                   type="checkbox" 

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import FileUploadModal from './FileUploadModal';
 import AssignTaskModal from './AssignTaskModal';
 import MemberDetailModal from './MemberDetailModal';
+import TaskDetailModal from './TaskDetailModal';
 import { workspaceService } from '../../services/workspaceService';
 import { storageService } from '../../services/storageService';
 
@@ -65,7 +66,7 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, navigation, onBack, onLe
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
-  const [expandedTaskId, setExpandedTaskId] = useState(null);
+  const [selectedTask, setSelectedTask] = useState(null);
 
   // Group tasks by ChainId so assignments to multiple people appear as one task
   const groupedTasks = useMemo(() => {
@@ -131,6 +132,19 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, navigation, onBack, onLe
   const handleCloseAssign = () => {
     if (navigation?.isModalOpen('ws_assign_task')) {
       navigation.closeModal('ws_assign_task');
+    }
+  };
+
+  const handleOpenTask = (task) => {
+    setSelectedTask(task);
+    navigation?.openModal('ws_task_detail');
+  };
+
+  const handleCloseTask = () => {
+    if (navigation?.isModalOpen('ws_task_detail')) {
+      navigation.closeModal('ws_task_detail');
+    } else {
+      setSelectedTask(null);
     }
   };
 
@@ -438,11 +452,9 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, navigation, onBack, onLe
           </div>
           
           <div className={`${styles.accBody} ${!isTasksOpen ? styles.closed : ''}`}>
-            {groupedTasks.slice(0, expandedTaskId ? groupedTasks.length : 5).map((t) => {
-              const isExpanded = expandedTaskId === t.id;
-
+            {groupedTasks.slice(0, 5).map((t) => {
               return (
-              <div key={t.id} className={styles.taskItem} onClick={() => setExpandedTaskId(isExpanded ? null : t.id)} style={{ cursor: 'pointer', flexDirection: 'column', alignItems: 'flex-start' }}>
+              <div key={t.id} className={styles.taskItem} onClick={() => handleOpenTask(t)} style={{ cursor: 'pointer', flexDirection: 'column', alignItems: 'flex-start' }}>
                 <div style={{ display: 'flex', width: '100%', gap: '12px' }}>
                   <div className={`${styles.chk} ${t._allCompleted ? styles.chkDone : ''}`}>
                     {t._allCompleted && (
@@ -454,53 +466,25 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, navigation, onBack, onLe
                   <div className={styles.taskBody} style={{ flex: 1 }}>
                     <div className={`${styles.taskTtl} ${t._allCompleted ? styles.taskTtlDone : ''}`}>{t.title}</div>
                     <div className={styles.taskTags}>
-                      <span className={`${styles.tag} ${t._allCompleted ? styles.tagSuccess : styles.tagPrimary}`}>{t.taskType || 'Görev'}</span>
-                      
-                      {!isExpanded && (
-                        <div className={styles.taskWho} style={{ display: 'flex' }}>
-                          {t._assignedUsers.slice(0, 3).map((uid, idx) => {
-                            const assignee = members.find(m => m.userId === uid);
-                            const aName = assignee ? (assignee.displayName || assignee.email || 'Bilinmiyor') : 'Bilinmiyor';
-                            return (
-                              <div key={uid} className={styles.whoAv} style={{...getAvatarStyle(aName, isNatureTheme), zIndex: 10 - idx, marginLeft: idx > 0 ? '-8px' : '0'}} title={aName}>
-                                {aName.charAt(0).toUpperCase()}
-                              </div>
-                            );
-                          })}
-                          {t._assignedUsers.length > 3 && (
-                            <div className={styles.whoAv} style={{...getAvatarStyle('more', isNatureTheme), zIndex: 7, marginLeft: '-8px'}} title="Tümü">
-                              +{t._assignedUsers.length - 3}
+                      <div className={styles.taskWho} style={{ display: 'flex' }}>
+                        {t._assignedUsers.slice(0, 3).map((uid, idx) => {
+                          const assignee = members.find(m => m.userId === uid);
+                          const aName = assignee ? (assignee.displayName || assignee.email || 'Bilinmiyor') : 'Bilinmiyor';
+                          return (
+                            <div key={uid} className={styles.whoAv} style={{...getAvatarStyle(aName, isNatureTheme), zIndex: 10 - idx, marginLeft: idx > 0 ? '-8px' : '0'}} title={aName}>
+                              {aName.charAt(0).toUpperCase()}
                             </div>
-                          )}
-                        </div>
-                      )}
+                          );
+                        })}
+                        {t._assignedUsers.length > 3 && (
+                          <div className={styles.whoAv} style={{...getAvatarStyle('more', isNatureTheme), zIndex: 7, marginLeft: '-8px'}} title="Tümü">
+                            +{t._assignedUsers.length - 3}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-
-                {/* EXPANDED CONTENT */}
-                {isExpanded && (
-                  <div style={{ width: '100%', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <div style={{ fontSize: '12px', color: 'var(--text-2)' }}>Kimlere verildi:</div>
-                    {t._assignedUsers.map(uid => {
-                      const assignee = members.find(m => m.userId === uid);
-                      const aName = assignee ? (assignee.displayName || assignee.email || 'Bilinmiyor') : 'Bilinmiyor';
-                      const subTask = t._subTasks.find(st => st.userId === uid);
-                      const isDone = subTask?.isCompleted;
-                      return (
-                        <div key={uid} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: '8px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <div className={styles.whoAv} style={getAvatarStyle(aName, isNatureTheme)}>{aName.charAt(0).toUpperCase()}</div>
-                            <span style={{ fontSize: '13px', color: 'var(--text-1)' }}>{aName}</span>
-                          </div>
-                          <span style={{ fontSize: '12px', color: isDone ? 'var(--green)' : 'var(--text-3)' }}>
-                            {isDone ? 'Tamamladı' : 'Bekliyor'}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
               </div>
             )})}
             {groupedTasks.length === 0 && (
@@ -508,7 +492,7 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, navigation, onBack, onLe
                 {t('ws_no_tasks_found', { context: tone, defaultValue: 'Henüz bir görev eklenmemiş.' })}
               </div>
             )}
-            {groupedTasks.length > 5 && !expandedTaskId && (
+            {groupedTasks.length > 5 && (
               <div className={styles.moreTasks}>
                 {t('ws_more_tasks_count', { context: tone, count: groupedTasks.length - 5, defaultValue: `+ ${groupedTasks.length - 5} görev daha göster` })}
               </div>
@@ -616,6 +600,15 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, navigation, onBack, onLe
         onClose={handleCloseMember}
         member={selectedMember}
         tasks={tasks}
+        tone={tone}
+        isNatureTheme={isNatureTheme}
+      />
+
+      <TaskDetailModal
+        isOpen={!!selectedTask && !!navigation?.isModalOpen('ws_task_detail')}
+        onClose={handleCloseTask}
+        task={selectedTask}
+        members={members}
         tone={tone}
         isNatureTheme={isNatureTheme}
       />
