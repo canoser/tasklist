@@ -169,19 +169,19 @@ export default function App() {
           <main className={styles.main}>
             <AnimatePresence mode="wait">
               {activeTab === 'home' && (
-                <motion.div key="home" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeOut', duration: 0.2 }}>
+                <motion.div key="home" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, willChange: 'opacity' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ type: 'tween', ease: 'easeOut', duration: 0.15 }}>
                   <Dashboard user={user} guestName={guestName} tone={tone} />
                 </motion.div>
               )}
 
               {activeTab === 'search' && (
-                <motion.div key="search" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeOut', duration: 0.2 }}>
+                <motion.div key="search" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, willChange: 'opacity' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ type: 'tween', ease: 'easeOut', duration: 0.15 }}>
                   <WorkspaceScreen user={user} tone={tone} navigation={{ activeTab, setTab, openModal, closeModal, isModalOpen, queryParams, setParam, removeParam, clearAllModalsAndParams }} openAuth={() => openModal('auth')} />
                 </motion.div>
               )}
 
               {activeTab === 'calendar' && (
-                <motion.div key="calendar" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeOut', duration: 0.2 }}>
+                <motion.div key="calendar" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, willChange: 'opacity' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ type: 'tween', ease: 'easeOut', duration: 0.15 }}>
                   <CalendarScreen 
                     user={user} 
                     navigation={{ openModal, closeModal, isModalOpen }} 
@@ -191,7 +191,7 @@ export default function App() {
               )}
 
               {activeTab === 'profile' && (
-                <motion.div key="profile" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeOut', duration: 0.2 }}>
+                <motion.div key="profile" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, willChange: 'opacity' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ type: 'tween', ease: 'easeOut', duration: 0.15 }}>
                   <Profile 
                     user={user} 
                     guestName={guestName}
@@ -208,7 +208,7 @@ export default function App() {
               )}
 
               {activeTab === 'admin' && user?.email === 'canoser@gmail.com' && (
-                <motion.div key="admin" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ type: 'tween', ease: 'easeOut', duration: 0.2 }}>
+                <motion.div key="admin" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, willChange: 'opacity' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ type: 'tween', ease: 'easeOut', duration: 0.15 }}>
                   <AdminPanel tone={tone} />
                 </motion.div>
               )}
