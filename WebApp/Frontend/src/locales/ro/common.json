@@ -277,5 +277,17 @@
   "ws_search_placeholder_buddy": "Ce cauți...",
   "timeline_empty": "Nicio sarcină pentru astăzi. Minunat! 🎉",
   "timeline_empty_semi": "Nu ai nicio sarcină pentru astăzi. Minunat! 🎉",
-  "timeline_empty_buddy": "Nicio sarcină azi frate, relaxează-te! 🎉"
+  "timeline_empty_buddy": "Nicio sarcină azi frate, relaxează-te! 🎉",
+  "ws_member_detail_title": "Detalii membru",
+  "ws_member_detail_title_buddy": "Info coleg",
+  "ws_lbl_joined_at": "Data înscrierii",
+  "ws_lbl_joined_at_buddy": "S-a alăturat la",
+  "ws_lbl_role": "Rol / Permisiune",
+  "ws_lbl_role_buddy": "Rang",
+  "ws_member_tasks_title": "Starea sarcinilor",
+  "ws_member_tasks_title_buddy": "Sarcini",
+  "ws_member_no_tasks": "Nu există sarcini atribuite acestui membru.",
+  "ws_member_no_tasks_buddy": "Nicio sarcină pentru colegul ăsta încă.",
+  "ws_view_member_detail": "Vezi detaliile membrului",
+  "ws_view_member_detail_buddy": "Vezi detalii"
 }

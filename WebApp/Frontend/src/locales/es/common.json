@@ -270,5 +270,17 @@
   "ws_search_placeholder_buddy": "¿Qué buscas?...",
   "timeline_empty": "No hay tareas para hoy. ¡Genial! 🎉",
   "timeline_empty_semi": "No tienes tareas para hoy. ¡Genial! 🎉",
-  "timeline_empty_buddy": "¡Sin tareas hoy amigo, a descansar! 🎉"
+  "timeline_empty_buddy": "¡Sin tareas hoy amigo, a descansar! 🎉",
+  "ws_member_detail_title": "Detalle del Miembro",
+  "ws_member_detail_title_buddy": "Info del Compañero",
+  "ws_lbl_joined_at": "Fecha de Unión",
+  "ws_lbl_joined_at_buddy": "Se Unió",
+  "ws_lbl_role": "Rol / Permiso",
+  "ws_lbl_role_buddy": "Rango",
+  "ws_member_tasks_title": "Estado de Tareas",
+  "ws_member_tasks_title_buddy": "Tareas",
+  "ws_member_no_tasks": "No hay tareas asignadas a este miembro.",
+  "ws_member_no_tasks_buddy": "Sin tareas para este compa todavía.",
+  "ws_view_member_detail": "Ver detalle del miembro",
+  "ws_view_member_detail_buddy": "Ver detalles"
 }

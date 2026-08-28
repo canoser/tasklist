@@ -271,5 +271,17 @@
   "ws_search_placeholder_buddy": "Tu cherches quoi...",
   "timeline_empty": "Aucune tâche pour aujourd'hui. Super ! 🎉",
   "timeline_empty_semi": "Tu n'as aucune tâche aujourd'hui. Super ! 🎉",
-  "timeline_empty_buddy": "Pas de corvées aujourd'hui mon pote, détends-toi ! 🎉"
+  "timeline_empty_buddy": "Pas de corvées aujourd'hui mon pote, détends-toi ! 🎉",
+  "ws_member_detail_title": "Détails du membre",
+  "ws_member_detail_title_buddy": "Info coéquipier",
+  "ws_lbl_joined_at": "Rejoint le",
+  "ws_lbl_joined_at_buddy": "Arrivé le",
+  "ws_lbl_role": "Rôle / Autorisation",
+  "ws_lbl_role_buddy": "Rang",
+  "ws_member_tasks_title": "État des tâches",
+  "ws_member_tasks_title_buddy": "Tâches du pote",
+  "ws_member_no_tasks": "Aucune tâche assignée à ce membre.",
+  "ws_member_no_tasks_buddy": "Pas encore de boulot pour ce pote.",
+  "ws_view_member_detail": "Voir les détails du membre",
+  "ws_view_member_detail_buddy": "Voir les détails"
 }

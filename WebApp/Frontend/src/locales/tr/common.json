@@ -275,5 +275,17 @@
   "ws_search_placeholder_buddy": "Ne aramıştın...",
   "timeline_empty": "Bugün için görev yok. Harika! 🎉",
   "timeline_empty_semi": "Bugün hiç görevin yok. Harika! 🎉",
-  "timeline_empty_buddy": "Bugün sıfır görev kanka, keyfine bak! 🎉"
+  "timeline_empty_buddy": "Bugün sıfır görev kanka, keyfine bak! 🎉",
+  "ws_member_detail_title": "Üye Detayı",
+  "ws_member_detail_title_buddy": "Ekip Arkadaşın",
+  "ws_lbl_joined_at": "Katılma Zamanı",
+  "ws_lbl_joined_at_buddy": "Katıldığı An",
+  "ws_lbl_role": "Rol / Yetki",
+  "ws_lbl_role_buddy": "Rütbe",
+  "ws_member_tasks_title": "Görev Durumu",
+  "ws_member_tasks_title_buddy": "İş Güç Durumu",
+  "ws_member_no_tasks": "Bu üyeye atanmış herhangi bir görev bulunmuyor.",
+  "ws_member_no_tasks_buddy": "Bu arkadaşa henüz hiç iş kitlememişsin kanka.",
+  "ws_view_member_detail": "Üye detayını gör",
+  "ws_view_member_detail_buddy": "Detaylara bak"
 }

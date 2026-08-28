@@ -3,17 +3,23 @@ import { useTranslation } from 'react-i18next';
 import BaseModal from '../Common/BaseModal';
 import modalStyles from '../Common/BaseModal.module.css';
 
-const JoinWorkspaceModal = ({ isOpen, onClose, onJoin, tone, initialCode = '' }) => {
+const JoinWorkspaceModal = ({ isOpen, onClose, onJoin, tone, initialCode = '', user = null }) => {
   const { t } = useTranslation('common');
   const [code, setCode] = useState(initialCode);
-  const [displayName, setDisplayName] = useState('');
+  const defaultName = user?.displayName || user?.name || (user?.email ? user.email.split('@')[0] : '');
+  const [displayName, setDisplayName] = useState(defaultName);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (isOpen && initialCode) {
-      setCode(initialCode);
+    if (isOpen) {
+      if (initialCode) {
+        setCode(initialCode);
+      }
+      if (!displayName && defaultName) {
+        setDisplayName(defaultName);
+      }
     }
-  }, [isOpen, initialCode]);
+  }, [isOpen, initialCode, defaultName]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

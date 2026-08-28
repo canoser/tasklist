@@ -270,5 +270,17 @@
   "ws_search_placeholder_buddy": "Was suchste...",
   "timeline_empty": "Keine Aufgaben für heute. Großartig! 🎉",
   "timeline_empty_semi": "Du hast heute keine Aufgaben. Großartig! 🎉",
-  "timeline_empty_buddy": "Heute keine Aufgaben Kumpel, chill mal! 🎉"
+  "timeline_empty_buddy": "Heute keine Aufgaben Kumpel, chill mal! 🎉",
+  "ws_member_detail_title": "Mitgliederdetails",
+  "ws_member_detail_title_buddy": "Team-Kumpel Info",
+  "ws_lbl_joined_at": "Beigetreten am",
+  "ws_lbl_joined_at_buddy": "Dabei seit",
+  "ws_lbl_role": "Rolle / Berechtigung",
+  "ws_lbl_role_buddy": "Rang",
+  "ws_member_tasks_title": "Aufgabenstatus",
+  "ws_member_tasks_title_buddy": "Aufgabenlage",
+  "ws_member_no_tasks": "Diesem Mitglied sind keine Aufgaben zugewiesen.",
+  "ws_member_no_tasks_buddy": "Noch keine Aufgaben für diesen Kumpel.",
+  "ws_view_member_detail": "Mitgliederdetails ansehen",
+  "ws_view_member_detail_buddy": "Details ansehen"
 }

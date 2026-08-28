@@ -438,8 +438,19 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 11px 0;
+  padding: 10px 8px;
+  border-radius: 8px;
   border-bottom: 1px solid var(--b1, var(--border));
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.memItem:hover {
+  background: var(--s2, rgba(255, 255, 255, 0.04));
+}
+
+.memItem:active {
+  transform: scale(0.99);
 }
 
 .memItem:last-child {

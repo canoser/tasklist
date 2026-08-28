@@ -4,6 +4,7 @@ import styles from './WorkspaceDetailScreen.module.css';
 import { useTranslation } from 'react-i18next';
 import FileUploadModal from './FileUploadModal';
 import AssignTaskModal from './AssignTaskModal';
+import MemberDetailModal from './MemberDetailModal';
 import { workspaceService } from '../../services/workspaceService';
 import { storageService } from '../../services/storageService';
 
@@ -65,6 +66,7 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -291,20 +293,17 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
               {pendingMembers.map((m) => {
                 const memStyle = getAvatarStyle(m.displayName || m.email, isNatureTheme);
                 return (
-                  <div key={m.id} className={styles.memItem}>
+                  <div key={m.id} className={styles.memItem} onClick={() => setSelectedMember(m)} title={t('ws_view_member_detail', { context: tone, defaultValue: 'Üye detayını gör' })}>
                     <div className={styles.memAv} style={memStyle}>{(m.displayName || m.email || '?').charAt(0).toUpperCase()}</div>
                     <div className={styles.memInfo}>
-                      <div className={styles.memName}>
-                        {m.displayName || m.email}
-                        {m.displayName && m.email && m.displayName !== m.email && <span style={{opacity: 0.7, fontSize: '0.85em', marginLeft: '6px'}}>({m.email})</span>}
-                      </div>
+                      <div className={styles.memName}>{m.displayName || m.email || 'İsimsiz'}</div>
                       <div className={styles.memSince}>{new Date(m.joinedAt).toLocaleDateString()}</div>
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                      <button onClick={() => handleApproveMember(m.id)} style={{ padding: '6px 12px', background: 'var(--green)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
+                      <button onClick={(e) => { e.stopPropagation(); handleApproveMember(m.id); }} style={{ padding: '6px 12px', background: 'var(--green)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
                         Onayla
                       </button>
-                      <button onClick={() => handleRejectMember(m.id)} style={{ padding: '6px 12px', background: 'var(--red)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
+                      <button onClick={(e) => { e.stopPropagation(); handleRejectMember(m.id); }} style={{ padding: '6px 12px', background: 'var(--red)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
                         Reddet
                       </button>
                     </div>
@@ -333,13 +332,10 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
             {members.map((m) => {
               const memStyle = getAvatarStyle(m.displayName || m.email, isNatureTheme);
               return (
-                <div key={m.id} className={styles.memItem}>
+                <div key={m.id} className={styles.memItem} onClick={() => setSelectedMember(m)} title={t('ws_view_member_detail', { context: tone, defaultValue: 'Üye detayını gör' })}>
                   <div className={styles.memAv} style={memStyle}>{(m.displayName || m.email || '?').charAt(0).toUpperCase()}</div>
                   <div className={styles.memInfo}>
-                    <div className={styles.memName}>
-                      {m.displayName || m.email}
-                      {m.displayName && m.email && m.displayName !== m.email && <span style={{opacity: 0.7, fontSize: '0.85em', marginLeft: '6px'}}>({m.email})</span>}
-                    </div>
+                    <div className={styles.memName}>{m.displayName || m.email || 'İsimsiz'}</div>
                     <div className={styles.memSince}>{new Date(m.joinedAt).toLocaleDateString()}</div>
                   </div>
                   {m.role === 'Admin' || m.role === 'Owner' ? (
@@ -508,6 +504,15 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
         onAssign={handleAssignTask}
         members={members}
         tone={tone}
+      />
+
+      <MemberDetailModal
+        isOpen={!!selectedMember}
+        onClose={() => setSelectedMember(null)}
+        member={selectedMember}
+        tasks={tasks}
+        tone={tone}
+        isNatureTheme={isNatureTheme}
       />
     </motion.div>
   );

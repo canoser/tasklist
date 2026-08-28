@@ -331,6 +331,7 @@ const WorkspaceScreen = ({ user, tone, openAuth }) => {
         onJoin={joinWorkspace}
         tone={tone}
         initialCode={initialJoinCode}
+        user={user}
       />
 
       <WorkspaceGuideModal 

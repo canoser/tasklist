@@ -270,5 +270,17 @@
   "ws_search_placeholder_buddy": "What ya looking for...",
   "timeline_empty": "No tasks for today. Awesome! 🎉",
   "timeline_empty_semi": "You have no tasks for today. Awesome! 🎉",
-  "timeline_empty_buddy": "No tasks today mate, chill out! 🎉"
+  "timeline_empty_buddy": "No tasks today mate, chill out! 🎉",
+  "ws_member_detail_title": "Member Details",
+  "ws_member_detail_title_buddy": "Teammate Info",
+  "ws_lbl_joined_at": "Joined At",
+  "ws_lbl_joined_at_buddy": "Joined In",
+  "ws_lbl_role": "Role / Permission",
+  "ws_lbl_role_buddy": "Rank",
+  "ws_member_tasks_title": "Tasks Status",
+  "ws_member_tasks_title_buddy": "Task Load",
+  "ws_member_no_tasks": "No tasks assigned to this member.",
+  "ws_member_no_tasks_buddy": "No tasks assigned to this pal yet.",
+  "ws_view_member_detail": "View member details",
+  "ws_view_member_detail_buddy": "Check details"
 }
