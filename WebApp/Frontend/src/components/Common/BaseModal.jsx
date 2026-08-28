@@ -31,7 +31,7 @@ const BaseModal = ({
             initial={{ scale: 0.95, opacity: 0, y: 10 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 10 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 350, opacity: { duration: 0.15 } }}
+            transition={{ type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.25 }}
             onClick={(e) => e.stopPropagation()}
           >
             {title && (
