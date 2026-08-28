@@ -333,6 +333,11 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
                 </div>
               </div>
             )})}
+            {tasks.length === 0 && (
+              <div className={styles.emptyState}>
+                {t('ws_no_tasks_found', { context: tone, defaultValue: 'Henüz bir görev eklenmemiş.' })}
+              </div>
+            )}
             {tasks.length > 5 && (
               <div className={styles.moreTasks}>
                 {t('ws_more_tasks_count', { context: tone, count: tasks.length - 5, defaultValue: `+ ${tasks.length - 5} görev daha göster` })}
@@ -410,6 +415,11 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
                 )}
               </div>
             ))}
+            {files.length === 0 && (
+              <div className={styles.emptyState}>
+                {t('ws_no_files_found', { context: tone, defaultValue: 'Bu alanda henüz dosya bulunmuyor.' })}
+              </div>
+            )}
           </div>
         </div>
 

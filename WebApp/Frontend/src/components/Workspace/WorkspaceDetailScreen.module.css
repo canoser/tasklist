@@ -746,3 +746,6 @@
   color: var(--tx, var(--text));
   letter-spacing: 0.02em;
 }
+
+.emptyState { padding: 16px; text-align: center; color: var(--text-2, #888); font-size: 0.9rem; font-style: italic; background: rgba(0,0,0,0.02); border-radius: 8px; margin-top: 8px; }
+
