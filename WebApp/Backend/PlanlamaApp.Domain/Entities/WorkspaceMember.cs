@@ -12,6 +12,7 @@ namespace PlanlamaApp.Domain.Entities
         // Kullanıcının gerçek adından bağımsızdır.
         public string? DisplayName { get; set; }
         public string Role { get; set; } = "Member"; // Member, Observer vs.
+        public string? Email { get; set; } // Derived from Users table
         public string? ObserverLinkedUserId { get; set; }
         public bool IsActiveMember { get; set; } = true;
         public string ApprovalStatus { get; set; } = "Pending";

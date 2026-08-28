@@ -34,9 +34,10 @@ namespace PlanlamaApp.Infrastructure.Repositories
                        (SELECT COUNT(*) FROM TaskItems t WHERE t.AssignedByWorkspaceId = w.Id) as TasksCount
                 FROM Workspaces w
                 INNER JOIN WorkspaceMembers wm ON wm.WorkspaceId = w.Id
-                WHERE wm.UserId = @UserId AND w.IsActive = true AND wm.IsActiveMember = true AND wm.ApprovalStatus = 'Approved' AND w.TenantId = @TenantId
+                WHERE wm.UserId = @UserId AND w.IsActive = true AND wm.IsActiveMember = true AND wm.ApprovalStatus = 'Approved'
+                -- Bypassing TenantId here to allow viewing cross-tenant joined workspaces
             ";
-            return await QueryAsync<Workspace>(sql, new { UserId = userId, TenantId = _tenantId });
+            return await _dbConnection.QueryAsync<Workspace>(sql, new { UserId = userId });
         }
 
         public async Task<Workspace?> GetByIdAsync(int id)
@@ -127,13 +128,19 @@ namespace PlanlamaApp.Infrastructure.Repositories
         public async Task<IEnumerable<WorkspaceMember>> GetMembersAsync(int workspaceId)
         {
             // WorkspaceId zaten spesifik bir sınırdır, TenantId kısıtlamasını bypass ediyoruz
-            var sql = "SELECT * FROM WorkspaceMembers WHERE WorkspaceId = @WorkspaceId AND IsActiveMember = true AND ApprovalStatus = 'Approved'";
+            var sql = @"SELECT wm.*, u.Email 
+                        FROM WorkspaceMembers wm 
+                        LEFT JOIN Users u ON u.Id = wm.UserId 
+                        WHERE wm.WorkspaceId = @WorkspaceId AND wm.IsActiveMember = true AND wm.ApprovalStatus = 'Approved'";
             return await _dbConnection.QueryAsync<WorkspaceMember>(sql, new { WorkspaceId = workspaceId });
         }
 
         public async Task<IEnumerable<WorkspaceMember>> GetPendingMembersAsync(int workspaceId)
         {
-            var sql = "SELECT * FROM WorkspaceMembers WHERE WorkspaceId = @WorkspaceId AND IsActiveMember = false AND ApprovalStatus = 'Pending'";
+            var sql = @"SELECT wm.*, u.Email 
+                        FROM WorkspaceMembers wm 
+                        LEFT JOIN Users u ON u.Id = wm.UserId 
+                        WHERE wm.WorkspaceId = @WorkspaceId AND wm.IsActiveMember = false AND wm.ApprovalStatus = 'Pending'";
             return await _dbConnection.QueryAsync<WorkspaceMember>(sql, new { WorkspaceId = workspaceId });
         }
 

@@ -214,7 +214,7 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
                   <path d="M23 21v-2a4 4 0 00-3-3.87"></path>
                   <path d="M16 3.13a4 4 0 010 7.75"></path>
                 </svg>
-                {workspace.memberCount ?? 0} {t('ws_members_label', { context: tone, defaultValue: 'üye' })} · {t('ws_type_team', { context: tone, defaultValue: 'Ekip' })}
+                {members.length > 0 ? members.length : (workspace.memberCount ?? 0)} {t('ws_members_label', { context: tone, defaultValue: 'üye' })} · {t('ws_type_team', { context: tone, defaultValue: 'Ekip' })}
                 <span className={styles.heroLive}>● {t('ws_badge_active', { context: tone, defaultValue: 'Aktif' })}</span>
               </div>
             </div>
@@ -294,7 +294,10 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
                   <div key={m.id} className={styles.memItem}>
                     <div className={styles.memAv} style={memStyle}>{(m.displayName || m.email || '?').charAt(0).toUpperCase()}</div>
                     <div className={styles.memInfo}>
-                      <div className={styles.memName}>{m.displayName || m.email}</div>
+                      <div className={styles.memName}>
+                        {m.displayName || m.email}
+                        {m.displayName && m.email && m.displayName !== m.email && <span style={{opacity: 0.7, fontSize: '0.85em', marginLeft: '6px'}}>({m.email})</span>}
+                      </div>
                       <div className={styles.memSince}>{new Date(m.joinedAt).toLocaleDateString()}</div>
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
@@ -317,7 +320,7 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
           <div className={styles.accHead} onClick={() => setIsMembersOpen(!isMembersOpen)}>
             <div className={styles.accHeadLeft}>
               <span className={styles.accTtl}>{t('ws_acc_members', { context: tone, defaultValue: 'Üyeler' })}</span>
-              <span className={styles.accCnt}>{workspace.memberCount ?? 0}</span>
+              <span className={styles.accCnt}>{members.length > 0 ? members.length : (workspace.memberCount ?? 0)}</span>
             </div>
             <div className={styles.accRight}>
               <svg className={`${styles.accChevron} ${isMembersOpen ? styles.open : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -333,7 +336,10 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
                 <div key={m.id} className={styles.memItem}>
                   <div className={styles.memAv} style={memStyle}>{(m.displayName || m.email || '?').charAt(0).toUpperCase()}</div>
                   <div className={styles.memInfo}>
-                    <div className={styles.memName}>{m.displayName || m.email}</div>
+                    <div className={styles.memName}>
+                      {m.displayName || m.email}
+                      {m.displayName && m.email && m.displayName !== m.email && <span style={{opacity: 0.7, fontSize: '0.85em', marginLeft: '6px'}}>({m.email})</span>}
+                    </div>
                     <div className={styles.memSince}>{new Date(m.joinedAt).toLocaleDateString()}</div>
                   </div>
                   {m.role === 'Admin' || m.role === 'Owner' ? (
