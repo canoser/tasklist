@@ -10,7 +10,7 @@ export const storageService = {
    * Yükleme URL'si alır (Pending kaydı oluşur)
    */
   getUploadUrl: async (workspaceId, fileName, contentType, fileSizeInBytes, description = '') => {
-    const response = await apiClient.post('/api/storage/upload-url', {
+    const response = await apiClient.post('/storage/upload-url', {
       workspaceId,
       fileName,
       contentType,
@@ -55,7 +55,7 @@ export const storageService = {
    */
   confirmUpload: async (fileId, idempotencyKey) => {
     const response = await apiClient.post(
-      '/api/storage/confirm-upload',
+      '/storage/confirm-upload',
       { fileId },
       {
         headers: {
@@ -70,7 +70,7 @@ export const storageService = {
    * İndirme URL'si alır (Sadece izinli kullanıcılar için)
    */
   getDownloadUrl: async (objectKey) => {
-    const response = await apiClient.get(`/api/storage/download-url?objectKey=${encodeURIComponent(objectKey)}`);
+    const response = await apiClient.get(`/storage/download-url?objectKey=${encodeURIComponent(objectKey)}`);
     return response.data; // { downloadUrl, expiresInMinutes }
   }
 };
