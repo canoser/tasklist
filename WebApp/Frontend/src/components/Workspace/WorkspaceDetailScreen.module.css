@@ -419,14 +419,16 @@
   padding: 0 16px;
   overflow: hidden;
   max-height: 1000px;
-  transition: max-height 0.3s ease, padding 0.3s ease;
+  opacity: 1;
+  transition: max-height 0.3s ease, padding 0.3s ease, opacity 0.2s ease, border-color 0.3s ease;
 }
 
 .accBody.closed {
   max-height: 0;
   padding-top: 0;
   padding-bottom: 0;
-  border-top: none;
+  opacity: 0;
+  border-color: transparent;
 }
 
 /* ─────────────────────────────────────────────────
