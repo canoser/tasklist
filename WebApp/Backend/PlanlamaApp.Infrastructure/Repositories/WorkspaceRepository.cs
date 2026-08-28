@@ -53,8 +53,7 @@ namespace PlanlamaApp.Infrastructure.Repositories
 
         public async Task<Workspace?> GetByInviteCodeAsync(string code)
         {
-            // Davet kodları globaldir, farklı bir Tenant'tan kullanıcı arayabilir. BaseRepository injection'ı bypass edilir.
-            var sql = "SELECT * FROM Workspaces WHERE InviteCode = @InviteCode AND IsActive = true";
+            var sql = "SELECT * FROM Workspaces WHERE UPPER(InviteCode) = UPPER(@InviteCode) AND IsActive = true";
             return await _dbConnection.QueryFirstOrDefaultAsync<Workspace>(sql, new { InviteCode = code });
         }
 

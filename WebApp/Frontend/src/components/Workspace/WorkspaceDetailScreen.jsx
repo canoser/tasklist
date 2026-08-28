@@ -60,6 +60,7 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
   };
 
   const [members, setMembers] = useState([]);
+  const [pendingMembers, setPendingMembers] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -77,8 +78,14 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
           workspaceService.getWorkspaceFiles(workspace.id).catch(() => [])
         ]);
 
+        let fetchedPending = [];
+        if (isOwner) {
+          fetchedPending = await workspaceService.getPendingMembers(workspace.id).catch(() => []);
+        }
+
         if (mounted) {
           setMembers(fetchedMembers);
+          setPendingMembers(fetchedPending);
           setTasks(fetchedTasks);
           setFiles(fetchedFiles);
         }
@@ -130,6 +137,27 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
     console.log("Dosya yüklendi: ", fileId);
     const fetchedFiles = await workspaceService.getWorkspaceFiles(workspace.id);
     setFiles(fetchedFiles);
+  };
+
+  const handleApproveMember = async (memberId) => {
+    try {
+      await workspaceService.approveMember(workspace.id, memberId);
+      setPendingMembers(pendingMembers.filter(m => m.id !== memberId));
+      const fetchedMembers = await workspaceService.getMembers(workspace.id);
+      setMembers(fetchedMembers);
+    } catch (err) {
+      alert("Onaylanamadı: " + err.message);
+    }
+  };
+
+  const handleRejectMember = async (memberId) => {
+    if (!window.confirm("Bu katılım isteğini reddetmek istediğinize emin misiniz?")) return;
+    try {
+      await workspaceService.rejectMember(workspace.id, memberId);
+      setPendingMembers(pendingMembers.filter(m => m.id !== memberId));
+    } catch (err) {
+      alert("Reddedilemedi: " + err.message);
+    }
   };
 
   // Derived stats
@@ -249,6 +277,41 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
           </div>
         </div>
 
+        {/* COLLAPSIBLE: Pending Members (Only for Owner) */}
+        {isOwner && pendingMembers.length > 0 && (
+          <div className={styles.acc} style={{marginBottom: '16px', borderColor: 'var(--amber-light, #fef3c7)'}}>
+            <div className={styles.accHead} onClick={() => setIsMembersOpen(true)}>
+              <div className={styles.accHeadLeft}>
+                <span className={styles.accTtl} style={{color: 'var(--amber, #d97706)'}}>{t('ws_acc_pending', { context: tone, defaultValue: 'Onay Bekleyenler' })}</span>
+                <span className={styles.accCnt} style={{background: 'var(--amber, #d97706)', color: '#fff'}}>{pendingMembers.length}</span>
+              </div>
+            </div>
+            
+            <div className={styles.accBody}>
+              {pendingMembers.map((m) => {
+                const memStyle = getAvatarStyle(m.displayName || m.email, isNatureTheme);
+                return (
+                  <div key={m.id} className={styles.memItem}>
+                    <div className={styles.memAv} style={memStyle}>{(m.displayName || m.email || '?').charAt(0).toUpperCase()}</div>
+                    <div className={styles.memInfo}>
+                      <div className={styles.memName}>{m.displayName || m.email}</div>
+                      <div className={styles.memSince}>{new Date(m.joinedAt).toLocaleDateString()}</div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button onClick={() => handleApproveMember(m.id)} style={{ padding: '6px 12px', background: 'var(--green)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
+                        Onayla
+                      </button>
+                      <button onClick={() => handleRejectMember(m.id)} style={{ padding: '6px 12px', background: 'var(--red)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
+                        Reddet
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* COLLAPSIBLE: Members */}
         <div className={styles.acc}>
           <div className={styles.accHead} onClick={() => setIsMembersOpen(!isMembersOpen)}>
@@ -296,7 +359,7 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, onBack, onLeave, onUpdat
         <div className={styles.acc}>
           <div className={styles.accHead} onClick={() => setIsTasksOpen(!isTasksOpen)}>
             <div className={styles.accHeadLeft}>
-              <span className={styles.accTtl}>{t('ws_acc_recent_tasks', { context: tone, defaultValue: 'Son Görevler' })}</span>
+              <span className={styles.accTtl}>{t('ws_acc_tasks', { context: tone, defaultValue: 'Görevler' })}</span>
               <span className={styles.accCnt}>{workspace.tasksCount ?? 0}</span>
             </div>
             <div className={styles.accRight}>
