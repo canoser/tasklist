@@ -239,6 +239,35 @@ export const taskService = {
       console.error('Göreve dosya bağlama hatası:', err);
       throw err;
     }
+  },
+
+  partialComplete: async (taskId, doneAmount, targetDate) => {
+    if (!currentUser) return { success: false, message: 'Misafir kullanıcılar kısmi tamamlama yapamaz.' };
+
+    try {
+      const idempotencyKey = typeof crypto !== 'undefined' && crypto.randomUUID 
+        ? crypto.randomUUID() 
+        : `idempotency-${Date.now()}`;
+
+      const response = await apiClient.post(
+        `/tasks/${taskId}/partial-complete`, 
+        { doneAmount, targetDate },
+        { headers: { 'Idempotency-Key': idempotencyKey } }
+      );
+      return { success: true, data: response.data };
+    } catch (err) {
+      console.error('Kısmi tamamlama hatası:', err);
+      if (!err.response) {
+        await addToOfflineQueue({
+          type: 'POST',
+          url: `/tasks/${taskId}/partial-complete`,
+          data: { doneAmount, targetDate },
+          timestamp: Date.now()
+        });
+        return { success: true, isOffline: true };
+      }
+      return { success: false };
+    }
   }
 };
 

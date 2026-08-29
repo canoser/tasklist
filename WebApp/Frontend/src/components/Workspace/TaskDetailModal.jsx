@@ -20,7 +20,7 @@ const getAvatarStyle = (str, isNatureTheme) => {
   return { background: colorObj.bg, color: colorObj.color };
 };
 
-const TaskDetailModal = ({ isOpen, onClose, task, members, tone, isNatureTheme }) => {
+const TaskDetailModal = ({ isOpen, onClose, task, members, tone, isNatureTheme, isOwnerViewing, onActionClick, currentUser }) => {
   const { t } = useTranslation('common');
 
   if (!task) return null;
@@ -82,6 +82,9 @@ const TaskDetailModal = ({ isOpen, onClose, task, members, tone, isNatureTheme }
               const isDone = subTask?.isCompleted;
               const avatarStyle = getAvatarStyle(aName, isNatureTheme);
 
+              const isMyTask = currentUser && (currentUser.id === uid || currentUser.uid === uid);
+              const isAssigner = currentUser && subTask && (subTask.assignedBy === currentUser.uid || subTask.assignedByUserId === currentUser.uid);
+
               return (
                 <div key={uid} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px', background: 'var(--surface2)', borderRadius: 'var(--radius-sm)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -95,9 +98,24 @@ const TaskDetailModal = ({ isOpen, onClose, task, members, tone, isNatureTheme }
                     </div>
                     <span style={{ fontSize: '14px', color: 'var(--text-1)', fontWeight: '500' }}>{aName}</span>
                   </div>
-                  <span style={{ fontSize: '13px', fontWeight: '500', color: isDone ? 'var(--green)' : 'var(--text-3)' }}>
-                    {isDone ? 'Tamamladı' : 'Bekliyor'}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: '500', color: isDone ? 'var(--green)' : 'var(--text-3)' }}>
+                      {isDone ? 'Tamamladı' : 'Bekliyor'}
+                    </span>
+                    {(isOwnerViewing || isMyTask || isAssigner) && !isDone && onActionClick && (
+                      <button 
+                        onClick={() => onActionClick(subTask)}
+                        style={{
+                          background: 'transparent', border: 'none', color: 'var(--text-2)',
+                          fontSize: '18px', cursor: 'pointer', padding: '0 4px',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}
+                        title="İşlem"
+                      >
+                        ⋮
+                      </button>
+                    )}
+                  </div>
                 </div>
               );
             })}

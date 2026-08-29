@@ -133,7 +133,12 @@ const CalendarScreen = ({ user, navigation, tone }) => {
     triggerUndoableAction(
       t('msg_task_partial', { context: tone, percent }),
       () => setTasks(newState),
-      () => console.log('API: Partial complete called', task.id, percent),
+      async () => {
+        if (user) {
+          await taskService.partialComplete(task.id, done, targetDate);
+          window.dispatchEvent(new Event('tasksUpdated'));
+        }
+      },
       () => setTasks(prevState)
     );
   };
@@ -159,7 +164,20 @@ const CalendarScreen = ({ user, navigation, tone }) => {
     triggerUndoableAction(
       cascade ? t('msg_task_cascade_postponed', { context: tone }) : t('msg_task_postponed', { context: tone }),
       () => setTasks(newState),
-      () => console.log('API: Postpone called', task.id, targetDate, cascade),
+      async () => {
+        if (user) {
+          // Gün farkını hesapla
+          const d1 = new Date(task.deadline || new Date());
+          const d2 = new Date(targetDate);
+          const diffTime = Math.abs(d2 - d1);
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          const direction = d2 > d1 ? 1 : -1;
+          const shift = diffDays * direction;
+
+          await taskService.postponeTask(task.id, { postponeAllChain: cascade, daysToShift: shift });
+          window.dispatchEvent(new Event('tasksUpdated'));
+        }
+      },
       () => setTasks(prevState)
     );
   };

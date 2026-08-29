@@ -95,9 +95,10 @@ const DayDetailModal = ({ isOpen, onClose, date, tasks = [], roles = [], tone, o
                 <button 
                   className={styles.actionBtn}
                   onClick={(e) => { e.stopPropagation(); if (onTaskEdit) onTaskEdit(task); }}
-                  title={t('action_edit', { context: tone })}
+                  title="Detaylı İşlem"
+                  style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: '500', padding: '0 8px' }}
                 >
-                  <EditIcon />
+                  <span style={{ fontSize: '14px', lineHeight: 1 }}>⋮</span> İşlem
                 </button>
               </div>
             </div>

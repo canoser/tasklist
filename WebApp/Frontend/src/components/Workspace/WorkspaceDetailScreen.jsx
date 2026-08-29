@@ -6,8 +6,10 @@ import FileUploadModal from './FileUploadModal';
 import AssignTaskModal from './AssignTaskModal';
 import MemberDetailModal from './MemberDetailModal';
 import TaskDetailModal from './TaskDetailModal';
+import TaskActionModal from '../Task/TaskActionModal';
 import { workspaceService } from '../../services/workspaceService';
 import { storageService } from '../../services/storageService';
+import { taskService } from '../../services/taskService';
 
 // Global decorators NatureDecor and OceanDecor now handle the background SVGs
 
@@ -67,6 +69,9 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, navigation, onBack, onLe
   const [loading, setLoading] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
+  
+  const [actionTask, setActionTask] = useState(null);
+  const [isActionModalOpen, setIsActionModalOpen] = useState(false);
 
   // O(1) Member Lookup Map for Performance
   const membersMap = useMemo(() => {
@@ -255,6 +260,49 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, navigation, onBack, onLe
       setPendingMembers(pendingMembers.filter(m => m.id !== memberId));
     } catch (err) {
       alert("Reddedilemedi: " + err.message);
+    }
+  };
+
+  // Task Actions (for owners)
+  const handleActionClick = (subTask) => {
+    setActionTask(subTask);
+    setIsActionModalOpen(true);
+  };
+
+  const handleTaskComplete = async (task) => {
+    try {
+      await taskService.completeTask(task.id, { status: 'completed' }, null);
+      const fetchedTasks = await workspaceService.getWorkspaceTasks(workspace.id);
+      setTasks(fetchedTasks);
+    } catch (err) {
+      console.error("Görev tamamlama hatası:", err);
+    }
+  };
+
+  const handleTaskPartialComplete = async (task, done, total, targetDate) => {
+    try {
+      await taskService.partialComplete(task.id, done, targetDate);
+      const fetchedTasks = await workspaceService.getWorkspaceTasks(workspace.id);
+      setTasks(fetchedTasks);
+    } catch (err) {
+      console.error("Kısmi tamamlama hatası:", err);
+    }
+  };
+
+  const handleTaskPostpone = async (task, targetDate, cascade) => {
+    try {
+      const d1 = new Date(task.deadline || new Date());
+      const d2 = new Date(targetDate);
+      const diffTime = Math.abs(d2 - d1);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      const direction = d2 > d1 ? 1 : -1;
+      const shift = diffDays * direction;
+
+      await taskService.postponeTask(task.id, { postponeAllChain: cascade, daysToShift: shift });
+      const fetchedTasks = await workspaceService.getWorkspaceTasks(workspace.id);
+      setTasks(fetchedTasks);
+    } catch (err) {
+      console.error("Görev erteleme hatası:", err);
     }
   };
 
@@ -627,6 +675,18 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, navigation, onBack, onLe
         members={members}
         tone={tone}
         isNatureTheme={isNatureTheme}
+        isOwnerViewing={isOwner}
+        onActionClick={handleActionClick}
+        currentUser={user}
+      />
+
+      <TaskActionModal 
+        isOpen={isActionModalOpen}
+        onClose={() => setIsActionModalOpen(false)}
+        task={actionTask}
+        onComplete={handleTaskComplete}
+        onPartialComplete={handleTaskPartialComplete}
+        onPostpone={handleTaskPostpone}
       />
     </motion.div>
   );

@@ -117,6 +117,34 @@ namespace PlanlamaApp.Infrastructure.Repositories
             return affected > 0;
         }
 
+        public async Task<bool> UpdateByAssignerAsync(TaskItem task, System.Data.IDbTransaction? transaction = null)
+        {
+            var sql = @"UPDATE TaskItems 
+                        SET Title = @Title,
+                            Description = @Description,
+                            TaskType = @TaskType,
+                            CategoryId = @CategoryId,
+                            Deadline = @Deadline,
+                            IsTeacherAssigned = @IsTeacherAssigned,
+                            IsCompleted = @IsCompleted,
+                            CompletedAt = @CompletedAt,
+                            TargetCount = @TargetCount,
+                            Metadata = @Metadata,
+                            WorkspaceId = @WorkspaceId,
+                            ChainId = @ChainId,
+                            ChainOrder = @ChainOrder,
+                            OriginalDeadline = @OriginalDeadline,
+                            IsHomework = @IsHomework,
+                            AssignedBy = @AssignedBy,
+                            AssignedByWorkspaceId = @AssignedByWorkspaceId,
+                            AssignedByUserId = @AssignedByUserId,
+                            UserTaskSnapshot = @UserTaskSnapshot,
+                            UpdatedAt = @UpdatedAt
+                        WHERE Id = @Id";
+            var affected = await _dbConnection.ExecuteAsync(sql, task, transaction);
+            return affected > 0;
+        }
+
         public async Task<bool> DeleteAsync(int id, System.Data.IDbTransaction? transaction = null)
         {
             // Cascade silmelerde TenantId bypass'ını önlemek için doğrudan tenantId içeren SQL yazıyoruz.
@@ -143,6 +171,17 @@ namespace PlanlamaApp.Infrastructure.Repositories
             return affected > 0;
         }
 
+        public async Task<bool> MarkAsCompletedByAssignerAsync(int id, DateTime completedAt, System.Data.IDbTransaction? transaction = null)
+        {
+            var sql = @"UPDATE TaskItems 
+                        SET IsCompleted = 1, 
+                            CompletedAt = @CompletedAt,
+                            UpdatedAt = @UpdatedAt
+                        WHERE Id = @Id";
+            var affected = await _dbConnection.ExecuteAsync(sql, new { Id = id, CompletedAt = completedAt, UpdatedAt = DateTime.UtcNow }, transaction);
+            return affected > 0;
+        }
+
         public async Task<bool> PostponeChainAsync(string chainId, string userId, int minOrder, int daysToShift, System.Data.IDbTransaction? transaction = null)
         {
             var sql = @"SELECT * FROM TaskItems 
@@ -166,6 +205,33 @@ namespace PlanlamaApp.Infrastructure.Repositories
                     // OriginalDeadline ellenmez! (Bulgu 3)
                 }
                 await ExecuteAsync(updateSql, new { Deadline = task.Deadline, UpdatedAt = DateTime.UtcNow, Id = task.Id }, transaction);
+            }
+            return tasks.Any();
+        }
+
+        public async Task<bool> PostponeChainByAssignerAsync(string chainId, string userId, int minOrder, int daysToShift, System.Data.IDbTransaction? transaction = null)
+        {
+            var sql = @"SELECT * FROM TaskItems 
+                        WHERE ChainId = @ChainId 
+                          AND UserId = @UserId
+                          AND ChainOrder >= @MinOrder 
+                          AND IsCompleted = 0"; 
+
+            // BaseRepository sorgusu yerine doğrudan connection kullanıyoruz
+            var tasks = await _dbConnection.QueryAsync<TaskItem>(sql, new { ChainId = chainId, UserId = userId, MinOrder = minOrder }, transaction);
+
+            var updateSql = @"UPDATE TaskItems 
+                              SET Deadline = @Deadline, 
+                                  UpdatedAt = @UpdatedAt 
+                              WHERE Id = @Id";
+
+            foreach (var task in tasks)
+            {
+                if (task.Deadline.HasValue)
+                {
+                    task.Deadline = task.Deadline.Value.AddDays(daysToShift);
+                }
+                await _dbConnection.ExecuteAsync(updateSql, new { Deadline = task.Deadline, UpdatedAt = DateTime.UtcNow, Id = task.Id }, transaction);
             }
             return tasks.Any();
         }

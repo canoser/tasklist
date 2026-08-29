@@ -7,6 +7,8 @@ using PlanlamaApp.Domain.Entities;
 using System.Data;
 using System.Security.Claims;
 using Dapper;
+using Microsoft.AspNetCore.SignalR;
+using PlanlamaApp.Api.Hubs;
 
 namespace PlanlamaApp.Api.Controllers
 {
@@ -25,19 +27,22 @@ namespace PlanlamaApp.Api.Controllers
         private readonly ITaskAssignmentRepository _taskAssignmentRepository;
         private readonly IWorkspaceRepository _workspaceRepository;
         private readonly IDbConnection _dbConnection;
+        private readonly IHubContext<AppHub> _hubContext;
 
         public TasksController(
             ITaskRepository taskRepository, 
             IQuotaManager quotaManager,
             ITaskAssignmentRepository taskAssignmentRepository,
             IWorkspaceRepository workspaceRepository,
-            IDbConnection dbConnection)
+            IDbConnection dbConnection,
+            IHubContext<AppHub> hubContext)
         {
             _taskRepository = taskRepository;
             _quotaManager = quotaManager;
             _taskAssignmentRepository = taskAssignmentRepository;
             _workspaceRepository = workspaceRepository;
             _dbConnection = dbConnection;
+            _hubContext = hubContext;
         }
 
         private string? GetCurrentUserId()
@@ -143,15 +148,32 @@ namespace PlanlamaApp.Api.Controllers
             if (existingTask == null) return NotFound();
 
             var currentUserId = GetCurrentUserId();
-            if (existingTask.UserId != currentUserId) return NotFound(); // IDOR koruması
+            bool isOwner = existingTask.UserId == currentUserId;
+            bool isAssigner = existingTask.AssignedBy == currentUserId;
+
+            if (!isOwner && !isAssigner) return NotFound(); // IDOR koruması
 
             task.Id = id;
-            task.UserId = currentUserId; // Kimliği manipüle edememesi için sabitliyoruz
+            task.UserId = existingTask.UserId; // Kimliği manipüle edememesi için sabitliyoruz
             task.UpdatedAt = DateTime.UtcNow;
             
-            var success = await _taskRepository.UpdateAsync(task);
+            bool success;
+            if (isAssigner && !isOwner)
+            {
+                success = await _taskRepository.UpdateByAssignerAsync(task);
+            }
+            else
+            {
+                success = await _taskRepository.UpdateAsync(task);
+            }
+
             if (!success)
                 return NotFound();
+            
+            if (existingTask.AssignedByWorkspaceId.HasValue)
+            {
+                await _hubContext.Clients.Group($"Workspace_{existingTask.AssignedByWorkspaceId.Value}").SendAsync("WorkspaceTasksUpdated", existingTask.AssignedByWorkspaceId.Value);
+            }
             return NoContent();
         }
 
@@ -166,12 +188,143 @@ namespace PlanlamaApp.Api.Controllers
             if (existingTask == null) return NotFound();
 
             var currentUserId = GetCurrentUserId();
-            if (existingTask.UserId != currentUserId) return NotFound(); // IDOR koruması
+            bool isOwner = existingTask.UserId == currentUserId;
+            bool isAssigner = existingTask.AssignedBy == currentUserId;
 
-            var success = await _taskRepository.MarkAsCompletedAsync(id, DateTime.UtcNow);
+            if (!isOwner && !isAssigner) return NotFound(); // IDOR koruması
+
+            bool success;
+            if (isAssigner && !isOwner)
+            {
+                success = await _taskRepository.MarkAsCompletedByAssignerAsync(id, DateTime.UtcNow);
+            }
+            else
+            {
+                success = await _taskRepository.MarkAsCompletedAsync(id, DateTime.UtcNow);
+            }
+
             if (!success)
                 return NotFound();
+
+            if (existingTask.AssignedByWorkspaceId.HasValue)
+            {
+                await _hubContext.Clients.Group($"Workspace_{existingTask.AssignedByWorkspaceId.Value}").SendAsync("WorkspaceTasksUpdated", existingTask.AssignedByWorkspaceId.Value);
+            }
+            
             return NoContent();
+        }
+
+        public class PartialCompleteRequest
+        {
+            public int DoneAmount { get; set; }
+            public DateTime TargetDate { get; set; }
+        }
+
+        /// <summary>
+        /// Görevin bir kısmını tamamlandı olarak işaretler, kalan kısmı için yeni bir görev oluşturur.
+        /// </summary>
+        [HttpPost("{id:int}/partial-complete")]
+        [ServiceFilter(typeof(IdempotencyFilter))]
+        public async Task<IActionResult> PartialComplete(int id, [FromBody] PartialCompleteRequest request)
+        {
+            var existingTask = await _taskRepository.GetByIdAsync(id);
+            if (existingTask == null) return NotFound();
+
+            var currentUserId = GetCurrentUserId();
+            bool isOwner = existingTask.UserId == currentUserId;
+            bool isAssigner = existingTask.AssignedBy == currentUserId;
+
+            if (!isOwner && !isAssigner) return NotFound(); // IDOR koruması
+
+            int originalTarget = existingTask.TargetCount ?? 10;
+            if (request.DoneAmount >= originalTarget)
+            {
+                // Eğer tamamı yapıldıysa normal complete çağrılabilir ama buradan da halledelim
+                return await MarkComplete(id);
+            }
+
+            if (_dbConnection.State != ConnectionState.Open)
+                _dbConnection.Open();
+
+            using var transaction = _dbConnection.BeginTransaction();
+            try
+            {
+                // 1. Orijinal görevi güncelle (IsCompleted = 1, TargetCount = DoneAmount)
+                existingTask.TargetCount = request.DoneAmount;
+                existingTask.IsCompleted = true;
+                existingTask.CompletedAt = DateTime.UtcNow;
+                existingTask.UpdatedAt = DateTime.UtcNow;
+
+                bool updateSuccess;
+                if (isAssigner && !isOwner)
+                {
+                    updateSuccess = await _taskRepository.UpdateByAssignerAsync(existingTask, transaction);
+                }
+                else
+                {
+                    updateSuccess = await _taskRepository.UpdateAsync(existingTask, transaction);
+                }
+
+                if (!updateSuccess)
+                {
+                    transaction.Rollback();
+                    return NotFound();
+                }
+
+                // 2. Kalan kısım için yeni görev oluştur (Deadline = TargetDate, TargetCount = Remainder)
+                var newTask = new TaskItem
+                {
+                    UserId = existingTask.UserId, // Aynı kişiye kalıyor
+                    CategoryId = existingTask.CategoryId,
+                    Title = existingTask.Title + " (Kalan)", // " (Kalan)" eklemek anlaşılırlığı artırır
+                    Description = existingTask.Description,
+                    TaskType = existingTask.TaskType,
+                    Deadline = request.TargetDate,
+                    IsTeacherAssigned = existingTask.IsTeacherAssigned,
+                    TargetCount = originalTarget - request.DoneAmount,
+                    WorkspaceId = existingTask.WorkspaceId,
+                    ChainId = existingTask.ChainId, // Aynı zincir
+                    ChainOrder = existingTask.ChainOrder,
+                    OriginalDeadline = existingTask.OriginalDeadline,
+                    IsHomework = existingTask.IsHomework,
+                    AssignedBy = existingTask.AssignedBy,
+                    AssignedByWorkspaceId = existingTask.AssignedByWorkspaceId,
+                    AssignedByUserId = existingTask.AssignedByUserId,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                // CreateAsync TenantId by-passını zaten kendisi _dbConnection üzerinden yapar
+                var newTaskId = await _taskRepository.CreateAsync(newTask, transaction);
+
+                // Eğer workspace görevi ise atamasını da oluştur
+                if (newTask.AssignedByWorkspaceId.HasValue)
+                {
+                    var assignment = new TaskAssignment
+                    {
+                        TaskItemId = newTaskId,
+                        AssignedUserId = newTask.UserId,
+                        CreatedByUserId = newTask.AssignedBy ?? currentUserId,
+                        WorkspaceId = newTask.AssignedByWorkspaceId.Value,
+                        Status = "Pending"
+                    };
+                    await _taskAssignmentRepository.AssignAsync(assignment, transaction);
+                }
+
+                transaction.Commit();
+
+                if (existingTask.AssignedByWorkspaceId.HasValue)
+                {
+                    await _hubContext.Clients.Group($"Workspace_{existingTask.AssignedByWorkspaceId.Value}").SendAsync("WorkspaceTasksUpdated", existingTask.AssignedByWorkspaceId.Value);
+                }
+
+                return Ok(new { OriginalTask = existingTask, NewTaskId = newTaskId });
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                return StatusCode(500, $"Kısmi tamamlama sırasında hata: {ex.Message}");
+            }
         }
 
         public class AttachFileRequest
@@ -240,6 +393,11 @@ namespace PlanlamaApp.Api.Controllers
             var success = await _taskRepository.DeleteAsync(id);
             if (!success)
                 return NotFound();
+            
+            if (existingTask.AssignedByWorkspaceId.HasValue)
+            {
+                await _hubContext.Clients.Group($"Workspace_{existingTask.AssignedByWorkspaceId.Value}").SendAsync("WorkspaceTasksUpdated", existingTask.AssignedByWorkspaceId.Value);
+            }
             return NoContent();
         }
         // ── Görev Zinciri (Task Chain) ──────────────────────────────────────────
@@ -375,8 +533,10 @@ namespace PlanlamaApp.Api.Controllers
             if (existingTask == null) return NotFound();
 
             var currentUserId = GetCurrentUserId();
-            // TODO: Eğer veli/öğretmen de erteleyebilecekse HasAccessToUser kontrolü eklenebilir. Şimdilik sadece sahibi erteleyebilir.
-            if (existingTask.UserId != currentUserId) return NotFound(); 
+            bool isOwner = existingTask.UserId == currentUserId;
+            bool isAssigner = existingTask.AssignedBy == currentUserId;
+
+            if (!isOwner && !isAssigner) return NotFound(); 
 
             if (_dbConnection.State != ConnectionState.Open)
                 _dbConnection.Open();
@@ -384,11 +544,18 @@ namespace PlanlamaApp.Api.Controllers
             using var transaction = _dbConnection.BeginTransaction();
             try
             {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                var userId = existingTask.UserId; // İşlemi yapanın değil, görevin sahibinin ID'sini kullanıyoruz (zincir sahibini bulmak için)
                 if (request.PostponeAllChain && !string.IsNullOrEmpty(existingTask.ChainId) && !string.IsNullOrEmpty(userId))
                 {
                     // Zincirleme erteleme (minOrder = mevcut görevin sırası)
-                    await _taskRepository.PostponeChainAsync(existingTask.ChainId, userId, existingTask.ChainOrder ?? 0, request.DaysToShift, transaction);
+                    if (isAssigner && !isOwner)
+                    {
+                        await _taskRepository.PostponeChainByAssignerAsync(existingTask.ChainId, userId, existingTask.ChainOrder ?? 0, request.DaysToShift, transaction);
+                    }
+                    else
+                    {
+                        await _taskRepository.PostponeChainAsync(existingTask.ChainId, userId, existingTask.ChainOrder ?? 0, request.DaysToShift, transaction);
+                    }
                 }
                 else
                 {
@@ -398,10 +565,23 @@ namespace PlanlamaApp.Api.Controllers
                         existingTask.Deadline = existingTask.Deadline.Value.AddDays(request.DaysToShift);
                     }
                     existingTask.UpdatedAt = DateTime.UtcNow;
-                    await _taskRepository.UpdateAsync(existingTask, transaction);
+
+                    if (isAssigner && !isOwner)
+                    {
+                        await _taskRepository.UpdateByAssignerAsync(existingTask, transaction);
+                    }
+                    else
+                    {
+                        await _taskRepository.UpdateAsync(existingTask, transaction);
+                    }
                 }
                 
                 transaction.Commit();
+
+                if (existingTask.AssignedByWorkspaceId.HasValue)
+                {
+                    await _hubContext.Clients.Group($"Workspace_{existingTask.AssignedByWorkspaceId.Value}").SendAsync("WorkspaceTasksUpdated", existingTask.AssignedByWorkspaceId.Value);
+                }
                 return NoContent();
             }
             catch (Exception ex)
