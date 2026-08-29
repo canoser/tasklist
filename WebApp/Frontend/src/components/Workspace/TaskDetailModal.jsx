@@ -70,12 +70,12 @@ const TaskDetailModal = ({ isOpen, onClose, task, members, tone, isNatureTheme, 
         {/* ASSIGNEES LIST */}
         <div style={{ marginTop: '4px' }}>
           <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', color: 'var(--text-1)', display: 'flex', justifyContent: 'space-between' }}>
-            <span>Kimlere Verildi</span>
-            <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>{completedCount}/{totalAssigned} Tamamlandı</span>
+            <span>{isOwnerViewing ? 'Kimlere Verildi' : 'Görev Durumu'}</span>
+            {isOwnerViewing && <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>{completedCount}/{totalAssigned} Tamamlandı</span>}
           </h4>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '250px', overflowY: 'auto', paddingRight: '4px' }}>
-            {task._assignedUsers?.map(uid => {
+            {(isOwnerViewing ? task._assignedUsers : task._assignedUsers?.filter(uid => currentUser && (currentUser.id === uid || currentUser.uid === uid)))?.map(uid => {
               const assignee = members.find(m => m.userId === uid);
               const aName = assignee ? (assignee.displayName || assignee.email || 'Bilinmiyor') : 'Bilinmiyor';
               const subTask = task._subTasks?.find(st => st.userId === uid);

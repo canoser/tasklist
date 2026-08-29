@@ -85,7 +85,9 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, navigation, onBack, onLe
     const groups = new Map();
     const singles = [];
     
-    tasks.forEach(t => {
+    const visibleTasks = isOwner ? tasks : tasks.filter(t => t.userId === (user?.id || user?.uid));
+
+    visibleTasks.forEach(t => {
       // Eskiden verilmiş görevlerde kurucuyu gizlemek için:
       if (t.userId === workspace.ownerId) {
         return;
@@ -408,20 +410,22 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, navigation, onBack, onLe
         )}
 
         {/* Bento stats */}
-        <div className={styles.bento}>
-          <div className={styles.bentoC}>
-            <div className={`${styles.bv} ${styles.bvAc}`}>{totalTasksCount}</div>
-            <div className={styles.bl}>{t('ws_stats_total', { context: tone, defaultValue: 'Toplam' })}</div>
+        {isOwner && (
+          <div className={styles.bento}>
+            <div className={styles.bentoC}>
+              <div className={`${styles.bv} ${styles.bvAc}`}>{totalTasksCount}</div>
+              <div className={styles.bl}>{t('ws_stats_total', { context: tone, defaultValue: 'Toplam' })}</div>
+            </div>
+            <div className={styles.bentoC}>
+              <div className={`${styles.bv} ${styles.bvGn}`}>{completedTasksCount}</div>
+              <div className={styles.bl}>{t('ws_stats_done', { context: tone, defaultValue: 'Tamam' })}</div>
+            </div>
+            <div className={styles.bentoC}>
+              <div className={`${styles.bv} ${styles.bvAm}`}>{pendingTasksCount}</div>
+              <div className={styles.bl}>{t('ws_stats_pending', { context: tone, defaultValue: 'Bekliyor' })}</div>
+            </div>
           </div>
-          <div className={styles.bentoC}>
-            <div className={`${styles.bv} ${styles.bvGn}`}>{completedTasksCount}</div>
-            <div className={styles.bl}>{t('ws_stats_done', { context: tone, defaultValue: 'Tamam' })}</div>
-          </div>
-          <div className={styles.bentoC}>
-            <div className={`${styles.bv} ${styles.bvAm}`}>{pendingTasksCount}</div>
-            <div className={styles.bl}>{t('ws_stats_pending', { context: tone, defaultValue: 'Bekliyor' })}</div>
-          </div>
-        </div>
+        )}
 
         {/* COLLAPSIBLE: Pending Members (Only for Owner) */}
         {isOwner && pendingMembers.length > 0 && (
@@ -531,7 +535,7 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, navigation, onBack, onLe
                     <div className={`${styles.taskTtl} ${t._allCompleted ? styles.taskTtlDone : ''}`}>{t.title}</div>
                     <div className={styles.taskTags}>
                       <div className={styles.taskWho} style={{ display: 'flex' }}>
-                        {t._assignedUsers.slice(0, 3).map((uid, idx) => {
+                        {isOwner && t._assignedUsers.slice(0, 3).map((uid, idx) => {
                           const assignee = membersMap.get(uid);
                           const aName = assignee ? (assignee.displayName || assignee.email || 'Bilinmiyor') : 'Bilinmiyor';
                           return (
@@ -540,7 +544,7 @@ const WorkspaceDetailScreen = ({ workspace, user, tone, navigation, onBack, onLe
                             </div>
                           );
                         })}
-                        {t._assignedUsers.length > 3 && (
+                        {isOwner && t._assignedUsers.length > 3 && (
                           <div className={styles.whoAv} style={{...getAvatarStyle('more', isNatureTheme), zIndex: 7, marginLeft: '-8px'}} title="Tümü">
                             +{t._assignedUsers.length - 3}
                           </div>
