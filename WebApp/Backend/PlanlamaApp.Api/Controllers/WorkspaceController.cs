@@ -406,7 +406,7 @@ namespace PlanlamaApp.API.Controllers
             if (!isOwner && (currentUserMember == null || currentUserMember.Role != "Admin"))
                 return Forbid("Sadece Admin veya Kurucu görev atayabilir.");
 
-            var batchId = "ws-batch-" + Guid.NewGuid().ToString("N");
+            var batchId = request.IsChainTask ? "ws-batch-" + Guid.NewGuid().ToString("N") : null;
             var targetMembers = request.TargetUserIds != null && request.TargetUserIds.Any()
                 ? members.Where(m => request.TargetUserIds.Contains(m.UserId) && m.IsActiveMember).ToList()
                 : members.Where(m => m.IsActiveMember).ToList();
@@ -547,5 +547,6 @@ namespace PlanlamaApp.API.Controllers
         public DateTime? Deadline { get; set; }
         public string? TaskType { get; set; }
         public List<string>? TargetUserIds { get; set; }
+        public bool IsChainTask { get; set; }
     }
 }

@@ -11,6 +11,7 @@ const AssignTaskModal = ({ isOpen, onClose, onAssign, members = [], tone }) => {
   const [taskType, setTaskType] = useState('Alan Görevi');
   const [assignMode, setAssignMode] = useState('all'); // 'all' | 'specific'
   const [selectedMembers, setSelectedMembers] = useState([]);
+  const [isChainTask, setIsChainTask] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const assignableMembers = members.filter(m => m.role !== 'Owner');
@@ -33,7 +34,7 @@ const AssignTaskModal = ({ isOpen, onClose, onAssign, members = [], tone }) => {
 
     setLoading(true);
     try {
-      await onAssign({ title, description: desc, deadline, taskType, targetUserIds });
+      await onAssign({ title, description: desc, deadline, taskType, targetUserIds, isChainTask });
       onClose();
     } catch (err) {
       alert(err.message);
@@ -119,6 +120,21 @@ const AssignTaskModal = ({ isOpen, onClose, onAssign, members = [], tone }) => {
             ))}
           </div>
         )}
+
+        {/* Zincir (Grup) Görevi Seçeneği */}
+        <div className={modalStyles.formGroup}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--text-2)', cursor: 'pointer', marginTop: '4px' }}>
+            <input 
+              type="checkbox" 
+              checked={isChainTask}
+              onChange={e => setIsChainTask(e.target.checked)}
+            />
+            Grup (Zincir) Görevi Olarak İşaretle
+          </label>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginTop: '2px', marginLeft: '24px', display: 'block' }}>
+            Seçilirse, bu görev tek bir grup görevi olarak birleştirilir. Aksi halde herkese bağımsız bireysel görev olarak atanır.
+          </span>
+        </div>
 
         <div className={modalStyles.actions}>
           <button type="button" className={modalStyles.btnSecondary} onClick={onClose} disabled={loading}>

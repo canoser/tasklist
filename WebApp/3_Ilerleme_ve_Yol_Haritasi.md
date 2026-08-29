@@ -184,6 +184,11 @@ Bu dosya, projenin başından itibaren tamamlanan adımları ve gelecekte yapıl
   - [x] **Multi-Tenant Bypass (Backend):** `BaseRepository` kurallarını aşıp farklı tenant'lardaki görevlere ulaşabilmek için `TaskRepository` içinde `_dbConnection` ile Dapper ham SQL metodları (`UpdateByAssignerAsync`, `MarkAsCompletedByAssignerAsync` vb.) yazıldı. IDOR korumaları `AssignedBy` kolonuna göre esnetildi.
   - [x] **Bilinen Sorun (Senkronizasyon) - Kısmen Çözüldü:** Üyenin kendi görevini "Tamamla" dediğinde UI'ın tepki vermemesi sorunu (Backend'deki PostgreSQL `IsCompleted = 1` boolean tip hatası - `TRUE/FALSE` olarak) düzeltildi. Yönetici ve atayanın yaptığı güncellemelerin, üye ekranlarına SignalR `WorkspaceTasksUpdated` olaylarıyla pürüzsüz ve anında yansıması konusunda (State ve event mantığındaki kopukluk) ilerleme kaydediliyor.
     - *(Mimari Fikir: Görev tablosuna bir `TaskType` kolonu ekleyip, "Ödev" seçildiğinde doğru/yanlış sayılarını ayrı bir JSON sütununda (`TaskDetails`) veya `HomeworkDetails` tablosunda tutarak ana tabloyu temiz bırakabiliriz.)*
+- [x] **Kapsamlı IDOR ve Sunucu Tarafı Güvenlik Yamaları (29 Ağustos):**
+  - [x] `UserRolesController` IDOR açığı kapatılarak, kullanıcı rollerine sadece `currentUserId` üzerinden erişim zorunlu hale getirildi.
+  - [x] `TasksController.CreateChain` içerisindeki görev atama (Injection) açığı kapatıldı. `WorkspaceId = null` durumunda başkasına atama yapılması engellendi.
+  - [x] `CategoriesController` içerisindeki şablon kopyalama işleminde `TargetUserId` DTO'dan çıkartılarak, hedef kullanıcının güvenliği sağlandı.
+  - [x] **Backend Üye Maskelemesi:** `WorkspaceController.GetMembers` ucu güncellenerek, Yönetici (Admin/Owner) olmayan kişilere diğer üyelerin e-posta adresi ve User ID'leri yerine sadece `WorkspaceMemberSummaryDto` (Id, İsim, Rol) dönmesi sağlandı. Kullanıcıların gizliliği %100 oranında (sunucu tarafında) garanti altına alındı.
 - [ ] **Rol ve Ekip (Team) Altyapısı:** 
   - Öğretmen - Öğrenci - Veli ekiplerinin (bağlantılarının) nasıl kurulacağının kodlanması.
   - Rollerin tam yetki (Authorization) detaylarının belirlenmesi.
