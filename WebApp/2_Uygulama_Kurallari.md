@@ -7,6 +7,7 @@ Bu dosya, beyin fırtınası aşamasından geçip onaylanan, geliştirme (kodlam
 ### 1. Çoklu Kullanıcı (Multi-Tenant) İzolasyon Stratejisi
 - **Seçilen Yöntem:** 2. Seviye İzolasyon (Tek Tablo + TenantId).
 - **Kural:** Sistemdeki tüm kullanıcıların verileri aynı havuzda (tablolarda) tutulacaktır. Veritabanı altyapısı olarak **Dapper** kullanılmaya devam edilecektir. Ancak ajanlar SQL yazarken hata yapmasın diye araya bir **"Base Repository"** sınıfı zorunlu tutulmuştur. Bu sınıf, tüm sorgulara otomatik olarak `WHERE TenantId = @id` koşulunu (Interceptor mantığıyla) ekleyecek, güvenlik sistem seviyesinde sağlanacaktır.
+- **Kural İstisnası (Yönetici Bypass):** Çalışma alanı yöneticilerinin (Owner) veya görev atayanların (Assigner), üyelerin görevlerini güncelleyebilmesi gerektiği durumlarda (farklı TenantId'ler söz konusu olduğundan), `BaseRepository` filtreleri zorunlu olarak aşılmalı ve doğrudan `_dbConnection` üzerinden ham (raw) SQL çalıştırılmasına izin verilmelidir. Bu istisna sadece API katmanında katı yetki doğrulamasından (IDOR) geçirildikten sonra kullanılabilir.
 
 ### 2. Çevrimdışı Öncelikli (Offline-First) ve Senkronizasyon
 - **Kural:** Mobil deneyim hedeflendiği için uygulama internet bağlantısı koptuğunda da çalışmaya devam etmelidir. Veriler senkron `localStorage` yerine, asenkron ve daha geniş kapasiteli **IndexedDB** (`localforage`) üzerinde tutulacaktır.
@@ -140,6 +141,12 @@ Görevler birbirine bağlanarak bir "zincir" oluşturabilir (Örn: "Konu Çalı�
 - `TaskItem` tablosuna `ChainId` (nullable, int) ve `ChainOrder` (int) alanları eklenecek.
 - Aynı `ChainId`'ye sahip görevler `ChainOrder`'a göre sıralanır.
 - Erteleme işlemi yapılırken `OriginalDueDate` alanı korunarak "ne kadar ertelendiği" takip edilebilir.
+
+**Kısmi Tamamlama (Partial Completion) Akışı:**
+Kullanıcı veya yönetici "Kısmen Yaptım" seçeneğini kullandığında (Örn. 50 hedefli bir görevin 20 tanesi yapıldığında):
+1. Orijinal görev girilen tamamlanmış miktar ile (örn. 20) güncellenerek **Tamamlandı** olarak işaretlenir.
+2. Kalan hedef miktar (örn. 30) için bir sonraki güne **Bekliyor** durumunda yepyeni bir klon görev (bağlantılı) oluşturulur.
+3. *Frontend Kuralı:* Arayüzde Optimistic UI (İyimser Güncelleme) senkronizasyonunun bozulmaması için, API yanıtı beklenmeden önce (örneğin offline modda iken) istemci tarafında `Date.now()` tabanlı geçici ID'ler (`clientTempId`) türetilerek anlık render edilir.
 
 ---
 

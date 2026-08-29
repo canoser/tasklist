@@ -163,7 +163,7 @@ namespace PlanlamaApp.Infrastructure.Repositories
         public async Task<bool> MarkAsCompletedAsync(int id, DateTime completedAt, System.Data.IDbTransaction? transaction = null)
         {
             var sql = @"UPDATE TaskItems 
-                        SET IsCompleted = 1, 
+                        SET IsCompleted = TRUE, 
                             CompletedAt = @CompletedAt,
                             UpdatedAt = @UpdatedAt
                         WHERE Id = @Id AND TenantId = @TenantId";
@@ -174,7 +174,7 @@ namespace PlanlamaApp.Infrastructure.Repositories
         public async Task<bool> MarkAsCompletedByAssignerAsync(int id, DateTime completedAt, System.Data.IDbTransaction? transaction = null)
         {
             var sql = @"UPDATE TaskItems 
-                        SET IsCompleted = 1, 
+                        SET IsCompleted = TRUE, 
                             CompletedAt = @CompletedAt,
                             UpdatedAt = @UpdatedAt
                         WHERE Id = @Id";
@@ -188,7 +188,7 @@ namespace PlanlamaApp.Infrastructure.Repositories
                         WHERE ChainId = @ChainId 
                           AND UserId = @UserId
                           AND ChainOrder >= @MinOrder 
-                          AND IsCompleted = 0"; // SQLite uyumluluğu için false yerine 0 (Bulgu 2)
+                          AND IsCompleted = FALSE"; 
 
             var tasks = await QueryAsync<TaskItem>(sql, new { ChainId = chainId, UserId = userId, MinOrder = minOrder }, transaction);
 
@@ -215,7 +215,7 @@ namespace PlanlamaApp.Infrastructure.Repositories
                         WHERE ChainId = @ChainId 
                           AND UserId = @UserId
                           AND ChainOrder >= @MinOrder 
-                          AND IsCompleted = 0"; 
+                          AND IsCompleted = FALSE"; 
 
             // BaseRepository sorgusu yerine doğrudan connection kullanıyoruz
             var tasks = await _dbConnection.QueryAsync<TaskItem>(sql, new { ChainId = chainId, UserId = userId, MinOrder = minOrder }, transaction);

@@ -177,11 +177,12 @@ Bu dosya, projenin başından itibaren tamamlanan adımları ve gelecekte yapıl
   - [x] Dosyaları `TaskFileAttachments` tablosuna bağlamak için Backend mantığı.
   - [x] Takvim/Görev detay ekranında "Ekli Dosyalar" gösterimi ve indirme / presigned URL mantığı.
   - [x] Davet Kodlarının (Invite Codes) ve `JoinWorkspaceModal` akışının test edilip doğrulanması.
-- [ ] **Görev Aksiyonları ve Gelişmiş Takip:**
-  - Görev ekleme/çıkarma detaylarının geliştirilmesi.
-  - Görev erteleme, öteleme, süre uzatma gibi aksiyonların kodlanması.
-    - *(Mimari Fikir: Görevlere sadece `DueDate` değil, `OriginalDueDate` alanı da koyularak ertelemeler takip edilebilir. Sürekli erteleme yapan öğrenci için öğretmene giden bir "Disiplin Puanı" alarmı üretilebilir.)*
-  - "Ödev" tipi görevler için özel yapılar: Soru sayısı bazlı doğru, yanlış, boş durumlarının girilmesi ve takibi.
+- [x] **Görev Aksiyonları ve Gelişmiş Takip (Kısmi Tamamlama & Yönetici Kontrolü):**
+  - [x] Görev erteleme, öteleme, süre uzatma gibi aksiyonlar frontend'de `TaskActionModal` (⋮ İşlem Butonu) üzerinden kodlandı.
+  - [x] **Kısmi Tamamlama Akışı:** Üye veya yönetici hedefin bir kısmını (Örn: 50 sorunun 20'sini) yaptığında, orijinal görev 20 ile "Tamamlandı" işaretlenip, kalan 30 soru yarına "Bekliyor" durumunda yeni (klon) görev olarak otomatik atanacak şekilde mimari kuruldu. İstemci tarafında `Date.now()` tabanlı geçici ID'ler kullanıldı.
+  - [x] **Yönetici ve Atayan (Owner & Assigner) Yetkileri:** Yöneticilerin ve görevi atayanların, Workspace ve Takvim detay modallarında başkasının görevini "Tamamla / Ertele / Kısmi Yap" özellikleriyle yönetebilmesi sağlandı.
+  - [x] **Multi-Tenant Bypass (Backend):** `BaseRepository` kurallarını aşıp farklı tenant'lardaki görevlere ulaşabilmek için `TaskRepository` içinde `_dbConnection` ile Dapper ham SQL metodları (`UpdateByAssignerAsync`, `MarkAsCompletedByAssignerAsync` vb.) yazıldı. IDOR korumaları `AssignedBy` kolonuna göre esnetildi.
+  - [x] **Bilinen Sorun (Senkronizasyon) - Kısmen Çözüldü:** Üyenin kendi görevini "Tamamla" dediğinde UI'ın tepki vermemesi sorunu (Backend'deki PostgreSQL `IsCompleted = 1` boolean tip hatası - `TRUE/FALSE` olarak) düzeltildi. Yönetici ve atayanın yaptığı güncellemelerin, üye ekranlarına SignalR `WorkspaceTasksUpdated` olaylarıyla pürüzsüz ve anında yansıması konusunda (State ve event mantığındaki kopukluk) ilerleme kaydediliyor.
     - *(Mimari Fikir: Görev tablosuna bir `TaskType` kolonu ekleyip, "Ödev" seçildiğinde doğru/yanlış sayılarını ayrı bir JSON sütununda (`TaskDetails`) veya `HomeworkDetails` tablosunda tutarak ana tabloyu temiz bırakabiliriz.)*
 - [ ] **Rol ve Ekip (Team) Altyapısı:** 
   - Öğretmen - Öğrenci - Veli ekiplerinin (bağlantılarının) nasıl kurulacağının kodlanması.
@@ -204,4 +205,4 @@ Bu dosya, projenin başından itibaren tamamlanan adımları ve gelecekte yapıl
 - [ ] **Gemini API JSON Haritalaması:** AI Asistan altyapısının büyük kısmı bitmiş olmasına rağmen, OpenAI JSON şema standartlarının Gemini'ın `functionDeclarations` formatına çevrilmesi (`GeminiProvider.cs`) kodlanacak.
 
 ---
-*Son Güncelleme Tarihi: 27 Ağustos 2026*
+*Son Güncelleme Tarihi: 29 Ağustos 2026*
