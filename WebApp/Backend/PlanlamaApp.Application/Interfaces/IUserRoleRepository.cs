@@ -19,5 +19,10 @@ namespace PlanlamaApp.Application.Interfaces
         /// count = 0 → Doğrudan soft-delete
         /// </summary>
         Task<int> GetTaskCountByRoleIdAsync(int roleId);
+
+        /// <summary>
+        /// Belirtilen id değerine sahip rolü getirir. IDOR kontrolleri için gereklidir.
+        /// </summary>
+        Task<UserRole?> GetByIdAsync(int roleId);
     }
 }

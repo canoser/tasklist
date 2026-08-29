@@ -36,9 +36,8 @@ namespace PlanlamaApp.Application.Interfaces
         Task<bool> DeleteAsync(int id);
 
         /// <summary>
-        /// Eğitim Şablonu'ndan bir kullanıcının profiline kategori ağacı kopyalar.
-        /// Onboarding sihirbazı bu metodu çağırır.
+        /// Seçilen şablon kategorilerini (ders/konu) mevcut kullanıcının kiracısına (tenant) klonlar.
         /// </summary>
-        Task CloneTemplateAsync(IEnumerable<Category> templateCategories, string targetUserId);
+        Task CloneTemplateAsync(IEnumerable<Category> templateCategories);
     }
 }

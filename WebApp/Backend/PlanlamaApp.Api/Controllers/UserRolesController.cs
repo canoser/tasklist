@@ -41,7 +41,11 @@ namespace PlanlamaApp.Api.Controllers
         [HttpGet("{userId}/roles")]
         public async Task<IActionResult> GetActiveRoles(string userId)
         {
-            var roles = await _roleRepository.GetActiveTagsAsync(userId);
+            var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (currentUserId == null) return Unauthorized();
+            if (currentUserId != userId) return Forbid();
+
+            var roles = await _roleRepository.GetActiveTagsAsync(currentUserId);
             return Ok(roles);
         }
 
@@ -66,17 +70,21 @@ namespace PlanlamaApp.Api.Controllers
         [ServiceFilter(typeof(IdempotencyFilter))]
         public async Task<IActionResult> AddRole(string userId, [FromBody] AddRoleRequest request)
         {
+            var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (currentUserId == null) return Unauthorized();
+            if (currentUserId != userId) return Forbid();
+
             if (string.IsNullOrWhiteSpace(request.RoleName))
                 return BadRequest("RoleName boş olamaz.");
 
             var role = new UserRole
             {
-                UserId = userId,
+                UserId = currentUserId,
                 RoleName = request.RoleName.Trim()
             };
 
             var id = await _roleRepository.AddOrRestoreTagAsync(role);
-            return CreatedAtAction(nameof(GetActiveRoles), new { userId }, new { Id = id, role.RoleName });
+            return CreatedAtAction(nameof(GetActiveRoles), new { userId = currentUserId }, new { Id = id, role.RoleName });
         }
 
         // ── DELETE ───────────────────────────────────────────────────────────────
@@ -90,6 +98,13 @@ namespace PlanlamaApp.Api.Controllers
         [HttpDelete("roles/{roleId:int}")]
         public async Task<IActionResult> DeleteRole(int roleId, [FromQuery] string mode = "soft")
         {
+            var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (currentUserId == null) return Unauthorized();
+
+            var role = await _roleRepository.GetByIdAsync(roleId);
+            if (role == null) return NotFound();
+            if (role.UserId != currentUserId) return Forbid();
+
             // Her iki modda da önce atama bağlantılarını kopar
             await _assignmentRepository.RemoveRoleFromAssignmentsAsync(roleId);
 

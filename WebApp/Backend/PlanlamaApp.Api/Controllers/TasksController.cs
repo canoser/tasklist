@@ -104,8 +104,9 @@ namespace PlanlamaApp.Api.Controllers
                 return NotFound(); // IDOR protection: Avoid exposing existence if not owned? Actually NotFound is standard.
                 
             var currentUserId = GetCurrentUserId();
-            if (task.UserId != currentUserId)
-                return NotFound(); // Sahiplik kontrolü - IDOR koruması
+            // IDOR koruması: Sadece görevin sahibi veya atayan kişi görebilir
+            if (task.UserId != currentUserId && task.AssignedBy != currentUserId)
+                return NotFound();
 
             var tenantId = User.FindFirstValue("tenant_id") ?? "default_tenant";
             var attachmentsSql = @"
@@ -458,6 +459,14 @@ namespace PlanlamaApp.Api.Controllers
                 if (request.AssignedUserIds.Any(id => !members.Any(m => m.UserId == id)))
                 {
                     return BadRequest("Atanan kullanıcılardan biri bu çalışma alanının üyesi değil.");
+                }
+            }
+            else
+            {
+                // KİŞİSEL ZİNCİR: Başkasına atama yapamaz!
+                if (request.AssignedUserIds.Any(id => id != currentUserId))
+                {
+                    return Forbid("Kişisel görevlerinizi başkasına atayamazsınız.");
                 }
             }
 

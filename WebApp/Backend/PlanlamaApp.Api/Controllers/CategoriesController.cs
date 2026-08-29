@@ -100,10 +100,13 @@ namespace PlanlamaApp.Api.Controllers
         [ServiceFilter(typeof(IdempotencyFilter))]
         public async Task<IActionResult> CloneTemplate([FromBody] CloneTemplateRequest request)
         {
+            var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (currentUserId == null) return Unauthorized();
+
             if (request.TemplateCategories is null || !request.TemplateCategories.Any())
                 return BadRequest("Klonlanacak şablon kategori listesi boş olamaz.");
 
-            await _categoryRepository.CloneTemplateAsync(request.TemplateCategories, request.TargetUserId);
+            await _categoryRepository.CloneTemplateAsync(request.TemplateCategories);
             return Ok(new { Message = "Eğitim şablonu başarıyla profilinize kopyalandı." });
         }
 
@@ -121,5 +124,5 @@ namespace PlanlamaApp.Api.Controllers
     }
 
     // ── Request DTO (Ayrı dosyaya taşınabilir, şimdilik burada) ─────────────────
-    public record CloneTemplateRequest(IEnumerable<Category> TemplateCategories, string TargetUserId);
+    public record CloneTemplateRequest(IEnumerable<Category> TemplateCategories);
 }

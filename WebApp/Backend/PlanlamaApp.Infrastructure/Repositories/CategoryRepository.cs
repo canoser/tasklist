@@ -77,7 +77,7 @@ namespace PlanlamaApp.Infrastructure.Repositories
             return affected > 0;
         }
 
-        public async Task CloneTemplateAsync(IEnumerable<Category> templateCategories, string targetUserId)
+        public async Task CloneTemplateAsync(IEnumerable<Category> templateCategories)
         {
             // Onboarding sihirbazı: Şablon kategorilerini bu kiracıya kopyalar.
             // Her kategori TenantId = _tenantId ile oluşturulur; IsFromTemplate = true işaretlenir.

@@ -110,5 +110,12 @@ namespace PlanlamaApp.Infrastructure.Repositories
             var sql = "SELECT COUNT(*) FROM TaskAssignments WHERE RoleId = @RoleId AND TenantId = @TenantId";
             return await ExecuteScalarAsync<int>(sql, new { RoleId = roleId });
         }
+
+        /// <inheritdoc/>
+        public async Task<UserRole?> GetByIdAsync(int roleId)
+        {
+            var sql = "SELECT * FROM UserRoles WHERE Id = @Id";
+            return await QueryFirstOrDefaultAsync<UserRole>(sql, new { Id = roleId });
+        }
     }
 }

@@ -177,6 +177,19 @@ namespace PlanlamaApp.API.Controllers
                 members = members.Where(m => m.UserId == currentUserId || m.UserId == currentUserMember.ObserverLinkedUserId);
             }
 
+            // Eğer üye Owner veya Admin değilse, gizlilik gereği email/userId bilgilerini maskele.
+            // Observer ve Member kendi bilgilerini gizlememelidir ancak diğerlerini maskeli görecektir.
+            // Fakat Front-End'in kırılmaması için Observer kısıtlamasından sonra, listeyi dto'ya çeviriyoruz.
+            if (!isOwner && currentUserMember?.Role != "Admin")
+            {
+                var maskedMembers = members.Select(m =>
+                    (m.UserId == currentUserId || m.UserId == currentUserMember?.ObserverLinkedUserId)
+                        ? (object)m // Kendi bilgilerini / izlediği öğrenciyi tam görsün
+                        : new WorkspaceMemberSummaryDto(m.Id, m.DisplayName, m.Role)
+                );
+                return Ok(maskedMembers);
+            }
+
             return Ok(members);
         }
 
