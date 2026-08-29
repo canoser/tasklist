@@ -365,6 +365,17 @@ namespace PlanlamaApp.API.Controllers
                 return Forbid(); 
 
             var tasks = await _taskRepository.GetByAssignedWorkspaceIdAsync(workspaceId);
+
+            if (!isOwner)
+            {
+                var currentUserMember = members.FirstOrDefault(m => m.UserId == currentUserId);
+                // Eğer üye Admin değilse, sadece kendi görevlerini görebilir.
+                if (currentUserMember == null || currentUserMember.Role != "Admin")
+                {
+                    tasks = tasks.Where(t => t.UserId == currentUserId).ToList();
+                }
+            }
+
             return Ok(tasks);
         }
 
