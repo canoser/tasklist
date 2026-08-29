@@ -18,7 +18,8 @@
 
 /* Her bölüm tam ekran yüksekliğini kaplar — JS containerRef ile override edilir */
 .section {
-  min-height: 300px; /* fallback, JS ölçümü override eder */
+  height: 100%;
+  min-height: 100%;
   flex-shrink: 0;
   scroll-snap-align: start;
   scroll-snap-stop: always;

@@ -16,7 +16,6 @@ const CalendarScreen = ({ user, navigation, tone }) => {
   const [tasks, setTasks] = useState([]);
   const [userRoles, setUserRoles] = useState([]);
   const [selectedDay, setSelectedDay] = useState(null);
-  const [sectionHeight, setSectionHeight] = useState(null);
   
   const [actionTask, setActionTask] = useState(null);
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
@@ -28,19 +27,6 @@ const CalendarScreen = ({ user, navigation, tone }) => {
   const calendarRef = useRef(null);
   const categoryRef = useRef(null);
   const chainRef = useRef(null);
-
-  // Kapsayıcı yüksekliğini ölç — header + bottom nav çıkarılınca kalan tam alan
-  useEffect(() => {
-    const measure = () => {
-      if (containerRef.current) {
-        setSectionHeight(containerRef.current.clientHeight);
-      }
-    };
-    measure();
-    window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
-  }, []);
-
   // Her bölüm tam ekran kaydırma (scroll-snap) ile gidecek
   const scrollTo = (ref) => {
     ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -178,14 +164,11 @@ const CalendarScreen = ({ user, navigation, tone }) => {
     );
   };
 
-  // Her section'ın yüksekliği: ölçülen kapsayıcı yüksekliği veya fallback
-  const sectionStyle = sectionHeight ? { height: `${sectionHeight}px` } : {};
-
   return (
     <div ref={containerRef} className={screenStyles.scrollContainer}>
 
       {/* ── BÖLÜM 1: TAKVİM ────────────────────────────────────────────────── */}
-      <section ref={calendarRef} className={screenStyles.section} style={sectionStyle}>
+      <section ref={calendarRef} className={screenStyles.section}>
         <div className={screenStyles.calendarContent}>
           <CalendarView 
             tasks={tasks} 
@@ -200,7 +183,7 @@ const CalendarScreen = ({ user, navigation, tone }) => {
       </section>
 
       {/* ── BÖLÜM 2: KATEGORİLER ───────────────────────────────────────────── */}
-      <section ref={categoryRef} className={screenStyles.section} style={sectionStyle}>
+      <section ref={categoryRef} className={screenStyles.section}>
         <div className={screenStyles.sectionHeader}>
           <button onClick={() => scrollTo(calendarRef)} className={screenStyles.sectionNavBtn}>↑ {t('cal_title', { context: tone })}</button>
           <h2 className={screenStyles.sectionTitle}>{t('nav_categories', { context: tone })}</h2>
@@ -212,7 +195,7 @@ const CalendarScreen = ({ user, navigation, tone }) => {
       </section>
 
       {/* ── BÖLÜM 3: ZİNCİR GÖREVLER ───────────────────────────────────────── */}
-      <section ref={chainRef} className={screenStyles.section} style={sectionStyle}>
+      <section ref={chainRef} className={screenStyles.section}>
         <div className={screenStyles.sectionHeader}>
           <button onClick={() => scrollTo(calendarRef)} className={screenStyles.sectionNavBtn}>↑ {t('cal_title', { context: tone })}</button>
           <h2 className={screenStyles.sectionTitle}>{t('nav_chains', { context: tone })}</h2>
