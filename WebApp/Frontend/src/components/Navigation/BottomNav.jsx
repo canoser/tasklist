@@ -26,10 +26,11 @@ const UserIcon = () => (
   </svg>
 );
 
-const PlusIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="12" y1="5" x2="12" y2="19"></line>
-    <line x1="5" y1="12" x2="19" y2="12"></line>
+const StatsIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="20" x2="18" y2="10"></line>
+    <line x1="12" y1="20" x2="12" y2="4"></line>
+    <line x1="6" y1="20" x2="6" y2="14"></line>
   </svg>
 );
 
@@ -58,17 +59,13 @@ const BottomNav = ({ activeTab = 'home', onTabChange = () => {}, tone, user, ope
             <span>{t('nav_workspace', { context: tone })}</span>
           </button>
 
-          {/* Action Button that expands */}
-          <div className={styles.actionButtonContainer}>
-            <motion.button 
-              layoutId="expandableMenu"
-              className={styles.actionButton}
-              onClick={() => setIsMenuExpanded(true)}
-              whileTap={{ scale: 0.95 }}
-            >
-              <PlusIcon />
-            </motion.button>
-          </div>
+          <button 
+            className={`${styles.navItem} ${activeTab === 'stats' ? styles.active : ''}`}
+            onClick={() => onTabChange('stats')}
+          >
+            <StatsIcon />
+            <span>{t('nav_stats', { context: tone })}</span>
+          </button>
 
           <button 
             className={`${styles.navItem} ${activeTab === 'calendar' ? styles.active : ''}`}
@@ -93,7 +90,7 @@ const BottomNav = ({ activeTab = 'home', onTabChange = () => {}, tone, user, ope
         </div>
       </div>
 
-      <AddTaskModal isOpen={isMenuExpanded} onClose={() => setIsMenuExpanded(false)} tone={tone} />
+
 
       {/* Misafir Uyarı Modalı */}
       {showGuestAlert && (

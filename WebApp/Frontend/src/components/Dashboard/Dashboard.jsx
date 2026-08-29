@@ -5,7 +5,9 @@ import Timeline from './Timeline';
 import DashboardSummary from './DashboardSummary';
 import SmartAssistant from './SmartAssistant';
 import AiCommandModal from './AiCommandModal';
+import AddTaskModal from '../Task/AddTaskModal';
 import { useTranslation } from 'react-i18next';
+import { Plus } from 'lucide-react';
 
 // ── Animasyon varyantları ─────────────────────────────────────────────────────
 const greetingVariants = {
@@ -19,6 +21,7 @@ const Dashboard = ({ user, guestName, tone }) => {
   const displayName = user?.displayName || user?.email?.split('@')[0] || guestName || t('default_username', { ns: 'profile' });
   const [isAssistantVisible, setIsAssistantVisible] = useState(true);
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [taskStats, setTaskStats] = useState({ remaining: 3, completed: 1 });
 
   return (
@@ -47,6 +50,13 @@ const Dashboard = ({ user, guestName, tone }) => {
               <span className={styles.statDot} />
               {t('stat_completed', { count: taskStats.completed, context: tone })}
             </span>
+            <button 
+              className={styles.addBtn}
+              onClick={() => setIsAddModalOpen(true)}
+              title="Yeni Görev Ekle"
+            >
+              <Plus size={16} /> Görev Ekle
+            </button>
           </div>
         </motion.div>
 
@@ -68,6 +78,12 @@ const Dashboard = ({ user, guestName, tone }) => {
         isOpen={isAiModalOpen} 
         onClose={() => setIsAiModalOpen(false)} 
         workspaceId={1} 
+      />
+
+      <AddTaskModal 
+        isOpen={isAddModalOpen} 
+        onClose={() => setIsAddModalOpen(false)} 
+        tone={tone} 
       />
     </>
   );

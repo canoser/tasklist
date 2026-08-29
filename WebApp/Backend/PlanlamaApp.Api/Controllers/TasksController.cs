@@ -194,6 +194,24 @@ namespace PlanlamaApp.Api.Controllers
 
             if (!isOwner && !isAssigner) return NotFound(); // IDOR koruması
 
+            // ZİNCİR GÖREV KONTROLÜ
+            if (!string.IsNullOrEmpty(existingTask.ChainId))
+            {
+                if (isAssigner && !isOwner)
+                {
+                    return StatusCode(StatusCodes.Status403Forbidden, "Atayan kişi zincir görevleri tamamlandı olarak işaretleyemez. Yalnızca zincirden çıkarabilirsiniz (silebilirsiniz).");
+                }
+                
+                if (!string.IsNullOrEmpty(existingTask.UserId) && existingTask.ChainOrder.HasValue)
+                {
+                    bool hasIncomplete = await _taskRepository.HasIncompletePreviousChainTaskAsync(existingTask.ChainId, existingTask.UserId, existingTask.ChainOrder.Value);
+                    if (hasIncomplete)
+                    {
+                        return Conflict("Önceki zincir görevleri tamamlanmadan bu görevi bitiremezsiniz.");
+                    }
+                }
+            }
+
             bool success;
             if (isAssigner && !isOwner)
             {
@@ -236,6 +254,24 @@ namespace PlanlamaApp.Api.Controllers
             bool isAssigner = existingTask.AssignedBy == currentUserId;
 
             if (!isOwner && !isAssigner) return NotFound(); // IDOR koruması
+
+            // ZİNCİR GÖREV KONTROLÜ
+            if (!string.IsNullOrEmpty(existingTask.ChainId))
+            {
+                if (isAssigner && !isOwner)
+                {
+                    return StatusCode(StatusCodes.Status403Forbidden, "Atayan kişi zincir görevleri kısmi tamamladı olarak işaretleyemez.");
+                }
+                
+                if (!string.IsNullOrEmpty(existingTask.UserId) && existingTask.ChainOrder.HasValue)
+                {
+                    bool hasIncomplete = await _taskRepository.HasIncompletePreviousChainTaskAsync(existingTask.ChainId, existingTask.UserId, existingTask.ChainOrder.Value);
+                    if (hasIncomplete)
+                    {
+                        return Conflict("Önceki zincir görevleri tamamlanmadan bu görevi bitiremezsiniz.");
+                    }
+                }
+            }
 
             int originalTarget = existingTask.TargetCount ?? 10;
             if (request.DoneAmount >= originalTarget)
@@ -285,7 +321,7 @@ namespace PlanlamaApp.Api.Controllers
                     TargetCount = originalTarget - request.DoneAmount,
                     WorkspaceId = existingTask.WorkspaceId,
                     ChainId = existingTask.ChainId, // Aynı zincir
-                    ChainOrder = existingTask.ChainOrder,
+                    ChainOrder = existingTask.ChainOrder.HasValue ? existingTask.ChainOrder.Value + 1 : null, // Klonlanan görev için +1 sıra (Örn: 10 -> 11)
                     OriginalDeadline = existingTask.OriginalDeadline,
                     IsHomework = existingTask.IsHomework,
                     AssignedBy = existingTask.AssignedBy,
@@ -480,7 +516,7 @@ namespace PlanlamaApp.Api.Controllers
             {
                 foreach (var userId in request.AssignedUserIds)
                 {
-                    int order = 1;
+                    int order = 10; // Zincir sıralaması 10'ar 10'ar artacak
                     foreach (var task in request.Tasks)
                     {
                         var taskItem = new TaskItem
@@ -518,7 +554,7 @@ namespace PlanlamaApp.Api.Controllers
                             
                             await _taskAssignmentRepository.AssignAsync(assignment, transaction);
                         }
-                        order++;
+                        order += 10;
                     }
                 }
                 

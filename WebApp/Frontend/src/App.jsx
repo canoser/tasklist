@@ -8,6 +8,7 @@ import AppLayout from './components/Layout/AppLayout';
 import Dashboard from './components/Dashboard/Dashboard';
 import Profile from './components/Profile/Profile';
 import WorkspaceScreen from './components/Workspace/WorkspaceScreen';
+import StatisticsScreen from './components/Statistics/StatisticsScreen';
 import { BrowserRouter } from 'react-router-dom';
 import { UndoProvider } from './components/Common/UndoContext';
 import NatureDecor from './components/Common/NatureDecor';
@@ -24,6 +25,7 @@ import { DEFAULT_TONE } from './config/featureFlags';
 import { setTone as setI18nTone } from './i18n';
 import storage from './utils/storage';
 import GuestWelcomeModal from './components/Auth/GuestWelcomeModal';
+import NotificationBanner from './components/Common/NotificationBanner';
 import { useKeyboardScrollFix } from './hooks/useKeyboardScrollFix';
 import { useOrientation } from './hooks/useOrientation';
 import { motion } from 'framer-motion';
@@ -184,6 +186,10 @@ export default function App() {
               />
             </div>
 
+            <div style={{ display: activeTab === 'stats' ? 'flex' : 'none', flex: 1, flexDirection: 'column', height: '100%', overflowY: 'auto' }}>
+              {activeTab === 'stats' && <StatisticsScreen user={user} />}
+            </div>
+
             <div style={{ display: activeTab === 'profile' ? 'flex' : 'none', flex: 1, flexDirection: 'column', height: '100%' }}>
               <Profile 
                 user={user} 
@@ -209,6 +215,7 @@ export default function App() {
 
           <AuthModal isOpen={isModalOpen('auth')} onClose={() => closeModal('auth')} tone={tone} />
           {!user && <GuestWelcomeModal tone={tone} onToneChange={handleToneChange} onComplete={(name) => setGuestName(name)} />}
+          {user && <NotificationBanner />}
         </div>
       </AppLayout>
       </TaskProvider>

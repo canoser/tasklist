@@ -263,5 +263,17 @@ namespace PlanlamaApp.Infrastructure.Repositories
             }
             return true;
         }
+
+        public async Task<bool> HasIncompletePreviousChainTaskAsync(string chainId, string userId, int currentOrder)
+        {
+            var sql = @"SELECT COUNT(1) FROM TaskItems 
+                        WHERE ChainId = @ChainId 
+                          AND UserId = @UserId 
+                          AND ChainOrder < @CurrentOrder 
+                          AND IsCompleted = FALSE";
+            
+            var count = await QueryFirstOrDefaultAsync<int>(sql, new { ChainId = chainId, UserId = userId, CurrentOrder = currentOrder });
+            return count > 0;
+        }
     }
 }

@@ -61,5 +61,11 @@ namespace PlanlamaApp.Application.Interfaces
         /// tamamlanmış olanları JSON snapshot olarak saklar.
         /// </summary>
         Task<bool> HandleWorkspaceLeaveAsync(int workspaceId, string userId, System.Data.IDbTransaction? transaction = null);
+
+        /// <summary>
+        /// Zincirde (Chain) bu görevden önce gelen (ChainOrder < currentOrder) 
+        /// ve henüz tamamlanmamış (IsCompleted = false) bir görev olup olmadığını kontrol eder.
+        /// </summary>
+        Task<bool> HasIncompletePreviousChainTaskAsync(string chainId, string userId, int currentOrder);
     }
 }

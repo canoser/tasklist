@@ -189,6 +189,12 @@ Bu dosya, projenin başından itibaren tamamlanan adımları ve gelecekte yapıl
   - [x] `TasksController.CreateChain` içerisindeki görev atama (Injection) açığı kapatıldı. `WorkspaceId = null` durumunda başkasına atama yapılması engellendi.
   - [x] `CategoriesController` içerisindeki şablon kopyalama işleminde `TargetUserId` DTO'dan çıkartılarak, hedef kullanıcının güvenliği sağlandı.
   - [x] **Backend Üye Maskelemesi:** `WorkspaceController.GetMembers` ucu güncellenerek, Yönetici (Admin/Owner) olmayan kişilere diğer üyelerin e-posta adresi ve User ID'leri yerine sadece `WorkspaceMemberSummaryDto` (Id, İsim, Rol) dönmesi sağlandı. Kullanıcıların gizliliği %100 oranında (sunucu tarafında) garanti altına alındı.
+- [x] **Zincir Görev Sıralı Tamamlama & İstatistik Altyapısı (Tamamlandı ✅):**
+  - [x] **Backend (Zincir):** `ITaskRepository`'ye `HasIncompletePreviousChainTaskAsync` eklenmesi, `CreateChain` metodunda `ChainOrder` değerinin 10'lu (10, 20, 30) artırılması. Kısmi tamamlamada +1 (Örn: 11) klonlama mantığının kurulması.
+  - [x] **Backend (İstatistik):** `StatisticsController.cs` oluşturularak `GET /api/statistics/user/{userId}` ucunun yazılması. `Workspace` izolasyonlu Observer (Öğretmen/Veli) erişim kuralının (IDOR) eklenmesi ve bellek içi (C#) Streak (Seri) hesaplamasının yapılması.
+  - [x] **Frontend (İstatistik UI):** 3 rol (Öğrenci, Öğretmen, Veli) destekli `StatisticsScreen.jsx` ekranı. `Recharts` ile Pie, Bar, Line grafikleri. Kendi yazdığımız hafif Grid tabanlı Heatmap (Isı Haritası) bileşeni.
+  - [x] **Frontend (UX/UI):** `BottomNav` ortasındaki "+" butonunun kaldırılıp yerine `İstatistik` sekmesinin eklenmesi. Dashboard ve Calendar ekranlarına bağlamsal "Hatırlatıcı Ekle" butonlarının eklenmesi. `TaskDetailModal` içinde kilitli (Locked) görev kontrolünün (Optimistic UI) yapılıp butonun grileştirilmesi.
+  - [x] **Frontend (Bildirim):** `utils/storage.js` kullanılarak Double Opt-in (Çift onaylı) bildirim sorma UX'inin hazırlanması (`NotificationBanner.jsx`).
 - [ ] **Rol ve Ekip (Team) Altyapısı:** 
   - Öğretmen - Öğrenci - Veli ekiplerinin (bağlantılarının) nasıl kurulacağının kodlanması.
   - Rollerin tam yetki (Authorization) detaylarının belirlenmesi.
@@ -210,4 +216,4 @@ Bu dosya, projenin başından itibaren tamamlanan adımları ve gelecekte yapıl
 - [ ] **Gemini API JSON Haritalaması:** AI Asistan altyapısının büyük kısmı bitmiş olmasına rağmen, OpenAI JSON şema standartlarının Gemini'ın `functionDeclarations` formatına çevrilmesi (`GeminiProvider.cs`) kodlanacak.
 
 ---
-*Son Güncelleme Tarihi: 29 Ağustos 2026*
+*Son Güncelleme Tarihi: 30 Ağustos 2026*
