@@ -299,6 +299,14 @@ namespace PlanlamaApp.Infrastructure
                           SELECT OwnerId FROM Workspaces WHERE Workspaces.Id = TaskItems.AssignedByWorkspaceId
                       )
                 ");
+
+                // Fix incorrect TenantIds created before the bypass fix
+                connection.Execute(@"
+                    UPDATE TaskItems 
+                    SET TenantId = UserId 
+                    WHERE AssignedByWorkspaceId IS NOT NULL 
+                      AND TenantId != UserId
+                ");
             }
             catch (Exception ex)
             {
