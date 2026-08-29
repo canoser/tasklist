@@ -60,12 +60,17 @@ namespace PlanlamaApp.Infrastructure.Repositories
         public async Task<IEnumerable<TaskItem>> GetByAssignedWorkspaceIdAsync(int workspaceId)
         {
             var sql = @"SELECT * FROM TaskItems WHERE AssignedByWorkspaceId = @WorkspaceId ORDER BY CreatedAt DESC";
-            return await QueryAsync<TaskItem>(sql, new { WorkspaceId = workspaceId });
+            // Workspace görevlerinin herkes tarafından görülebilmesi için BaseRepository'nin 
+            // TenantId filtresini (QueryAsync) by-pass ediyoruz.
+            return await _dbConnection.QueryAsync<TaskItem>(sql, new { WorkspaceId = workspaceId });
         }
 
         public async Task<int> CreateAsync(TaskItem task, System.Data.IDbTransaction? transaction = null)
         {
-            // INSERT: TenantId kolonu sorguda bulunmak zorunda (BaseRepository kural).
+            // Eğer görev başkasına atanmışsa (Workspace), TenantId o kişinin UserId'si olmalı!
+            task.TenantId = task.UserId;
+
+            // INSERT: TenantId kolonu sorguda bulunmak zorunda.
             var sql = @"INSERT INTO TaskItems 
                             (TenantId, UserId, CategoryId, Title, Description, TaskType, 
                              Deadline, IsTeacherAssigned, IsCompleted, CompletedAt, TargetCount, Metadata, 
@@ -77,7 +82,9 @@ namespace PlanlamaApp.Infrastructure.Repositories
                              @WorkspaceId, @ChainId, @ChainOrder, @OriginalDeadline, @IsHomework, @AssignedBy,
                              @AssignedByWorkspaceId, @AssignedByUserId, @UserTaskSnapshot, @CreatedAt, @UpdatedAt)
                         RETURNING Id;";
-            return await ExecuteScalarAsync<int>(sql, task, transaction);
+            
+            // BaseRepository'nin "TenantId = CallerId" ezmesini engellemek için doğrudan _dbConnection kullanıyoruz
+            return await _dbConnection.ExecuteScalarAsync<int>(sql, task, transaction);
         }
 
         public async Task<bool> UpdateAsync(TaskItem task, System.Data.IDbTransaction? transaction = null)
