@@ -71,7 +71,7 @@ const Dashboard = ({ user, guestName, tone }) => {
       <SmartAssistant
         isVisible={isAssistantVisible}
         onHide={() => setIsAssistantVisible(false)}
-        onOpenAi={() => { setIsAssistantVisible(false); setIsAiModalOpen(true); }}
+        onOpenAi={() => { setIsAiModalOpen(true); }}
       />
 
       <AiCommandModal 

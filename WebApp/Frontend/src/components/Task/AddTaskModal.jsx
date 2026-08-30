@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import BaseModal from '../Common/BaseModal';
-import { CloseIcon } from '../Common/Icons';
 import styles from './AddTaskModal.module.css';
 import { taskService } from '../../services/taskService';
 import { useTranslation } from 'react-i18next';
@@ -10,16 +9,27 @@ import HierarchicalCategoryPicker from '../Category/HierarchicalCategoryPicker';
 const AddTaskModal = ({ isOpen, onClose, tone }) => {
   const { t } = useTranslation('tasks');
   const { notifyTaskAdded } = useTaskContext();
+  
   const [title, setTitle] = useState('');
   const [categoryId, setCategoryId] = useState(null);
-  const [targetCount, setTargetCount] = useState('');
+  
+  // Set default deadline to today
   const [deadline, setDeadline] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
-  const [isTeacherAssigned, setIsTeacherAssigned] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (isOpen) {
+      const today = new Date().toISOString().split('T')[0];
+      setDeadline(today);
+      setTitle('');
+      setCategoryId(null);
+      setScheduledTime('');
+    }
+  }, [isOpen]);
+
   const handleSave = async () => {
-    if (!title || !deadline) return;
+    if (!title) return;
     setLoading(true);
 
     const metadata = scheduledTime
@@ -31,32 +41,20 @@ const AddTaskModal = ({ isOpen, onClose, tone }) => {
       title,
       categoryId,
       taskType: 'Görev',
-      targetCount: targetCount ? parseInt(targetCount) : null,
-      count: targetCount ? `${targetCount} Soru` : null,
-      deadline: new Date(deadline).toISOString(),
-      isTeacherAssigned,
+      deadline: deadline ? new Date(deadline).toISOString() : new Date().toISOString(),
+      isTeacherAssigned: false,
       isCompleted: false,
-      color: isTeacherAssigned ? 'Orange' : 'Blue',
+      color: 'Blue',
       metadata
     };
 
     try {
-      // API'ye kaydetmeye çalış
       await taskService.create(newTask);
     } catch (err) {
       console.warn('API isteği başarısız oldu, offline (sanal) görev olarak ekleniyor:', err);
     } finally {
       setLoading(false);
-      // Takvim ve Timeline güncellensin diye Context üzerinden bildiriyoruz
       notifyTaskAdded(newTask);
-      
-      // Formu temizle ve kapat
-      setTitle('');
-      setCategoryId(null);
-      setTargetCount('');
-      setDeadline('');
-      setScheduledTime('');
-      setIsTeacherAssigned(false);
       onClose();
     }
   };
@@ -67,74 +65,71 @@ const AddTaskModal = ({ isOpen, onClose, tone }) => {
       onClose={onClose} 
       title={t('modal_title', { context: tone })}
       preventClose={loading}
+      maxWidth="500px"
     >
       <div className={styles.body}>
-        <div className={styles.formGroup}>
-          <label className={styles.label}>{t('field_title', { context: tone })}</label>
-          <input 
-            type="text" 
-            className={styles.input} 
-            value={title} 
-            onChange={e => setTitle(e.target.value)} 
-            placeholder={t('field_title_placeholder', { context: tone })} 
-            autoFocus
-          />
+        <input 
+          type="text" 
+          className={styles.titleInput} 
+          value={title} 
+          onChange={e => setTitle(e.target.value)} 
+          placeholder={t('field_title_placeholder', { context: tone })} 
+          disabled={loading}
+        />
+
+        <div className={styles.detailsGroup}>
+          <div className={styles.rowCategory}>
+            <div className={styles.rowLabel}>
+              <span className={styles.icon}>🏷️</span> 
+              {t('field_category', { context: tone, defaultValue: 'Kategori' })}
+            </div>
+            <div className={styles.categoryPickerWrapper}>
+              <HierarchicalCategoryPicker 
+                value={categoryId} 
+                onChange={(id) => setCategoryId(id)} 
+              />
+            </div>
+          </div>
+
+          <div className={styles.divider}></div>
+
+          <div className={styles.row}>
+            <div className={styles.rowLabel}>
+              <span className={styles.icon}>📅</span> 
+              {t('field_date', { context: tone })}
+            </div>
+            <input 
+              type="date" 
+              className={styles.rowInput} 
+              value={deadline} 
+              onChange={e => setDeadline(e.target.value)} 
+              disabled={loading}
+            />
+          </div>
+
+          <div className={styles.divider}></div>
+
+          <div className={styles.row}>
+            <div className={styles.rowLabel}>
+              <span className={styles.icon}>🕐</span> 
+              Saat
+            </div>
+            <input 
+              type="time" 
+              className={styles.rowInput} 
+              value={scheduledTime} 
+              onChange={e => setScheduledTime(e.target.value)} 
+              disabled={loading}
+            />
+          </div>
         </div>
-
-        <div className={styles.formGroup}>
-          <label className={styles.label}>Kategori</label>
-          <HierarchicalCategoryPicker 
-            value={categoryId} 
-            onChange={(id) => setCategoryId(id)} 
-          />
-        </div>
-
-        <div className={styles.formGroup}>
-          <label className={styles.label}>{t('field_date', { context: tone })}</label>
-          <input 
-            type="date" 
-            className={styles.input} 
-            value={deadline} 
-            onChange={e => setDeadline(e.target.value)} 
-          />
-        </div>
-
-        <div className={styles.formGroup}>
-          <label className={styles.label}>Saat (isteğe bağlı)</label>
-          <input 
-            type="time" 
-            className={styles.input} 
-            value={scheduledTime} 
-            onChange={e => setScheduledTime(e.target.value)} 
-          />
-        </div>
-
-        <div className={styles.formGroup}>
-          <label className={styles.label}>{t('field_target', { context: tone })}</label>
-          <input 
-            type="number" 
-            className={styles.input} 
-            value={targetCount} 
-            onChange={e => setTargetCount(e.target.value)} 
-            placeholder={t('field_target_placeholder', { context: tone })} 
-          />
-        </div>
-
-        <label className={styles.checkboxGroup}>
-          <input 
-            type="checkbox" 
-            checked={isTeacherAssigned}
-            onChange={e => setIsTeacherAssigned(e.target.checked)}
-          />
-          <span className={styles.label}>{t('field_teacher_assigned', { context: tone })}</span>
-        </label>
-
+          
         <button 
-          className={styles.submitBtn} 
+          className={`${styles.submitBtn} ${loading ? styles.loading : ''}`} 
           onClick={handleSave}
-          disabled={!title || !deadline || loading}
+          disabled={!title || loading}
         >
-          {loading ? t('btn_saving', { context: tone }) : t('btn_submit', { context: tone })}
+          {loading ? <span className={styles.spinner}></span> : t('btn_submit', { context: tone })}
         </button>
       </div>
     </BaseModal>

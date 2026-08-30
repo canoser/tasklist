@@ -63,7 +63,14 @@ const CalendarView = ({ tasks = [], roles = [], filter: initialFilter, onDayClic
   const [viewMode, setViewMode] = useState('monthly'); // 'monthly' | 'weekly' | 'daily'
   const [animDir, setAnimDir] = useState('forward');   // 'forward' | 'backward'
   const prevModeRef = useRef('monthly');
-  const [fabCorner, setFabCorner] = useState('bottom-right');
+  const [fabState, setFabState] = useState('mounted');
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFabState('attention');
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -122,27 +129,6 @@ const CalendarView = ({ tasks = [], roles = [], filter: initialFilter, onDayClic
       return true;
     });
   }, [tasks, filter, roles]);
-
-  // Hangi köşenin daha boş olduğunu hesaplayarak + butonunun yerini belirleyelim
-  useEffect(() => {
-    if (viewMode !== 'monthly') {
-      setFabCorner('bottom-right');
-      return;
-    }
-    const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const firstGridDay = getWeekStart(firstDay);
-    const lastGridDay = new Date(firstGridDay);
-    lastGridDay.setDate(lastGridDay.getDate() + 34); // 5 haftalık grid'in son günü (Pazar)
-
-    const countFirst = filteredTasks.filter(t => new Date(t.deadline || t.createdAt).toDateString() === firstGridDay.toDateString()).length;
-    const countLast = filteredTasks.filter(t => new Date(t.deadline || t.createdAt).toDateString() === lastGridDay.toDateString()).length;
-
-    if (countFirst < countLast) {
-      setFabCorner('top-left');
-    } else {
-      setFabCorner('bottom-right');
-    }
-  }, [currentDate, filteredTasks, viewMode]);
 
   const handlePrev = () => {
     setAnimDir('backward');
@@ -365,28 +351,32 @@ const CalendarView = ({ tasks = [], roles = [], filter: initialFilter, onDayClic
             key="calendar-fab"
             className={styles.fabBtn}
             onClick={onAddClick}
-            initial={{ 
-              scale: 5, 
-              opacity: 0, 
-              top: '50%', 
-              left: '50%', 
-              x: '-50%', 
-              y: '-50%' 
+            drag
+            dragConstraints={containerRef}
+            dragElastic={0.1}
+            dragMomentum={false}
+            variants={{
+              initial: { scale: 0, opacity: 0 },
+              mounted: { scale: 1, opacity: 1, transition: { type: 'spring', stiffness: 260, damping: 20 } },
+              attention: { scale: [1, 1.1, 1], opacity: 1, transition: { duration: 0.5, ease: "easeInOut" } }
             }}
-            animate={
-              fabCorner === 'top-left' 
-                ? { scale: 1, opacity: 1, top: 60, left: 16, x: 0, y: 0 } 
-                : { scale: 1, opacity: 1, top: 'calc(100% - 100px)', left: 'calc(100% - 64px)', x: 0, y: 0 }
-            }
-            transition={{
-              type: 'spring',
-              stiffness: 200,
-              damping: 15,
-              delay: 0.1
-            }}
+            initial="initial"
+            animate={fabState}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             title="Görev Ekle"
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <motion.div 
+              className={styles.fabShine}
+              variants={{
+                initial: { x: '-150%', skewX: -20 },
+                mounted: { x: '-150%', skewX: -20 },
+                attention: { x: '150%', skewX: -20, transition: { duration: 0.6, ease: "easeInOut" } }
+              }}
+              initial="initial"
+              animate={fabState}
+            />
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'relative', zIndex: 2 }}>
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>

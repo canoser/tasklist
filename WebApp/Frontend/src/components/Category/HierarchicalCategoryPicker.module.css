@@ -25,6 +25,8 @@
   outline: none;
   font-size: 14px;
   min-width: 150px;
+  max-width: 100%;
+  text-overflow: ellipsis;
 }
 
 .select:focus {

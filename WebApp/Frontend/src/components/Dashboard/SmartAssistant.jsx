@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { App } from '@capacitor/app';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CloseIcon, SparkleIcon } from '../Common/Icons';
 import styles from './SmartAssistant.module.css';
@@ -48,6 +49,31 @@ const SmartAssistant = ({ isVisible = true, onHide, onOpenAi }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [selected, setSelected] = useState(null);
+
+  const backButtonPressed = React.useRef(false);
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+
+    let capListener = null;
+    const setupNativeBack = async () => {
+      try {
+        const { App } = await import('@capacitor/app');
+        capListener = await App.addListener('backButton', () => {
+          setIsOpen(false);
+        });
+      } catch (e) {
+        // Capacitor plugin not available
+      }
+    };
+    setupNativeBack();
+
+    return () => {
+      if (capListener && capListener.remove) {
+        capListener.remove();
+      }
+    };
+  }, [isOpen]);
 
   const currentStep = WIZARD_STEPS[stepIndex];
   const isLastStep = stepIndex === WIZARD_STEPS.length - 1;
