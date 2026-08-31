@@ -1,4 +1,5 @@
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 // Native apps require an absolute URL. Dev mode can use localhost or specific IP via .env
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
@@ -58,9 +59,14 @@ apiClient.interceptors.response.use(
         console.warn('Mükerrer İstek Engellendi (Idempotency Filter):', error.response.data);
       } else if (error.response.status === 429) {
         console.warn('Hız Sınırı Aşıldı (Rate Limiting):', error.response.data);
-      } else if (error.response.status === 401) {
-        console.warn('Yetkisiz Erişim (Unauthorized)');
+      } else if (error.response.status >= 500) {
+        console.error('Sunucu Hatası (500+):', error.response.data);
+        toast.error('Sistemde geçici bir sorun oluştu (Veritabanı/Sunucu Hatası). İşleminiz tamamlanamadı.', { id: 'sys_error_500' });
       }
+    } else if (error.request) {
+      // Ağ hatası veya sunucuya ulaşılamıyor
+      console.error('Network Hatası:', error.request);
+      toast.error('Sunucu ile iletişim kurulamadı. İnternet bağlantınızı kontrol edin.', { id: 'net_error' });
     }
     return Promise.reject(error);
   }

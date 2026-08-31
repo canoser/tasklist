@@ -32,6 +32,13 @@ namespace PlanlamaApp.Api.Controllers
             return Ok(settings);
         }
 
+        [HttpGet("system-errors")]
+        public async Task<IActionResult> GetSystemErrors([FromServices] ISystemErrorRepository systemErrorRepository)
+        {
+            var errors = await systemErrorRepository.GetRecentErrorsAsync(100);
+            return Ok(errors);
+        }
+
         public class UpdateSettingRequest
         {
             public string Value { get; set; } = string.Empty;

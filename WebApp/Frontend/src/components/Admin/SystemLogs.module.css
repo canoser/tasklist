@@ -1,0 +1,182 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--text);
+}
+
+.refreshBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.refreshBtn:hover {
+  background-color: var(--surface-hover);
+}
+
+.tableWrapper {
+  overflow-x: auto;
+  background-color: var(--surface);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.logTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.logTable th {
+  padding: 12px 16px;
+  background-color: var(--bg);
+  border-bottom: 1px solid var(--border);
+  color: var(--text2);
+  font-weight: 600;
+}
+
+.logTable td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+.logTable tr {
+  cursor: pointer;
+}
+
+.logTable tr:hover {
+  background-color: var(--bg);
+}
+
+.expandedRow {
+  background-color: var(--bg);
+}
+
+.dateCell {
+  white-space: nowrap;
+  color: var(--text2);
+  font-size: 0.9rem;
+}
+
+.methodBadge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background-color: var(--accent);
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.pathText {
+  font-family: monospace;
+  color: var(--text2);
+}
+
+.errorMsgCell {
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #ff4d4f;
+  font-weight: 500;
+}
+
+.userCell {
+  color: var(--text2);
+  font-size: 0.9rem;
+}
+
+.expandBtn {
+  background: none;
+  border: none;
+  color: var(--text2);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.detailRow {
+  background-color: var(--bg);
+}
+
+.detailRow td {
+  padding: 20px;
+  border-bottom: 2px solid var(--border);
+}
+
+.stackTrace {
+  background-color: var(--surface);
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  overflow-x: auto;
+}
+
+.stackTrace pre {
+  margin: 10px 0 0 0;
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: var(--text2);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.tenantInfo {
+  margin-top: 10px;
+  color: var(--text2);
+  font-size: 0.9rem;
+}
+
+.loadingContainer, .errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--text2);
+  background-color: var(--surface);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+  color: var(--accent);
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+.retryBtn {
+  margin-top: 16px;
+  padding: 8px 16px;
+  background-color: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}

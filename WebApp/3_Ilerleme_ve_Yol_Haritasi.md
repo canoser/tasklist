@@ -182,6 +182,10 @@ Bu dosya, projenin başından itibaren tamamlanan adımları ve gelecekte yapıl
   - Path traversal, Idempotency expiry, Partitioned RateLimiter gibi ileri güvenlik yamaları eklendi.
   - AuthController'dan "hacker_test" açık kapısı (backdoor) kaldırıldı.
   - Admin panelinde kullanıcıların dosya depolama kullanım kapasitesi (Byte -> MB dönüştürülerek) gösterildi.
+- [x] **Adım 5: Sistem Logları ve UI/UX Hata Yönetimi (31 Ağustos):**
+  - Frontend (`apiClient.js`) üzerinde veritabanı ve sunucu hatalarına (500, Network Error) özel `react-hot-toast` ile kullanıcı dostu arayüz uyarıları eklendi.
+  - Backend tarafında halihazırda veritabanına kaydedilen küresel hataların (Exceptions) okunabilmesi için `AdminController` uç noktası yazıldı.
+  - Yönetim Paneline "Sistem Logları" sekmesi eklendi; hataların tarihi, endpoint'i, kullanıcı ID'si ve detaylı Stack Trace tablosu hazırlandı.
 
 ### Faz 4: İş Mantığı, Görev Detayları ve Rol Tabanlı Özellikler (Domain Logic)
 - [x] **Görev (Task) Yönetimi ve Dosya Entegrasyonu:**

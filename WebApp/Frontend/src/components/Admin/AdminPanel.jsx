@@ -7,6 +7,7 @@ import UserSearch from './UserSearch';
 import UsageDashboard from './UsageDashboard';
 import WorkspaceManagement from './WorkspaceManagement';
 import GuideModal from '../Common/GuideModal';
+import SystemLogs from './SystemLogs';
 import styles from './AdminPanel.module.css';
 
 import CalendarDataManager from './CalendarDataManager';
@@ -19,7 +20,7 @@ const AdminPanel = ({ tone }) => {
   const [savingKey, setSavingKey] = useState(null);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState('');
-  const [activeTab, setActiveTab] = useState('settings'); // 'settings', 'usage', 'users', 'workspaces', 'data'
+  const [activeTab, setActiveTab] = useState('settings'); // 'settings', 'usage', 'users', 'workspaces', 'data', 'system_logs'
   const [isGuideOpen, setIsGuideOpen] = useState(false);
 
   const fetchSettings = async () => {
@@ -168,6 +169,12 @@ const AdminPanel = ({ tone }) => {
         >
           {t('tab_data', { context: tone })}
         </button>
+        <button 
+          onClick={() => setActiveTab('system_logs')}
+          style={{ flexShrink: 0, padding: '8px 16px', background: activeTab === 'system_logs' ? 'var(--accent)' : 'transparent', color: activeTab === 'system_logs' ? 'white' : 'var(--text2)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+        >
+          {t('tab_system_logs', { context: tone, defaultValue: 'Sistem Logları' })}
+        </button>
       </div>
 
       {activeTab === 'settings' && (
@@ -238,6 +245,10 @@ const AdminPanel = ({ tone }) => {
 
       {activeTab === 'data' && (
         <CalendarDataManager tone={tone} />
+      )}
+
+      {activeTab === 'system_logs' && (
+        <SystemLogs tone={tone} />
       )}
 
       <GuideModal 
