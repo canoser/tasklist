@@ -268,3 +268,7 @@ DatabaseMigration.Run(connectionString);
 app.Run();
 
 public partial class Program { }
+//
+chore:
+Trigger
+deploy
