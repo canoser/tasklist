@@ -19,10 +19,21 @@ const BaseModal = ({
   const dragControls = useDragControls();
   const [isClosing, setIsClosing] = useState(false);
 
+  // ==============================================================================================
+  // 🔴 KRİTİK UYARI (DOKUNMAYIN) - MİMARİ KARAR (31 AĞUSTOS 2026)
+  // ==============================================================================================
+  // SORUN: Modal kapanırken (özellikle drag veya X tuşuyla) onClose anında tetiklenirse,
+  // Global DOM (App.jsx) anında re-render edilir. Bu ağır işlem Framer Motion'ın 60fps çalışan
+  // "closed" animasyonunu bloke ederek stuttering'e (kasmaya ve takılmaya) neden olur.
+  // ÇÖZÜM: Kapanışta isClosing(true) yapılıp, animasyonun akıp bitmesi için 300ms BEKLENMELİDİR.
+  // 
+  // BUG: Eğer isClosing sadece isOpen(true) olduğunda false'a çekilirse, "Çift Tıklama" bug'ı olur.
+  // Çünkü ilk açılış render'ında eski isClosing (true) kalır, modal kapalı gibi davranır.
+  // NİHAİ ÇÖZÜM: isClosing SADECE modal tam kapandıktan sonra (!isOpen) sıfırlanmalıdır. 
+  // LÜTFEN BU useEffect VE handleDelayedClose MANTIĞINI DEĞİŞTİRMEYİN!
+  // ==============================================================================================
   useEffect(() => {
     if (!isOpen) {
-      // Çift tıklama bug'ını çözen kritik nokta: isClosing sadece modal TAMAMEN KAPANDIĞINDA sıfırlanmalıdır.
-      // Böylece bir sonraki açılışta isClosing=false olarak hazır bekler ve ilk render'da "open" animasyonu tetiklenir.
       setIsClosing(false);
     }
   }, [isOpen]);
@@ -34,11 +45,12 @@ const BaseModal = ({
       setIsClosing(true);
       setTimeout(() => {
         onClose();
-      }, 300);
+      }, 300); // Framer motion duration: 0.35 civarı. 300-350ms arası güvenlidir.
     } else {
       onClose();
     }
   };
+  // ==============================================================================================
 
   // ── Sürükleme (Framer Motion) ───────────────────────────────
   const handleDragEnd = (event, info) => {
