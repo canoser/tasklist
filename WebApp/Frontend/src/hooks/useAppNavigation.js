@@ -83,11 +83,13 @@ export function useAppNavigation(defaultTab = 'home') {
   }, [activeTab]);
 
   const openModal = useCallback((modalId) => {
-    if (activeModals.includes(modalId)) return;
-    const newModals = [...activeModals, modalId];
-    const newHash = buildHash(activeTab, newModals, queryParams);
-    window.history.pushState(null, '', newHash);
-    setActiveModals(newModals);
+    setTimeout(() => {
+      if (activeModals.includes(modalId)) return;
+      const newModals = [...activeModals, modalId];
+      const newHash = buildHash(activeTab, newModals, queryParams);
+      window.history.pushState(null, '', newHash);
+      setActiveModals(newModals);
+    }, 0);
   }, [activeTab, activeModals, queryParams]);
 
   const closeModal = useCallback((modalId) => {

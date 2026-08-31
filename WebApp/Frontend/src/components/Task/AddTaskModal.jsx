@@ -34,20 +34,16 @@ const AddTaskModal = ({ isOpen, onClose, tone }) => {
     }
   }, [isChain]);
 
-  // Form temizleme işlemini pencere tamamen kapandıktan sonra (görünmezken) yapıyoruz.
-  // Kullanıcı X tuşuyla veya dışarı tıklayarak kapatsa bile form sıfırlanır.
+  // Reset form when modal opens, not when it closes, to prevent background render blocking
   useEffect(() => {
-    if (!isOpen) {
-      const timer = setTimeout(() => {
-        const today = new Date().toISOString().split('T')[0];
-        setDeadline(today);
-        setTitle('');
-        setCategoryId(null);
-        setScheduledTime('');
-        setIsChain(false);
-        setSelectedChainId('');
-      }, 400); // Animasyon 350ms, bittikten 50ms sonra sıfırla.
-      return () => clearTimeout(timer);
+    if (isOpen) {
+      const today = new Date().toISOString().split('T')[0];
+      setDeadline(today);
+      setTitle('');
+      setCategoryId(null);
+      setScheduledTime('');
+      setIsChain(false);
+      setSelectedChainId('');
     }
   }, [isOpen]);
 
@@ -80,7 +76,6 @@ const AddTaskModal = ({ isOpen, onClose, tone }) => {
       setLoading(false);
       notifyTaskAdded(newTask);
       onClose();
-      // Sıfırlama işlemini useEffect devraldı.
     }
   };
 
@@ -91,7 +86,6 @@ const AddTaskModal = ({ isOpen, onClose, tone }) => {
       title={t('modal_title', { context: tone })}
       preventClose={loading}
       maxWidth="500px"
-      keepMounted={true}
     >
       <div className={styles.body}>
         <input 
