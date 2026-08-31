@@ -92,3 +92,170 @@
   display: flex;
   gap: 4px;
 }
+
+/* --- ZİNCİR KARTI STİLLERİ --- */
+
+.chainCard {
+  margin: 8px 0 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.chainCardHeader {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  background: var(--bg);
+  transition: background 0.2s;
+}
+
+.chainCardHeader:hover {
+  background: var(--surface);
+}
+
+.chainTitle {
+  font-weight: 600;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.chainMeta {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 2px;
+}
+
+.chevron {
+  color: var(--text3);
+  transition: transform 0.2s;
+  font-size: 12px;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.taskList {
+  padding: 8px 12px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.taskRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px dashed var(--border-light, rgba(0,0,0,0.05));
+  font-size: 12px;
+  color: var(--text);
+}
+
+.taskRow:last-child {
+  border-bottom: none;
+}
+
+.taskCompleted {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.taskActive {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.addChainBtn {
+  background: transparent;
+  border: 1px dashed var(--border);
+  color: var(--text3);
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 16px;
+  margin-bottom: 8px;
+  display: inline-block;
+}
+
+.addChainBtn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.createForm {
+  padding: 12px;
+  background: var(--bg);
+  border-radius: 8px;
+  margin: 4px 0 12px 16px;
+  border: 1px solid var(--border);
+}
+
+.stepRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.stepInput {
+  flex: 1;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 12px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.stepDateInput {
+  width: 120px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 12px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.moveBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  color: var(--text3);
+  font-size: 12px;
+}
+
+.moveBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.moveBtn:not(:disabled):hover {
+  background: rgba(0,0,0,0.05);
+  border-radius: 4px;
+}
+
+.primaryBtn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.secondaryBtn {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
