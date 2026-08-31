@@ -164,7 +164,7 @@ const BaseModal = ({
             onClick={(e) => e.stopPropagation()}
             
             initial={{ y: '100%' }}
-            animate={{ y: isClosing ? '100%' : 0 }}
+            animate={{ y: !localIsOpen ? '100%' : 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', bounce: 0, duration: 0.35 }}
             
