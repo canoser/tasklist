@@ -20,24 +20,32 @@ const BaseModal = ({
   const [isClosing, setIsClosing] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
+    if (!isOpen) {
+      // Çift tıklama bug'ını çözen kritik nokta: isClosing sadece modal TAMAMEN KAPANDIĞINDA sıfırlanmalıdır.
+      // Böylece bir sonraki açılışta isClosing=false olarak hazır bekler ve ilk render'da "open" animasyonu tetiklenir.
       setIsClosing(false);
     }
   }, [isOpen]);
 
+  const handleDelayedClose = () => {
+    if (preventClose || isClosing) return;
+    
+    if (keepMounted) {
+      setIsClosing(true);
+      setTimeout(() => {
+        onClose();
+      }, 300);
+    } else {
+      onClose();
+    }
+  };
+
   // ── Sürükleme (Framer Motion) ───────────────────────────────
   const handleDragEnd = (event, info) => {
-    if (preventClose) return;
+    if (preventClose || isClosing) return;
     
     if (info.offset.y > 100 || info.velocity.y > 400) {
-      if (keepMounted) {
-        onClose();
-      } else {
-        setIsClosing(true);
-        setTimeout(() => {
-          onClose();
-        }, 250);
-      }
+      handleDelayedClose();
     }
   };
 
@@ -71,7 +79,7 @@ const BaseModal = ({
             <button 
               type="button" 
               className={styles.closeBtn} 
-              onClick={onClose}
+              onClick={handleDelayedClose}
               aria-label="Close"
             >
               <CloseIcon size={18} />
@@ -98,7 +106,7 @@ const BaseModal = ({
         {isOpen && (
           <motion.div 
             className={styles.modalOverlay}
-            onClick={!preventClose ? onClose : undefined}
+            onClick={!preventClose ? handleDelayedClose : undefined}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -114,7 +122,7 @@ const BaseModal = ({
         
         // Animasyonlar (Varyant tabanlı DOM caching)
         initial="closed"
-        animate={isOpen ? "open" : "closed"}
+        animate={isOpen ? (isClosing ? "closed" : "open") : "closed"}
         variants={{
           open: { y: 0, x: '-50%', visibility: 'visible', pointerEvents: 'auto' },
           closed: { y: '100%', x: '-50%', pointerEvents: 'none', transitionEnd: { visibility: 'hidden' } }
@@ -140,7 +148,7 @@ const BaseModal = ({
       {isOpen && (
         <motion.div 
           className={styles.modalOverlay}
-          onClick={!preventClose ? onClose : undefined}
+          onClick={!preventClose ? handleDelayedClose : undefined}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
