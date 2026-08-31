@@ -1,227 +1,161 @@
-/* ── AddTaskModal.module.css ─────────────────────────────────────────────────── */
+/* ── AddTaskModal.module.css ── DayDetailModal mimarisi ── */
 
-.modalOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
-  z-index: 3000;
+.modalHeader {
   display: flex;
-  align-items: flex-end; /* Align bottom sheet to bottom */
-  justify-content: center;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
 }
 
-.bottomSheet {
-  width: 100%;
-  max-width: 500px;
-  background: var(--bg);
-  border-radius: 24px 24px 0 0;
-  box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
+.headerLeft {
   display: flex;
   flex-direction: column;
-  padding-bottom: max(16px, env(safe-area-inset-bottom));
 }
 
-.dragHandleContainer {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  padding: 12px 0 4px 0;
-  cursor: grab;
-  touch-action: none;
-}
-
-.dragPill {
-  width: 40px;
-  height: 5px;
-  background: var(--text3);
-  border-radius: 3px;
-  opacity: 0.5;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 24px 16px;
-}
-
-.title {
+.headerTitle {
   font-size: 18px;
   font-weight: 700;
   color: var(--text);
 }
 
-.cancelBtn {
-  background: transparent;
-  border: none;
-  color: var(--accent);
-  font-size: 15px;
-  font-weight: 500;
+.closeBtn {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text2);
   cursor: pointer;
+  transition: all 0.2s;
 }
 
-.body {
-  padding: 0 24px 16px;
+.closeBtn:hover {
+  background: var(--border);
+  color: var(--text);
+}
+
+.modalBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
+  -webkit-overflow-scrolling: touch;
 }
 
+/* ── Başlık Inputu ── */
 .titleInput {
   width: 100%;
-  font-size: 24px;
-  font-weight: 600;
+  padding: 12px 16px;
+  font-size: 1rem;
+  font-family: inherit;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
   color: var(--text);
-  background: transparent;
-  border: none;
+  box-sizing: border-box;
   outline: none;
-  padding: 8px 0;
+  transition: border-color 0.2s;
+}
+
+.titleInput:focus {
+  border-color: var(--accent);
 }
 
 .titleInput::placeholder {
   color: var(--text3);
-  font-weight: 500;
 }
 
+/* ── Satır Alanları (Tarih, Saat, Kategori) ── */
 .detailsGroup {
-  background: var(--surface);
-  border-radius: 16px;
-  overflow: hidden;
-  border: 1px solid var(--border);
   display: flex;
   flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
-  min-height: 52px;
+  padding: 12px 16px;
+  gap: 12px;
 }
 
 .rowCategory {
   display: flex;
   flex-direction: column;
-  padding: 14px 16px;
-  gap: 12px;
+  padding: 12px 16px;
+  gap: 10px;
 }
 
 .rowLabel {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text2);
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--text);
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .icon {
-  font-size: 18px;
+  font-size: 1rem;
 }
 
 .rowInput {
   background: transparent;
   border: none;
-  color: var(--text2);
-  font-size: 15px;
+  color: var(--text);
+  font-size: 0.9rem;
+  font-family: inherit;
   text-align: right;
   outline: none;
-  font-family: inherit;
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
 }
 
-/* Kategori dropdownlarının sığması için */
-.categoryPickerWrapper {
-  width: 100%;
-}
-
-.categoryPickerWrapper select {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg);
-  color: var(--text);
-  font-size: 14px;
+.rowInput::-webkit-calendar-picker-indicator {
+  filter: invert(0.5);
+  cursor: pointer;
 }
 
 .divider {
   height: 1px;
   background: var(--border);
-  margin-left: 44px; /* Align with text, after icon */
+  margin: 0 16px;
 }
 
-/* iOS Toggle Switch */
-.toggleSwitch {
-  position: relative;
-  display: inline-block;
-  width: 46px;
-  height: 26px;
+.categoryPickerWrapper {
+  width: 100%;
 }
 
-.toggleSwitch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--border);
-  transition: .3s;
-  border-radius: 26px;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 22px;
-  width: 22px;
-  left: 2px;
-  bottom: 2px;
-  background-color: white;
-  transition: .3s;
-  border-radius: 50%;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.toggleSwitch input:checked + .slider {
-  background-color: var(--success);
-}
-
-.toggleSwitch input:checked + .slider:before {
-  transform: translateX(20px);
-}
-
-/* Submit Button */
+/* ── Kaydet Butonu ── */
 .submitBtn {
-  margin-top: 8px;
-  padding: 16px;
+  width: 100%;
+  padding: 14px;
   background: var(--accent);
-  color: white;
+  color: #fff;
   border: none;
-  border-radius: 14px;
-  font-size: 16px;
+  border-radius: 12px;
+  font-size: 1rem;
   font-weight: 600;
+  font-family: inherit;
   cursor: pointer;
-  transition: all 0.2s;
   display: flex;
-  justify-content: center;
   align-items: center;
-}
-
-.submitBtn:hover:not(:disabled) {
-  opacity: 0.9;
-  transform: translateY(-1px);
+  justify-content: center;
+  gap: 8px;
+  transition: opacity 0.2s;
 }
 
 .submitBtn:disabled {
@@ -229,13 +163,17 @@
   cursor: not-allowed;
 }
 
+.submitBtn:not(:disabled):active {
+  opacity: 0.85;
+}
+
 .spinner {
-  width: 20px;
-  height: 20px;
-  border: 3px solid rgba(255,255,255,0.3);
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
   border-radius: 50%;
-  border-top-color: white;
-  animation: spin 1s ease-in-out infinite;
+  animation: spin 0.7s linear infinite;
 }
 
 @keyframes spin {
