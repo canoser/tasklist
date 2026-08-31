@@ -1,75 +1,14 @@
-.backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-}
-
-.modalContainer {
-  width: 100%;
-  max-width: 600px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 24px;
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.6);
+.bodyWrapper {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  /* [MOBILE_PORT_TODO]: Native uygulamada bu modal'in yüksekliği ve margin'i safe-area-inset değerlerine göre hesaplanmalıdır. */
-  max-height: 90vh;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.headerTitle {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #1a1a2e;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.closeBtn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: #8c8c9a;
-  padding: 0.5rem;
-  border-radius: 50%;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.closeBtn:hover {
-  background: rgba(0, 0, 0, 0.05);
-  color: #1a1a2e;
-}
-
-.body {
-  padding: 1.5rem;
-  overflow-y: auto;
-  flex: 1;
+  position: relative;
+  min-height: 150px;
 }
 
 .inputGroup {
   margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .label {
@@ -80,9 +19,8 @@
   margin-bottom: 0.5rem;
 }
 
-.textarea {
+.input, .dateInput, .timeInput {
   width: 100%;
-  min-height: 120px;
   padding: 1rem;
   border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.1);
@@ -90,76 +28,35 @@
   font-family: inherit;
   font-size: 1rem;
   color: #1a1a2e;
-  resize: vertical;
   transition: all 0.2s ease;
+  box-sizing: border-box;
+  outline: none;
 }
 
-.textarea:focus {
+.input:focus, .dateInput:focus, .timeInput:focus {
   outline: none;
   border-color: #6366f1;
   background: #ffffff;
   box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
 }
 
-.sliders {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+.row {
+  display: flex;
   gap: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
-.sliderContainer {
+.col {
+  flex: 1;
   display: flex;
   flex-direction: column;
 }
 
-.sliderHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-.sliderLabel {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #4a4a5e;
-}
-
-.sliderValue {
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: #6366f1;
-  background: rgba(99, 102, 241, 0.1);
-  padding: 0.2rem 0.6rem;
-  border-radius: 12px;
-}
-
-.slider {
-  width: 100%;
-  appearance: none;
-  height: 6px;
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 3px;
-  outline: none;
-}
-
-.slider::-webkit-slider-thumb {
-  appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #6366f1;
-  cursor: pointer;
-  border: 2px solid #fff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.footer {
-  padding: 1.5rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+.footerInner {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
+  width: 100%;
 }
 
 .cancelBtn, .submitBtn {
@@ -202,98 +99,6 @@
   cursor: not-allowed;
 }
 
-/* Onay Aşaması (Aşama 2) Stilleri */
-
-.aiMessage {
-  background: rgba(99, 102, 241, 0.08);
-  border-radius: 12px;
-  padding: 1.25rem;
-  margin-bottom: 1.5rem;
-  color: #312e81;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  border-left: 4px solid #6366f1;
-}
-
-.toolCallsList {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.toolCallItem {
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 12px;
-  padding: 1rem;
-  display: flex;
-  gap: 1rem;
-  align-items: flex-start;
-  transition: all 0.2s ease;
-}
-
-.toolCallItem:hover {
-  border-color: #6366f1;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.05);
-}
-
-.checkbox {
-  width: 20px;
-  height: 20px;
-  border-radius: 6px;
-  border: 2px solid #cbd5e1;
-  appearance: none;
-  cursor: pointer;
-  position: relative;
-  transition: all 0.2s ease;
-  margin-top: 0.25rem;
-  flex-shrink: 0;
-}
-
-.checkbox:checked {
-  background-color: #6366f1;
-  border-color: #6366f1;
-}
-
-.checkbox:checked::after {
-  content: '';
-  position: absolute;
-  left: 5px;
-  top: 2px;
-  width: 5px;
-  height: 10px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-}
-
-.toolCallContent {
-  flex: 1;
-}
-
-.toolCallTitle {
-  font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 0.25rem;
-}
-
-.toolCallDetails {
-  font-size: 0.85rem;
-  color: #64748b;
-  margin: 0;
-}
-
-.badge {
-  display: inline-block;
-  padding: 0.2rem 0.5rem;
-  background: #f1f5f9;
-  color: #475569;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  margin-top: 0.5rem;
-}
-
 .overlay {
   position: absolute;
   inset: 0;
@@ -307,6 +112,7 @@
   color: #6366f1;
   font-weight: 600;
   gap: 1rem;
+  border-radius: 12px;
 }
 
 .loader {
@@ -325,11 +131,8 @@
 }
 
 @media (max-width: 600px) {
-  .sliders {
-    grid-template-columns: 1fr;
-  }
-  
-  .modalContainer {
-    max-height: 95vh;
+  .row {
+    flex-direction: column;
+    gap: 1rem;
   }
 }
