@@ -1,27 +1,18 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence, useDragControls } from 'framer-motion';
+import { useDragControls, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import { CloseIcon } from './Icons';
 import styles from './BaseModal.module.css';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// BaseModal — TEK, TUTARLI ANİMASYON MİMARİSİ
+// BaseModal — KESİN ÇÖZÜM (Senior Pattern)
 //
-// Nasıl çalışır:
-//  1. isOpen prop'u true olduğunda modal DOM'a eklenir ve localIsOpen=true ile
-//     açılış animasyonu (y: 100% → 0) tetiklenir.
-//
-//  2. Kullanıcı kapatmak istediğinde handleDelayedClose çalışır:
-//     a. localIsOpen=false → Framer Motion kapanış animasyonunu başlatır (y: 0 → 100%)
-//     b. 350ms bekler (spring animasyonu tamamlanır)
-//     c. onClose() çağrılır → isOpen=false → AnimatePresence modal'ı DOM'dan kaldırır
-//
-//  Bu sayede ağır global React render'ları (URL state değişimi) animasyonu
-//  asla donduramaz. Tüm modaller (AddTaskModal, CalendarDayModal vb.) aynı
-//  akıcılıkta çalışır. keepMounted prop'u artık gereksiz, kaldırıldı.
-//
-// DEĞİŞTİRMEYİN: Bu mimariyi değiştirmek animasyon kasmasına veya
-// "ilk tıklamada açılmama" bug'ına neden olur.
+// 1. Modaller HER ZAMAN DOM'da kalır. React state değişiklikleri (mount/unmount)
+//    nedeniyle yaşanan Layout Thrashing (kasma) tamamen önlenmiştir.
+// 2. setTimeout, localIsOpen, veya AnimatePresence YOKTUR.
+// 3. Kapanış gecikmesi Framer Motion'ın "transition.visibility.delay" özelliği
+//    sayesinde CSS tabanlı yönetilir.
+// 4. Race Condition (ilk tıklamada açılmama) ihtimali SIFIRA indirilmiştir çünkü
+//    onClose() çağrısı anında yapılır, state anında senkronize olur.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const BaseModal = ({
@@ -37,34 +28,17 @@ const BaseModal = ({
 }) => {
   const dragControls = useDragControls();
 
-  // localIsOpen: Framer Motion animasyonunu kontrol eder.
-  // isOpen'dan BAĞIMSIZDIR — kapanış animasyonunun bitmesini bekleyebilmek için.
-  const [localIsOpen, setLocalIsOpen] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      setLocalIsOpen(true);
-    }
-    // isOpen false olursa (örn. URL geri tuşuyla) animasyonlu kapat
-    if (!isOpen && localIsOpen) {
-      setLocalIsOpen(false);
-    }
-  }, [isOpen]);
-
-  // ── Kapatma (Gecikmeli) ──────────────────────────────────────
-  const handleDelayedClose = () => {
-    if (preventClose || !localIsOpen) return;
-    setLocalIsOpen(false);       // 1. Kapanış animasyonunu başlat
-    setTimeout(() => {
-      onClose();                 // 2. 350ms sonra global state'i güncelle
-    }, 350);
+  // Kapatma sinyali (Gecikmesiz! Anında URL'i günceller)
+  const handleClose = () => {
+    if (preventClose || !isOpen) return;
+    onClose();
   };
 
-  // ── Sürükleme ───────────────────────────────────────────────
+  // Sürükleme sınırlarını aşınca kapat
   const handleDragEnd = (event, info) => {
-    if (preventClose || !localIsOpen) return;
+    if (preventClose || !isOpen) return;
     if (info.offset.y > 100 || info.velocity.y > 400) {
-      handleDelayedClose();
+      handleClose();
     }
   };
 
@@ -93,7 +67,7 @@ const BaseModal = ({
             <button
               type="button"
               className={styles.closeBtn}
-              onClick={handleDelayedClose}
+              onClick={handleClose}
               aria-label="Close"
             >
               <CloseIcon size={18} />
@@ -110,50 +84,61 @@ const BaseModal = ({
 
   // ── Modal Şablonu ────────────────────────────────────────────
   const modalContent = (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          {/* Arka Plan (Overlay) */}
-          <motion.div
-            key="overlay"
-            className={styles.modalOverlay}
-            onClick={!preventClose ? handleDelayedClose : undefined}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: localIsOpen ? 1 : 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-          />
+    <>
+      {/* Arka Plan (Overlay) */}
+      <motion.div
+        className={styles.modalOverlay}
+        onClick={!preventClose ? handleClose : undefined}
+        initial="closed"
+        animate={isOpen ? "open" : "closed"}
+        variants={{
+          open: { opacity: 1, visibility: 'visible', pointerEvents: 'auto' },
+          closed: { 
+            opacity: 0, 
+            visibility: 'hidden', 
+            pointerEvents: 'none',
+            transition: { visibility: { delay: 0.25 } } 
+          }
+        }}
+        transition={{ duration: 0.25 }}
+      />
 
-          {/* Panel */}
-          <motion.div
-            key="panel"
-            className={`${styles.modalContent} ${className}`}
-            style={{
-              maxWidth,
-              position: 'fixed',
-              bottom: 0,
-              left: '50%',
-              width: '100%',
-              zIndex: 3001,
-            }}
-            onClick={(e) => e.stopPropagation()}
-            initial={{ y: '100%', x: '-50%' }}
-            animate={{ y: localIsOpen ? 0 : '100%', x: '-50%' }}
-            exit={{ y: '100%', x: '-50%' }}
-            transition={{ type: 'spring', bounce: 0, duration: 0.35 }}
-            drag={!preventClose && localIsOpen ? 'y' : false}
-            dragListener={false}
-            dragControls={dragControls}
-            dragConstraints={{ top: 0 }}
-            dragElastic={{ top: 0, bottom: 0.5 }}
-            onDragEnd={handleDragEnd}
-            inert={!localIsOpen ? 'true' : undefined}
-          >
-            {contentInner}
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+      {/* Panel */}
+      <motion.div
+        className={`${styles.modalContent} ${className}`}
+        style={{
+          maxWidth,
+          position: 'fixed',
+          bottom: 0,
+          left: '50%',
+          width: '100%',
+          zIndex: 3001,
+        }}
+        onClick={(e) => e.stopPropagation()}
+        initial="closed"
+        animate={isOpen ? "open" : "closed"}
+        variants={{
+          open: { y: 0, x: '-50%', visibility: 'visible', pointerEvents: 'auto' },
+          closed: { 
+            y: '100%', 
+            x: '-50%', 
+            visibility: 'hidden', 
+            pointerEvents: 'none',
+            transition: { visibility: { delay: 0.35 } } // SİHİR BURADA: Modal kaybolmadan önce aşağı iner
+          }
+        }}
+        transition={{ type: 'spring', bounce: 0, duration: 0.35 }}
+        drag={!preventClose && isOpen ? 'y' : false}
+        dragListener={false}
+        dragControls={dragControls}
+        dragConstraints={{ top: 0 }}
+        dragElastic={{ top: 0, bottom: 0.5 }}
+        onDragEnd={handleDragEnd}
+        inert={!isOpen ? 'true' : undefined}
+      >
+        {contentInner}
+      </motion.div>
+    </>
   );
 
   return typeof document !== 'undefined'
