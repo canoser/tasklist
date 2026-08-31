@@ -31,17 +31,14 @@ const BaseModal = ({
   const handleDelayedClose = () => {
     if (preventClose || !localIsOpen) return;
     
-    if (keepMounted) {
-      // 1. Önce görsel olarak (local state ile) pencereyi kapat
-      setLocalIsOpen(false);
-      
-      // 2. Animasyonun akıp bitmesi için 300ms bekle ve sonra global state'i (URL'i) güncelle
-      setTimeout(() => {
-        onClose();
-      }, 300);
-    } else {
+    // 1. Önce görsel olarak (local state ile) pencereyi kapat
+    setLocalIsOpen(false);
+    
+    // 2. Animasyonun akıp bitmesi için 300ms bekle ve sonra global state'i (URL'i) güncelle
+    // (Bunu keepMounted olsun veya olmasın her zaman yapıyoruz ki ağır render işlemleri animasyonu dondurmasın)
+    setTimeout(() => {
       onClose();
-    }
+    }, 300);
   };
 
   // ── Sürükleme (Framer Motion) ───────────────────────────────
@@ -154,7 +151,7 @@ const BaseModal = ({
           className={styles.modalOverlay}
           onClick={!preventClose ? handleDelayedClose : undefined}
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          animate={{ opacity: localIsOpen ? 1 : 0 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.25 }}
         >
