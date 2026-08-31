@@ -13,7 +13,8 @@ const BaseModal = ({
   children, 
   maxWidth = '500px',
   preventClose = false,
-  className = ''
+  className = '',
+  keepMounted = false
 }) => {
   const dragControls = useDragControls();
   const [isClosing, setIsClosing] = useState(false);
@@ -23,40 +24,20 @@ const BaseModal = ({
       setIsClosing(false);
     }
   }, [isOpen]);
-  // ── Capacitor Native Back Button (Sadece Android cihazlar için) ─────────────
-  useEffect(() => {
-    if (!isOpen) return;
-    
-    let capListener = null;
-    const setupCap = async () => {
-      try {
-        const { App } = await import('@capacitor/app');
-        capListener = await App.addListener('backButton', () => {
-          if (!preventClose) {
-            onClose();
-          }
-        });
-      } catch (_) { /* Web'de veya Capacitor yüklü değilse yoksay */ }
-    };
-    
-    setupCap();
-
-    return () => {
-      if (capListener && capListener.remove) {
-        capListener.remove();
-      }
-    };
-  }, [isOpen, preventClose, onClose]);
 
   // ── Sürükleme (Framer Motion) ───────────────────────────────
   const handleDragEnd = (event, info) => {
     if (preventClose) return;
     
     if (info.offset.y > 100 || info.velocity.y > 400) {
-      setIsClosing(true);
-      setTimeout(() => {
+      if (keepMounted) {
         onClose();
-      }, 250);
+      } else {
+        setIsClosing(true);
+        setTimeout(() => {
+          onClose();
+        }, 250);
+      }
     }
   };
 
@@ -66,7 +47,95 @@ const BaseModal = ({
     }
   };
 
-  const modalContent = (
+  const contentInner = (
+    <>
+      {/* Sürükleme Tutamağı (Drag Handle) */}
+      <div 
+        className={styles.dragHandleContainer}
+        onPointerDown={startDrag}
+        style={{ touchAction: 'none' }}
+      >
+        <div className={styles.dragPill} />
+      </div>
+
+      {title && (
+        <div 
+          className={styles.header}
+          onPointerDown={startDrag}
+        >
+          <div className={styles.headerText}>
+            <h3 className={styles.title}>{title}</h3>
+            {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
+          </div>
+          {!preventClose && (
+            <button 
+              type="button" 
+              className={styles.closeBtn} 
+              onClick={onClose}
+              aria-label="Close"
+            >
+              <CloseIcon size={18} />
+            </button>
+          )}
+        </div>
+      )}
+      
+      <div className={styles.body}>
+        {children}
+      </div>
+
+      {footer && (
+        <div className={styles.footer}>
+          {footer}
+        </div>
+      )}
+    </>
+  );
+
+  const modalContent = keepMounted ? (
+    <>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            className={styles.modalOverlay}
+            onClick={!preventClose ? onClose : undefined}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+          />
+        )}
+      </AnimatePresence>
+
+      <motion.div 
+        className={`${styles.modalContent} ${className}`}
+        style={{ maxWidth, position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', zIndex: 3001, width: '100%' }}
+        onClick={(e) => e.stopPropagation()}
+        
+        // Animasyonlar (Varyant tabanlı DOM caching)
+        initial="closed"
+        animate={isOpen ? "open" : "closed"}
+        variants={{
+          open: { y: 0, x: '-50%', visibility: 'visible', pointerEvents: 'auto' },
+          closed: { y: '100%', x: '-50%', pointerEvents: 'none', transitionEnd: { visibility: 'hidden' } }
+        }}
+        transition={{ type: 'spring', bounce: 0, duration: 0.35 }}
+        
+        // Sürükleme Ayarları
+        drag={!preventClose && isOpen ? "y" : false}
+        dragListener={false}
+        dragControls={dragControls}
+        dragConstraints={{ top: 0 }}
+        dragElastic={{ top: 0, bottom: 0.5 }}
+        onDragEnd={handleDragEnd}
+        
+        // Accessibility ve Focus Trap önlemi
+        inert={!isOpen ? "true" : undefined}
+      >
+        {contentInner}
+      </motion.div>
+    </>
+  ) : (
     <AnimatePresence>
       {isOpen && (
         <motion.div 
@@ -82,64 +151,19 @@ const BaseModal = ({
             style={{ maxWidth }}
             onClick={(e) => e.stopPropagation()}
             
-            // Animasyonlar
             initial={{ y: '100%' }}
             animate={{ y: isClosing ? '100%' : 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', bounce: 0, duration: 0.35 }}
             
-            // Yalnızca Y ekseninde sürüklemeye izin ver
             drag={!preventClose ? "y" : false}
-            // Tüm gövdeden sürüklemeyi Kapat (Scroll çakışmasını engeller!)
             dragListener={false}
-            // Kendi drag controller'ımızı veriyoruz
             dragControls={dragControls}
-            // Sadece yukarı doğru sürüklemeyi engelle (top: 0). 
-            // Aşağısını (bottom) serbest bırakıyoruz ki framer-motion kendi kendine sekip state'i bozmasın.
             dragConstraints={{ top: 0 }}
             dragElastic={{ top: 0, bottom: 0.5 }}
             onDragEnd={handleDragEnd}
           >
-            {/* Sürükleme Tutamağı (Drag Handle) */}
-            <div 
-              className={styles.dragHandleContainer}
-              onPointerDown={startDrag}
-              style={{ touchAction: 'none' }}
-            >
-              <div className={styles.dragPill} />
-            </div>
-
-            {title && (
-              <div 
-                className={styles.header}
-                onPointerDown={startDrag} // Başlığa tıklayıp da sürükleyebilsin
-              >
-                <div className={styles.headerText}>
-                  <h3 className={styles.title}>{title}</h3>
-                  {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
-                </div>
-                {!preventClose && (
-                  <button 
-                    type="button" 
-                    className={styles.closeBtn} 
-                    onClick={onClose}
-                    aria-label="Close"
-                  >
-                    <CloseIcon size={18} />
-                  </button>
-                )}
-              </div>
-            )}
-            
-            <div className={styles.body}>
-              {children}
-            </div>
-
-            {footer && (
-              <div className={styles.footer}>
-                {footer}
-              </div>
-            )}
+            {contentInner}
           </motion.div>
         </motion.div>
       )}

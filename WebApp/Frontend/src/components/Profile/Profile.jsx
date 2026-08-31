@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './Profile.module.css';
-import RoleTagSelect from './RoleTagSelect';
 import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n';
 import storage from '../../utils/storage';
@@ -29,7 +28,6 @@ const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTh
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [localGuestName, setLocalGuestName] = useState(guestName || storage.getString('guest_name') || '');
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
-  const [showRoleInfo, setShowRoleInfo] = useState(false);
 
   const toggleSection = (sec) => setOpenSection(prev => prev === sec ? null : sec);
 
@@ -250,33 +248,9 @@ const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTh
                     <span className={styles.themeName}>{t('theme_cyberpunk', { context: tone, defaultValue: 'Siberpunk' })}</span>
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
 
-      {/* ── YAZI TİPİ BÖLÜMÜ ─────────────────── */}
-      <div className={styles.sectionCard}>
-        <div 
-          className={styles.sectionHeader} 
-          onClick={() => toggleSection('typography')}
-          style={{ cursor: 'pointer' }}
-        >
-          <h3 className={styles.sectionTitle}>
-            <span className={styles.sectionIcon}>✏️</span> {t('section_typography', { defaultValue: 'Yazı Tipi & Boyutu' })}
-          </h3>
-          <ChevronIcon isOpen={openSection === 'typography'} />
-        </div>
-
-        <AnimatePresence>
-          {openSection === 'typography' && (
-            <motion.div
-              initial={{ height: 0, opacity: 0, overflow: 'hidden' }}
-              animate={{ height: 'auto', opacity: 1, transitionEnd: { overflow: 'visible' } }}
-              exit={{ height: 0, opacity: 0, overflow: 'hidden' }}
-            >
-              <div className={styles.sectionBody}>
+                <hr style={{ margin: '24px 0', border: 'none', borderTop: '1px solid var(--border)' }} />
+                
                 {/* Yazı Karakteri */}
                 <h4 style={{ fontSize: '13px', color: 'var(--text2)', marginBottom: '12px' }}>{t('font_family', { defaultValue: 'Yazı Karakteri' })}</h4>
                 <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
@@ -399,77 +373,6 @@ const Profile = ({ user, guestName, appearance, onToggleAppearance, theme, setTh
         </AnimatePresence>
       </div>
 
-      {/* ── ROLLER BÖLÜMÜ ─────────────────────────────────────────────────── */}
-      <div className={styles.sectionCard}>
-        <div
-          className={styles.sectionHeader}
-          onClick={() => toggleSection('roles')}
-          style={{ cursor: 'pointer' }}
-        >
-          <h3 className={styles.sectionTitle}>
-            <span className={styles.sectionIcon}>👤</span> {t('section_roles', { context: tone })}
-          </h3>
-          <ChevronIcon isOpen={openSection === 'roles'} />
-        </div>
-
-        <AnimatePresence>
-          {openSection === 'roles' && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              style={{ overflow: 'visible' }}
-            >
-              <div className={styles.sectionBody}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                  <p className={styles.themeDesc} style={{ marginBottom: 0 }}>
-                    {t('roles_desc', { context: tone })}
-                  </p>
-                  <span 
-                    onClick={() => setShowRoleInfo(!showRoleInfo)}
-                    style={{ 
-                      fontSize: '12px', 
-                      color: 'var(--accent, #3b82f6)', 
-                      cursor: 'pointer', 
-                      fontWeight: '600',
-                      whiteSpace: 'nowrap',
-                      marginLeft: '12px'
-                    }}
-                  >
-                    {t('roles_how_to_use_link', { defaultValue: 'Nasıl Kullanılır?' })}
-                  </span>
-                </div>
-
-                <AnimatePresence>
-                  {showRoleInfo && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      style={{ overflow: 'hidden', marginBottom: '16px' }}
-                    >
-                      <div style={{ 
-                        padding: '12px', 
-                        background: 'var(--bg, #f9fafb)', 
-                        border: '1px solid var(--border, #e5e7eb)',
-                        borderLeft: '4px solid var(--accent, #3b82f6)',
-                        borderRadius: '8px',
-                        fontSize: '13px',
-                        color: 'var(--text2, #4b5563)',
-                        lineHeight: '1.5'
-                      }}>
-                        {t('roles_how_to_use_info', { context: tone, defaultValue: 'Roller, görevlerinizi belirli kimlikler altında (Örn: Öğrenci, Müdür, Baba) organize etmenizi sağlar. Kutucuğa tıklayarak listeden bir rol seçebilir veya kendi özel rolünüzü yazıp Enter tuşuna basarak listeye yeni bir rol ekleyebilirsiniz.' })}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                <RoleTagSelect userId={user?.id || user?.uid} tone={tone} />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
     </motion.div>
   );
 };

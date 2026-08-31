@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import styles from './SideNav.module.css';
-import AddTaskModal from '../Task/AddTaskModal';
 import { useTranslation } from 'react-i18next';
 
 const HomeIcon = () => (
@@ -24,8 +23,7 @@ const PlusIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
 );
 
-const SideNav = ({ activeTab = 'home', onTabChange = () => {}, tone, user, openAuth }) => {
-  const [isMenuExpanded, setIsMenuExpanded] = useState(false);
+const SideNav = ({ activeTab = 'home', onTabChange = () => {}, tone, user, openAuth, openAddTaskModal }) => {
   const [showGuestAlert, setShowGuestAlert] = useState(false);
   const { t } = useTranslation('common');
 
@@ -74,7 +72,7 @@ const SideNav = ({ activeTab = 'home', onTabChange = () => {}, tone, user, openA
         <div className={styles.bottomActions}>
           <motion.button 
             className={styles.actionButton}
-            onClick={() => setIsMenuExpanded(true)}
+            onClick={() => openAddTaskModal()}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -83,8 +81,6 @@ const SideNav = ({ activeTab = 'home', onTabChange = () => {}, tone, user, openA
           </motion.button>
         </div>
       </div>
-
-      <AddTaskModal isOpen={isMenuExpanded} onClose={() => setIsMenuExpanded(false)} tone={tone} />
 
       {/* Misafir Uyarı Modalı */}
       {showGuestAlert && (

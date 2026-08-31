@@ -26,6 +26,7 @@ import { setTone as setI18nTone } from './i18n';
 import storage from './utils/storage';
 import GuestWelcomeModal from './components/Auth/GuestWelcomeModal';
 import NotificationBanner from './components/Common/NotificationBanner';
+import AddTaskModal from './components/Task/AddTaskModal';
 import { useKeyboardScrollFix } from './hooks/useKeyboardScrollFix';
 import { useOrientation } from './hooks/useOrientation';
 import { motion } from 'framer-motion';
@@ -107,6 +108,7 @@ export default function App() {
           tone={tone}
           user={user}
           openAuth={() => openModal('auth')}
+          openAddTaskModal={() => openModal('addTask')}
         >
           <NatureDecor />
           <OceanDecor />
@@ -171,7 +173,7 @@ export default function App() {
           <main className={styles.main}>
             
             <div style={{ display: activeTab === 'home' ? 'flex' : 'none', flex: 1, flexDirection: 'column', height: '100%' }}>
-              <Dashboard user={user} guestName={guestName} tone={tone} />
+              <Dashboard user={user} guestName={guestName} tone={tone} navigation={{ activeTab, setTab, openModal, closeModal, isModalOpen, queryParams, setParam, removeParam, clearAllModalsAndParams }} />
             </div>
 
             <div style={{ display: activeTab === 'search' ? 'flex' : 'none', flex: 1, flexDirection: 'column', height: '100%' }}>
@@ -214,6 +216,7 @@ export default function App() {
           </main>
 
           <AuthModal isOpen={isModalOpen('auth')} onClose={() => closeModal('auth')} tone={tone} />
+          <AddTaskModal isOpen={isModalOpen('addTask')} onClose={() => closeModal('addTask')} tone={tone} />
           {!user && <GuestWelcomeModal tone={tone} onToneChange={handleToneChange} onComplete={(name) => setGuestName(name)} />}
           {user && <NotificationBanner />}
         </div>

@@ -8,7 +8,6 @@ import { useUndo } from '../Common/UndoContext';
 import { useTaskContext } from '../../context/TaskContext';
 import CategoryManagerPanel from '../Category/CategoryManagerPanel';
 import ChainManagerPanel from '../Chain/ChainManagerPanel';
-import AddTaskModal from '../Task/AddTaskModal';
 import screenStyles from './CalendarScreen.module.css';
 import { useTranslation } from 'react-i18next';
 
@@ -19,8 +18,6 @@ const CalendarScreen = ({ user, navigation, tone }) => {
   const [selectedDay, setSelectedDay] = useState(null);
   
   const [actionTask, setActionTask] = useState(null);
-  const [isActionModalOpen, setIsActionModalOpen] = useState(false);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   
   const { triggerUndoableAction } = useUndo();
   const { lastAddedTask } = useTaskContext();
@@ -84,7 +81,7 @@ const CalendarScreen = ({ user, navigation, tone }) => {
 
   const handleTaskClick = (task) => {
     setActionTask(task);
-    setTimeout(() => setIsActionModalOpen(true), 0);
+    setTimeout(() => navigation.openModal('taskAction'), 0);
   };
 
   const handleComplete = (task) => {
@@ -198,7 +195,7 @@ const CalendarScreen = ({ user, navigation, tone }) => {
             onCategoryClick={() => scrollTo(categoryRef)}
             onChainClick={() => scrollTo(chainRef)}
             onTaskToggle={handleToggleComplete}
-            onAddClick={() => setIsAddModalOpen(true)}
+            onAddClick={() => navigation.openModal('addTask')}
           />
         </div>
       </section>
@@ -248,18 +245,12 @@ const CalendarScreen = ({ user, navigation, tone }) => {
       />
 
       <TaskActionModal 
-        isOpen={isActionModalOpen}
-        onClose={() => setIsActionModalOpen(false)}
+        isOpen={navigation.isModalOpen('taskAction')}
+        onClose={() => navigation.closeModal('taskAction')}
         task={actionTask}
         onComplete={handleComplete}
         onPartialComplete={handlePartialComplete}
         onPostpone={handlePostpone}
-      />
-
-      <AddTaskModal 
-        isOpen={isAddModalOpen} 
-        onClose={() => setIsAddModalOpen(false)} 
-        tone={tone} 
       />
     </div>
   );

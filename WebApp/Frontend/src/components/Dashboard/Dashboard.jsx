@@ -5,7 +5,6 @@ import Timeline from './Timeline';
 import DashboardSummary from './DashboardSummary';
 import SmartAssistant from './SmartAssistant';
 import AiCommandModal from './AiCommandModal';
-import AddTaskModal from '../Task/AddTaskModal';
 import { useTranslation } from 'react-i18next';
 import { Plus } from 'lucide-react';
 
@@ -16,12 +15,10 @@ const greetingVariants = {
 };
 
 // ── Dashboard Sayfası ─────────────────────────────────────────────────────────
-const Dashboard = ({ user, guestName, tone }) => {
+const Dashboard = ({ user, guestName, tone, navigation }) => {
   const { t } = useTranslation('tasks');
   const displayName = user?.displayName || user?.email?.split('@')[0] || guestName || t('default_username', { ns: 'profile' });
   const [isAssistantVisible, setIsAssistantVisible] = useState(true);
-  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [taskStats, setTaskStats] = useState({ remaining: 3, completed: 1 });
 
   return (
@@ -52,7 +49,7 @@ const Dashboard = ({ user, guestName, tone }) => {
             </span>
             <button 
               className={styles.addBtn}
-              onClick={() => setIsAddModalOpen(true)}
+              onClick={() => navigation?.openModal('addTask')}
               title="Yeni Görev Ekle"
             >
               <Plus size={16} /> Görev Ekle
@@ -71,19 +68,16 @@ const Dashboard = ({ user, guestName, tone }) => {
       <SmartAssistant
         isVisible={isAssistantVisible}
         onHide={() => setIsAssistantVisible(false)}
-        onOpenAi={() => { setIsAiModalOpen(true); }}
+        onOpenAi={() => navigation?.openModal('aiCommand')}
+        isOpen={navigation?.isModalOpen('smartWizard')}
+        onOpen={() => navigation?.openModal('smartWizard')}
+        onClose={() => navigation?.closeModal('smartWizard')}
       />
 
       <AiCommandModal 
-        isOpen={isAiModalOpen} 
-        onClose={() => setIsAiModalOpen(false)} 
+        isOpen={navigation?.isModalOpen('aiCommand')} 
+        onClose={() => navigation?.closeModal('aiCommand')} 
         workspaceId={1} 
-      />
-
-      <AddTaskModal 
-        isOpen={isAddModalOpen} 
-        onClose={() => setIsAddModalOpen(false)} 
-        tone={tone} 
       />
     </>
   );

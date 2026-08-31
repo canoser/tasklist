@@ -45,35 +45,9 @@ const WIZARD_STEPS = [
 
 // ── Ana SmartAssistant Bileşeni ───────────────────────────────────────────────
 // isVisible ve onHide props'ları ile Dashboard'dan gizleme kontrolü yapılır
-const SmartAssistant = ({ isVisible = true, onHide, onOpenAi }) => {
-  const [isOpen, setIsOpen] = useState(false);
+const SmartAssistant = ({ isVisible = true, onHide, onOpenAi, isOpen, onOpen, onClose }) => {
   const [stepIndex, setStepIndex] = useState(0);
   const [selected, setSelected] = useState(null);
-
-  const backButtonPressed = React.useRef(false);
-
-  React.useEffect(() => {
-    if (!isOpen) return;
-
-    let capListener = null;
-    const setupNativeBack = async () => {
-      try {
-        const { App } = await import('@capacitor/app');
-        capListener = await App.addListener('backButton', () => {
-          setIsOpen(false);
-        });
-      } catch (e) {
-        // Capacitor plugin not available
-      }
-    };
-    setupNativeBack();
-
-    return () => {
-      if (capListener && capListener.remove) {
-        capListener.remove();
-      }
-    };
-  }, [isOpen]);
 
   const currentStep = WIZARD_STEPS[stepIndex];
   const isLastStep = stepIndex === WIZARD_STEPS.length - 1;
@@ -85,10 +59,12 @@ const SmartAssistant = ({ isVisible = true, onHide, onOpenAi }) => {
     }
     setStepIndex(0);
     setSelected(null);
-    setIsOpen(true);
+    if (onOpen) onOpen();
   };
 
-  const handleClose = () => setIsOpen(false);
+  const handleClose = () => {
+    if (onClose) onClose();
+  };
 
   const handleHide = (e) => {
     e.stopPropagation(); // FAB'ın handleOpen'ını tetiklemesin

@@ -90,6 +90,10 @@ export const logoutUser = async () => {
   localStorage.removeItem('auth_token');
   
   notifyListeners(null);
+  
+  // Tam sayfa yenilemesi ile React state'ini bellekten tamamen temizle
+  window.location.href = '/';
+  
   return { error: null };
 };
 

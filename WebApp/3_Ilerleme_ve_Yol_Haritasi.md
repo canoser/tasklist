@@ -144,6 +144,19 @@ Bu dosya, projenin başından itibaren tamamlanan adımları ve gelecekte yapıl
   - `IdempotencyFilter.cs` üzerinde **Race Condition (Milisaniyelik Çift Tıklama)** testi (Mutation Testing) yapıldı. Ciddi bir güvenlik/veri çakışması açığı (500 Error) tespit edildi.
   - Filtre içerisine `SemaphoreSlim` ile "In-Memory Lock (Bellek İçi Kilitleme)" kurgulandı. Aynı saniyede gelen mükerrer istekler %100 başarıyla `409 Conflict` dönerek durduruldu.
 
+- [x] **Adım 11: "Sıfır Gecikme (Zero-Latency)" Modal ve DOM Caching Mimarisi (31 Ağustos)**
+  - Native Form Elemanlarının (`<input type="date">` ve `time`) `AnimatePresence` ile her açılışta silinip baştan yaratılması sonucu oluşan Layout Thrashing (kare düşüşü ve donma) sorunu için DOM Caching (Önbellekleme) mimarisine geçildi.
+  - **Değiştirilen Dosyalar ve Yapılan Kod/Mimari Güncellemeleri:**
+    - `BaseModal.jsx`: 
+      - `keepMounted` (Önbellekleme) prop'u eklendi.
+      - **(Risk 3 Çözümü)** İçerik `AnimatePresence` dışına çıkartılarak Framer Motion `variants` ve `animate={{ y: isOpen ? 0 : '100%' }}` yapısına geçirildi. Kapanma animasyonu pürüzsüz hale getirildi.
+      - **(Risk 2 Çözümü - Focus Trap)** Gizli durumdayken ekran okuyucu ve Tab tuşuyla ulaşılamaması için HTML5 standardı olan `inert={!isOpen ? "true" : undefined}` eklendi. Ayrıca CSS olarak `visibility: hidden` ve `pointerEvents: none` uygulandı.
+      - Her açılışta asenkron çalışan gereksiz `import('@capacitor/app')` kodu kaldırılarak, cihaz geri tuşu için yalnızca `useAppNavigation`'ın `popstate` (History API) mekanizmasına güvenildi.
+      - Framer Motion'ın `y` animasyonu esnasında `transform: translateX(-50%)` stilini ezmemesi için varyantlar içerisine `x: '-50%'` eksen sabitlemesi koda eklendi. (Modalın sağa kayma sorunu çözüldü).
+    - `AddTaskModal.jsx`:
+      - `BaseModal` bileşenine `keepMounted={true}` prop'u geçilerek ağır form elemanlarının DOM'da asılı kalması (cache) sağlandı.
+      - **(Risk 1 Çözümü - Form Sıfırlama)** Form DOM'dan silinmediği için eski verilerle kalmasını önlemek adına, `useEffect` içerisine akıllı bir temizleyici yazıldı. Kullanıcı pencereyi X ile veya dışarı tıklayarak kapatsa dahi animasyon bittikten 50ms sonra (kullanıcı görmezken) form alanları `setTimeout(..., 400)` ile sessizce sıfırlandı.
+
 ### 5. Ekstra İleri Seviye Özellikler (Gizli Tamamlananlar)
 - [x] **SignalR WebSocket (Real-Time):** `AppHub.cs` üzerinden Çalışma Alanı bazlı anlık iletişim omurgası kuruldu.
 - [x] **AI Asistan (Gemini & OpenAI) Altyapısı:** `AiController.cs`, kotalar, IDOR güvenlik testleri ve OpenAI `GeneratePlan` entegrasyonu eksiksiz kodlandı.
@@ -216,4 +229,4 @@ Bu dosya, projenin başından itibaren tamamlanan adımları ve gelecekte yapıl
 - [ ] **Gemini API JSON Haritalaması:** AI Asistan altyapısının büyük kısmı bitmiş olmasına rağmen, OpenAI JSON şema standartlarının Gemini'ın `functionDeclarations` formatına çevrilmesi (`GeminiProvider.cs`) kodlanacak.
 
 ---
-*Son Güncelleme Tarihi: 30 Ağustos 2026*
+*Son Güncelleme Tarihi: 31 Ağustos 2026*

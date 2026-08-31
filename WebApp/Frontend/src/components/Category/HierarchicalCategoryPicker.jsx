@@ -3,11 +3,16 @@ import { categoryService } from '../../services/categoryService';
 import styles from './HierarchicalCategoryPicker.module.css';
 
 const HierarchicalCategoryPicker = ({ value, onChange }) => {
-  const [selections, setSelections] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [selections, setSelections] = useState(() => {
+    const cached = categoryService.getCachedRoots();
+    return cached ? [{ items: cached, selectedId: null }] : [];
+  });
+  const [loading, setLoading] = useState(() => !categoryService.getCachedRoots());
 
   useEffect(() => {
-    loadRoots();
+    if (!categoryService.getCachedRoots()) {
+      loadRoots();
+    }
   }, []);
 
   const loadRoots = async () => {

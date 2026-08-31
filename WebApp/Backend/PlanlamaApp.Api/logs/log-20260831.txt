@@ -1,0 +1,714 @@
+2026-08-31 00:01:18.972 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:01:18.978 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:01:18.979 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:01:18.981 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:01:18.983 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.9609ms
+2026-08-31 00:01:18.984 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:01:18.985 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 13.3541ms
+2026-08-31 00:01:19.026 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:01:19.029 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:01:19.030 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:01:19.032 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:01:19.034 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.8807ms
+2026-08-31 00:01:19.036 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:01:19.037 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 10.8256ms
+2026-08-31 00:01:19.045 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:01:19.048 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:01:19.049 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:01:19.051 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:01:19.053 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.8077ms
+2026-08-31 00:01:19.054 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:01:19.055 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 10.1431ms
+2026-08-31 00:01:19.263 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:01:19.266 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:01:19.268 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:01:19.269 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 5.8415ms
+2026-08-31 00:01:19.272 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories - null null
+2026-08-31 00:01:19.275 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:01:19.276 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:01:19.278 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories - 401 0 null 5.6471ms
+2026-08-31 00:01:19.289 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:01:19.292 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:01:19.293 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:01:19.294 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 4.9843ms
+2026-08-31 00:01:19.299 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories - null null
+2026-08-31 00:01:19.302 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:01:19.303 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:01:19.304 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories - 401 0 null 5.8639ms
+2026-08-31 00:01:19.385 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/tasks/chains - null null
+2026-08-31 00:01:19.388 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:01:19.389 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:01:19.390 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/tasks/chains - 401 0 null 5.1345ms
+2026-08-31 00:01:19.401 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/tasks/chains - null null
+2026-08-31 00:01:19.404 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:01:19.405 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:01:19.406 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/tasks/chains - 401 0 null 5.1447ms
+2026-08-31 00:01:20.421 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:01:20.424 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:01:20.425 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:01:20.426 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 4.3478ms
+2026-08-31 00:01:20.437 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:01:20.440 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:01:20.441 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:01:20.442 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 4.4555ms
+2026-08-31 00:01:24.662 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:01:24.665 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:01:24.666 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:01:24.667 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 5.106ms
+2026-08-31 00:01:24.691 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:01:24.695 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:01:24.696 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:01:24.697 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 5.9128ms
+2026-08-31 00:01:28.591 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:01:28.594 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:01:28.595 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:01:28.597 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 5.734ms
+2026-08-31 00:01:28.611 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:01:28.615 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:01:28.616 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:01:28.617 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 5.2678ms
+2026-08-31 00:01:35.065 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:01:35.068 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:01:35.069 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:01:35.070 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 4.5862ms
+2026-08-31 00:01:35.080 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:01:35.083 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:01:35.084 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:01:35.085 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 5.0462ms
+2026-08-31 00:01:37.134 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:01:37.137 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:01:37.138 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:01:37.139 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 5.1853ms
+2026-08-31 00:01:37.379 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:01:37.382 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:01:37.383 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:01:37.384 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 5.1082ms
+2026-08-31 00:01:40.024 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:01:40.027 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:01:40.028 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:01:40.030 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 5.2341ms
+2026-08-31 00:01:40.042 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:01:40.045 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:01:40.046 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:01:40.047 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 5.1502ms
+2026-08-31 00:01:50.451 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:01:50.454 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:01:50.455 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:01:50.456 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 5.3012ms
+2026-08-31 00:01:50.471 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:01:50.474 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:01:50.475 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:01:50.477 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 5.4848ms
+2026-08-31 00:01:54.889 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:01:54.891 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:01:54.892 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:01:54.893 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 4.086ms
+2026-08-31 00:01:54.903 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:01:54.906 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:01:54.907 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:01:54.907 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 4.2781ms
+2026-08-31 00:01:58.439 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:01:58.441 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:01:58.442 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:01:58.443 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 4.4535ms
+2026-08-31 00:01:58.457 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:01:58.460 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:01:58.461 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:01:58.462 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 4.392ms
+2026-08-31 00:02:02.660 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:02:02.663 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:02:02.664 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:02:02.665 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 4.4773ms
+2026-08-31 00:02:02.678 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:02:02.681 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:02:02.682 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:02:02.683 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 4.4128ms
+2026-08-31 00:02:05.349 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:02:05.351 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:02:05.353 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:02:05.354 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 5.372ms
+2026-08-31 00:02:05.371 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:02:05.373 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:02:05.374 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:02:05.375 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 4.1728ms
+2026-08-31 00:02:08.442 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:02:08.445 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:02:08.446 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:02:08.447 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 5.1473ms
+2026-08-31 00:02:08.456 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:02:08.459 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:02:08.459 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:02:08.460 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 4.4162ms
+2026-08-31 00:02:29.170 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:02:29.172 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:02:29.173 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:02:29.174 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 4.5555ms
+2026-08-31 00:02:29.191 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:02:29.193 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:02:29.194 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:02:29.195 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 4.3859ms
+2026-08-31 00:02:32.884 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:02:32.887 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:02:32.888 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:02:32.889 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 5.1309ms
+2026-08-31 00:02:32.904 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:02:32.906 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:02:32.907 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:02:32.908 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 4.2039ms
+2026-08-31 00:02:35.190 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:02:35.193 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:02:35.194 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:02:35.195 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 4.8602ms
+2026-08-31 00:02:35.205 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:02:35.207 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:02:35.208 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:02:35.209 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 4.0941ms
+2026-08-31 00:02:39.287 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:02:39.290 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:02:39.292 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:02:39.293 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 5.321ms
+2026-08-31 00:02:39.306 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:02:39.309 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:02:39.310 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:02:39.311 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 4.8097ms
+2026-08-31 00:05:12.378 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:05:12.383 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:05:12.384 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:05:12.387 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:05:12.389 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 3.4515ms
+2026-08-31 00:05:12.391 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:05:12.393 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 14.9653ms
+2026-08-31 00:05:12.621 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:05:12.625 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:05:12.626 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:05:12.629 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:05:12.631 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 2.255ms
+2026-08-31 00:05:12.633 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:05:12.634 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 13.8699ms
+2026-08-31 00:05:12.637 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:05:12.641 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:05:12.643 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:05:12.646 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:05:12.648 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 2.7964ms
+2026-08-31 00:05:12.650 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:05:12.652 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 14.2628ms
+2026-08-31 00:05:12.835 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:05:12.836 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories - null null
+2026-08-31 00:05:12.839 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:05:12.842 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:05:12.843 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:05:12.844 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:05:12.845 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 9.3592ms
+2026-08-31 00:05:12.846 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories - 401 0 null 10.6165ms
+2026-08-31 00:05:12.853 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:05:12.855 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories - null null
+2026-08-31 00:05:12.857 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:05:12.860 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:05:12.861 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:05:12.862 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:05:12.863 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 10.5971ms
+2026-08-31 00:05:12.864 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories - 401 0 null 9.508ms
+2026-08-31 00:05:12.914 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/tasks/chains - null null
+2026-08-31 00:05:12.918 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:05:12.919 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:05:12.921 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/tasks/chains - 401 0 null 7.0202ms
+2026-08-31 00:05:12.935 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/tasks/chains - null null
+2026-08-31 00:05:12.939 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:05:12.940 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:05:12.941 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/tasks/chains - 401 0 null 6.2051ms
+2026-08-31 00:23:44.423 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:23:44.425 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:23:44.427 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:23:44.429 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:23:44.431 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.853ms
+2026-08-31 00:23:44.432 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:23:44.433 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 10.6919ms
+2026-08-31 00:23:44.526 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:23:44.529 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:23:44.530 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:23:44.532 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:23:44.534 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.91ms
+2026-08-31 00:23:44.535 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:23:44.537 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 10.5586ms
+2026-08-31 00:23:44.546 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:23:44.549 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:23:44.550 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:23:44.552 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:23:44.553 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.4851ms
+2026-08-31 00:23:44.555 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:23:44.556 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 9.2403ms
+2026-08-31 00:23:45.910 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:23:45.910 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories - null null
+2026-08-31 00:23:45.913 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:23:45.915 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:23:45.915 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:23:45.916 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:23:45.917 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 6.8558ms
+2026-08-31 00:23:45.918 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories - 401 0 null 8.0166ms
+2026-08-31 00:23:45.930 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/tasks/chains - null null
+2026-08-31 00:23:45.933 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:23:45.933 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:23:45.933 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:23:45.936 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:23:45.937 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/tasks/chains - 401 0 null 6.6316ms
+2026-08-31 00:23:45.938 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:23:45.941 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 8.4804ms
+2026-08-31 00:23:45.946 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories - null null
+2026-08-31 00:23:45.949 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:23:45.950 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:23:45.952 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories - 401 0 null 5.1715ms
+2026-08-31 00:23:45.989 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/tasks/chains - null null
+2026-08-31 00:23:45.992 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:23:45.993 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:23:45.994 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/tasks/chains - 401 0 null 4.722ms
+2026-08-31 00:23:50.098 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:23:50.101 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:23:50.102 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:23:50.104 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:23:50.105 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.5287ms
+2026-08-31 00:23:50.107 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:23:50.108 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 10.2491ms
+2026-08-31 00:23:50.129 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:23:50.132 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:23:50.134 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:23:50.136 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:23:50.138 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.807ms
+2026-08-31 00:23:50.139 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:23:50.140 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 10.7004ms
+2026-08-31 00:23:50.145 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:23:50.147 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:23:50.148 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:23:50.150 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:23:50.151 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.4991ms
+2026-08-31 00:23:50.152 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:23:50.153 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 8.6904ms
+2026-08-31 00:23:50.339 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:23:50.340 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories - null null
+2026-08-31 00:23:50.342 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:23:50.345 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:23:50.346 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:23:50.347 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:23:50.348 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 8.7002ms
+2026-08-31 00:23:50.349 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories - 401 0 null 8.6053ms
+2026-08-31 00:23:50.357 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:23:50.360 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:23:50.361 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:23:50.362 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 5.0263ms
+2026-08-31 00:23:50.363 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories - null null
+2026-08-31 00:23:50.367 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:23:50.368 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:23:50.369 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories - 401 0 null 6.1746ms
+2026-08-31 00:23:50.464 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/tasks/chains - null null
+2026-08-31 00:23:50.468 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:23:50.469 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:23:50.470 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/tasks/chains - 401 0 null 5.8874ms
+2026-08-31 00:23:50.481 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/tasks/chains - null null
+2026-08-31 00:23:50.484 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:23:50.485 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:23:50.486 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/tasks/chains - 401 0 null 4.6261ms
+2026-08-31 00:24:54.663 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:24:54.666 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:24:54.667 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:24:54.668 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 5.1391ms
+2026-08-31 00:24:54.682 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:24:54.685 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:24:54.686 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:24:54.687 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 5.1077ms
+2026-08-31 00:25:40.162 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:25:40.165 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:25:40.166 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:25:40.167 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 4.9911ms
+2026-08-31 00:25:40.177 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:25:40.180 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:25:40.181 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:25:40.182 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 4.849ms
+2026-08-31 00:27:46.369 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:27:46.372 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:27:46.373 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:27:46.374 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 5.4684ms
+2026-08-31 00:27:46.390 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:27:46.393 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:27:46.394 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:27:46.395 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 4.9768ms
+2026-08-31 00:27:56.850 +03:00 [INF] Request starting HTTP/1.1 POST http://localhost:5268/api/categories - application/json 46
+2026-08-31 00:27:56.857 +03:00 [INF] CORS policy execution successful.
+2026-08-31 00:27:56.859 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:27:56.860 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:27:56.861 +03:00 [INF] Request finished HTTP/1.1 POST http://localhost:5268/api/categories - 401 0 null 11.4461ms
+2026-08-31 00:30:07.937 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:30:07.940 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:30:07.941 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:30:07.943 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:30:07.945 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.9464ms
+2026-08-31 00:30:07.946 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:30:07.947 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 10.2296ms
+2026-08-31 00:30:08.092 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:30:08.096 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:30:08.097 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:30:08.099 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:30:08.100 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.7302ms
+2026-08-31 00:30:08.102 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:30:08.104 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 11.1244ms
+2026-08-31 00:31:32.051 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:31:32.054 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:31:32.056 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:31:32.057 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:31:32.059 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.4473ms
+2026-08-31 00:31:32.060 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:31:32.062 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 10.1997ms
+2026-08-31 00:31:32.155 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:31:32.161 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:31:32.163 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:31:32.165 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:31:32.166 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.73ms
+2026-08-31 00:31:32.168 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:31:32.169 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 14.3481ms
+2026-08-31 00:31:47.646 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:31:47.649 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:31:47.650 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:31:47.652 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:31:47.654 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.755ms
+2026-08-31 00:31:47.655 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:31:47.656 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 10.2668ms
+2026-08-31 00:31:47.764 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:31:47.766 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:31:47.767 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:31:47.769 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:31:47.771 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.7012ms
+2026-08-31 00:31:47.772 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:31:47.773 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 9.1261ms
+2026-08-31 00:37:10.946 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:37:10.949 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:37:10.950 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:37:10.952 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:37:10.953 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.4616ms
+2026-08-31 00:37:10.955 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:37:10.956 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 9.9231ms
+2026-08-31 00:37:26.431 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:37:26.434 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:37:26.435 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:37:26.437 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:37:26.438 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.6298ms
+2026-08-31 00:37:26.440 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:37:26.441 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 9.6497ms
+2026-08-31 00:40:17.805 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:40:17.807 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:40:17.808 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:40:17.810 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:40:17.811 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.601ms
+2026-08-31 00:40:17.813 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:40:17.813 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 8.7056ms
+2026-08-31 00:40:17.855 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:40:17.858 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:40:17.859 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:40:17.861 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:40:17.862 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.4368ms
+2026-08-31 00:40:17.864 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:40:17.864 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 8.8692ms
+2026-08-31 00:40:17.874 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:40:17.877 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:40:17.878 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:40:17.880 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:40:17.881 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.664ms
+2026-08-31 00:40:17.883 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:40:17.884 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 9.6551ms
+2026-08-31 00:40:18.742 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:40:18.745 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:40:18.746 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:40:18.747 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 4.975ms
+2026-08-31 00:40:18.757 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories - null null
+2026-08-31 00:40:18.759 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:40:18.760 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:40:18.761 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories - 401 0 null 4.2105ms
+2026-08-31 00:40:18.769 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/tasks/chains - null null
+2026-08-31 00:40:18.771 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:40:18.772 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:40:18.773 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/tasks/chains - 401 0 null 4.0348ms
+2026-08-31 00:40:18.781 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:40:18.783 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:40:18.784 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:40:18.785 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 4.5959ms
+2026-08-31 00:40:19.282 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories - null null
+2026-08-31 00:40:19.285 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:40:19.299 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:40:19.301 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories - 401 0 null 18.5175ms
+2026-08-31 00:40:19.409 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/tasks/chains - null null
+2026-08-31 00:40:19.412 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:40:19.413 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:40:19.414 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/tasks/chains - 401 0 null 5.0184ms
+2026-08-31 00:42:04.499 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:42:04.501 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:42:04.502 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:42:04.503 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 4.4044ms
+2026-08-31 00:42:04.523 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:42:04.526 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:42:04.527 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:42:04.528 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 4.9045ms
+2026-08-31 00:42:12.022 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:42:12.024 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:42:12.026 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:42:12.027 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:42:12.028 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.3908ms
+2026-08-31 00:42:12.030 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:42:12.031 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 8.7513ms
+2026-08-31 00:42:12.039 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:42:12.041 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:42:12.042 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:42:12.044 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:42:12.045 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.291ms
+2026-08-31 00:42:12.046 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:42:12.047 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 8.6923ms
+2026-08-31 00:42:12.066 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:42:12.069 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:42:12.070 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:42:12.071 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:42:12.072 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.47ms
+2026-08-31 00:42:12.074 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:42:12.075 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 8.5152ms
+2026-08-31 00:42:12.080 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:42:12.082 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:42:12.083 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:42:12.085 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:42:12.087 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.2822ms
+2026-08-31 00:42:12.088 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:42:12.089 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 8.871ms
+2026-08-31 00:42:12.228 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:42:12.229 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories - null null
+2026-08-31 00:42:12.230 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:42:12.232 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:42:12.233 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:42:12.235 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:42:12.236 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 8.3104ms
+2026-08-31 00:42:12.237 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories - 401 0 null 7.4934ms
+2026-08-31 00:42:12.263 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:42:12.263 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories - null null
+2026-08-31 00:42:12.265 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:42:12.268 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:42:12.268 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:42:12.269 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:42:12.270 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 7.4329ms
+2026-08-31 00:42:12.271 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories - 401 0 null 8.3155ms
+2026-08-31 00:42:14.011 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:42:14.013 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:42:14.014 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:42:14.015 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 4.7482ms
+2026-08-31 00:42:14.031 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/categories/roots - null null
+2026-08-31 00:42:14.033 +03:00 [INF] Authorization failed. These requirements were not met:
+DenyAnonymousAuthorizationRequirement: Requires an authenticated user.
+2026-08-31 00:42:14.034 +03:00 [INF] AuthenticationScheme: Bearer was challenged.
+2026-08-31 00:42:14.035 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/categories/roots - 401 0 null 4.4601ms
+2026-08-31 00:44:03.852 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:44:03.855 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:44:03.856 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:44:03.858 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:44:03.860 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.7121ms
+2026-08-31 00:44:03.861 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:44:03.862 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 9.526ms
+2026-08-31 00:44:03.996 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:44:03.999 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:44:04.000 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:44:04.002 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:44:04.003 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.535ms
+2026-08-31 00:44:04.005 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:44:04.006 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 10.2561ms
+2026-08-31 00:45:41.543 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:45:41.546 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:45:41.547 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:45:41.549 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:45:41.551 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.703ms
+2026-08-31 00:45:41.552 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:45:41.554 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 10.4118ms
+2026-08-31 00:45:41.559 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:45:41.561 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:45:41.562 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:45:41.564 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:45:41.565 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.3456ms
+2026-08-31 00:45:41.566 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:45:41.567 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 8.8918ms
+2026-08-31 00:45:41.572 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:45:41.574 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:45:41.576 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:45:41.577 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:45:41.578 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.295ms
+2026-08-31 00:45:41.580 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:45:41.581 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 8.7094ms
+2026-08-31 00:45:41.587 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:45:41.589 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:45:41.590 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:45:41.592 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:45:41.593 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.5189ms
+2026-08-31 00:45:41.594 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:45:41.595 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 8.7525ms
+2026-08-31 00:45:41.600 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:45:41.603 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:45:41.604 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:45:41.605 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:45:41.607 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.3352ms
+2026-08-31 00:45:41.608 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:45:41.609 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 8.9242ms
+2026-08-31 00:48:10.867 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:48:10.871 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:48:10.872 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:48:10.874 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:48:10.875 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.4831ms
+2026-08-31 00:48:10.877 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:48:10.878 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 10.365ms
+2026-08-31 00:48:10.882 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:48:10.885 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:48:10.886 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:48:10.888 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:48:10.889 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.3172ms
+2026-08-31 00:48:10.890 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:48:10.891 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 9.2117ms
+2026-08-31 00:48:10.900 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:48:10.903 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:48:10.904 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:48:10.906 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:48:10.907 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.5246ms
+2026-08-31 00:48:10.908 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:48:10.909 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 9.0078ms
+2026-08-31 00:48:10.916 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:48:10.919 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:48:10.920 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:48:10.922 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:48:10.923 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 1.3025ms
+2026-08-31 00:48:10.924 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:48:10.925 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 8.6195ms
+2026-08-31 00:48:10.930 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:48:10.932 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:48:10.933 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:48:10.935 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:48:10.950 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 15.3438ms
+2026-08-31 00:48:10.951 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:48:10.952 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 22.835ms
+2026-08-31 00:50:16.325 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:50:16.329 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:50:16.331 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:50:16.334 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:50:16.336 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 2.8393ms
+2026-08-31 00:50:16.338 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:50:16.340 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 15.0137ms
+2026-08-31 00:50:16.503 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:50:16.507 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:50:16.509 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:50:16.513 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:50:16.516 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 3.1286ms
+2026-08-31 00:50:16.519 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:50:16.521 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 17.2647ms
+2026-08-31 00:50:47.175 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:50:47.179 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:50:47.181 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:50:47.184 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:50:47.187 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 3.4902ms
+2026-08-31 00:50:47.189 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:50:47.191 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 15.509ms
+2026-08-31 00:50:47.198 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:50:47.202 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:50:47.204 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:50:47.207 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:50:47.209 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 2.1136ms
+2026-08-31 00:50:47.211 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:50:47.213 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 14.3745ms
+2026-08-31 00:50:47.220 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:50:47.224 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:50:47.225 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:50:47.228 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:50:47.230 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 2.2119ms
+2026-08-31 00:50:47.233 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:50:47.234 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 14.4964ms
+2026-08-31 00:50:47.239 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:50:47.243 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:50:47.245 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:50:47.248 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:50:47.250 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 2.4594ms
+2026-08-31 00:50:47.252 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:50:47.254 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 14.8116ms
+2026-08-31 00:50:47.260 +03:00 [INF] Request starting HTTP/1.1 GET http://localhost:5268/api/auth/me - null null
+2026-08-31 00:50:47.264 +03:00 [INF] Executing endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:50:47.266 +03:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller PlanlamaApp.Api.Controllers.AuthController (PlanlamaApp.Api).
+2026-08-31 00:50:47.269 +03:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType11`2[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[<>f__AnonymousType12`3[[System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], PlanlamaApp.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]'.
+2026-08-31 00:50:47.271 +03:00 [INF] Executed action PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api) in 2.6535ms
+2026-08-31 00:50:47.273 +03:00 [INF] Executed endpoint 'PlanlamaApp.Api.Controllers.AuthController.Me (PlanlamaApp.Api)'
+2026-08-31 00:50:47.275 +03:00 [INF] Request finished HTTP/1.1 GET http://localhost:5268/api/auth/me - 401 null application/json; charset=utf-8 14.8574ms
+2026-08-31 01:03:40.129 +03:00 [INF] User profile is available. Using 'C:\Users\canos\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-08-31 01:03:40.182 +03:00 [INF] Storage Maintenance Service is starting.
+2026-08-31 01:03:40.218 +03:00 [INF] Now listening on: http://0.0.0.0:5268
+2026-08-31 01:03:40.220 +03:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-08-31 01:03:40.221 +03:00 [INF] Hosting environment: Development
+2026-08-31 01:03:40.222 +03:00 [INF] Content root path: C:\YazilimCalisma\planlama_app\WebApp\Backend\PlanlamaApp.Api

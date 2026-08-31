@@ -4,6 +4,7 @@ import styles from './AddTaskModal.module.css';
 import { taskService } from '../../services/taskService';
 import { useTranslation } from 'react-i18next';
 import { useTaskContext } from '../../context/TaskContext';
+import chainService from '../../services/chainService';
 import HierarchicalCategoryPicker from '../Category/HierarchicalCategoryPicker';
 
 const AddTaskModal = ({ isOpen, onClose, tone }) => {
@@ -16,15 +17,37 @@ const AddTaskModal = ({ isOpen, onClose, tone }) => {
   // Set default deadline to today
   const [deadline, setDeadline] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
+  const [isChain, setIsChain] = useState(false);
+  const [selectedChainId, setSelectedChainId] = useState('');
+  const [chains, setChains] = useState([]);
+  const [loadingChains, setLoadingChains] = useState(false);
   const [loading, setLoading] = useState(false);
 
+
   useEffect(() => {
-    if (isOpen) {
-      const today = new Date().toISOString().split('T')[0];
-      setDeadline(today);
-      setTitle('');
-      setCategoryId(null);
-      setScheduledTime('');
+    if (isChain && chains.length === 0) {
+      setLoadingChains(true);
+      chainService.getChains().then(data => {
+        setChains(data || []);
+        setLoadingChains(false);
+      });
+    }
+  }, [isChain]);
+
+  // Form temizleme işlemini pencere tamamen kapandıktan sonra (görünmezken) yapıyoruz.
+  // Kullanıcı X tuşuyla veya dışarı tıklayarak kapatsa bile form sıfırlanır.
+  useEffect(() => {
+    if (!isOpen) {
+      const timer = setTimeout(() => {
+        const today = new Date().toISOString().split('T')[0];
+        setDeadline(today);
+        setTitle('');
+        setCategoryId(null);
+        setScheduledTime('');
+        setIsChain(false);
+        setSelectedChainId('');
+      }, 400); // Animasyon 350ms, bittikten 50ms sonra sıfırla.
+      return () => clearTimeout(timer);
     }
   }, [isOpen]);
 
@@ -40,6 +63,7 @@ const AddTaskModal = ({ isOpen, onClose, tone }) => {
       id: Date.now(), // Fallback ID for optimistic updates
       title,
       categoryId,
+      chainId: isChain && selectedChainId ? selectedChainId : undefined,
       taskType: 'Görev',
       deadline: deadline ? new Date(deadline).toISOString() : new Date().toISOString(),
       isTeacherAssigned: false,
@@ -56,6 +80,7 @@ const AddTaskModal = ({ isOpen, onClose, tone }) => {
       setLoading(false);
       notifyTaskAdded(newTask);
       onClose();
+      // Sıfırlama işlemini useEffect devraldı.
     }
   };
 
@@ -66,6 +91,7 @@ const AddTaskModal = ({ isOpen, onClose, tone }) => {
       title={t('modal_title', { context: tone })}
       preventClose={loading}
       maxWidth="500px"
+      keepMounted={true}
     >
       <div className={styles.body}>
         <input 
@@ -121,6 +147,43 @@ const AddTaskModal = ({ isOpen, onClose, tone }) => {
               onChange={e => setScheduledTime(e.target.value)} 
               disabled={loading}
             />
+          </div>
+
+          <div className={styles.divider}></div>
+
+          <div className={styles.row}>
+            <div className={styles.rowLabel} style={{ cursor: 'pointer' }} onClick={() => setIsChain(!isChain)}>
+              <span className={styles.icon}>🔗</span> 
+              Zincir Görevi
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, justifyContent: 'flex-end' }}>
+              <input 
+                type="checkbox" 
+                checked={isChain}
+                onChange={(e) => setIsChain(e.target.checked)}
+                style={{ width: '18px', height: '18px', accentColor: 'var(--accent)' }}
+                disabled={loading}
+              />
+              {isChain && (
+                <select 
+                  className={styles.rowInput}
+                  value={selectedChainId}
+                  onChange={(e) => setSelectedChainId(e.target.value)}
+                  disabled={loading || loadingChains}
+                  style={{ width: '140px', padding: '6px' }}
+                >
+                  <option value="">{loadingChains ? 'Yükleniyor...' : 'Zincir Seçin'}</option>
+                  {chains.map(ch => {
+                    const chainName = ch.tasks && ch.tasks.length > 0 ? ch.tasks[0].title + ' Zinciri' : ch.chainId;
+                    return (
+                      <option key={ch.chainId} value={ch.chainId}>
+                        {chainName}
+                      </option>
+                    );
+                  })}
+                </select>
+              )}
+            </div>
           </div>
         </div>
           
