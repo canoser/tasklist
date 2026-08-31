@@ -17,44 +17,36 @@ const BaseModal = ({
   keepMounted = false
 }) => {
   const dragControls = useDragControls();
-  const [isClosing, setIsClosing] = useState(false);
+  const [localIsOpen, setLocalIsOpen] = useState(isOpen);
 
-  // ==============================================================================================
-  // 🔴 KRİTİK UYARI (DOKUNMAYIN) - MİMARİ KARAR (31 AĞUSTOS 2026)
-  // ==============================================================================================
-  // SORUN: Modal kapanırken (özellikle drag veya X tuşuyla) onClose anında tetiklenirse,
-  // Global DOM (App.jsx) anında re-render edilir. Bu ağır işlem Framer Motion'ın 60fps çalışan
-  // "closed" animasyonunu bloke ederek stuttering'e (kasmaya ve takılmaya) neden olur.
-  // ÇÖZÜM: Kapanışta isClosing(true) yapılıp, animasyonun akıp bitmesi için 300ms BEKLENMELİDİR.
-  // 
-  // BUG: Eğer isClosing sadece isOpen(true) olduğunda false'a çekilirse, "Çift Tıklama" bug'ı olur.
-  // Çünkü ilk açılış render'ında eski isClosing (true) kalır, modal kapalı gibi davranır.
-  // NİHAİ ÇÖZÜM: isClosing SADECE modal tam kapandıktan sonra (!isOpen) sıfırlanmalıdır. 
-  // LÜTFEN BU useEffect VE handleDelayedClose MANTIĞINI DEĞİŞTİRMEYİN!
-  // ==============================================================================================
   useEffect(() => {
-    if (!isOpen) {
-      setIsClosing(false);
+    // Dışarıdan (App.jsx) gelen isOpen prop'u değiştiğinde local state'i güncelle.
+    if (isOpen) {
+      setLocalIsOpen(true);
+    } else {
+      setLocalIsOpen(false);
     }
   }, [isOpen]);
 
   const handleDelayedClose = () => {
-    if (preventClose || isClosing) return;
+    if (preventClose || !localIsOpen) return;
     
     if (keepMounted) {
-      setIsClosing(true);
+      // 1. Önce görsel olarak (local state ile) pencereyi kapat
+      setLocalIsOpen(false);
+      
+      // 2. Animasyonun akıp bitmesi için 300ms bekle ve sonra global state'i (URL'i) güncelle
       setTimeout(() => {
         onClose();
-      }, 300); // Framer motion duration: 0.35 civarı. 300-350ms arası güvenlidir.
+      }, 300);
     } else {
       onClose();
     }
   };
-  // ==============================================================================================
 
   // ── Sürükleme (Framer Motion) ───────────────────────────────
   const handleDragEnd = (event, info) => {
-    if (preventClose || isClosing) return;
+    if (preventClose || !localIsOpen) return;
     
     if (info.offset.y > 100 || info.velocity.y > 400) {
       handleDelayedClose();
@@ -115,7 +107,7 @@ const BaseModal = ({
   const modalContent = keepMounted ? (
     <>
       <AnimatePresence>
-        {isOpen && (
+        {localIsOpen && (
           <motion.div 
             className={styles.modalOverlay}
             onClick={!preventClose ? handleDelayedClose : undefined}
@@ -134,15 +126,15 @@ const BaseModal = ({
         
         // Animasyonlar (Varyant tabanlı DOM caching)
         initial="closed"
-        animate={isOpen ? (isClosing ? "closed" : "open") : "closed"}
+        animate={localIsOpen ? "open" : "closed"}
         variants={{
           open: { y: 0, x: '-50%', visibility: 'visible', pointerEvents: 'auto' },
-          closed: { y: '100%', x: '-50%', pointerEvents: 'none', transitionEnd: { visibility: 'hidden' } }
+          closed: { y: '100%', x: '-50%', pointerEvents: 'none' }
         }}
         transition={{ type: 'spring', bounce: 0, duration: 0.35 }}
         
         // Sürükleme Ayarları
-        drag={!preventClose && isOpen ? "y" : false}
+        drag={!preventClose && localIsOpen ? "y" : false}
         dragListener={false}
         dragControls={dragControls}
         dragConstraints={{ top: 0 }}
@@ -150,7 +142,7 @@ const BaseModal = ({
         onDragEnd={handleDragEnd}
         
         // Accessibility ve Focus Trap önlemi
-        inert={!isOpen ? "true" : undefined}
+        inert={!localIsOpen ? "true" : undefined}
       >
         {contentInner}
       </motion.div>
