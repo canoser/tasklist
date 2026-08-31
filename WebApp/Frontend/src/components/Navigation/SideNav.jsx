@@ -23,7 +23,7 @@ const PlusIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
 );
 
-const SideNav = ({ activeTab = 'home', onTabChange = () => {}, tone, user, openAuth, openAddTaskModal }) => {
+const SideNav = ({ activeTab = 'home', onTabChange = () => {}, tone, user, openAuth }) => {
   const [showGuestAlert, setShowGuestAlert] = useState(false);
   const { t } = useTranslation('common');
 
@@ -69,17 +69,7 @@ const SideNav = ({ activeTab = 'home', onTabChange = () => {}, tone, user, openA
           </button>
         </div>
 
-        <div className={styles.bottomActions}>
-          <motion.button 
-            className={styles.actionButton}
-            onClick={() => openAddTaskModal()}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <PlusIcon />
-            <span>{t('add_task_btn', { context: tone, defaultValue: 'Yeni Görev' })}</span>
-          </motion.button>
-        </div>
+
       </div>
 
       {/* Misafir Uyarı Modalı */}

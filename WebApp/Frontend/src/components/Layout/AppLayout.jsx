@@ -4,7 +4,7 @@ import { useDevice } from '../../hooks/useDevice';
 import SideNav from '../Navigation/SideNav';
 import BottomNav from '../Navigation/BottomNav';
 
-const AppLayout = ({ children, activeTab, onTabChange, tone, user, openAuth, openAddTaskModal }) => {
+const AppLayout = ({ children, activeTab, onTabChange, tone, user, openAuth }) => {
   const { isWideScreen } = useDevice();
 
   return (
@@ -16,7 +16,6 @@ const AppLayout = ({ children, activeTab, onTabChange, tone, user, openAuth, ope
           tone={tone} 
           user={user} 
           openAuth={openAuth} 
-          openAddTaskModal={openAddTaskModal}
         />
       )}
       <div className={styles.mainContentWrapper}>

@@ -195,7 +195,6 @@ const CalendarScreen = ({ user, navigation, tone }) => {
             onCategoryClick={() => scrollTo(categoryRef)}
             onChainClick={() => scrollTo(chainRef)}
             onTaskToggle={handleToggleComplete}
-            onAddClick={() => navigation.openModal('addTask')}
           />
         </div>
       </section>

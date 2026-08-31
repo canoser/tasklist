@@ -47,13 +47,7 @@ const Dashboard = ({ user, guestName, tone, navigation }) => {
               <span className={styles.statDot} />
               {t('stat_completed', { count: taskStats.completed, context: tone })}
             </span>
-            <button 
-              className={styles.addBtn}
-              onClick={() => navigation?.openModal('addTask')}
-              title="Yeni Görev Ekle"
-            >
-              <Plus size={16} /> Görev Ekle
-            </button>
+
           </div>
         </motion.div>
 

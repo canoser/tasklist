@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from './BottomNav.module.css';
-import AddTaskModal from '../Task/AddTaskModal';
+
 import { useTranslation } from 'react-i18next';
 
 // Placeholder icons, ideally use lucide-react or similar
