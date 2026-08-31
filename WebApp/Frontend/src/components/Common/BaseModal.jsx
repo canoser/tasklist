@@ -92,12 +92,10 @@ const BaseModal = ({
         initial="closed"
         animate={isOpen ? "open" : "closed"}
         variants={{
-          open: { opacity: 1, visibility: 'visible', pointerEvents: 'auto' },
+          open: { opacity: 1, pointerEvents: 'auto' },
           closed: { 
             opacity: 0, 
-            visibility: 'hidden', 
-            pointerEvents: 'none',
-            transition: { visibility: { delay: 0.25 } } 
+            pointerEvents: 'none'
           }
         }}
         transition={{ duration: 0.25 }}
@@ -118,13 +116,11 @@ const BaseModal = ({
         initial="closed"
         animate={isOpen ? "open" : "closed"}
         variants={{
-          open: { y: 0, x: '-50%', visibility: 'visible', pointerEvents: 'auto' },
+          open: { y: 0, x: '-50%', pointerEvents: 'auto' },
           closed: { 
             y: '100%', 
             x: '-50%', 
-            visibility: 'hidden', 
-            pointerEvents: 'none',
-            transition: { visibility: { delay: 0.35 } } // SİHİR BURADA: Modal kaybolmadan önce aşağı iner
+            pointerEvents: 'none'
           }
         }}
         transition={{ type: 'spring', bounce: 0, duration: 0.35 }}
@@ -134,7 +130,6 @@ const BaseModal = ({
         dragConstraints={{ top: 0 }}
         dragElastic={{ top: 0, bottom: 0.5 }}
         onDragEnd={handleDragEnd}
-        inert={!isOpen ? 'true' : undefined}
       >
         {contentInner}
       </motion.div>
