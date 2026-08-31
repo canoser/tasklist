@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, startTransition } from 'react';
 
 /**
  * Merkezi Navigasyon ve Modal Yöneticisi (DRY Prensibi)
@@ -35,14 +35,16 @@ export function useAppNavigation(defaultTab = 'home') {
         }
       }
 
-      setActiveTabState(tab);
-      setQueryParams(newQueryParams);
-      
-      if (modalsStr) {
-        setActiveModals(modalsStr.split(','));
-      } else {
-        setActiveModals([]);
-      }
+      startTransition(() => {
+        setActiveTabState(tab);
+        setQueryParams(newQueryParams);
+        
+        if (modalsStr) {
+          setActiveModals(modalsStr.split(','));
+        } else {
+          setActiveModals([]);
+        }
+      });
     };
 
     // İlk yüklemede hash'i düzelt
