@@ -25,6 +25,7 @@ const BaseModal = ({
   maxWidth = '500px',
   preventClose = false,
   className = '',
+  onFullyClosed,
 }) => {
   const dragControls = useDragControls();
 
@@ -130,6 +131,11 @@ const BaseModal = ({
         dragConstraints={{ top: 0 }}
         dragElastic={{ top: 0, bottom: 0.5 }}
         onDragEnd={handleDragEnd}
+        onAnimationComplete={(definition) => {
+          if (definition === 'closed' && onFullyClosed) {
+            onFullyClosed();
+          }
+        }}
       >
         {contentInner}
       </motion.div>

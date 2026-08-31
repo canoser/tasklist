@@ -34,18 +34,17 @@ const AddTaskModal = ({ isOpen, onClose, tone }) => {
     }
   }, [isChain]);
 
-  // Reset form when modal opens, not when it closes, to prevent background render blocking
-  useEffect(() => {
-    if (isOpen) {
-      const today = new Date().toISOString().split('T')[0];
-      setDeadline(today);
-      setTitle('');
-      setCategoryId(null);
-      setScheduledTime('');
-      setIsChain(false);
-      setSelectedChainId('');
-    }
-  }, [isOpen]);
+  // Sıfırlama işlemi artık animasyonlar %100 bittikten sonra (onFullyClosed) yapılıyor
+  // Böylece açılırken veya kapanırken hiçbir render takılması yaşanmaz.
+  const handleFullyClosed = () => {
+    const today = new Date().toISOString().split('T')[0];
+    setDeadline(today);
+    setTitle('');
+    setCategoryId(null);
+    setScheduledTime('');
+    setIsChain(false);
+    setSelectedChainId('');
+  };
 
   const handleSave = async () => {
     if (!title) return;
@@ -86,6 +85,7 @@ const AddTaskModal = ({ isOpen, onClose, tone }) => {
       title={t('modal_title', { context: tone })}
       preventClose={loading}
       maxWidth="500px"
+      onFullyClosed={handleFullyClosed}
     >
       <div className={styles.body}>
         <input 
