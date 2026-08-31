@@ -21,6 +21,18 @@ const AddTaskModal = ({ isOpen, onClose, workspaceId }) => {
   const [loadingChains, setLoadingChains] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      // Modal açılma animasyonunun bitmesini bekle (350ms)
+      const timer = setTimeout(() => setIsReady(true), 350);
+      return () => clearTimeout(timer);
+    } else {
+      setIsReady(false);
+    }
+  }, [isOpen]);
+
   useEffect(() => {
     if (isChain && chains.length === 0) {
       setLoadingChains(true);
@@ -126,11 +138,15 @@ const AddTaskModal = ({ isOpen, onClose, workspaceId }) => {
 
           <div className={styles.inputGroup}>
             <label className={styles.label}>Kategori</label>
-            <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.1)' }}>
-              <HierarchicalCategoryPicker
-                value={categoryId}
-                onChange={id => setCategoryId(id)}
-              />
+            <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.1)', minHeight: '48px' }}>
+              {isReady ? (
+                <HierarchicalCategoryPicker
+                  value={categoryId}
+                  onChange={id => setCategoryId(id)}
+                />
+              ) : (
+                <div style={{ padding: '12px 16px', color: '#94a3b8', fontSize: '0.9rem' }}>Yükleniyor...</div>
+              )}
             </div>
           </div>
 
