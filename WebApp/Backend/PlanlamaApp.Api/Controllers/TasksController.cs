@@ -194,23 +194,7 @@ namespace PlanlamaApp.Api.Controllers
 
             if (!isOwner && !isAssigner) return NotFound(); // IDOR koruması
 
-            // ZİNCİR GÖREV KONTROLÜ
-            if (!string.IsNullOrEmpty(existingTask.ChainId))
-            {
-                if (isAssigner && !isOwner)
-                {
-                    return StatusCode(StatusCodes.Status403Forbidden, "Atayan kişi zincir görevleri tamamlandı olarak işaretleyemez. Yalnızca zincirden çıkarabilirsiniz (silebilirsiniz).");
-                }
-                
-                if (!string.IsNullOrEmpty(existingTask.UserId) && existingTask.ChainOrder.HasValue)
-                {
-                    bool hasIncomplete = await _taskRepository.HasIncompletePreviousChainTaskAsync(existingTask.ChainId, existingTask.UserId, existingTask.ChainOrder.Value);
-                    if (hasIncomplete)
-                    {
-                        return Conflict("Önceki zincir görevleri tamamlanmadan bu görevi bitiremezsiniz.");
-                    }
-                }
-            }
+
 
             bool success;
             if (isAssigner && !isOwner)
@@ -255,23 +239,7 @@ namespace PlanlamaApp.Api.Controllers
 
             if (!isOwner && !isAssigner) return NotFound(); // IDOR koruması
 
-            // ZİNCİR GÖREV KONTROLÜ
-            if (!string.IsNullOrEmpty(existingTask.ChainId))
-            {
-                if (isAssigner && !isOwner)
-                {
-                    return StatusCode(StatusCodes.Status403Forbidden, "Atayan kişi zincir görevleri kısmi tamamladı olarak işaretleyemez.");
-                }
-                
-                if (!string.IsNullOrEmpty(existingTask.UserId) && existingTask.ChainOrder.HasValue)
-                {
-                    bool hasIncomplete = await _taskRepository.HasIncompletePreviousChainTaskAsync(existingTask.ChainId, existingTask.UserId, existingTask.ChainOrder.Value);
-                    if (hasIncomplete)
-                    {
-                        return Conflict("Önceki zincir görevleri tamamlanmadan bu görevi bitiremezsiniz.");
-                    }
-                }
-            }
+
 
             int originalTarget = existingTask.TargetCount ?? 10;
             if (request.DoneAmount >= originalTarget)
@@ -320,8 +288,7 @@ namespace PlanlamaApp.Api.Controllers
                     IsTeacherAssigned = existingTask.IsTeacherAssigned,
                     TargetCount = originalTarget - request.DoneAmount,
                     WorkspaceId = existingTask.WorkspaceId,
-                    ChainId = existingTask.ChainId, // Aynı zincir
-                    ChainOrder = existingTask.ChainOrder.HasValue ? existingTask.ChainOrder.Value + 1 : null, // Klonlanan görev için +1 sıra (Örn: 10 -> 11)
+                    ChainTemplateId = existingTask.ChainTemplateId,
                     OriginalDeadline = existingTask.OriginalDeadline,
                     IsHomework = existingTask.IsHomework,
                     AssignedBy = existingTask.AssignedBy,
@@ -437,138 +404,7 @@ namespace PlanlamaApp.Api.Controllers
             }
             return NoContent();
         }
-        // ── Görev Zinciri (Task Chain) ──────────────────────────────────────────
 
-        /// <summary>Kullanıcının tüm zincir görevlerini gruplu listeler.</summary>
-        [HttpGet("chains")]
-        public async Task<IActionResult> GetChains()
-        {
-            var currentUserId = GetCurrentUserId();
-            if (currentUserId == null) return Unauthorized();
-
-            var tasks = await _taskRepository.GetChainTasksByUserIdAsync(currentUserId);
-
-            // ChainId'ye göre grupla
-            var chains = tasks
-                .GroupBy(t => t.ChainId)
-                .Select(g => new
-                {
-                    ChainId = g.Key,
-                    Tasks = g.OrderBy(t => t.ChainOrder).ToList()
-                });
-
-            return Ok(chains);
-        }
-
-        [HttpPost("chain")]
-        [ServiceFilter(typeof(IdempotencyFilter))]
-        public async Task<IActionResult> CreateChain([FromBody] CreateTaskChainRequest request)
-        {
-            var currentUserId = GetCurrentUserId();
-            if (currentUserId == null) return Unauthorized();
-            
-            // Atanan kullanıcılar listesi boşsa, isteği yapan kişiye ata
-            if (request.AssignedUserIds == null || request.AssignedUserIds.Count == 0)
-            {
-                request.AssignedUserIds = new List<string> { currentUserId };
-            }
-
-            if (request.Tasks == null || request.Tasks.Count == 0)
-                return BadRequest("Geçersiz görev zinciri verisi.");
-
-            bool isTeacher = false;
-            // Eğer bir Workspace belirtilmişse workspace kontrollerini yap
-            if (request.WorkspaceId != null && request.WorkspaceId.Value > 0)
-            {
-                var members = await _workspaceRepository.GetMembersAsync(request.WorkspaceId.Value);
-                var callerMember = members.FirstOrDefault(m => m.UserId == currentUserId);
-                if (callerMember == null)
-                    return Forbid();
-
-                isTeacher = callerMember.Role == "Owner" || callerMember.Role == "Teacher" || callerMember.Role == "Admin" || callerMember.Role == "Leader";
-
-                if (!isTeacher && (request.AssignedUserIds.Count != 1 || request.AssignedUserIds[0] != currentUserId))
-                {
-                    return Forbid(); // Öğrenciler başkasına görev atayamaz.
-                }
-
-                if (request.AssignedUserIds.Any(id => !members.Any(m => m.UserId == id)))
-                {
-                    return BadRequest("Atanan kullanıcılardan biri bu çalışma alanının üyesi değil.");
-                }
-            }
-            else
-            {
-                // KİŞİSEL ZİNCİR: Başkasına atama yapamaz!
-                if (request.AssignedUserIds.Any(id => id != currentUserId))
-                {
-                    return Forbid("Kişisel görevlerinizi başkasına atayamazsınız.");
-                }
-            }
-
-            var chainId = Guid.NewGuid().ToString("N");
-            
-            if (_dbConnection.State != ConnectionState.Open)
-                _dbConnection.Open();
-
-            using var transaction = _dbConnection.BeginTransaction();
-            try
-            {
-                foreach (var userId in request.AssignedUserIds)
-                {
-                    int order = 10; // Zincir sıralaması 10'ar 10'ar artacak
-                    foreach (var task in request.Tasks)
-                    {
-                        var taskItem = new TaskItem
-                        {
-                            UserId = userId,
-                            CategoryId = task.CategoryId,
-                            Title = task.Title,
-                            Description = task.Description,
-                            TaskType = task.TaskType,
-                            Deadline = task.Deadline,
-                            IsTeacherAssigned = isTeacher,
-                            TargetCount = task.TargetCount,
-                            WorkspaceId = request.WorkspaceId,
-                            ChainId = chainId,
-                            ChainOrder = order,
-                            OriginalDeadline = task.Deadline,
-                            IsHomework = request.WorkspaceId != null,
-                            AssignedBy = currentUserId,
-                            CreatedAt = DateTime.UtcNow,
-                            UpdatedAt = DateTime.UtcNow
-                        };
-                        
-                        var taskId = await _taskRepository.CreateAsync(taskItem, transaction);
-
-                        if (request.WorkspaceId != null && request.WorkspaceId.Value > 0)
-                        {
-                            var assignment = new TaskAssignment
-                            {
-                                TaskItemId = taskId,
-                                AssignedUserId = userId,
-                                CreatedByUserId = currentUserId,
-                                WorkspaceId = request.WorkspaceId.Value,
-                                Status = "Pending"
-                            };
-                            
-                            await _taskAssignmentRepository.AssignAsync(assignment, transaction);
-                        }
-                        order += 10;
-                    }
-                }
-                
-                transaction.Commit();
-                return Ok(new { ChainId = chainId });
-            }
-            catch (Exception ex)
-            {
-                transaction.Rollback();
-                var errorMsg = $"[Chain Create Error - {DateTime.UtcNow}]\n{ex}\n----------------------------------\n";
-                System.IO.File.AppendAllText("CHAIN_ERROR_LOG.txt", errorMsg);
-                return StatusCode(500, new { Message = "Görev zinciri oluşturulurken sunucu hatası oluştu.", ErrorDetails = ex.Message });
-            }
-        }
 
         [HttpPut("{id:int}/postpone")]
         [ServiceFilter(typeof(IdempotencyFilter))]
@@ -590,16 +426,16 @@ namespace PlanlamaApp.Api.Controllers
             try
             {
                 var userId = existingTask.UserId; // İşlemi yapanın değil, görevin sahibinin ID'sini kullanıyoruz (zincir sahibini bulmak için)
-                if (request.PostponeAllChain && !string.IsNullOrEmpty(existingTask.ChainId) && !string.IsNullOrEmpty(userId))
+                if (request.PostponeAllChain && existingTask.ChainTemplateId.HasValue && !string.IsNullOrEmpty(userId))
                 {
-                    // Zincirleme erteleme (minOrder = mevcut görevin sırası)
+                    // Zincirleme erteleme
                     if (isAssigner && !isOwner)
                     {
-                        await _taskRepository.PostponeChainByAssignerAsync(existingTask.ChainId, userId, existingTask.ChainOrder ?? 0, request.DaysToShift, transaction);
+                        await _taskRepository.PostponeChainByAssignerAsync(existingTask.ChainTemplateId.Value, userId, existingTask.Deadline ?? DateTime.MinValue, request.DaysToShift, transaction);
                     }
                     else
                     {
-                        await _taskRepository.PostponeChainAsync(existingTask.ChainId, userId, existingTask.ChainOrder ?? 0, request.DaysToShift, transaction);
+                        await _taskRepository.PostponeChainAsync(existingTask.ChainTemplateId.Value, userId, existingTask.Deadline ?? DateTime.MinValue, request.DaysToShift, transaction);
                     }
                 }
                 else

@@ -2,19 +2,18 @@ import { motion } from 'framer-motion';
 import styles from './DashboardSummary.module.css';
 import { useTranslation } from 'react-i18next';
 
-// ── Mock Veri ─────────────────────────────────────────────────────────────────
-const DAILY_PROGRESS = 80;
-const WEEKLY_PROGRESS = 55;
+// ── Mock Veri (Sadece örnek olarak tutuluyor, misafirlerde kullanılmayacak) ──
+const MOCK_DAILY_PROGRESS = 80;
+const MOCK_WEEKLY_PROGRESS = 55;
 
-// null ise "Son Deneme Netleri" kartı render edilmez
-const NET_SCORES = [
+const MOCK_NET_SCORES = [
   { subject: 'Mat', net: 28.5, maxNet: 40, color: '#6366f1' },
   { subject: 'Fiz', net: 14.0, maxNet: 20, color: '#10b981' },
   { subject: 'Kim', net: 11.5, maxNet: 20, color: '#f59e0b' },
   { subject: 'Bio', net: 9.25, maxNet: 20, color: '#a855f7' },
 ];
 
-const DAILY_GOALS = [
+const MOCK_DAILY_GOALS = [
   { label: 'Fizik: 50 Soru', done: 20, total: 50, color: '#10b981' },
   { label: 'Matematik: 30 Soru', done: 24, total: 30, color: '#6366f1' },
   { label: 'Kimya: 25 Soru', done: 5, total: 25, color: '#f59e0b' },
@@ -81,8 +80,16 @@ const cardVariants = {
 };
 
 // ── Ana DashboardSummary Bileşeni ─────────────────────────────────────────────
-const DashboardSummary = ({ netScores = NET_SCORES }) => {
+const DashboardSummary = ({ user, netScores = null }) => {
   const { t } = useTranslation('tasks');
+  const isGuest = !user?.id && !user?.uid;
+  
+  // Eğer kullanıcı giriş yapmamışsa (misafir) veya gerçek veri gelmemişse mock verileri gizle.
+  const dailyProgress = isGuest ? 0 : MOCK_DAILY_PROGRESS;
+  const weeklyProgress = isGuest ? 0 : MOCK_WEEKLY_PROGRESS;
+  const currentNetScores = isGuest ? null : (netScores || MOCK_NET_SCORES);
+  const currentGoals = isGuest ? [] : MOCK_DAILY_GOALS;
+
   return (
     <div className={styles.summarySection}>
       {/* Bölüm başlığı + Düzenle ikonu */}
@@ -104,13 +111,13 @@ const DashboardSummary = ({ netScores = NET_SCORES }) => {
           animate="visible"
         >
           <MiniCircle
-            percent={DAILY_PROGRESS}
+            percent={dailyProgress}
             color="#6366f1"
             title="Günlük İlerleme"
             sub="Bugün"
           />
           <MiniCircle
-            percent={WEEKLY_PROGRESS}
+            percent={weeklyProgress}
             color="#10b981"
             title="Haftalık İlerleme"
             sub="Bu Hafta"
@@ -118,7 +125,7 @@ const DashboardSummary = ({ netScores = NET_SCORES }) => {
         </motion.div>
 
         {/* Sağ: Son Deneme Netleri (sadece veri varsa render edilir) */}
-        {netScores && netScores.length > 0 && (
+        {currentNetScores && currentNetScores.length > 0 && (
           <motion.div
             className={`${styles.card} ${styles.netCard}`}
             custom={1}
@@ -127,7 +134,7 @@ const DashboardSummary = ({ netScores = NET_SCORES }) => {
             animate="visible"
           >
             <span className={styles.netCardTitle}>Son Deneme</span>
-            {netScores.map((s) => (
+            {currentNetScores.map((s) => (
               <div key={s.subject} className={styles.netRow}>
                 <span className={styles.netSubject}>{s.subject}</span>
                 <div className={styles.netBar}>
@@ -148,37 +155,39 @@ const DashboardSummary = ({ netScores = NET_SCORES }) => {
       </div>
 
       {/* ── Alt Bölüm: Günlük Hedefler (Tam Genişlik) ── */}
-      <motion.div
-        className={styles.goalsSection}
-        custom={2}
-        variants={cardVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        <span className={styles.goalsSectionTitle}>Günlük Hedefler</span>
-        <div className={styles.goalList}>
-          {DAILY_GOALS.map((g) => {
-            const pct = Math.round((g.done / g.total) * 100);
-            return (
-              <div key={g.label} className={styles.goalItem}>
-                <div className={styles.goalTop}>
-                  <span className={styles.goalLabel}>{g.label}</span>
-                  <span className={styles.goalPercent}>%{pct}</span>
+      {currentGoals && currentGoals.length > 0 && (
+        <motion.div
+          className={styles.goalsSection}
+          custom={2}
+          variants={cardVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <span className={styles.goalsSectionTitle}>Günlük Hedefler</span>
+          <div className={styles.goalList}>
+            {currentGoals.map((g) => {
+              const pct = Math.round((g.done / g.total) * 100);
+              return (
+                <div key={g.label} className={styles.goalItem}>
+                  <div className={styles.goalTop}>
+                    <span className={styles.goalLabel}>{g.label}</span>
+                    <span className={styles.goalPercent}>%{pct}</span>
+                  </div>
+                  <div className={styles.goalBar}>
+                    <motion.div
+                      className={styles.goalBarFill}
+                      style={{ background: g.color }}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${pct}%` }}
+                      transition={{ duration: 1, ease: [0.4, 0, 0.2, 1] }}
+                    />
+                  </div>
                 </div>
-                <div className={styles.goalBar}>
-                  <motion.div
-                    className={styles.goalBarFill}
-                    style={{ background: g.color }}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${pct}%` }}
-                    transition={{ duration: 1, ease: [0.4, 0, 0.2, 1] }}
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </motion.div>
+              );
+            })}
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 };

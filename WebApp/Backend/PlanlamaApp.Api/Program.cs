@@ -160,6 +160,8 @@ builder.Services.AddScoped<IIdempotencyRepository, IdempotencyRepository>();
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IPerformanceRepository, PerformanceRepository>();
+builder.Services.AddScoped<IChainTemplateRepository, ChainTemplateRepository>();
+builder.Services.AddScoped<PlanlamaApp.Application.Services.ITaskGeneratorService, PlanlamaApp.Application.Services.TaskGeneratorService>();
 
 // Rol Yönetimi — UserRole + TaskAssignment Repository kayıtları
 builder.Services.AddScoped<IUserRoleRepository, UserRoleRepository>();

@@ -20,8 +20,20 @@ const CategoryManagerPanel = () => {
   // Chain state
   const [expandedChainId, setExpandedChainId] = useState(null);
   const [addingChainTo, setAddingChainTo] = useState(null); // categoryId
-  const [newChainTasks, setNewChainTasks] = useState([{ title: '', deadline: '' }]);
   const [creatingChain, setCreatingChain] = useState(false);
+  const [templateForm, setTemplateForm] = useState({
+    title: '',
+    description: '',
+    taskType: 'Soru Çözme',
+    targetCount: '',
+    recurrenceType: 'Daily',
+    startDate: new Date().toISOString().split('T')[0],
+    endDate: '',
+    daysOfWeek: [],
+    customDates: []
+  });
+  
+  const [customDateInput, setCustomDateInput] = useState('');
 
   const loadData = async () => {
     setLoading(true);
@@ -43,8 +55,6 @@ const CategoryManagerPanel = () => {
 
   useEffect(() => {
     loadData();
-    
-    // Listen for chain updates from other components
     const handleChainUpdate = () => loadData();
     window.addEventListener('chainsUpdated', handleChainUpdate);
     return () => window.removeEventListener('chainsUpdated', handleChainUpdate);
@@ -88,65 +98,96 @@ const CategoryManagerPanel = () => {
 
   const handleAddChainClick = (categoryId) => {
     setAddingChainTo(categoryId);
-    setNewChainTasks([{ title: '', deadline: '' }]);
+    setTemplateForm({
+      title: '',
+      description: '',
+      taskType: 'Soru Çözme',
+      targetCount: '',
+      recurrenceType: 'Daily',
+      startDate: new Date().toISOString().split('T')[0],
+      endDate: '',
+      daysOfWeek: [],
+      customDates: []
+    });
   };
 
-  const addChainStep = () => {
-    setNewChainTasks([...newChainTasks, { title: '', deadline: '' }]);
-  };
-
-  const updateChainStep = (index, field, value) => {
-    const updated = [...newChainTasks];
-    updated[index][field] = value;
-    setNewChainTasks(updated);
-  };
-
-  const removeChainStep = (index) => {
-    const updated = newChainTasks.filter((_, i) => i !== index);
-    setNewChainTasks(updated);
-  };
-
-  const moveChainStep = (index, dir) => {
-    if (index + dir < 0 || index + dir >= newChainTasks.length) return;
-    const updated = [...newChainTasks];
-    const temp = updated[index];
-    updated[index] = updated[index + dir];
-    updated[index + dir] = temp;
-    setNewChainTasks(updated);
-  };
-
-  const handleCreateChain = async (e, categoryId) => {
+  const handleCreateChainTemplate = async (e, categoryId) => {
     e.preventDefault();
-    if (newChainTasks.some(t => !t.title.trim() || !t.deadline)) {
-      alert(t('alert_chain_fill_fields', { defaultValue: 'Lütfen tüm adımların başlığını ve hedeflenen tarihini doldurun.' }));
+    if (!templateForm.title.trim()) {
+      alert('Lütfen zincir başlığını doldurun.');
       return;
     }
     
     setCreatingChain(true);
     try {
-      const tasksToCreate = newChainTasks.map(t => ({
-        ...t,
+      const templateData = {
+        ...templateForm,
         categoryId: categoryId,
-        deadline: new Date(t.deadline).toISOString(),
-        taskType: 'Default'
-      }));
+        targetCount: templateForm.targetCount ? parseInt(templateForm.targetCount) : null,
+        daysOfWeek: templateForm.recurrenceType === 'Weekly' ? JSON.stringify(templateForm.daysOfWeek) : null,
+        customDates: templateForm.recurrenceType === 'Custom' ? JSON.stringify(templateForm.customDates) : null,
+        startDate: templateForm.startDate ? new Date(templateForm.startDate).toISOString() : null,
+        endDate: templateForm.endDate ? new Date(templateForm.endDate).toISOString() : null,
+      };
 
-      await chainService.createChain(tasksToCreate);
+      await chainService.createChainTemplate(templateData);
+      
+      // Oluşturduktan sonra lazy generator'ı tetikle ki hemen görevler oluşsun
+      await chainService.generateTasks();
+      
       setAddingChainTo(null);
       loadData();
       window.dispatchEvent(new Event('chainsUpdated'));
     } catch (err) {
-      console.error('Zincir oluşturulamadı:', err);
-      alert(t('alert_chain_create_error', { defaultValue: 'Zincir oluşturulamadı. Detaylar için konsola bakın.' }));
+      console.error('Zincir şablonu oluşturulamadı:', err);
+      alert('Zincir oluşturulamadı. Detaylar için konsola bakın.');
     } finally {
       setCreatingChain(false);
     }
   };
+  
+  const handleDeleteChain = async (chainId, e) => {
+      e.stopPropagation();
+      if (!window.confirm("Bu zincir şablonunu silmek istediğinize emin misiniz? (Önceden oluşturulan görevler silinmez)")) return;
+      try {
+          await chainService.deleteChainTemplate(chainId);
+          loadData();
+      } catch(err) {
+          console.error(err);
+      }
+  }
+
+  const toggleDayOfWeek = (day) => {
+    setTemplateForm(prev => {
+      const exists = prev.daysOfWeek.includes(day);
+      if (exists) {
+        return { ...prev, daysOfWeek: prev.daysOfWeek.filter(d => d !== day) };
+      } else {
+        return { ...prev, daysOfWeek: [...prev.daysOfWeek, day] };
+      }
+    });
+  };
+
+  const addCustomDate = () => {
+    if (customDateInput && !templateForm.customDates.includes(customDateInput)) {
+      setTemplateForm(prev => ({
+        ...prev,
+        customDates: [...prev.customDates, customDateInput].sort()
+      }));
+      setCustomDateInput('');
+    }
+  };
+  
+  const removeCustomDate = (dateToRemove) => {
+    setTemplateForm(prev => ({
+      ...prev,
+      customDates: prev.customDates.filter(d => d !== dateToRemove)
+    }));
+  };
 
   // --- RENDER NODE ---
   const renderNode = (node, depth = 0) => {
-    // Find chains that belong to this category (checking the first task's categoryId)
-    const categoryChains = chains.filter(c => c.tasks && c.tasks.length > 0 && c.tasks[0].categoryId === node.id);
+    const categoryChains = chains.filter(c => c.categoryId === node.id);
 
     return (
       <div key={node.id}>
@@ -182,50 +223,36 @@ const CategoryManagerPanel = () => {
         {/* Render chains for this category */}
         <div style={{ marginLeft: `${depth * 16}px` }}>
           {categoryChains.map(chain => {
-            const firstTask = chain.tasks[0];
-            const completedCount = chain.tasks.filter(t => t.isCompleted).length;
-            const isAllCompleted = completedCount === chain.tasks.length;
-            const firstDate = new Date(chain.tasks[0].deadline).toLocaleDateString();
-            const lastDate = new Date(chain.tasks[chain.tasks.length - 1].deadline).toLocaleDateString();
-
             return (
-              <div key={chain.chainId} className={styles.chainCard}>
+              <div key={chain.id} className={styles.chainCard}>
                 <div 
                   className={styles.chainCardHeader} 
-                  onClick={() => toggleChain(chain.chainId)}
+                  onClick={() => toggleChain(chain.id)}
                 >
                   <div style={{ flex: 1 }}>
                     <div className={styles.chainTitle}>
-                      🔗 {firstTask?.title} {isAllCompleted && '✅'}
+                      🔗 {chain.title}
                     </div>
                     <div className={styles.chainMeta}>
-                      {chain.tasks.length} görev · {completedCount} tamamlandı · İlk: {firstDate} · Son: {lastDate}
+                      Tekrar: {chain.recurrenceType === 'Daily' ? 'Her Gün' : chain.recurrenceType === 'Weekly' ? 'Belirli Günler' : 'Özel Tarihler'} 
+                      {chain.taskType && ` · ${chain.taskType}`}
+                      {chain.targetCount ? ` · Hedef: ${chain.targetCount}` : ''}
                     </div>
                   </div>
-                  <div className={`${styles.chevron} ${expandedChainId === chain.chainId ? styles.chevronOpen : ''}`}>
+                  <button className={styles.deleteBtn} onClick={(e) => handleDeleteChain(chain.id, e)}>🗑</button>
+                  <div className={`${styles.chevron} ${expandedChainId === chain.id ? styles.chevronOpen : ''}`}>
                     ▼
                   </div>
                 </div>
 
-                {expandedChainId === chain.chainId && (
-                  <div className={styles.taskList}>
-                    {chain.tasks.map((task, idx) => {
-                      const firstPendingIndex = chain.tasks.findIndex(t => !t.isCompleted);
-                      const isActive = idx === firstPendingIndex;
-
-                      return (
-                        <div 
-                          key={task.id} 
-                          className={`${styles.taskRow} ${task.isCompleted ? styles.taskCompleted : ''} ${isActive ? styles.taskActive : ''}`}
-                        >
-                          <span style={{ width: '20px' }}>{task.chainOrder}.</span>
-                          <span style={{ flex: 1 }}>{task.title}</span>
-                          <span style={{ fontSize: '11px', color: 'var(--text3)' }}>
-                            {new Date(task.deadline).toLocaleDateString()}
-                          </span>
-                        </div>
-                      );
-                    })}
+                {expandedChainId === chain.id && (
+                  <div className={styles.taskList} style={{ padding: '12px' }}>
+                     <div style={{ fontSize: '13px', color: 'var(--text2)' }}>
+                         <strong>Açıklama:</strong> {chain.description || 'Yok'}<br/>
+                         <strong>Başlangıç:</strong> {chain.startDate ? new Date(chain.startDate).toLocaleDateString() : 'Yok'}<br/>
+                         <strong>Bitiş:</strong> {chain.endDate ? new Date(chain.endDate).toLocaleDateString() : 'Yok'}<br/>
+                         <strong>Son Üretim:</strong> {chain.lastGeneratedDate ? new Date(chain.lastGeneratedDate).toLocaleDateString() : 'Yok'}
+                     </div>
                   </div>
                 )}
               </div>
@@ -238,37 +265,123 @@ const CategoryManagerPanel = () => {
           </button>
 
           {addingChainTo === node.id && (
-            <form className={styles.createForm} onSubmit={(e) => handleCreateChain(e, node.id)}>
+            <form className={styles.createForm} onSubmit={(e) => handleCreateChainTemplate(e, node.id)}>
               <h4 style={{ margin: '0 0 12px 0', fontSize: '13px' }}>{t('new_chain_title', { defaultValue: 'Yeni Görev Zinciri' })}</h4>
               
-              {newChainTasks.map((step, index) => (
-                <div key={index} className={styles.stepRow}>
-                  <span style={{ minWidth: '20px', fontWeight: 600, fontSize: '12px' }}>{index + 1}.</span>
-                  <input
-                    type="text"
-                    className={styles.stepInput}
-                    placeholder={t('placeholder_task_title', { defaultValue: 'Görev Başlığı' })}
-                    value={step.title}
-                    onChange={(e) => updateChainStep(index, 'title', e.target.value)}
-                    required
-                  />
-                  <input
-                    type="date"
-                    className={styles.stepDateInput}
-                    value={step.deadline}
-                    onChange={(e) => updateChainStep(index, 'deadline', e.target.value)}
-                    required
-                  />
-                  <button type="button" className={styles.moveBtn} onClick={() => moveChainStep(index, -1)} disabled={index === 0}>↑</button>
-                  <button type="button" className={styles.moveBtn} onClick={() => moveChainStep(index, 1)} disabled={index === newChainTasks.length - 1}>↓</button>
-                  <button type="button" className={styles.moveBtn} onClick={() => removeChainStep(index)} disabled={newChainTasks.length === 1} style={{ color: '#ef4444' }}>✕</button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
+                <input
+                  type="text"
+                  className={styles.stepInput}
+                  placeholder="Zincir Başlığı (Örn: TYT Matematik Soru Çözümü)"
+                  value={templateForm.title}
+                  onChange={(e) => setTemplateForm({...templateForm, title: e.target.value})}
+                  required
+                />
+                
+                <input
+                  type="text"
+                  className={styles.stepInput}
+                  placeholder="Açıklama (İsteğe bağlı)"
+                  value={templateForm.description}
+                  onChange={(e) => setTemplateForm({...templateForm, description: e.target.value})}
+                />
+                
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    <select 
+                        className={styles.stepInput}
+                        value={templateForm.taskType}
+                        onChange={(e) => setTemplateForm({...templateForm, taskType: e.target.value})}
+                    >
+                        <option value="Soru Çözme">Soru Çözme</option>
+                        <option value="Konu Çalışması">Konu Çalışması</option>
+                        <option value="Deneme">Deneme</option>
+                        <option value="Okuma">Okuma</option>
+                        <option value="Default">Diğer</option>
+                    </select>
+                    <input
+                      type="number"
+                      className={styles.stepInput}
+                      placeholder="Hedef Soru/Sayfa Sayısı (İsteğe bağlı)"
+                      value={templateForm.targetCount}
+                      onChange={(e) => setTemplateForm({...templateForm, targetCount: e.target.value})}
+                    />
                 </div>
-              ))}
+                
+                <select 
+                    className={styles.stepInput}
+                    value={templateForm.recurrenceType}
+                    onChange={(e) => setTemplateForm({...templateForm, recurrenceType: e.target.value})}
+                >
+                    <option value="Daily">Her Gün (Domino Etkisi)</option>
+                    <option value="Weekly">Haftanın Belirli Günleri</option>
+                    <option value="Custom">Özel Tarihler</option>
+                </select>
+                
+                {templateForm.recurrenceType === 'Weekly' && (
+                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '4px' }}>
+                        {[
+                          { val: 1, label: 'Pzt' }, { val: 2, label: 'Sal' }, { val: 3, label: 'Çar' },
+                          { val: 4, label: 'Per' }, { val: 5, label: 'Cum' }, { val: 6, label: 'Cmt' }, { val: 0, label: 'Paz' }
+                        ].map(day => (
+                            <label key={day.val} style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: '2px', background: 'var(--surface-sunken)', padding: '4px 8px', borderRadius: '4px' }}>
+                                <input 
+                                  type="checkbox" 
+                                  checked={templateForm.daysOfWeek.includes(day.val)}
+                                  onChange={() => toggleDayOfWeek(day.val)}
+                                />
+                                {day.label}
+                            </label>
+                        ))}
+                    </div>
+                )}
+                
+                {templateForm.recurrenceType === 'Custom' && (
+                    <div style={{ background: 'var(--surface-sunken)', padding: '8px', borderRadius: '8px', marginTop: '4px' }}>
+                        <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                            <input 
+                              type="date" 
+                              className={styles.stepDateInput}
+                              value={customDateInput}
+                              onChange={(e) => setCustomDateInput(e.target.value)}
+                            />
+                            <button type="button" className={styles.secondaryBtn} onClick={addCustomDate}>Tarih Ekle</button>
+                        </div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                            {templateForm.customDates.map(d => (
+                                <span key={d} style={{ fontSize: '12px', background: 'var(--surface-raised)', padding: '4px 8px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    {new Date(d).toLocaleDateString()}
+                                    <button type="button" onClick={() => removeCustomDate(d)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}>✕</button>
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                )}
+                
+                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                    <div style={{ flex: 1 }}>
+                        <label style={{ fontSize: '11px', color: 'var(--text3)' }}>Başlangıç Tarihi</label>
+                        <input
+                          type="date"
+                          className={styles.stepDateInput}
+                          value={templateForm.startDate}
+                          onChange={(e) => setTemplateForm({...templateForm, startDate: e.target.value})}
+                          required
+                        />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                        <label style={{ fontSize: '11px', color: 'var(--text3)' }}>Bitiş Tarihi (İsteğe bağlı)</label>
+                        <input
+                          type="date"
+                          className={styles.stepDateInput}
+                          value={templateForm.endDate}
+                          onChange={(e) => setTemplateForm({...templateForm, endDate: e.target.value})}
+                        />
+                    </div>
+                </div>
+
+              </div>
 
               <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                <button type="button" className={styles.secondaryBtn} onClick={addChainStep}>
-                  ＋ {t('btn_add_step', { defaultValue: 'Adım Ekle' })}
-                </button>
                 <button type="submit" className={styles.primaryBtn} disabled={creatingChain}>
                   {creatingChain ? t('creating', { defaultValue: 'Oluşturuluyor...' }) : t('btn_save', { defaultValue: 'Kaydet' })}
                 </button>
@@ -285,8 +398,7 @@ const CategoryManagerPanel = () => {
     );
   };
 
-  // Check for uncategorized chains (chains where first task has no category)
-  const uncategorizedChains = chains.filter(c => c.tasks && c.tasks.length > 0 && !c.tasks[0].categoryId);
+  const uncategorizedChains = chains.filter(c => !c.categoryId);
 
   return (
     <div className={styles.panel}>
@@ -342,50 +454,34 @@ const CategoryManagerPanel = () => {
               </div>
               <div>
                 {uncategorizedChains.map(chain => {
-                  const firstTask = chain.tasks[0];
-                  const completedCount = chain.tasks.filter(t => t.isCompleted).length;
-                  const isAllCompleted = completedCount === chain.tasks.length;
-                  const firstDate = new Date(chain.tasks[0].deadline).toLocaleDateString();
-                  const lastDate = new Date(chain.tasks[chain.tasks.length - 1].deadline).toLocaleDateString();
-
                   return (
-                    <div key={chain.chainId} className={styles.chainCard}>
+                    <div key={chain.id} className={styles.chainCard}>
                       <div 
                         className={styles.chainCardHeader} 
-                        onClick={() => toggleChain(chain.chainId)}
+                        onClick={() => toggleChain(chain.id)}
                       >
                         <div style={{ flex: 1 }}>
                           <div className={styles.chainTitle}>
-                            🔗 {firstTask?.title} {isAllCompleted && '✅'}
+                            🔗 {chain.title}
                           </div>
                           <div className={styles.chainMeta}>
-                            {chain.tasks.length} görev · {completedCount} tamamlandı · İlk: {firstDate} · Son: {lastDate}
+                            Tekrar: {chain.recurrenceType === 'Daily' ? 'Her Gün' : chain.recurrenceType === 'Weekly' ? 'Belirli Günler' : 'Özel Tarihler'}
                           </div>
                         </div>
-                        <div className={`${styles.chevron} ${expandedChainId === chain.chainId ? styles.chevronOpen : ''}`}>
+                        <button className={styles.deleteBtn} onClick={(e) => handleDeleteChain(chain.id, e)}>🗑</button>
+                        <div className={`${styles.chevron} ${expandedChainId === chain.id ? styles.chevronOpen : ''}`}>
                           ▼
                         </div>
                       </div>
 
-                      {expandedChainId === chain.chainId && (
-                        <div className={styles.taskList}>
-                          {chain.tasks.map((task, idx) => {
-                            const firstPendingIndex = chain.tasks.findIndex(t => !t.isCompleted);
-                            const isActive = idx === firstPendingIndex;
-
-                            return (
-                              <div 
-                                key={task.id} 
-                                className={`${styles.taskRow} ${task.isCompleted ? styles.taskCompleted : ''} ${isActive ? styles.taskActive : ''}`}
-                              >
-                                <span style={{ width: '20px' }}>{task.chainOrder}.</span>
-                                <span style={{ flex: 1 }}>{task.title}</span>
-                                <span style={{ fontSize: '11px', color: 'var(--text3)' }}>
-                                  {new Date(task.deadline).toLocaleDateString()}
-                                </span>
-                              </div>
-                            );
-                          })}
+                      {expandedChainId === chain.id && (
+                        <div className={styles.taskList} style={{ padding: '12px' }}>
+                           <div style={{ fontSize: '13px', color: 'var(--text2)' }}>
+                               <strong>Açıklama:</strong> {chain.description || 'Yok'}<br/>
+                               <strong>Başlangıç:</strong> {chain.startDate ? new Date(chain.startDate).toLocaleDateString() : 'Yok'}<br/>
+                               <strong>Bitiş:</strong> {chain.endDate ? new Date(chain.endDate).toLocaleDateString() : 'Yok'}<br/>
+                               <strong>Son Üretim:</strong> {chain.lastGeneratedDate ? new Date(chain.lastGeneratedDate).toLocaleDateString() : 'Yok'}
+                           </div>
                         </div>
                       )}
                     </div>

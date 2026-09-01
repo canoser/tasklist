@@ -260,8 +260,6 @@ namespace PlanlamaApp.Api.Controllers
                         OriginalDeadline = taskDeadline,
                         TargetCount = questionCount,
                         WorkspaceId = workspaceId,
-                        ChainId = chainId,
-                        ChainOrder = order,
                         IsHomework = true,
                         AssignedBy = currentUserId,
                         IsTeacherAssigned = isTeacher,
@@ -298,9 +296,9 @@ namespace PlanlamaApp.Api.Controllers
 
             int shiftDays = Math.Max(1, args.DaysToShift); // Asla negatif olamaz (Bulgu 13)
 
-            if (args.PostponeAllChain && !string.IsNullOrEmpty(existingTask.ChainId))
+            if (args.PostponeAllChain && existingTask.ChainTemplateId.HasValue)
             {
-                await _taskRepository.PostponeChainAsync(existingTask.ChainId, existingTask.UserId, existingTask.ChainOrder ?? 0, shiftDays, transaction);
+                await _taskRepository.PostponeChainAsync(existingTask.ChainTemplateId.Value, existingTask.UserId, existingTask.Deadline ?? DateTime.MinValue, shiftDays, transaction);
             }
             else
             {

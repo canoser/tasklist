@@ -55,7 +55,7 @@ const Dashboard = ({ user, guestName, tone, navigation }) => {
         <Timeline user={user} tone={tone} onStatsChange={setTaskStats} />
 
         {/* Alt Özet Kartları — scroll ile görünür */}
-        <DashboardSummary />
+        <DashboardSummary user={user} />
       </div>
 
       {/* FAB + Onboarding Sihirbazı (fixed konumlu) */}

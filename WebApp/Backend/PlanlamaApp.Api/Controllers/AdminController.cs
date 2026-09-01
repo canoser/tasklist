@@ -341,8 +341,6 @@ namespace PlanlamaApp.Api.Controllers
                         Deadline = System.DateTime.UtcNow.AddDays(1),
                         TargetCount = 20,
                         CategoryImportId = "cat_2",
-                        ChainId = "zincir_1",
-                        ChainOrder = 1,
                         Metadata = "{}"
                     }
                 }
@@ -384,8 +382,7 @@ namespace PlanlamaApp.Api.Controllers
                     Deadline = t.Deadline,
                     TargetCount = t.TargetCount,
                     CategoryImportId = t.CategoryId.HasValue ? $"cat_{t.CategoryId}" : null,
-                    ChainId = t.ChainId,
-                    ChainOrder = t.ChainOrder,
+                    ChainTemplateId = t.ChainTemplateId,
                     Metadata = t.Metadata,
                     IsHomework = t.IsHomework,
                     IsTeacherAssigned = t.IsTeacherAssigned,
@@ -471,8 +468,7 @@ namespace PlanlamaApp.Api.Controllers
                         Deadline = taskDto.Deadline,
                         TargetCount = taskDto.TargetCount,
                         CategoryId = newCategoryId,
-                        ChainId = taskDto.ChainId,
-                        ChainOrder = taskDto.ChainOrder,
+                        ChainTemplateId = taskDto.ChainTemplateId,
                         Metadata = taskDto.Metadata,
                         IsHomework = taskDto.IsHomework,
                         IsTeacherAssigned = taskDto.IsTeacherAssigned,

@@ -69,7 +69,7 @@ const AddTaskModal = ({ isOpen, onClose, workspaceId }) => {
         id: Date.now(),
         title: title.trim(),
         categoryId,
-        chainId: isChain && selectedChainId ? selectedChainId : undefined,
+        chainTemplateId: isChain && selectedChainId ? parseInt(selectedChainId) : null,
         taskType: 'Görev',
         deadline: date ? new Date(date).toISOString() : new Date().toISOString(),
         isTeacherAssigned: false,
@@ -199,16 +199,11 @@ const AddTaskModal = ({ isOpen, onClose, workspaceId }) => {
                   disabled={isLoading || loadingChains}
                 >
                   <option value="">{loadingChains ? 'Yükleniyor...' : 'Zincir Seçin'}</option>
-                  {chains.map(ch => {
-                    const chainName = ch.tasks && ch.tasks.length > 0
-                        ? ch.tasks[0].title + ' Zinciri'
-                        : ch.chainId;
-                    return (
-                      <option key={ch.chainId} value={ch.chainId}>
-                        {chainName}
+                  {chains.map(ch => (
+                      <option key={ch.id} value={ch.id}>
+                        {ch.title}
                       </option>
-                    );
-                  })}
+                  ))}
                 </select>
               </motion.div>
             )}

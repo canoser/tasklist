@@ -25,8 +25,7 @@ namespace PlanlamaApp.Application.DTOs
         public DateTime? Deadline { get; set; }
         public int? TargetCount { get; set; }
         public string? CategoryImportId { get; set; }
-        public string? ChainId { get; set; }
-        public int? ChainOrder { get; set; }
+        public int? ChainTemplateId { get; set; }
         public string? Metadata { get; set; }
         
         // Backup için ek alanlar (Yapay zeka şablonunda opsiyoneldir)

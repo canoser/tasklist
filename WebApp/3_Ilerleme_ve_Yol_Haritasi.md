@@ -157,6 +157,12 @@ Bu dosya, projenin başından itibaren tamamlanan adımları ve gelecekte yapıl
       - `BaseModal` bileşenine `keepMounted={true}` prop'u geçilerek ağır form elemanlarının DOM'da asılı kalması (cache) sağlandı.
       - **(Risk 1 Çözümü - Form Sıfırlama)** Form DOM'dan silinmediği için eski verilerle kalmasını önlemek adına, `useEffect` içerisine akıllı bir temizleyici yazıldı. Kullanıcı pencereyi X ile veya dışarı tıklayarak kapatsa dahi animasyon bittikten 50ms sonra (kullanıcı görmezken) form alanları `setTimeout(..., 400)` ile sessizce sıfırlandı.
 
+- [x] **Adım 12: AddTaskModal (Görev Ekle) Render Darboğazının Çözülmesi (Deferred Rendering) (1 Eylül)**
+  - Görev ekleme penceresinin açılışında ciddi bir kare atlama (stuttering/lag) ve akıcılık kaybı yaşanıyordu.
+  - **Başarısız Yapay Zeka (AI) Yaklaşımı:** Modalı sarmalayan HTML etiketlerini azaltmak, CSS'i sadeleştirmek veya `BaseModal` mimarisine geçmek denendi, ancak ana donma sorunu çözülemedi. Çünkü sorun stil değil, JavaScript ana thread'inin kilitlenmesiydi.
+  - **Kullanıcının Tespiti ve Çözümü (Gecikmeli Render):** Donmanın asıl sebebi, modalın `Framer Motion` ile ekrana kayarak girdiği o kritik 300 milisaniye içerisinde, `HierarchicalCategoryPicker` (kategori ağacı) bileşeninin ağır bir ağaç (tree) hesaplaması ve render işlemi yapmasıydı. İki ağır işlem (animasyon + DOM manipülasyonu) çakışıyordu.
+  - **Uygulanan Kesin Çözüm:** Kullanıcının yönlendirmesiyle "Deferred Rendering" (Gecikmeli Render) tekniği uygulandı. Kategori ağacı ve zincir listesi gibi ağır bileşenler, modalın açılış animasyonu tamamen bitene kadar (350ms) render edilmedi. Animasyon pürüzsüzce bittikten sonra içerik hızlıca ekrana basıldı. Bu sayede açılış performansı 60 FPS akıcılığına kavuştu.
+
 ### 5. Ekstra İleri Seviye Özellikler (Gizli Tamamlananlar)
 - [x] **SignalR WebSocket (Real-Time):** `AppHub.cs` üzerinden Çalışma Alanı bazlı anlık iletişim omurgası kuruldu.
 - [x] **AI Asistan (Gemini & OpenAI) Altyapısı:** `AiController.cs`, kotalar, IDOR güvenlik testleri ve OpenAI `GeneratePlan` entegrasyonu eksiksiz kodlandı.

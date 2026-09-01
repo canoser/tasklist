@@ -149,6 +149,40 @@ namespace PlanlamaApp.Infrastructure
                 );
             ");
 
+            // ── ChainTemplates ───────────────────────────────────────────────
+            connection.Execute(@"
+                CREATE TABLE IF NOT EXISTS ChainTemplates (
+                    Id                SERIAL  PRIMARY KEY,
+                    TenantId          TEXT    NOT NULL,
+                    UserId            TEXT    NOT NULL,
+                    CategoryId        INTEGER,
+                    Title             TEXT    NOT NULL,
+                    Description       TEXT,
+                    TaskType          TEXT    NOT NULL DEFAULT 'Soru Çözme',
+                    TargetCount       INTEGER,
+                    RecurrenceType    TEXT    NOT NULL,
+                    DaysOfWeek        TEXT,
+                    CustomDates       TEXT,
+                    StartDate         TIMESTAMPTZ,
+                    EndDate           TIMESTAMPTZ,
+                    IsActive          BOOLEAN NOT NULL DEFAULT TRUE,
+                    LastGeneratedDate DATE,
+                    IsDeleted         BOOLEAN NOT NULL DEFAULT FALSE,
+                    CreatedAt         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                    UpdatedAt         TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                );
+            ");
+
+            connection.Execute(@"
+                ALTER TABLE ChainTemplates ADD COLUMN IF NOT EXISTS UserId TEXT NOT NULL DEFAULT '';
+                ALTER TABLE ChainTemplates ADD COLUMN IF NOT EXISTS Description TEXT;
+                ALTER TABLE ChainTemplates ADD COLUMN IF NOT EXISTS TaskType TEXT NOT NULL DEFAULT 'Soru Çözme';
+                ALTER TABLE ChainTemplates ADD COLUMN IF NOT EXISTS TargetCount INTEGER;
+                ALTER TABLE ChainTemplates ADD COLUMN IF NOT EXISTS DaysOfWeek TEXT;
+                ALTER TABLE ChainTemplates ADD COLUMN IF NOT EXISTS CustomDates TEXT;
+                ALTER TABLE ChainTemplates ADD COLUMN IF NOT EXISTS StartDate TIMESTAMPTZ;
+            ");
+
             // ── TaskItems ──────────────────────────────────────────────────
             connection.Execute(@"
                 CREATE TABLE IF NOT EXISTS TaskItems (
@@ -170,11 +204,10 @@ namespace PlanlamaApp.Infrastructure
                 );
             ");
 
-            // Eksik olabilecek yeni kolonları ekle (Migration Update)
+            // Eksik olabilecek yeni kolonları ekle ve eskileri düşür (Migration Update)
             connection.Execute(@"
                 ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS WorkspaceId INTEGER;
-                ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS ChainId TEXT;
-                ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS ChainOrder INTEGER;
+                ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS ChainTemplateId INTEGER;
                 ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS OriginalDeadline TIMESTAMPTZ;
                 ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS IsHomework BOOLEAN NOT NULL DEFAULT FALSE;
                 ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS AssignedBy TEXT;
@@ -182,6 +215,24 @@ namespace PlanlamaApp.Infrastructure
                 ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS AssignedByUserId TEXT;
                 ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS UserTaskSnapshot TEXT;
             ");
+
+            try 
+            {
+                // Unique constraint for Race Condition prevention in Lazy Generator
+                connection.Execute(@"
+                    CREATE UNIQUE INDEX IF NOT EXISTS UX_TaskItems_ChainTemplateId_Deadline 
+                    ON TaskItems(ChainTemplateId, Deadline) 
+                    WHERE ChainTemplateId IS NOT NULL;
+                ");
+
+                // Drop legacy columns (Migration)
+                connection.Execute(@"ALTER TABLE TaskItems DROP COLUMN IF EXISTS ChainId;");
+                connection.Execute(@"ALTER TABLE TaskItems DROP COLUMN IF EXISTS ChainOrder;");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Column drop or index creation failed (safe to ignore if already done): " + ex.Message);
+            }
 
             // ── Categories ─────────────────────────────────────────────────
             connection.Execute(@"

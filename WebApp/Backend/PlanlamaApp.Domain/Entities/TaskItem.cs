@@ -59,8 +59,7 @@ namespace PlanlamaApp.Domain.Entities
         public string? Metadata { get; set; }
 
         public int? WorkspaceId { get; set; }
-        public string? ChainId { get; set; }
-        public int? ChainOrder { get; set; }
+        public int? ChainTemplateId { get; set; }
         public DateTime? OriginalDeadline { get; set; }
         public bool IsHomework { get; set; } = false;
         public string? AssignedBy { get; set; }

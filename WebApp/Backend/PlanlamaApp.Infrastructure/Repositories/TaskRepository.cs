@@ -42,14 +42,7 @@ namespace PlanlamaApp.Infrastructure.Repositories
             return await QueryAsync<TaskItem>(sql, new { UserId = userId, Start = start, End = end });
         }
 
-        public async Task<IEnumerable<TaskItem>> GetChainTasksByUserIdAsync(string userId)
-        {
-            var sql = @"SELECT * FROM TaskItems
-                        WHERE UserId = @UserId
-                          AND ChainId IS NOT NULL
-                        ORDER BY ChainId ASC, ChainOrder ASC";
-            return await QueryAsync<TaskItem>(sql, new { UserId = userId });
-        }
+
 
         public async Task<TaskItem?> GetByIdAsync(int id)
         {
@@ -74,12 +67,12 @@ namespace PlanlamaApp.Infrastructure.Repositories
             var sql = @"INSERT INTO TaskItems 
                             (TenantId, UserId, CategoryId, Title, Description, TaskType, 
                              Deadline, IsTeacherAssigned, IsCompleted, CompletedAt, TargetCount, Metadata, 
-                             WorkspaceId, ChainId, ChainOrder, OriginalDeadline, IsHomework, AssignedBy,
+                             WorkspaceId, ChainTemplateId, OriginalDeadline, IsHomework, AssignedBy,
                              AssignedByWorkspaceId, AssignedByUserId, UserTaskSnapshot, CreatedAt, UpdatedAt)
                         VALUES 
                             (@TenantId, @UserId, @CategoryId, @Title, @Description, @TaskType,
                              @Deadline, @IsTeacherAssigned, @IsCompleted, @CompletedAt, @TargetCount, @Metadata,
-                             @WorkspaceId, @ChainId, @ChainOrder, @OriginalDeadline, @IsHomework, @AssignedBy,
+                             @WorkspaceId, @ChainTemplateId, @OriginalDeadline, @IsHomework, @AssignedBy,
                              @AssignedByWorkspaceId, @AssignedByUserId, @UserTaskSnapshot, @CreatedAt, @UpdatedAt)
                         RETURNING Id;";
             
@@ -103,8 +96,7 @@ namespace PlanlamaApp.Infrastructure.Repositories
                             TargetCount = @TargetCount,
                             Metadata = @Metadata,
                             WorkspaceId = @WorkspaceId,
-                            ChainId = @ChainId,
-                            ChainOrder = @ChainOrder,
+                            ChainTemplateId = @ChainTemplateId,
                             OriginalDeadline = @OriginalDeadline,
                             IsHomework = @IsHomework,
                             AssignedBy = @AssignedBy,
@@ -131,8 +123,7 @@ namespace PlanlamaApp.Infrastructure.Repositories
                             TargetCount = @TargetCount,
                             Metadata = @Metadata,
                             WorkspaceId = @WorkspaceId,
-                            ChainId = @ChainId,
-                            ChainOrder = @ChainOrder,
+                            ChainTemplateId = @ChainTemplateId,
                             OriginalDeadline = @OriginalDeadline,
                             IsHomework = @IsHomework,
                             AssignedBy = @AssignedBy,
@@ -182,15 +173,15 @@ namespace PlanlamaApp.Infrastructure.Repositories
             return affected > 0;
         }
 
-        public async Task<bool> PostponeChainAsync(string chainId, string userId, int minOrder, int daysToShift, System.Data.IDbTransaction? transaction = null)
+        public async Task<bool> PostponeChainAsync(int chainTemplateId, string userId, DateTime fromDeadline, int daysToShift, System.Data.IDbTransaction? transaction = null)
         {
             var sql = @"SELECT * FROM TaskItems 
-                        WHERE ChainId = @ChainId 
+                        WHERE ChainTemplateId = @ChainTemplateId 
                           AND UserId = @UserId
-                          AND ChainOrder >= @MinOrder 
+                          AND Deadline > @FromDeadline 
                           AND IsCompleted = FALSE"; 
 
-            var tasks = await QueryAsync<TaskItem>(sql, new { ChainId = chainId, UserId = userId, MinOrder = minOrder }, transaction);
+            var tasks = await QueryAsync<TaskItem>(sql, new { ChainTemplateId = chainTemplateId, UserId = userId, FromDeadline = fromDeadline }, transaction);
 
             var updateSql = @"UPDATE TaskItems 
                               SET Deadline = @Deadline, 
@@ -209,16 +200,16 @@ namespace PlanlamaApp.Infrastructure.Repositories
             return tasks.Any();
         }
 
-        public async Task<bool> PostponeChainByAssignerAsync(string chainId, string userId, int minOrder, int daysToShift, System.Data.IDbTransaction? transaction = null)
+        public async Task<bool> PostponeChainByAssignerAsync(int chainTemplateId, string userId, DateTime fromDeadline, int daysToShift, System.Data.IDbTransaction? transaction = null)
         {
             var sql = @"SELECT * FROM TaskItems 
-                        WHERE ChainId = @ChainId 
+                        WHERE ChainTemplateId = @ChainTemplateId 
                           AND UserId = @UserId
-                          AND ChainOrder >= @MinOrder 
+                          AND Deadline > @FromDeadline 
                           AND IsCompleted = FALSE"; 
 
             // BaseRepository sorgusu yerine doğrudan connection kullanıyoruz
-            var tasks = await _dbConnection.QueryAsync<TaskItem>(sql, new { ChainId = chainId, UserId = userId, MinOrder = minOrder }, transaction);
+            var tasks = await _dbConnection.QueryAsync<TaskItem>(sql, new { ChainTemplateId = chainTemplateId, UserId = userId, FromDeadline = fromDeadline }, transaction);
 
             var updateSql = @"UPDATE TaskItems 
                               SET Deadline = @Deadline, 
@@ -264,16 +255,6 @@ namespace PlanlamaApp.Infrastructure.Repositories
             return true;
         }
 
-        public async Task<bool> HasIncompletePreviousChainTaskAsync(string chainId, string userId, int currentOrder)
-        {
-            var sql = @"SELECT COUNT(1) FROM TaskItems 
-                        WHERE ChainId = @ChainId 
-                          AND UserId = @UserId 
-                          AND ChainOrder < @CurrentOrder 
-                          AND IsCompleted = FALSE";
-            
-            var count = await QueryFirstOrDefaultAsync<int>(sql, new { ChainId = chainId, UserId = userId, CurrentOrder = currentOrder });
-            return count > 0;
-        }
+
     }
 }

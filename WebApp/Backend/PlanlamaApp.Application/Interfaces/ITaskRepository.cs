@@ -44,28 +44,16 @@ namespace PlanlamaApp.Application.Interfaces
         /// <summary>Görevi atayan kişi tarafından görevi tamamlandı olarak işaretler (TenantId by-pass).</summary>
         Task<bool> MarkAsCompletedByAssignerAsync(int id, DateTime completedAt, System.Data.IDbTransaction? transaction = null);
 
-        /// <summary>Bir zincirdeki görevleri (sırası >= minOrder) kaskad olarak öteler.</summary>
-        Task<bool> PostponeChainAsync(string chainId, string userId, int minOrder, int daysToShift, System.Data.IDbTransaction? transaction = null);
+        /// <summary>Bir zincirdeki (aynı şablona ait) gelecek görevleri kaskad olarak öteler.</summary>
+        Task<bool> PostponeChainAsync(int chainTemplateId, string userId, DateTime fromDeadline, int daysToShift, System.Data.IDbTransaction? transaction = null);
 
         /// <summary>Bir zincirdeki görevleri görevi atayan kişi kaskad olarak öteler (TenantId by-pass).</summary>
-        Task<bool> PostponeChainByAssignerAsync(string chainId, string userId, int minOrder, int daysToShift, System.Data.IDbTransaction? transaction = null);
-
-        /// <summary>
-        /// Kullanıcının zincir görevlerini gruplu olarak getirir.
-        /// Her grup: ChainId, görev listesi (ChainOrder'a göre sıralı).
-        /// </summary>
-        Task<IEnumerable<TaskItem>> GetChainTasksByUserIdAsync(string userId);
+        Task<bool> PostponeChainByAssignerAsync(int chainTemplateId, string userId, DateTime fromDeadline, int daysToShift, System.Data.IDbTransaction? transaction = null);
 
         /// <summary>
         /// Kullanıcı alandan çıktığında tamamlanmamış görevleri siler, 
         /// tamamlanmış olanları JSON snapshot olarak saklar.
         /// </summary>
         Task<bool> HandleWorkspaceLeaveAsync(int workspaceId, string userId, System.Data.IDbTransaction? transaction = null);
-
-        /// <summary>
-        /// Zincirde (Chain) bu görevden önce gelen (ChainOrder < currentOrder) 
-        /// ve henüz tamamlanmamış (IsCompleted = false) bir görev olup olmadığını kontrol eder.
-        /// </summary>
-        Task<bool> HasIncompletePreviousChainTaskAsync(string chainId, string userId, int currentOrder);
     }
 }
