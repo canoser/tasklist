@@ -2,22 +2,7 @@ import { motion } from 'framer-motion';
 import styles from './DashboardSummary.module.css';
 import { useTranslation } from 'react-i18next';
 
-// ── Mock Veri (Sadece örnek olarak tutuluyor, misafirlerde kullanılmayacak) ──
-const MOCK_DAILY_PROGRESS = 80;
-const MOCK_WEEKLY_PROGRESS = 55;
-
-const MOCK_NET_SCORES = [
-  { subject: 'Mat', net: 28.5, maxNet: 40, color: '#6366f1' },
-  { subject: 'Fiz', net: 14.0, maxNet: 20, color: '#10b981' },
-  { subject: 'Kim', net: 11.5, maxNet: 20, color: '#f59e0b' },
-  { subject: 'Bio', net: 9.25, maxNet: 20, color: '#a855f7' },
-];
-
-const MOCK_DAILY_GOALS = [
-  { label: 'Fizik: 50 Soru', done: 20, total: 50, color: '#10b981' },
-  { label: 'Matematik: 30 Soru', done: 24, total: 30, color: '#6366f1' },
-  { label: 'Kimya: 25 Soru', done: 5, total: 25, color: '#f59e0b' },
-];
+// Not: Mock veriler tamamen kaldırıldı. Sadece gerçek veriler render edilecek.
 
 // ── Düzenle İkonu ─────────────────────────────────────────────────────────────
 const EditIcon = () => (
@@ -80,15 +65,15 @@ const cardVariants = {
 };
 
 // ── Ana DashboardSummary Bileşeni ─────────────────────────────────────────────
-const DashboardSummary = ({ user, netScores = null }) => {
+const DashboardSummary = ({ user, netScores = null, dailyGoals = null, dailyProgressData = 0, weeklyProgressData = 0 }) => {
   const { t } = useTranslation('tasks');
   const isGuest = !user?.id && !user?.uid;
   
-  // Eğer kullanıcı giriş yapmamışsa (misafir) veya gerçek veri gelmemişse mock verileri gizle.
-  const dailyProgress = isGuest ? 0 : MOCK_DAILY_PROGRESS;
-  const weeklyProgress = isGuest ? 0 : MOCK_WEEKLY_PROGRESS;
-  const currentNetScores = isGuest ? null : (netScores || MOCK_NET_SCORES);
-  const currentGoals = isGuest ? [] : MOCK_DAILY_GOALS;
+  // Gerçek veriler veya 0/null
+  const dailyProgress = dailyProgressData || 0;
+  const weeklyProgress = weeklyProgressData || 0;
+  const currentNetScores = netScores;
+  const currentGoals = dailyGoals;
 
   return (
     <div className={styles.summarySection}>
