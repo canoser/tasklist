@@ -114,20 +114,30 @@ const CategoryManagerPanel = () => {
   const handleCreateChainTemplate = async (e, categoryId) => {
     e.preventDefault();
     if (!templateForm.title.trim()) {
-      alert('Lütfen zincir başlığını doldurun.');
+      alert(t('alert_chain_title_required', { defaultValue: 'Lütfen zincir başlığını doldurun.' }));
+      return;
+    }
+
+    if (templateForm.recurrenceType === 'Custom' && templateForm.customDates.length === 0) {
+      alert(t('alert_min_custom_dates', { defaultValue: 'Lütfen en az bir özel tarih ekleyin.' }));
       return;
     }
     
     setCreatingChain(true);
     try {
+      const isCustom = templateForm.recurrenceType === 'Custom';
       const templateData = {
         ...templateForm,
         categoryId: categoryId,
         targetCount: templateForm.targetCount ? parseInt(templateForm.targetCount) : null,
         daysOfWeek: templateForm.recurrenceType === 'Weekly' ? JSON.stringify(templateForm.daysOfWeek) : null,
-        customDates: templateForm.recurrenceType === 'Custom' ? JSON.stringify(templateForm.customDates) : null,
-        startDate: templateForm.startDate ? new Date(templateForm.startDate).toISOString() : null,
-        endDate: templateForm.endDate ? new Date(templateForm.endDate).toISOString() : null,
+        customDates: isCustom ? JSON.stringify(templateForm.customDates) : null,
+        startDate: isCustom 
+          ? (templateForm.customDates.length > 0 ? new Date(templateForm.customDates[0]).toISOString() : null)
+          : (templateForm.startDate ? new Date(templateForm.startDate).toISOString() : null),
+        endDate: isCustom 
+          ? null 
+          : (templateForm.endDate ? new Date(templateForm.endDate).toISOString() : null),
       };
 
       await chainService.createChainTemplate(templateData);
@@ -169,7 +179,12 @@ const CategoryManagerPanel = () => {
   };
 
   const addCustomDate = () => {
-    if (customDateInput && !templateForm.customDates.includes(customDateInput)) {
+    if (!customDateInput) return;
+    if (templateForm.customDates.length >= 30) {
+      alert(t('alert_max_custom_dates', { defaultValue: 'En fazla 30 özel tarih ekleyebilirsiniz.' }));
+      return;
+    }
+    if (!templateForm.customDates.includes(customDateInput)) {
       setTemplateForm(prev => ({
         ...prev,
         customDates: [...prev.customDates, customDateInput].sort()
@@ -312,9 +327,9 @@ const CategoryManagerPanel = () => {
                     value={templateForm.recurrenceType}
                     onChange={(e) => setTemplateForm({...templateForm, recurrenceType: e.target.value})}
                 >
-                    <option value="Daily">Her Gün (Domino Etkisi)</option>
-                    <option value="Weekly">Haftanın Belirli Günleri</option>
-                    <option value="Custom">Özel Tarihler</option>
+                    <option value="Daily">{t('recurrence_daily', { defaultValue: 'Her Gün' })}</option>
+                    <option value="Weekly">{t('recurrence_weekly', { defaultValue: 'Haftanın Belirli Günleri' })}</option>
+                    <option value="Custom">{t('recurrence_custom', { defaultValue: 'Özel Tarihler' })}</option>
                 </select>
                 
                 {templateForm.recurrenceType === 'Weekly' && (
@@ -337,14 +352,30 @@ const CategoryManagerPanel = () => {
                 
                 {templateForm.recurrenceType === 'Custom' && (
                     <div style={{ background: 'var(--surface-sunken)', padding: '8px', borderRadius: '8px', marginTop: '4px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                            <span style={{ fontSize: '11px', color: 'var(--text3)' }}>
+                                {t('custom_dates_helper', { defaultValue: 'Tarih seçip ekleyin (En fazla 30 tarih)' })}
+                            </span>
+                            <span style={{ fontSize: '11px', fontWeight: 600, color: templateForm.customDates.length >= 30 ? '#ef4444' : 'var(--text2)' }}>
+                                {templateForm.customDates.length} / 30
+                            </span>
+                        </div>
                         <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
                             <input 
                               type="date" 
                               className={styles.stepDateInput}
                               value={customDateInput}
+                              disabled={templateForm.customDates.length >= 30}
                               onChange={(e) => setCustomDateInput(e.target.value)}
                             />
-                            <button type="button" className={styles.secondaryBtn} onClick={addCustomDate}>Tarih Ekle</button>
+                            <button 
+                              type="button" 
+                              className={styles.secondaryBtn} 
+                              onClick={addCustomDate}
+                              disabled={templateForm.customDates.length >= 30}
+                            >
+                              {t('btn_add_date', { defaultValue: 'Tarih Ekle' })}
+                            </button>
                         </div>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                             {templateForm.customDates.map(d => (
@@ -357,27 +388,29 @@ const CategoryManagerPanel = () => {
                     </div>
                 )}
                 
-                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                    <div style={{ flex: 1 }}>
-                        <label style={{ fontSize: '11px', color: 'var(--text3)' }}>Başlangıç Tarihi</label>
-                        <input
-                          type="date"
-                          className={styles.stepDateInput}
-                          value={templateForm.startDate}
-                          onChange={(e) => setTemplateForm({...templateForm, startDate: e.target.value})}
-                          required
-                        />
+                {templateForm.recurrenceType !== 'Custom' && (
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                        <div style={{ flex: 1 }}>
+                            <label style={{ fontSize: '11px', color: 'var(--text3)' }}>{t('start_date', { defaultValue: 'Başlangıç Tarihi' })}</label>
+                            <input
+                              type="date"
+                              className={styles.stepDateInput}
+                              value={templateForm.startDate}
+                              onChange={(e) => setTemplateForm({...templateForm, startDate: e.target.value})}
+                              required
+                            />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            <label style={{ fontSize: '11px', color: 'var(--text3)' }}>{t('end_date_optional', { defaultValue: 'Bitiş Tarihi (İsteğe bağlı)' })}</label>
+                            <input
+                              type="date"
+                              className={styles.stepDateInput}
+                              value={templateForm.endDate}
+                              onChange={(e) => setTemplateForm({...templateForm, endDate: e.target.value})}
+                            />
+                        </div>
                     </div>
-                    <div style={{ flex: 1 }}>
-                        <label style={{ fontSize: '11px', color: 'var(--text3)' }}>Bitiş Tarihi (İsteğe bağlı)</label>
-                        <input
-                          type="date"
-                          className={styles.stepDateInput}
-                          value={templateForm.endDate}
-                          onChange={(e) => setTemplateForm({...templateForm, endDate: e.target.value})}
-                        />
-                    </div>
-                </div>
+                )}
 
               </div>
 

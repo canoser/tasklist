@@ -43,27 +43,73 @@ namespace PlanlamaApp.Application.Services
             } catch {}
 
             var today = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz).Date;
-            var targetEnd = today.AddDays(30);
-
             var templates = await _chainTemplateRepository.GetByUserIdAsync(userId);
 
             foreach (var t in templates)
             {
-                var startDate = t.StartDate?.Date ?? today;
-                var lastGen = t.LastGeneratedDate?.Date ?? startDate.AddDays(-1);
-                
-                if (t.EndDate.HasValue && targetEnd > t.EndDate.Value.Date)
+                if (t.RecurrenceType == "Custom")
                 {
-                    targetEnd = t.EndDate.Value.Date;
+                    var customDates = new List<DateTime>();
+                    if (!string.IsNullOrEmpty(t.CustomDates))
+                    {
+                        try {
+                            var dates = JsonSerializer.Deserialize<List<string>>(t.CustomDates);
+                            if (dates != null) customDates = dates.Select(d => DateTime.Parse(d).Date).ToList();
+                        } catch {}
+                    }
+
+                    foreach (var cDate in customDates)
+                    {
+                        var deadlineUtc = TimeZoneInfo.ConvertTimeToUtc(cDate.AddHours(23).AddMinutes(59), tz);
+                        var taskItem = new TaskItem
+                        {
+                            UserId = userId,
+                            Title = t.Title,
+                            Description = t.Description,
+                            TaskType = t.TaskType,
+                            CategoryId = t.CategoryId,
+                            TargetCount = t.TargetCount,
+                            Deadline = deadlineUtc,
+                            OriginalDeadline = deadlineUtc,
+                            ChainTemplateId = t.Id,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        };
+
+                        try
+                        {
+                            // DB Unique Index (ChainTemplateId, Deadline) will prevent duplicates!
+                            await _taskRepository.CreateAsync(taskItem);
+                        }
+                        catch
+                        {
+                            // Ignore unique constraint violations
+                        }
+                    }
+
+                    t.LastGeneratedDate = customDates.Any() ? customDates.Max() : today;
+                    t.UpdatedAt = DateTime.UtcNow;
+                    await _chainTemplateRepository.UpdateAsync(t);
+                    continue;
                 }
 
-                if (lastGen >= targetEnd) continue;
+                // Daily or Weekly (Lazy generation up to 30 days ahead)
+                var templateTargetEnd = today.AddDays(30);
+                if (t.EndDate.HasValue && templateTargetEnd > t.EndDate.Value.Date)
+                {
+                    templateTargetEnd = t.EndDate.Value.Date;
+                }
+
+                var startDate = t.StartDate?.Date ?? today;
+                var lastGen = t.LastGeneratedDate?.Date ?? startDate.AddDays(-1);
+
+                if (lastGen >= templateTargetEnd) continue;
 
                 var currentGenDate = lastGen.AddDays(1);
                 if (currentGenDate < startDate) currentGenDate = startDate;
 
                 var daysOfWeek = new List<DayOfWeek>();
-                if (!string.IsNullOrEmpty(t.DaysOfWeek))
+                if (t.RecurrenceType == "Weekly" && !string.IsNullOrEmpty(t.DaysOfWeek))
                 {
                     try {
                         var ints = JsonSerializer.Deserialize<List<int>>(t.DaysOfWeek);
@@ -71,16 +117,7 @@ namespace PlanlamaApp.Application.Services
                     } catch {}
                 }
 
-                var customDates = new List<DateTime>();
-                if (!string.IsNullOrEmpty(t.CustomDates))
-                {
-                    try {
-                        var dates = JsonSerializer.Deserialize<List<string>>(t.CustomDates);
-                        if (dates != null) customDates = dates.Select(d => DateTime.Parse(d).Date).ToList();
-                    } catch {}
-                }
-
-                while (currentGenDate <= targetEnd)
+                while (currentGenDate <= templateTargetEnd)
                 {
                     bool shouldGenerate = false;
 
@@ -91,10 +128,6 @@ namespace PlanlamaApp.Application.Services
                     else if (t.RecurrenceType == "Weekly")
                     {
                         shouldGenerate = daysOfWeek.Contains(currentGenDate.DayOfWeek);
-                    }
-                    else if (t.RecurrenceType == "Custom")
-                    {
-                        shouldGenerate = customDates.Contains(currentGenDate);
                     }
 
                     if (shouldGenerate)
@@ -131,7 +164,7 @@ namespace PlanlamaApp.Application.Services
                     currentGenDate = currentGenDate.AddDays(1);
                 }
 
-                t.LastGeneratedDate = targetEnd;
+                t.LastGeneratedDate = templateTargetEnd;
                 t.UpdatedAt = DateTime.UtcNow;
                 await _chainTemplateRepository.UpdateAsync(t);
             }
