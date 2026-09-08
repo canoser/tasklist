@@ -100,6 +100,24 @@ class SignalRService {
         this.connection.on("TaskAssigned", (workspaceId) => {
             this.dispatchEvent("TaskAssigned", { workspaceId });
         });
+
+        // Koçluk olayları (Faz 1)
+        const coachingEvents = [
+            "CoachingTaskAssigned",
+            "CoachingTaskUpdated",
+            "CoachingScheduleUpdated",
+            "CoachingLessonChanged",
+            "StudentTaskCompleted",
+            "StudentScheduleUpdated",
+            "StudentPerformanceAdded",
+            "StreakRevoked"
+        ];
+
+        coachingEvents.forEach(evt => {
+            this.connection.on(evt, (data) => {
+                this.dispatchEvent(evt, { data });
+            });
+        });
     }
 
     dispatchEvent(eventName, detail = {}) {

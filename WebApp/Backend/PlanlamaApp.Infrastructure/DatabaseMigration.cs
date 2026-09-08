@@ -339,6 +339,208 @@ namespace PlanlamaApp.Infrastructure
                 ", new { setting.Key, setting.Value, setting.Description, UpdatedAt = DateTime.UtcNow });
             }
 
+            // ── Coaching Module (Faz 1) ────────────────────────────────────
+            
+            // TaskItems Updates
+            connection.Execute(@"
+                ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS DurationMinutes INTEGER;
+                ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS TargetTestCount INTEGER;
+                ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS TargetPageCount INTEGER;
+                ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS TargetBookCount DECIMAL;
+                ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS RequirePerformanceEntry BOOLEAN NOT NULL DEFAULT FALSE;
+                ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS ActualDurationMinutes INTEGER;
+                ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS ActualTestCount INTEGER;
+                ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS ActualPageCount INTEGER;
+                ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS PostponeCount INTEGER NOT NULL DEFAULT 0;
+                ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS CoachSubject TEXT;
+                ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS CoachTopic TEXT;
+                ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS CoachDescription TEXT;
+                ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS AssignedToUserId TEXT;
+                ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS ResourceLinkId INTEGER;
+                ALTER TABLE TaskItems ADD COLUMN IF NOT EXISTS IsRejectedByCoach BOOLEAN NOT NULL DEFAULT FALSE;
+            ");
+
+            // PerformanceRecords Updates
+            connection.Execute(@"
+                ALTER TABLE PerformanceRecords ADD COLUMN IF NOT EXISTS ExamRecordId INTEGER;
+                ALTER TABLE PerformanceRecords ADD COLUMN IF NOT EXISTS StudyDurationMinutes INTEGER;
+                ALTER TABLE PerformanceRecords ADD COLUMN IF NOT EXISTS TestCount INTEGER;
+                ALTER TABLE PerformanceRecords ADD COLUMN IF NOT EXISTS PageCount INTEGER;
+                ALTER TABLE PerformanceRecords ADD COLUMN IF NOT EXISTS Notes TEXT;
+                ALTER TABLE PerformanceRecords ADD COLUMN IF NOT EXISTS TeacherFeedback TEXT;
+            ");
+
+            // StudentProfiles
+            connection.Execute(@"
+                CREATE TABLE IF NOT EXISTS StudentProfiles (
+                    Id          SERIAL PRIMARY KEY,
+                    TenantId    TEXT NOT NULL,
+                    UserId      TEXT NOT NULL,
+                    CoachUserId TEXT NOT NULL,
+                    WorkspaceId INTEGER,
+                    TargetExam  TEXT,
+                    TargetYear  INTEGER,
+                    TargetScore DECIMAL,
+                    SchoolName  TEXT,
+                    Grade       TEXT,
+                    ParentName  TEXT,
+                    ParentPhone TEXT,
+                    CoachNotes  TEXT,
+                    CreatedAt   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                    UpdatedAt   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                );
+            ");
+
+            // ExamRecords
+            connection.Execute(@"
+                CREATE TABLE IF NOT EXISTS ExamRecords (
+                    Id          SERIAL PRIMARY KEY,
+                    TenantId    TEXT NOT NULL,
+                    StudentId   TEXT NOT NULL,
+                    CoachUserId TEXT,
+                    WorkspaceId INTEGER,
+                    ExamType    TEXT NOT NULL,
+                    ExamName    TEXT,
+                    ExamDate    DATE NOT NULL,
+                    TotalNet    DECIMAL,
+                    TotalCorrect INTEGER,
+                    TotalWrong  INTEGER,
+                    TotalEmpty  INTEGER,
+                    Notes       TEXT,
+                    CreatedAt   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                );
+            ");
+
+            // ExamSubjectResults
+            connection.Execute(@"
+                CREATE TABLE IF NOT EXISTS ExamSubjectResults (
+                    Id           SERIAL PRIMARY KEY,
+                    TenantId     TEXT NOT NULL,
+                    ExamRecordId INTEGER NOT NULL REFERENCES ExamRecords(Id) ON DELETE CASCADE,
+                    CategoryId   INTEGER,
+                    SubjectName  TEXT NOT NULL,
+                    Correct      INTEGER NOT NULL DEFAULT 0,
+                    Wrong        INTEGER NOT NULL DEFAULT 0,
+                    Empty        INTEGER NOT NULL DEFAULT 0,
+                    Net          DECIMAL NOT NULL DEFAULT 0,
+                    QuestionCount INTEGER
+                );
+            ");
+
+            // LessonRecords
+            connection.Execute(@"
+                CREATE TABLE IF NOT EXISTS LessonRecords (
+                    Id          SERIAL PRIMARY KEY,
+                    TenantId    TEXT NOT NULL,
+                    CoachUserId TEXT NOT NULL,
+                    StudentId   TEXT,
+                    WorkspaceId INTEGER,
+                    CategoryId  INTEGER,
+                    SubjectName TEXT,
+                    LessonDate  TIMESTAMPTZ NOT NULL,
+                    DurationMinutes INTEGER NOT NULL DEFAULT 60,
+                    Status      TEXT NOT NULL DEFAULT 'Planned',
+                    CoachNote   TEXT,
+                    CreatedAt   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                    UpdatedAt   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                );
+            ");
+
+            // PaymentRecords
+            connection.Execute(@"
+                CREATE TABLE IF NOT EXISTS PaymentRecords (
+                    Id          SERIAL PRIMARY KEY,
+                    TenantId    TEXT NOT NULL,
+                    CoachUserId TEXT NOT NULL,
+                    StudentId   TEXT NOT NULL,
+                    WorkspaceId INTEGER,
+                    Amount      DECIMAL NOT NULL,
+                    Currency    TEXT NOT NULL DEFAULT 'TRY',
+                    PaymentType TEXT NOT NULL,
+                    Status      TEXT NOT NULL DEFAULT 'Planned',
+                    DueDate     DATE NOT NULL,
+                    PaidDate    DATE,
+                    PaymentMethod TEXT,
+                    Notes       TEXT,
+                    CreatedAt   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                );
+            ");
+
+            // SharedLinks
+            connection.Execute(@"
+                CREATE TABLE IF NOT EXISTS SharedLinks (
+                    Id          SERIAL PRIMARY KEY,
+                    TenantId    TEXT NOT NULL,
+                    CreatedByUserId TEXT NOT NULL,
+                    StudentId   TEXT NOT NULL,
+                    Token       TEXT NOT NULL UNIQUE,
+                    PinHash     TEXT NOT NULL,
+                    LinkType    TEXT NOT NULL,
+                    Scope       TEXT,
+                    ScopeCategoryId INTEGER,
+                    IsActive    BOOLEAN NOT NULL DEFAULT TRUE,
+                    FailedAttempts INTEGER NOT NULL DEFAULT 0,
+                    LockedUntil TIMESTAMPTZ,
+                    LastAccessedAt TIMESTAMPTZ,
+                    LastAccessIP TEXT,
+                    CreatedAt   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                );
+            ");
+
+            // SharedLinkAccessLogs
+            connection.Execute(@"
+                CREATE TABLE IF NOT EXISTS SharedLinkAccessLogs (
+                    Id          SERIAL PRIMARY KEY,
+                    SharedLinkId INTEGER NOT NULL REFERENCES SharedLinks(Id) ON DELETE CASCADE,
+                    AccessedAt  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                    IPAddress   TEXT,
+                    Success     BOOLEAN NOT NULL,
+                    UserAgent   TEXT
+                );
+            ");
+
+            // StudentResources
+            connection.Execute(@"
+                CREATE TABLE IF NOT EXISTS StudentResources (
+                    Id          SERIAL PRIMARY KEY,
+                    TenantId    TEXT NOT NULL,
+                    StudentId   TEXT NOT NULL,
+                    CoachUserId TEXT NOT NULL,
+                    Name        TEXT NOT NULL,
+                    Url         TEXT NOT NULL,
+                    CreatedAt   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                );
+            ");
+
+            // WeeklySchedules
+            connection.Execute(@"
+                CREATE TABLE IF NOT EXISTS WeeklySchedules (
+                    Id              SERIAL PRIMARY KEY,
+                    TenantId        TEXT NOT NULL,
+                    StudentId       TEXT NOT NULL,
+                    WorkspaceId     INTEGER,
+                    Version         INTEGER NOT NULL DEFAULT 1,
+                    IsLatest        BOOLEAN NOT NULL DEFAULT TRUE,
+                    UpdatedByUserId TEXT NOT NULL,
+                    CreatedAt       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+                );
+            ");
+
+            // WeeklyScheduleBlocks
+            connection.Execute(@"
+                CREATE TABLE IF NOT EXISTS WeeklyScheduleBlocks (
+                    Id               SERIAL PRIMARY KEY,
+                    TenantId         TEXT NOT NULL,
+                    WeeklyScheduleId INTEGER NOT NULL REFERENCES WeeklySchedules(Id) ON DELETE CASCADE,
+                    DayOfWeek        INTEGER NOT NULL,
+                    StartTime        TIME NOT NULL,
+                    EndTime          TIME NOT NULL,
+                    Label            TEXT NOT NULL,
+                    BlockType        TEXT NOT NULL DEFAULT 'Study',
+                    IsLockedByCoach  BOOLEAN NOT NULL DEFAULT FALSE
+                );
+            ");
+
             // ── Data Cleanup ───────────────────────────────────────────────
             // Delete legacy tasks that were accidentally assigned to workspace owners
             try 

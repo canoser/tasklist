@@ -1,0 +1,74 @@
+{
+  "formal": {
+    "dashboard": {
+      "title": "Koçluk Kontrol Paneli",
+      "totalStudents": "Toplam Öğrenci",
+      "activeTasks": "Aktif Görevler",
+      "unpaidPayments": "Bekleyen Ödemeler"
+    },
+    "schedule": {
+      "title": "Haftalık Program",
+      "edit": "Programı Düzenle",
+      "save": "Programı Kaydet",
+      "unsavedWarning": "Kaydetmeden çıkmak istediğinize emin misiniz?",
+      "lockedByCoach": "Koç tarafından kilitlendi"
+    },
+    "tasks": {
+      "assign": "Görev Ata",
+      "selectResource": "Kaynak Seçiniz",
+      "noResource": "Kayıtlı Kaynak Bulunamadı"
+    },
+    "links": {
+      "shareParent": "Veli Linki Oluştur",
+      "shareTeacher": "Öğretmen Linki Oluştur"
+    }
+  },
+  "semi": {
+    "dashboard": {
+      "title": "Koçluk Paneli",
+      "totalStudents": "Öğrencilerin",
+      "activeTasks": "Aktif Görevler",
+      "unpaidPayments": "Bekleyen Ödemeler"
+    },
+    "schedule": {
+      "title": "Haftalık Program",
+      "edit": "Programı Düzenle",
+      "save": "Kaydet",
+      "unsavedWarning": "Kaydetmeden çıkmak istediğine emin misin?",
+      "lockedByCoach": "Koç tarafından kilitlendi"
+    },
+    "tasks": {
+      "assign": "Görev Ver",
+      "selectResource": "Kaynak Seç",
+      "noResource": "Kayıtlı Kaynak Yok"
+    },
+    "links": {
+      "shareParent": "Veli Linki Oluştur",
+      "shareTeacher": "Öğretmen Linki Oluştur"
+    }
+  },
+  "buddy": {
+    "dashboard": {
+      "title": "Tayfa Paneli",
+      "totalStudents": "Tayfadaki Kişi",
+      "activeTasks": "Koşturmalar",
+      "unpaidPayments": "Ateşlenmeyen Paralar"
+    },
+    "schedule": {
+      "title": "Haftalık Plan",
+      "edit": "Planı Editle",
+      "save": "Yapıştır",
+      "unsavedWarning": "Kaydetmeden kaçıyor musun?",
+      "lockedByCoach": "Koç kilitledi kanka"
+    },
+    "tasks": {
+      "assign": "Görev Çak",
+      "selectResource": "Link Seç",
+      "noResource": "Link Yok Kanka"
+    },
+    "links": {
+      "shareParent": "Peder/Valide Linki",
+      "shareTeacher": "Hoca Linki"
+    }
+  }
+}

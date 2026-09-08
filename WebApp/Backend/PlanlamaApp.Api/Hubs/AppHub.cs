@@ -85,5 +85,49 @@ namespace PlanlamaApp.Api.Hubs
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"Workspace_{workspaceId}");
         }
+
+        #region Coaching Events (Faz 1)
+        
+        public async Task CoachingTaskAssigned(string studentUserId)
+        {
+            await Clients.User(studentUserId).SendAsync("CoachingTaskAssigned");
+        }
+
+        public async Task CoachingTaskUpdated(string studentUserId)
+        {
+            await Clients.User(studentUserId).SendAsync("CoachingTaskUpdated");
+        }
+
+        public async Task CoachingScheduleUpdated(string studentUserId)
+        {
+            await Clients.User(studentUserId).SendAsync("CoachingScheduleUpdated");
+        }
+
+        public async Task CoachingLessonChanged(string studentUserId)
+        {
+            await Clients.User(studentUserId).SendAsync("CoachingLessonChanged");
+        }
+
+        public async Task StudentTaskCompleted(string coachUserId, string studentUserId)
+        {
+            await Clients.User(coachUserId).SendAsync("StudentTaskCompleted", studentUserId);
+        }
+
+        public async Task StudentScheduleUpdated(string coachUserId, string studentUserId)
+        {
+            await Clients.User(coachUserId).SendAsync("StudentScheduleUpdated", studentUserId);
+        }
+
+        public async Task StudentPerformanceAdded(string coachUserId, string studentUserId)
+        {
+            await Clients.User(coachUserId).SendAsync("StudentPerformanceAdded", studentUserId);
+        }
+
+        public async Task StreakRevoked(string studentUserId)
+        {
+            await Clients.User(studentUserId).SendAsync("StreakRevoked");
+        }
+        
+        #endregion
     }
 }

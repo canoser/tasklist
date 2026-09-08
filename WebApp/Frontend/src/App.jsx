@@ -18,6 +18,8 @@ import { TaskProvider } from './context/TaskContext';
 import { useTheme } from './context/ThemeContext';
 import CalendarScreen from './components/Calendar/CalendarScreen';
 import AdminPanel from './components/Admin/AdminPanel';
+import CoachingScreen from './components/Coaching/CoachingScreen';
+import SharedViewScreen from './components/Coaching/SharedViewScreen';
 
 import { useAppNavigation } from './hooks/useAppNavigation';
 import { useTranslation } from 'react-i18next';
@@ -212,6 +214,14 @@ export default function App() {
                 <AdminPanel tone={tone} />
               </div>
             )}
+
+            <div style={{ display: activeTab === 'coaching' ? 'flex' : 'none', flex: 1, flexDirection: 'column', height: '100%', overflowY: 'auto' }}>
+              <CoachingScreen user={user} tone={tone} />
+            </div>
+
+            <div style={{ display: activeTab === 'shared' ? 'flex' : 'none', flex: 1, flexDirection: 'column', height: '100%', overflowY: 'auto' }}>
+              <SharedViewScreen tone={tone} />
+            </div>
 
           </main>
           <AddTaskModal isOpen={isModalOpen('addTask')} onClose={() => closeModal('addTask')} workspaceId={1} />

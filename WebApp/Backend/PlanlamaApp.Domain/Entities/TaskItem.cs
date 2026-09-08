@@ -68,6 +68,26 @@ namespace PlanlamaApp.Domain.Entities
         public string? AssignedByUserId { get; set; }
         public string? UserTaskSnapshot { get; set; }
 
+        // --- Coaching Module Extensions ---
+        public int? DurationMinutes { get; set; }
+        public int? TargetTestCount { get; set; }
+        public int? TargetPageCount { get; set; }
+        public decimal? TargetBookCount { get; set; }
+        public bool RequirePerformanceEntry { get; set; } = false;
+        
+        public int? ActualDurationMinutes { get; set; }
+        public int? ActualTestCount { get; set; }
+        public int? ActualPageCount { get; set; }
+        public int PostponeCount { get; set; } = 0;
+
+        public string? CoachSubject { get; set; }
+        public string? CoachTopic { get; set; }
+        public string? CoachDescription { get; set; }
+        public string? AssignedToUserId { get; set; }
+        public int? ResourceLinkId { get; set; }
+        public bool IsRejectedByCoach { get; set; } = false;
+        // ----------------------------------
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

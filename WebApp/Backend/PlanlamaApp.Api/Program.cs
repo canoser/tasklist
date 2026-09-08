@@ -176,6 +176,21 @@ builder.Services.AddScoped<IQuotaManager, PlanlamaApp.Infrastructure.Services.Qu
 builder.Services.AddScoped<IRewardValidator, PlanlamaApp.Infrastructure.Services.MockRewardValidator>();
 builder.Services.AddScoped<IStorageService, PlanlamaApp.Infrastructure.Services.R2StorageService>();
 
+// Coaching Repositories (Faz 1)
+builder.Services.AddScoped<IStudentProfileRepository, StudentProfileRepository>();
+builder.Services.AddScoped<IExamRepository, ExamRepository>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<ISharedLinkRepository, SharedLinkRepository>();
+builder.Services.AddScoped<ILessonRepository, LessonRepository>();
+builder.Services.AddScoped<IStudentResourceRepository, StudentResourceRepository>();
+builder.Services.AddScoped<IWeeklyScheduleRepository, WeeklyScheduleRepository>();
+
+// Coaching Services (Faz 1)
+builder.Services.AddScoped<ISharedLinkService, PlanlamaApp.Application.Services.SharedLinkService>();
+builder.Services.AddScoped<ITrendAnalysisService, PlanlamaApp.Application.Services.TrendAnalysisService>();
+builder.Services.AddScoped<IWeeklyScheduleService, PlanlamaApp.Application.Services.WeeklyScheduleService>();
+builder.Services.AddScoped<ICoachingSignalRService, PlanlamaApp.Api.Services.CoachingSignalRService>();
+
 // Register Background Services
 builder.Services.AddHostedService<PlanlamaApp.Infrastructure.Services.StorageMaintenanceService>();
 

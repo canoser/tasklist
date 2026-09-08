@@ -169,6 +169,7 @@ Bu dosya, projenin başından itibaren tamamlanan adımları ve gelecekte yapıl
 - [x] **R2 Storage Çöp Toplayıcı (Cron Job):** `StorageMaintenanceService.cs` ile her 1 saatte bir öksüz/yarım kalmış dosyaları temizleyen arkaplan servisi (Background Service) yazıldı.
 - [x] **Zincirleme Görev Altyapısı:** `TaskRepository.cs` üzerinde `ChainId` ve `ChainOrder` ile görevlerin yarına devredilmesi/ertelenmesi için veritabanı ve Dapper iskeleti kuruldu.
 - [x] **Fly.io Cloud Deployment:** Sunucu Docker imajları ve CI/CD `fly.toml` bulut dağıtım altyapısı hazırlandı.
+- [x] **Markdown -> PDF Otomasyonu (Yardımcı Araç):** Yıllık planlar, dokümanlar ve tabloların şık bir CSS (Ferah Tasarım) arayüzüyle PDF'e dönüştürülmesi için gereken kodlar (Node.js/`markdown-pdf`) `dosyalar/` klasörüne eklendi (`pdf_olustur.js` ve `pdf_style.css`). Gerektiğinde belgeleri hızla ve düzgün formatta PDF yapmak için kullanılabilir.
 
 ---
 
