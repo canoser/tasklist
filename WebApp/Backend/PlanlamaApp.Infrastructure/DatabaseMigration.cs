@@ -361,7 +361,16 @@ namespace PlanlamaApp.Infrastructure
             ");
 
             // PerformanceRecords Updates
+            try 
+            {
+                connection.Execute("ALTER TABLE PerformanceRecords RENAME COLUMN RecordDate TO RecordedAt;");
+            } 
+            catch { /* Ignore if already renamed */ }
+
             connection.Execute(@"
+                ALTER TABLE PerformanceRecords ADD COLUMN IF NOT EXISTS RecordedAt TIMESTAMPTZ NOT NULL DEFAULT NOW();
+                ALTER TABLE PerformanceRecords ADD COLUMN IF NOT EXISTS UpdatedAt TIMESTAMPTZ NOT NULL DEFAULT NOW();
+                ALTER TABLE PerformanceRecords ADD COLUMN IF NOT EXISTS ExpectedDurationMinutes INTEGER;
                 ALTER TABLE PerformanceRecords ADD COLUMN IF NOT EXISTS ExamRecordId INTEGER;
                 ALTER TABLE PerformanceRecords ADD COLUMN IF NOT EXISTS StudyDurationMinutes INTEGER;
                 ALTER TABLE PerformanceRecords ADD COLUMN IF NOT EXISTS TestCount INTEGER;
