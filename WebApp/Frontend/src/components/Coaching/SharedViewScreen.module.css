@@ -1,0 +1,134 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 2rem;
+  color: var(--text-color, #e0e0e0);
+}
+
+.authBox {
+  background: var(--card-bg, rgba(25, 25, 30, 0.6));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border-radius: 12px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.authBox h3 {
+  margin-top: 0;
+  color: var(--primary-color, #4facfe);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.formGroup label {
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-muted, #a0a0a0);
+}
+
+.formGroup input {
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border-radius: 6px;
+  color: #fff;
+}
+
+.formGroup input:focus {
+  border-color: var(--primary-color, #4facfe);
+  outline: none;
+}
+
+.submitBtn {
+  background: var(--primary-color, #4facfe);
+  color: #fff;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+.error {
+  color: #ff3b30;
+  font-size: 0.85rem;
+  background: rgba(255, 59, 48, 0.1);
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+.dashboard {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  padding-bottom: 1rem;
+}
+
+.roleBadge {
+  background: rgba(79, 172, 254, 0.2);
+  color: #4facfe;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.statsRow {
+  display: flex;
+  gap: 1rem;
+}
+
+.statCard {
+  background: var(--card-bg, rgba(25, 25, 30, 0.6));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border-radius: 12px;
+  padding: 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.statLabel {
+  font-size: 0.9rem;
+  color: var(--text-muted, #a0a0a0);
+  margin-bottom: 0.5rem;
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary-color, #4facfe);
+}

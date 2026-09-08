@@ -1,9 +1,27 @@
 import React, { useState } from 'react';
 import CoachDashboard from './CoachDashboard';
+import StudentList from './StudentList';
+import WeeklySchedule from './WeeklySchedule';
+import ExamEntry from './ExamEntry';
+import PaymentsPanel from './PaymentsPanel';
+import SharedLinksPanel from './SharedLinksPanel';
+import StudentMobileDashboard from './StudentMobileDashboard';
 
 export default function CoachingScreen({ user, tone }) {
-  // Simple tab state for the screen
   const [activeView, setActiveView] = useState('dashboard');
+  const [selectedStudent, setSelectedStudent] = useState(null);
+
+  const handleSelectStudent = (student) => {
+    setSelectedStudent(student);
+    setActiveView('studentDetail');
+  };
+
+  // Basit Rol kontrolü (Gelecekte user.role veya JWT claim'den alınacak)
+  const isStudent = user && (user.role === 'Student' || user.isStudent === true);
+
+  if (isStudent) {
+    return <StudentMobileDashboard user={user} tone={tone} />;
+  }
 
   return (
     <div style={{ padding: '20px', color: '#fff', display: 'flex', flexDirection: 'column', gap: '1rem', height: '100%' }}>
@@ -15,16 +33,48 @@ export default function CoachingScreen({ user, tone }) {
           Dashboard
         </button>
         <button 
-          onClick={() => setActiveView('students')}
+          onClick={() => { setActiveView('students'); setSelectedStudent(null); }}
           style={{ background: 'transparent', border: 'none', color: activeView === 'students' ? '#4facfe' : '#ccc', cursor: 'pointer', fontWeight: activeView === 'students' ? 'bold' : 'normal' }}
         >
           Öğrenciler
         </button>
+        <button 
+          onClick={() => { setActiveView('payments'); setSelectedStudent(null); }}
+          style={{ background: 'transparent', border: 'none', color: activeView === 'payments' ? '#4facfe' : '#ccc', cursor: 'pointer', fontWeight: activeView === 'payments' ? 'bold' : 'normal' }}
+        >
+          Ödemeler
+        </button>
+        <button 
+          onClick={() => { setActiveView('sharedlinks'); setSelectedStudent(null); }}
+          style={{ background: 'transparent', border: 'none', color: activeView === 'sharedlinks' ? '#4facfe' : '#ccc', cursor: 'pointer', fontWeight: activeView === 'sharedlinks' ? 'bold' : 'normal' }}
+        >
+          Paylaşım
+        </button>
+        {selectedStudent && (
+          <button 
+            onClick={() => setActiveView('studentDetail')}
+            style={{ background: 'transparent', border: 'none', color: activeView === 'studentDetail' ? '#4facfe' : '#ccc', cursor: 'pointer', fontWeight: activeView === 'studentDetail' ? 'bold' : 'normal' }}
+          >
+            {selectedStudent.firstName} Detay
+          </button>
+        )}
       </nav>
 
       <div style={{ flex: 1, overflowY: 'auto' }}>
         {activeView === 'dashboard' && <CoachDashboard user={user} tone={tone} />}
-        {activeView === 'students' && <div>Öğrenci Listesi Yapım Aşamasında</div>}
+        {activeView === 'students' && <StudentList tone={tone} onSelectStudent={handleSelectStudent} />}
+        {activeView === 'payments' && <PaymentsPanel tone={tone} />}
+        {activeView === 'sharedlinks' && <SharedLinksPanel tone={tone} />}
+        {activeView === 'studentDetail' && selectedStudent && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ background: 'rgba(25,25,30,0.6)', padding: '1rem', borderRadius: '12px' }}>
+              <h2 style={{ margin: 0 }}>{selectedStudent.firstName} {selectedStudent.lastName}</h2>
+              <p style={{ margin: 0, color: '#aaa' }}>{selectedStudent.gradeLevel}</p>
+            </div>
+            <WeeklySchedule studentId={selectedStudent.id} tone={tone} />
+            <ExamEntry studentId={selectedStudent.id} tone={tone} />
+          </div>
+        )}
       </div>
     </div>
   );

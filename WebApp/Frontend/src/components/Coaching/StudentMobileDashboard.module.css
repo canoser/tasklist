@@ -1,0 +1,102 @@
+.mobileContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-color, #121212);
+  color: var(--text-color, #e0e0e0);
+}
+
+.header {
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(79, 172, 254, 0.2), rgba(0, 242, 254, 0.1));
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+}
+
+.greeting h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+}
+
+.greeting p {
+  margin: 0;
+  color: var(--text-muted, #a0a0a0);
+}
+
+.streak {
+  color: #ff9500;
+  font-size: 1.2rem;
+}
+
+.navBar {
+  display: flex;
+  background: var(--card-bg, rgba(25, 25, 30, 0.8));
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.navItem {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 1rem 0;
+  color: var(--text-muted, #a0a0a0);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-bottom: 2px solid transparent;
+}
+
+.navItem.active {
+  color: var(--primary-color, #4facfe);
+  border-bottom-color: var(--primary-color, #4facfe);
+}
+
+.contentArea {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.tasksSection h3, .progressSection h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.emptyText {
+  color: var(--text-muted, #a0a0a0);
+  font-style: italic;
+  text-align: center;
+  padding: 2rem;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.statCard {
+  background: var(--card-bg, rgba(25, 25, 30, 0.6));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border-radius: 12px;
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.statLabel {
+  font-size: 0.85rem;
+  color: var(--text-muted, #a0a0a0);
+  margin-bottom: 0.5rem;
+}
+
+.statValue {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: var(--primary-color, #4facfe);
+}
