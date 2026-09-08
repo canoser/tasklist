@@ -56,9 +56,9 @@ namespace PlanlamaApp.Infrastructure.Repositories
         {
             // INSERT: TenantId kolonu sorguda zorunlu (BaseRepository kural).
             var sql = @"INSERT INTO PerformanceRecords 
-                            (TenantId, UserId, TaskItemId, CategoryId, CorrectCount, WrongCount, EmptyCount, NetScore, Notes, TeacherFeedback, RecordedAt, StudyDurationMinutes, ExpectedDurationMinutes, UpdatedAt)
+                            (TenantId, UserId, TaskItemId, CategoryId, CorrectCount, WrongCount, EmptyCount, NetScore, Notes, TeacherFeedback, RecordedAt, StudyDurationMinutes, ExpectedDurationMinutes, UpdatedAt, CreatedAt)
                         VALUES 
-                            (@TenantId, @UserId, @TaskItemId, @CategoryId, @CorrectCount, @WrongCount, @EmptyCount, @NetScore, @Notes, @TeacherFeedback, @RecordedAt, @StudyDurationMinutes, @ExpectedDurationMinutes, @UpdatedAt)
+                            (@TenantId, @UserId, @TaskItemId, @CategoryId, @CorrectCount, @WrongCount, @EmptyCount, @NetScore, @Notes, @TeacherFeedback, @RecordedAt, @StudyDurationMinutes, @ExpectedDurationMinutes, @UpdatedAt, @RecordedAt)
                         RETURNING Id;";
             return await ExecuteScalarAsync<int>(sql, record);
         }

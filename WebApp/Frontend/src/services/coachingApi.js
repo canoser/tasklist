@@ -1,6 +1,6 @@
 import apiClient from './apiClient';
 
-const COACHING_API_BASE = '/api';
+const COACHING_API_BASE = '';
 
 export const getMyStudents = async () => {
     const response = await apiClient.get(`${COACHING_API_BASE}/students`);
