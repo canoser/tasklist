@@ -100,3 +100,81 @@
   font-weight: bold;
   color: var(--primary-color, #4facfe);
 }
+
+.taskList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.taskCard {
+  background: var(--card-bg, rgba(25, 25, 30, 0.6));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border-radius: 12px;
+  padding: 1.2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.taskInfo {
+  flex: 1;
+}
+
+.taskSubject {
+  font-size: 0.8rem;
+  color: #4facfe;
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+.taskTitle {
+  margin: 0.3rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.taskTopic {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  color: #aaa;
+}
+
+.taskMeta {
+  display: flex;
+  gap: 0.8rem;
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.taskMeta span {
+  background: rgba(0,0,0,0.3);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.coachBadge {
+  color: #ff9500;
+  border: 1px solid rgba(255, 149, 0, 0.3);
+}
+
+.completeBtn {
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  border: none;
+  color: #fff;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-left: 1rem;
+  transition: opacity 0.2s;
+}
+
+.completeBtn:hover {
+  opacity: 0.9;
+}

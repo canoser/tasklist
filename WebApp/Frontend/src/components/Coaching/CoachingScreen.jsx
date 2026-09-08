@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import CoachDashboard from './CoachDashboard';
 import StudentList from './StudentList';
-import WeeklySchedule from './WeeklySchedule';
-import ExamEntry from './ExamEntry';
 import PaymentsPanel from './PaymentsPanel';
 import SharedLinksPanel from './SharedLinksPanel';
 import StudentMobileDashboard from './StudentMobileDashboard';
+import StudentDetailPanel from './StudentDetail/StudentDetailPanel';
 
 export default function CoachingScreen({ user, tone }) {
   const [activeView, setActiveView] = useState('dashboard');
@@ -66,14 +65,7 @@ export default function CoachingScreen({ user, tone }) {
         {activeView === 'payments' && <PaymentsPanel tone={tone} />}
         {activeView === 'sharedlinks' && <SharedLinksPanel tone={tone} />}
         {activeView === 'studentDetail' && selectedStudent && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div style={{ background: 'rgba(25,25,30,0.6)', padding: '1rem', borderRadius: '12px' }}>
-              <h2 style={{ margin: 0 }}>{selectedStudent.firstName} {selectedStudent.lastName}</h2>
-              <p style={{ margin: 0, color: '#aaa' }}>{selectedStudent.gradeLevel}</p>
-            </div>
-            <WeeklySchedule studentId={selectedStudent.id} tone={tone} />
-            <ExamEntry studentId={selectedStudent.id} tone={tone} />
-          </div>
+          <StudentDetailPanel student={selectedStudent} tone={tone} />
         )}
       </div>
     </div>

@@ -1,0 +1,80 @@
+.panelContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 1rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--card-bg, rgba(25, 25, 30, 0.6));
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+}
+
+.studentInfo h2 {
+  margin: 0 0 0.5rem 0;
+  color: #fff;
+}
+
+.grade {
+  margin: 0;
+  color: #aaa;
+}
+
+.whatsappBtn {
+  background: #25D366;
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.tabsContainer {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 0.5rem;
+}
+
+.tabBtn {
+  background: transparent;
+  border: none;
+  color: #ccc;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.tabBtn:hover {
+  color: #fff;
+}
+
+.tabBtn.active {
+  color: #4facfe;
+  border-bottom-color: #4facfe;
+  font-weight: bold;
+}
+
+.contentArea {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--card-bg, rgba(25, 25, 30, 0.4));
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.tabContent h3 {
+  margin-top: 0;
+  color: #fff;
+}
+
+.tabContent p {
+  color: #aaa;
+}
