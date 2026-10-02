@@ -25,5 +25,8 @@ dist/
 _TEMP_YEDEK/
 *.db
 *.db-shm
-*.db-wal  
- 
+*.db-wal
+
+# Large files
+*.rar
+*.zip

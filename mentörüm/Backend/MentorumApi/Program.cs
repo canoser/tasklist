@@ -164,7 +164,7 @@ try
         catch (Exception ex)
         {
             Log.Error(ex, "Health check failed (DB bağlantı hatası)");
-            return Results.StatusCode(500); // 500 dönerse Fly.io deploy'u iptal eder
+            return Results.StatusCode(503); // 503 dönerse Fly.io deploy'u iptal eder
         }
     });
 

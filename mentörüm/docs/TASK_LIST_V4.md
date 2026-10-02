@@ -136,6 +136,7 @@
 - [x] mentörüm/Backend/Dockerfile oluştur (ALTYAPI_KURULUM.md §3.5 şablonu)
 - [ ] fly secrets set ... --app mentorum-api ile ortam değişkenlerini yükle
 - [ ] fly deploy --app mentorum-api — ilk manuel deploy
+- [ ] fly ssh console -C "dotnet MentorumApi.dll --migrate-only" — Veritabanı şemasını (001 ve 002) oluştur
 - [ ] curl https://mentorum-api.fly.dev/health — 200 OK doğrula
 - [ ] fly status --app dersmatris-api — mevcut site zarar görmedi mi?
 
@@ -151,11 +152,12 @@
 - [x] mentörüm/Frontend/.env.production oluştur: VITE_API_URL=https://mentorum-api.dersmatris.com/api/v1
 - [x] apiClient.js — import.meta.env.VITE_API_URL kullanıldığını doğrula (zaten var)
 - [ ] Cloudflare Dashboard → Pages → Create project:
-  - GitHub repo: canoser/tasklist
+  - GitHub repo: (Gerçek repo adınızı seçin, örn: canoser/tasklist)
   - Root Directory: mentörüm/Frontend
   - Build command: npm run build
   - Output directory: dist
-  - Ortam değişkeni: VITE_API_URL ayarla
+  - Ortam değişkeni: VITE_API_URL=https://mentorum-api.dersmatris.com/api/v1
+  - Ortam değişkeni: NODE_VERSION=20
 - [ ] Cloudflare DNS: mentorum CNAME → Pages (Frontend), mentorum-api CNAME → fly.dev (Backend)
 - [ ] Fly SSL: flyctl certs add mentorum-api.dersmatris.com --app mentorum-api
 

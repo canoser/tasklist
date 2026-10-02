@@ -3,7 +3,7 @@ WORKDIR /app
 
 COPY *.sln .
 COPY MentorumApi/*.csproj ./MentorumApi/
-RUN dotnet restore
+RUN dotnet restore MentorumApi/MentorumApi.csproj
 
 COPY . .
 RUN dotnet publish MentorumApi/MentorumApi.csproj -c Release -o /app/publish --no-restore
