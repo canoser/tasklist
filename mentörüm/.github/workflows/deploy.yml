@@ -1,0 +1,76 @@
+name: Mentorum CI/CD
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Backend/**'
+      - 'Frontend/**'
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ─────────────────────────────────────
+  # 1. Backend Test
+  # ─────────────────────────────────────
+  backend-test:
+    name: Backend Testleri
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+        working-directory: Backend
+
+      - name: Build
+        run: dotnet build --no-restore
+        working-directory: Backend
+
+  # ─────────────────────────────────────
+  # 2. Frontend Test
+  # ─────────────────────────────────────
+  frontend-test:
+    name: Frontend Testleri
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: Frontend
+
+      - name: Build Frontend
+        run: npm run build
+        working-directory: Frontend
+
+  # ─────────────────────────────────────
+  # 3. Production Deploy (ONAY GEREKTİRİR)
+  # ─────────────────────────────────────
+  deploy:
+    name: Production Deploy
+    needs: [backend-test, frontend-test]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Fly.io CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Backend Deploy (Fly.io)
+        run: flyctl deploy --remote-only --app mentorum-api
+        working-directory: Backend
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

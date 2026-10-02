@@ -1,0 +1,114 @@
+.dashboardContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+  height: 100%;
+}
+
+.header {
+  margin-bottom: var(--spacing-sm);
+}
+
+.pageTitle {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--text-color-main);
+  margin-bottom: 4px;
+}
+
+.pageSubtitle {
+  color: var(--text-color-muted);
+  font-size: 1rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  gap: var(--spacing-lg);
+  align-items: start;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-md);
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-color-main);
+}
+
+/* Öğrenci Listesi */
+.studentsCard {
+  overflow: hidden;
+}
+
+.studentList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.studentItem {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s;
+}
+
+.studentItem:last-child {
+  border-bottom: none;
+}
+
+.studentItem:hover {
+  background-color: #F8FAFC;
+}
+
+.studentAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-success), #10B981);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-right: var(--spacing-md);
+}
+
+.studentInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.studentName {
+  font-weight: 600;
+  color: var(--text-color-main);
+}
+
+.studentDetail {
+  font-size: 0.75rem;
+  color: var(--text-color-muted);
+}
+
+.emptyState, .loading {
+  padding: var(--spacing-xl);
+  text-align: center;
+  color: var(--text-color-muted);
+  font-size: 0.875rem;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

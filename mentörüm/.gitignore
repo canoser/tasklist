@@ -1,0 +1,38 @@
+# Environment dosyaları — ASLA commit edilmez
+.env
+.env.local
+.env.development
+.env.production
+.env.staging
+.env.*.local
+
+# ASP.NET Core — hassas config
+Backend/appsettings.Development.json
+Backend/appsettings.Production.json
+Backend/appsettings.Staging.json
+
+# Build çıktıları
+**/bin/
+**/obj/
+**/publish/
+
+# Node modules
+node_modules/
+Frontend/dist/
+
+# IDE
+.vscode/
+.idea/
+*.user
+*.suo
+
+# Fly.io geçici dosyalar
+.fly/
+
+# Log dosyaları
+*.log
+logs/
+
+# Sistem
+.DS_Store
+Thumbs.db

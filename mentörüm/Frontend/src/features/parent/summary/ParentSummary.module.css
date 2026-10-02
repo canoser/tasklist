@@ -1,0 +1,112 @@
+.pageContainer {
+  padding: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.header {
+  margin-bottom: 0.5rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-color-main);
+  margin: 0 0 4px 0;
+}
+
+.subtitle {
+  color: var(--text-color-muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.statCard {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.statIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.statInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-color-main);
+  line-height: 1.2;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: var(--text-color-muted);
+  font-weight: 500;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.homeworkList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.completedCard {
+  padding: 1rem;
+}
+
+.hwInfo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.hwIcon {
+  font-size: 1.25rem;
+}
+
+.hwTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 2px 0;
+}
+
+.hwDate {
+  font-size: 0.8rem;
+  color: var(--text-color-muted);
+  margin: 0;
+}
+
+.emptyState {
+  color: var(--text-color-muted);
+  font-size: 0.9rem;
+}

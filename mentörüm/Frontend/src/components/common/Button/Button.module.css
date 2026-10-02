@@ -1,0 +1,123 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  gap: var(--spacing-sm);
+  outline: none;
+}
+
+.button:focus-visible {
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.button:active {
+  transform: translateY(1px);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none !important;
+}
+
+/* --- Sizes --- */
+.size-sm {
+  padding: 8px 16px;
+  font-size: 0.875rem;
+}
+
+.size-md {
+  padding: 12px 24px;
+  font-size: 1rem;
+}
+
+.size-lg {
+  padding: 16px 32px;
+  font-size: 1.125rem;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+/* --- Variants --- */
+.variant-primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+  border: 1px solid transparent;
+}
+
+.variant-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--color-primary-hover), #4338CA);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+}
+
+.variant-secondary {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary-hover);
+  border: 1px solid transparent;
+}
+
+.variant-secondary:hover:not(:disabled) {
+  background-color: #C7D2FE;
+}
+
+.variant-outline {
+  background-color: transparent;
+  color: var(--text-color-main);
+  border: 1px solid var(--border-color);
+}
+
+.variant-outline:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background-color: #F8FAFC;
+}
+
+.variant-danger {
+  background: linear-gradient(135deg, var(--color-danger), var(--color-danger-hover));
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+  border: 1px solid transparent;
+}
+
+.variant-danger:hover:not(:disabled) {
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+}
+
+/* --- Loading Spinner --- */
+.loading .content {
+  opacity: 0;
+}
+
+.spinner {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+}
+
+.spinnerPath {
+  opacity: 0.25;
+}
+
+.spinner circle {
+  stroke-dasharray: 60;
+  stroke-dashoffset: 20;
+  stroke-linecap: round;
+  opacity: 1;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}

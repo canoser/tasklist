@@ -1,0 +1,178 @@
+.pageContainer {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-color-main);
+  position: relative;
+  overflow: hidden;
+  padding: var(--spacing-lg);
+}
+
+/* Dekoratif Arka Plan (Glassmorphism / Glow) */
+.bgCircle1 {
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 50vw;
+  height: 50vw;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0) 70%);
+  z-index: 0;
+}
+
+.bgCircle2 {
+  position: absolute;
+  bottom: -20%;
+  right: -10%;
+  width: 60vw;
+  height: 60vw;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0) 70%);
+  z-index: 0;
+}
+
+.contentWrapper {
+  width: 100%;
+  max-width: 440px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.brandSection {
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+}
+
+.logo {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--color-primary), #3B82F6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: var(--spacing-sm);
+  letter-spacing: -0.05em;
+}
+
+.slogan {
+  color: var(--text-color-muted);
+  font-size: 1rem;
+}
+
+/* Giriş Kartı */
+.loginCard {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.85) !important; /* overriden card bg for extra glass */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1) !important;
+}
+
+.formTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-color-main);
+  margin-bottom: var(--spacing-xs);
+  text-align: center;
+}
+
+.formSubtitle {
+  font-size: 0.875rem;
+  color: var(--text-color-muted);
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+}
+
+.forgotPassword {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -8px;
+  margin-bottom: var(--spacing-lg);
+}
+
+.forgotPassword a {
+  font-size: 0.875rem;
+  color: var(--color-primary);
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.forgotPassword a:hover {
+  color: var(--color-primary-hover);
+  text-decoration: underline;
+}
+
+.errorBox {
+  background-color: rgba(239, 68, 68, 0.1);
+  border-left: 4px solid var(--color-danger);
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  color: var(--color-danger);
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: var(--spacing-md);
+  animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: var(--spacing-lg) 0;
+  color: var(--text-color-muted);
+  font-size: 0.875rem;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.divider span {
+  padding: 0 var(--spacing-md);
+}
+
+.googleBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text-color-main);
+  font-weight: 600;
+}
+
+.googleIcon {
+  font-weight: 800;
+  color: #EA4335;
+  font-size: 1.1rem;
+}
+
+/* Animasyonlar */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}

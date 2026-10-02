@@ -1,0 +1,85 @@
+.pageContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-color-main);
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  color: var(--text-color-muted);
+  font-size: 0.875rem;
+}
+
+.calendarWrapper {
+  width: 100%;
+}
+
+.calendarCard {
+  padding: var(--spacing-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.legend {
+  display: flex;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px dashed var(--border-color);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-color-main);
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* React Big Calendar Overrides */
+.rbcContainer :global(.rbc-toolbar) {
+  margin-bottom: var(--spacing-md);
+}
+
+.rbcContainer :global(.rbc-btn-group button) {
+  color: var(--text-color-main);
+  border-color: var(--border-color);
+}
+
+.rbcContainer :global(.rbc-btn-group button.rbc-active) {
+  background-color: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+  box-shadow: none;
+}
+
+.rbcContainer :global(.rbc-header) {
+  padding: 8px;
+  font-weight: 600;
+  color: var(--text-color-main);
+}
+
+.rbcContainer :global(.rbc-today) {
+  background-color: rgba(99, 102, 241, 0.05);
+}
