@@ -6,7 +6,7 @@ export const useParentChildren = () => {
     queryKey: ['parent', 'children'],
     queryFn: async () => {
       const response = await apiClient.get('/parents/my-children');
-      return response.data || [];
+      return response || [];
     },
   });
 };
@@ -16,7 +16,7 @@ export const useParentChildDetails = (studentId) => {
     queryKey: ['parent', 'child', studentId],
     queryFn: async () => {
       const response = await apiClient.get(`/parents/children/${studentId}`);
-      return response.data || null;
+      return response || null;
     },
     enabled: !!studentId,
   });
@@ -27,7 +27,7 @@ export const useParentChildHomework = (studentId) => {
     queryKey: ['parent', 'child', studentId, 'homework'],
     queryFn: async () => {
       const response = await apiClient.get(`/homework/children/${studentId}`);
-      return response.data || [];
+      return response || [];
     },
     enabled: !!studentId,
   });

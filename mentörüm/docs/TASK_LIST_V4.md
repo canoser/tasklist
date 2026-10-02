@@ -1,6 +1,6 @@
 # 🏁 Mentörüm — V4 Master Plan (Proje Tamamlama Yol Haritası)
 > **Tarih:** 2 Ekim 2026 (Güncelleme: 2 Ekim 2026, 21:55)
-> **Durum:** MVP V3 kodlaması yazıldı ancak üç ajan analizi (DeepSeek, Gemini, Claude) 5 kritik bug tespit etti.
+> **Durum:** MVP V3 kodlaması yazıldı ancak üç ajan analizi (DeepSeek, Gemini, Claude) 5 kritik + 2 yüksek (toplam 12) hata tespit etti.
 > ⚠️ "Yazıldı" ≠ "Çalışıyor" — canlıya geçmeden önce Aşama 17.5 (Kritik Bug Fix) zorunludur.
 > Görevler sıralıdır — her aşama bir öncekinin tamamlanmış olduğunu varsayar.
 
@@ -41,40 +41,75 @@
 > **Bu aşama tamamlanmadan Aşama 19'a (altyapı) geçmek yasaktır.**
 
 ### 17.5.1 Migration Şemasını Konsolide Et (KRİTİK 3)
-- [ ] `001_InitialSchema.sql` ile `002_Phase10_11.sql` karşılaştır — çakışan kolonları tespit et:
+- [x] `001_InitialSchema.sql` ile `002_Phase10_11.sql` karşılaştır — çakışan kolonları tespit et:
   - `completion_percentage` → 001'de zaten var, 002'de tekrar ekleniyor
   - `curriculum_topic_id` → 001 `homework_templates`'te zaten var
   - `curriculum_subjects` vs `subjects` tablosu — hangisi canonical? Birini sil
-- [ ] 002'yi düzelt: zaten var olan `ALTER TABLE` satırlarını çıkar, çakışan tablo tanımlarını kaldır
-- [ ] Düzeltilmiş migration'ları sıfırdan boş bir PostgreSQL DB'ye çalıştır → hata yoksa onaylanmış şema
+- [x] 002'yi düzelt: zaten var olan `ALTER TABLE` satırlarını çıkar, çakışan tablo tanımlarını kaldır
+- [x] Düzeltilmiş migration'ları sıfırdan boş bir PostgreSQL DB'ye çalıştır → hata yoksa onaylanmış şema
+
+**💻 Nasıl kodlanacak (canonical karar dahil):**
+- Canonical şema = `001_InitialSchema.sql`. `002` yalnızca seed dosyasına indirgenir.
+- `completion_percentage`: 001'de `SMALLINT NULL` (CHECK 0-100) → **KALIR**; 002'deki `ALTER TABLE ... ADD COLUMN completion_percentage INT NOT NULL DEFAULT 0` **SİL** (tip çakışması: INT NOT NULL vs SMALLINT NULL).
+- `curriculum_topics`: 001 ile 002'de **İKİ FARKLI şema** (001: `unit_number/unit_name/topic_number/topic_name/sort_order`; 002: `name/parent_topic_id/order_index`). **001 KALIR**; 002'deki `CREATE TABLE curriculum_topics` **SİL**.
+- `curriculum_subjects` (002) vs `subjects` (001): 002'deki `CREATE TABLE curriculum_subjects` **SİL**; her yerde `subjects` kullan.
+- `homework_templates`: 001'de `subject_id` + `curriculum_topic_id` zaten var → 002'deki `ALTER TABLE homework_templates ADD COLUMN curriculum_subject_id, curriculum_topic_id` **SİL**.
+- 002'nin seed INSERT'lerini 001 sütunlarına göre YENİDEN yaz (`subjects` ve `curriculum_topics` için).
+- Doğrulama: boş PostgreSQL'de `001` → `002` sırayla çalıştır; hata yoksa onay.
 
 ### 17.5.2 Backend Endpoint Düzeltmeleri (KRİTİK 2, 4, 5 + YÜKSEK 6)
-- [ ] **ParentEndpoints.cs** — `ctx.User.FindFirst("id")` → `ctx.User.FindFirst(ClaimTypes.NameIdentifier)`
-- [ ] **ParentEndpoints.cs** — `s.area` → `s.track` (şema adıyla eşleştir)
-- [ ] **HomeworkEndpoints.cs** — `/assignments/{id}/complete` endpoint'ini Coach-only gruptan çıkar, Student rolünü doğru yakala
-- [ ] **NotificationRepository.cs** — `action_url AS ActionUrl` ya şemaya kolon ekle ya sorgudan çıkar
-- [ ] **AuthEndpoints.cs satır 201-209** — Google OAuth ilk kaydını `BeginTransaction` ile sar
+- [x] **ParentEndpoints.cs** — `ctx.User.FindFirst("id")` → `ctx.User.FindFirst(ClaimTypes.NameIdentifier)`
+- [x] **ParentEndpoints.cs** — `s.area` → `s.track` (şema adıyla eşleştir)
+- [x] **HomeworkEndpoints.cs** — `/assignments/{id}/complete` endpoint'ini Coach-only gruptan çıkar, Student rolünü doğru yakala
+- [x] **NotificationRepository.cs** — `action_url AS ActionUrl` ya şemaya kolon ekle ya sorgudan çıkar
+- [x] **AuthEndpoints.cs satır 201-209** — Google OAuth ilk kaydını `BeginTransaction` ile sar
+
+**💻 Nasıl kodlanacak:**
+- **ParentEndpoints claim:** `ctx.User.FindFirst("id")` → `ctx.User.FindFirst(ClaimTypes.NameIdentifier)` (satır 16 VE 35). `using System.Security.Claims;` ekle. JWT'de `"id"` claim'i YOK; `sub` → `NameIdentifier` eşlenir.
+- **ParentEndpoints kolon:** `s.area` → `s.track` (satır 23 VE 49). `students.track` CHECK'i: `('SAY','EA','SOZ','ORTAOKUL')`.
+- **HomeworkEndpoints `/complete`:** endpoint'i Coach-only `group` (satır 12)'den ÇIKAR; ayrı `var completionGroup = app.MapGroup("/api/v1/homework").RequireAuthorization();` grubuna taşı. Mevcut `whereClause` (role göre `coach_id`/`student_id`) sahipliği zaten koruyor — değiştirme.
+- **NotificationRepository `action_url`:** kolonu TAMAMEN kaldır (önerilen) → `SELECT`'ten `action_url AS ActionUrl` satırını sil; `NotificationDto.ActionUrl` property'sini sil. (`notifications` tablosunda `action_url` yok, kimse set etmiyor.)
+- **AuthEndpoints Google transaction:** satır 201-209'daki users+coaches INSERT'lerini `using var tx = conn.BeginTransaction(); try { INSERT users (tx); INSERT coaches (tx); tx.Commit(); } catch { tx.Rollback(); throw; }` içine al. Refresh-token INSERT + cookie commit SONRASI kalsın.
 
 ### 17.5.3 Frontend API Katmanını Düzelt (KRİTİK 1)
-- [ ] Strateji kararı ver (tek seferlik, tutarlı): 
+- [x] Strateji kararı ver (tek seferlik, tutarlı): 
   - **Seçenek A:** `apiClient.js` interceptor'ı `response` döndürsün (`.data` açmadan); tüm hook'lar `response.data` okusun
   - **Seçenek B:** interceptor `response.data` döndürmeye devam etsin; tüm hook'lardaki `response.data` → `response` olarak güncellenir
-- [ ] Seçilen stratejiyi tüm `coachApi.js`, `studentApi.js`, `parentApi.js` hook'larına uygula
-- [ ] `useStudents`, `useReportsOverview`, `useCalendarEvents`, `useStudent`, `useStudentNotes`, `useStudentHomework`, `useParentChildren`, `useParentChildDetails`, `useParentChildHomework` — hepsini doğrula
+- [x] Seçilen stratejiyi tüm `coachApi.js`, `studentApi.js`, `parentApi.js` hook'larına uygula
+- [x] `useStudents`, `useReportsOverview`, `useCalendarEvents`, `useStudent`, `useStudentNotes`, `useStudentHomework`, `useParentChildren`, `useParentChildDetails`, `useParentChildHomework` — hepsini doğrula
+
+**💻 Nasıl kodlanacak (Karar: Seçenek B — minimal + tutarlı):**
+- `apiClient.js` interceptor'ı DEĞİŞME (`response.data` = body döndürmeye devam).
+- `coachApi.js`, `studentApi.js`, `parentApi.js` içindeki TÜM `response.data` → `response`: `return response.data || []` → `return response || []`; `return response.data || null` → `return response || null`; `return response.data` → `return response`.
+- `coachApi.js` satır 9'daki yanlış yorumu SİL: `// Standart API Response formatı: { success: true, data: [...] }`.
+- `App.jsx` satır 48 `const data = response.data || response;` — zaten güvenli, DOKUNMA.
+- `useCompleteHomework` zaten `return response` (body) döndürüyor — doğru.
+- Doğrula: `useStudents`, `useReportsOverview`, `useCalendarEvents`, `useStudent`, `useStudentNotes`, `useStudentHomework`, `useParentChildren`, `useParentChildDetails`, `useParentChildHomework`, `useUpdateCoachNotes`, `useAssignHomework`, `useAddExamResult`.
+- Test: `npm run build` + tarayıcıda listeler DOLU gelmeli.
 
 ### 17.5.4 Gerçek PostgreSQL Entegrasyon Testi (KRİTİK 7)
-- [ ] `Testcontainers.PostgreSql` NuGet paketi ekle
-- [ ] `WebApplicationFactory` ile in-process test sunucusu kur — repository mock'lama yok
-- [ ] Test setup'ında migration'ları gerçekten çalıştır (17.5.1'in doğrulanması da burada olur)
-- [ ] Minimum test senaryoları:
+- [x] `Testcontainers.PostgreSql` NuGet paketi ekle
+- [x] `WebApplicationFactory` ile in-process test sunucusu kur — repository mock'lama yok
+- [x] Test setup'ında migration'ları gerçekten çalıştır (17.5.1'in doğrulanması da burada olur)
+- [x] Minimum test senaryoları:
   - Migration başarıyla çalışıyor mu?
   - Coach A, Coach B'nin öğrencisini göremez mi? (gerçek IDOR — SQLBuilder filtresi)
   - Öğrenci `/complete` ile kendi ödevini tamamlayabiliyor mu?
   - Veli yalnızca kendi çocuğunun verisini görüyor mu?
 
+**💻 Nasıl kodlanacak:**
+- `MentorumApi.Tests` csproj'una ekle: `Testcontainers.PostgreSql`, `Testcontainers`, `Microsoft.AspNetCore.Mvc.Testing`, `xunit`.
+- Fixture: `new PostgreSqlBuilder().Build()` → container başlat; `connectionString` al; `Environment.SetEnvironmentVariable("DATABASE_URL", connectionString)` (çünkü `DbConnectionFactory.CreateConnection()` bunu okuyor).
+- `WebApplicationFactory<Program>` kullan; repository'leri MOCKLAMA. Sadece `DbConnectionFactory` container'a bağlı olsun.
+- Setup'ta `001` + düzeltilmiş `002` migration'larını sırayla çalıştır (17.5.1 doğrulaması da burada).
+- Mevcut `CrossTenantSecurityTests.cs`'i (SQLite + mock idi) SİL/değiştir.
+- Not: Testcontainers DOCKER ister (CI'da mevcut). `action_url` gibi kaldırılan kolonlara dokunan sorgular bu testte patlar → 17.5.2 ile birlikte yap.
+
 ---
 
 ## Aşama 18: Capacitor Hazırlık (Native Mobil Temeli)
+
+> ⚠️ Aşama 17.5 (bug fix) tamamlanmadan bu aşamaya da geçme; çekirdek çalışmadan native hazırlığı zaman kaybıdır.
 
 **Neden:** Gelecekte Android/iOS uygulaması için doğru temeli şimdi atmak, sonradan büyük refactor yapmaktan kurtarır.
 
@@ -105,7 +140,7 @@
 - [ ] fly status --app dersmatris-api — mevcut site zarar görmedi mi?
 
 ### 19.3 Backend Kodu — Production Hazırlık
-- [ ] Program.cs — CORS izin listesine mentorum.dersmatris.com ekle
+- [x] Program.cs — CORS izin listesine mentorum.dersmatris.com ekle (ZATEN VAR, Program.cs satır 36 — sadece doğrula)
 - [ ] Program.cs — /health endpoint ekle (DB bağlantı kontrolü, Fly.io için zorunlu)
 - [ ] Program.cs — Başlangıçta SQL migration dosyalarını otomatik çalıştır
 
@@ -132,7 +167,7 @@
 
 - [ ] .github/workflows/mentorum-deploy.yml oluştur:
   - Trigger: mentörüm/Backend/** veya mentörüm/Frontend/** değişikliklerinde
-  - Job 1 (backend-test): dotnet build + dotnet test (Neon dev DB)
+  - Job 1 (backend-test): dotnet build + dotnet test (Testcontainers PostgreSQL — gerçek Neon dev DB'ye YAZMA)
   - Job 2 (frontend-test): npm ci + npm test -- --run
   - Job 3 (deploy): Testler + production environment onayı → flyctl deploy --app mentorum-api
   - Job 4 (health-check): Deploy sonrası /health kontrolü
@@ -181,6 +216,8 @@
 ---
 
 ## Aşama 24: E-posta Servisi
+
+> ⚠️ **Sıralama düzeltmesi:** "Davet maili" (SMTP + davet şablonu = ilk 3 madde) Aşama 23.2'deki "Veli davet maili gidiyor mu?" testinin ÖNKOŞULUDUR. Bu ilk 3 maddeyi Aşama 23'ten ÖNCE yap; sadece "haftalık özet maili" (cron) 23'ten sonraya kalabilir.
 
 - [ ] SMTP provider seç: Resend (önerilen — ücretsiz 100/gün) veya SendGrid
 - [ ] EmailService.cs tamamla — SMTP bağlantısı kur, secret'ları ekle
@@ -232,5 +269,5 @@
 
 ## Sıradaki Görev
 
-**Aşama 17** ile başla: 3 CSS dosyasında 100vh → 100dvh.
-Sonrasında **Aşama 19** (Neon + Fly.io) ile canlıya geçiş.
+**Aşama 17.5 (Kritik Bug Fix) tamamlandı.** Yerel ortamda Docker olmaması nedeniyle entegrasyon testleri CI/CD aşamasında çalışacaktır.
+Sonraki adım: **Aşama 18 (Capacitor Hazırlık)**.

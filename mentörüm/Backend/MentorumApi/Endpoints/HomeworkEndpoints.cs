@@ -38,7 +38,8 @@ namespace MentorumApi.Endpoints
             });
 
             // Idempotency (Mükerrer İstek Önleme) destekli ödev tamamlama endpoint'i
-            group.MapPost("/assignments/{assignmentId:guid}/complete", async (
+            var completionGroup = app.MapGroup("/api/v1/homework").RequireAuthorization();
+            completionGroup.MapPost("/assignments/{assignmentId:guid}/complete", async (
                 Guid assignmentId,
                 [FromBody] CompleteHomeworkRequest req,
                 [FromServices] DbConnectionFactory dbFactory,
@@ -65,7 +66,6 @@ namespace MentorumApi.Endpoints
 
                 return Results.Ok(new { message = "Ödev ilerlemesi kaydedildi." });
             })
-            .RequireAuthorization()
             .AddEndpointFilter<MentorumApi.Filters.IdempotencyFilter>();
 
             // ÖĞRENCİ KENDİ ÖDEVLERİNİ ÇEKER (Cronsuz, Anında OVERDUE Hesaplaması ile)

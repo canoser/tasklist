@@ -6,8 +6,7 @@ export const useStudents = () => {
     queryKey: ['coach', 'students'],
     queryFn: async () => {
       const response = await apiClient.get('/students');
-      // Standart API Response formatı: { success: true, data: [...] }
-      return response.data || [];
+      return response || [];
     },
   });
 };
@@ -17,7 +16,7 @@ export const useReportsOverview = () => {
     queryKey: ['coach', 'reports', 'overview'],
     queryFn: async () => {
       const response = await apiClient.get('/reports/overview');
-      return response.data || null;
+      return response || null;
     },
   });
 };
@@ -35,7 +34,7 @@ export const useCalendarEvents = (startDate, endDate, studentId = null) => {
         params.append('studentId', studentId);
       }
       const response = await apiClient.get(`/calendar?${params.toString()}`);
-      return response.data || [];
+      return response || [];
     },
     // Sadece startDate ve endDate varsa çalışsın
     enabled: !!startDate && !!endDate,
@@ -47,7 +46,7 @@ export const useStudent = (id) => {
     queryKey: ['coach', 'student', id],
     queryFn: async () => {
       const response = await apiClient.get(`/students/${id}`);
-      return response.data || null;
+      return response || null;
     },
     enabled: !!id,
   });
@@ -58,7 +57,7 @@ export const useStudentNotes = (studentId) => {
     queryKey: ['coach', 'student', studentId, 'notes'],
     queryFn: async () => {
       const response = await apiClient.get(`/students/${studentId}/notes`);
-      return response.data || [];
+      return response || [];
     },
     enabled: !!studentId,
   });
@@ -70,7 +69,7 @@ export const useUpdateCoachNotes = () => {
   return useMutation({
     mutationFn: async ({ studentId, notes }) => {
       const response = await apiClient.post(`/students/${studentId}/notes`, { content: notes });
-      return response.data;
+      return response;
     },
     onMutate: async ({ studentId, notes }) => {
       // 1. Olası çakışmaları önlemek için devam eden istekleri iptal et
@@ -107,7 +106,7 @@ export const useAssignHomework = () => {
   return useMutation({
     mutationFn: async (homeworkData) => {
       const response = await apiClient.post('/homework/assignments', homeworkData);
-      return response.data;
+      return response;
     },
     onMutate: async (homeworkData) => {
       await queryClient.cancelQueries({ queryKey: ['coach', 'calendar'] });
@@ -132,7 +131,7 @@ export const useAddExamResult = () => {
     mutationFn: async ({ studentId, examData }) => {
       // Backend POST /exams endpoint expects studentId in the body
       const response = await apiClient.post('/exams', { ...examData, studentId });
-      return response.data;
+      return response;
     },
     onMutate: async ({ studentId, examData }) => {
       await queryClient.cancelQueries({ queryKey: ['coach', 'student', studentId] });

@@ -1,12 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import apiClient from '../api/apiClient';
+import { apiClient } from '../api/apiClient';
 
 export const useNotifications = () => {
   return useQuery({
     queryKey: ['notifications'],
     queryFn: async () => {
       const response = await apiClient.get('/notifications');
-      return response.data || [];
+      return response || [];
     },
     refetchInterval: 30000,
   });

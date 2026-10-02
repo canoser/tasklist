@@ -1,5 +1,6 @@
 using Dapper;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using MentorumApi.Models;
 using MentorumApi.Data;
 
@@ -13,14 +14,14 @@ public static class ParentEndpoints
 
         group.MapGet("/my-children", async (DbConnectionFactory db, HttpContext ctx) =>
         {
-            var parentId = ctx.User.FindFirst("id")?.Value;
+            var parentId = ctx.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(parentId)) return Results.Unauthorized();
 
             using var conn = db.CreateConnection();
 
             // Veliye bağlı çocukları al
             var children = await conn.QueryAsync<dynamic>(@"
-                SELECT s.id as StudentId, u.full_name as FullName, s.grade as Grade, s.area as Area
+                SELECT s.id as StudentId, u.full_name as FullName, s.grade as Grade, s.track as Area
                 FROM student_parents sp
                 JOIN students s ON sp.student_id = s.id
                 JOIN users u ON s.id = u.id
@@ -32,7 +33,7 @@ public static class ParentEndpoints
 
         group.MapGet("/children/{studentId}", async (Guid studentId, DbConnectionFactory db, HttpContext ctx) =>
         {
-            var parentId = ctx.User.FindFirst("id")?.Value;
+            var parentId = ctx.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(parentId)) return Results.Unauthorized();
 
             using var conn = db.CreateConnection();
@@ -46,7 +47,7 @@ public static class ParentEndpoints
 
             // Çocuğun profili
             var student = await conn.QuerySingleOrDefaultAsync<dynamic>(@"
-                SELECT s.id, u.full_name, s.grade, s.area, s.target_university
+                SELECT s.id, u.full_name, s.grade, s.track as area, s.target_university
                 FROM students s
                 JOIN users u ON s.id = u.id
                 WHERE s.id = @StudentId

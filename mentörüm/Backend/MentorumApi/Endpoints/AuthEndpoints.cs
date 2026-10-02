@@ -198,15 +198,27 @@ namespace MentorumApi.Endpoints
                         UpdatedAt = DateTime.UtcNow
                     };
 
-                    await conn.ExecuteAsync(@"
-                        INSERT INTO users (id, email, google_id, role, full_name, avatar_url, created_at, updated_at) 
-                        VALUES (@Id, @Email, @GoogleId, @Role, @FullName, @AvatarUrl, @CreatedAt, @UpdatedAt)", 
-                        user);
-                    
-                    await conn.ExecuteAsync(@"
-                        INSERT INTO coaches (id, plan_type) 
-                        VALUES (@Id, 'free')", 
-                        new { Id = user.Id });
+                    if (conn.State != System.Data.ConnectionState.Open) conn.Open();
+                    using var tx = conn.BeginTransaction();
+                    try
+                    {
+                        await conn.ExecuteAsync(@"
+                            INSERT INTO users (id, email, google_id, role, full_name, avatar_url, created_at, updated_at) 
+                            VALUES (@Id, @Email, @GoogleId, @Role, @FullName, @AvatarUrl, @CreatedAt, @UpdatedAt)", 
+                            user, tx);
+                        
+                        await conn.ExecuteAsync(@"
+                            INSERT INTO coaches (id, plan_type) 
+                            VALUES (@Id, 'free')", 
+                            new { Id = user.Id }, tx);
+                        
+                        tx.Commit();
+                    }
+                    catch
+                    {
+                        tx.Rollback();
+                        throw;
+                    }
                 }
                 else if (user.IsActive == 0)
                 {

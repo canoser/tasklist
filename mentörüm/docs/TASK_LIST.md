@@ -1,6 +1,6 @@
 # Mentörüm — Kodlama ve Uygulama Görev Listesi (Task List)
 
-Bu liste, `URUN_PLANI.md`, `KOD_PLANI.md` ve `15_ADIMDA_OZELESTIRI.md` belgelerinde alınan tüm mimari kararlara tam uyumlu olarak, sıfırdan canlıya kadar yapılacak kodlama adımlarını içerir.
+Bu liste, `URUN_PLANI.md`, `KOD_PLANI.md` ve `AJAN_KONUSMALARI_HATALAR_TESPITLER.md` belgelerinde alınan tüm mimari kararlara tam uyumlu olarak, sıfırdan canlıya kadar yapılacak kodlama adımlarını içerir.
 
 ## Aşama 1: Proje Temeli ve Altyapı
 - `[x]` (24.09.2026) Git repository başlatılması ve kök dizine detaylı `.gitignore` eklenmesi (Backend, Frontend, Env dosyaları için)

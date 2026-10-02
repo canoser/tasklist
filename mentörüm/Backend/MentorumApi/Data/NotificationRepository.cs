@@ -17,7 +17,6 @@ namespace MentorumApi.Data
                     title AS Title, 
                     body AS Body, 
                     is_read AS IsRead, 
-                    action_url AS ActionUrl, 
                     created_at AS CreatedAt
                 FROM notifications
                 WHERE user_id = @UserId

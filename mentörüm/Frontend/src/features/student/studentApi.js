@@ -6,7 +6,7 @@ export const useStudentHomework = () => {
     queryKey: ['student', 'homework'],
     queryFn: async () => {
       const response = await apiClient.get('/homework/me');
-      return response.data || [];
+      return response || [];
     },
   });
 };

@@ -2,15 +2,14 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
-using MentorumApi.Data;
-using MentorumApi.DTOs;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Moq;
+using Testcontainers.PostgreSql;
 using Xunit;
+using Dapper;
 
 namespace MentorumApi.Tests
 {
@@ -30,7 +29,7 @@ namespace MentorumApi.Tests
         {
             var claims = new[] 
             {
-                new Claim(ClaimTypes.NameIdentifier, "11111111-1111-1111-1111-111111111111"), // Test Coach ID
+                new Claim(ClaimTypes.NameIdentifier, "11111111-1111-1111-1111-111111111111"),
                 new Claim(ClaimTypes.Role, "Coach")
             };
             var identity = new ClaimsIdentity(claims, "Test");
@@ -41,69 +40,77 @@ namespace MentorumApi.Tests
         }
     }
 
-    public class TestDbConnectionFactory : DbConnectionFactory
+    public class IntegrationTestFixture : IAsyncLifetime
     {
-        public TestDbConnectionFactory(Microsoft.Extensions.Configuration.IConfiguration configuration) : base(configuration) { }
+        public PostgreSqlContainer PostgreSqlContainer { get; }
 
-        public override System.Data.IDbConnection CreateConnection()
+        public IntegrationTestFixture()
         {
-            var connection = new Microsoft.Data.Sqlite.SqliteConnection("DataSource=file::memory:?cache=shared");
-            connection.Open();
-            var command = connection.CreateCommand();
-            command.CommandText = @"
-                CREATE TABLE IF NOT EXISTS refresh_tokens (token TEXT, is_revoked INTEGER);
-                CREATE TABLE IF NOT EXISTS users (id TEXT, is_active INTEGER);
-                DELETE FROM users;
-                INSERT INTO users (id, is_active) VALUES ('11111111-1111-1111-1111-111111111111', 1);
-            ";
-            command.ExecuteNonQuery();
-            return connection;
+            PostgreSqlContainer = new PostgreSqlBuilder()
+                .WithImage("postgres:15-alpine")
+                .Build();
+        }
+
+        public async Task InitializeAsync()
+        {
+            await PostgreSqlContainer.StartAsync();
+            var connectionString = PostgreSqlContainer.GetConnectionString();
+            Environment.SetEnvironmentVariable("DATABASE_URL", connectionString);
+
+            using var conn = new Npgsql.NpgsqlConnection(connectionString);
+            await conn.OpenAsync();
+            
+            var schema1Path = Path.Combine(AppContext.BaseDirectory, "../../../../MentorumApi/Data/Migrations/001_InitialSchema.sql");
+            var schema1 = await File.ReadAllTextAsync(schema1Path);
+            await conn.ExecuteAsync(schema1);
+
+            var schema2Path = Path.Combine(AppContext.BaseDirectory, "../../../../MentorumApi/Data/Migrations/002_Phase10_11.sql");
+            var schema2 = await File.ReadAllTextAsync(schema2Path);
+            await conn.ExecuteAsync(schema2);
+
+            // Coach A (1111...), Coach B (2222...)
+            // Student A (3333...) is assigned to Coach B.
+            // When Coach A requests Student A, it should return 404 due to BaseRepository tenant filtering.
+            await conn.ExecuteAsync(@"
+                INSERT INTO users (id, email, role, full_name) VALUES 
+                ('11111111-1111-1111-1111-111111111111', 'coachA@test.com', 'Coach', 'Coach A'),
+                ('22222222-2222-2222-2222-222222222222', 'coachB@test.com', 'Coach', 'Coach B'),
+                ('33333333-3333-3333-3333-333333333333', 'studentA@test.com', 'Student', 'Student A');
+                
+                INSERT INTO coaches (id) VALUES ('11111111-1111-1111-1111-111111111111'), ('22222222-2222-2222-2222-222222222222');
+                
+                INSERT INTO students (id, coach_id) VALUES ('33333333-3333-3333-3333-333333333333', '22222222-2222-2222-2222-222222222222');
+            ");
+        }
+
+        public async Task DisposeAsync()
+        {
+            await PostgreSqlContainer.DisposeAsync();
         }
     }
 
-    public class CrossTenantSecurityTests : IClassFixture<WebApplicationFactory<Program>>
+    public class CrossTenantSecurityTests : IClassFixture<IntegrationTestFixture>, IClassFixture<WebApplicationFactory<Program>>
     {
         private readonly WebApplicationFactory<Program> _factory;
 
-        public CrossTenantSecurityTests(WebApplicationFactory<Program> factory)
+        public CrossTenantSecurityTests(IntegrationTestFixture fixture, WebApplicationFactory<Program> factory)
         {
             Environment.SetEnvironmentVariable("JWT_SECRET", "dummy_secret_for_tests_that_is_long_enough_for_hmacsha256");
             Environment.SetEnvironmentVariable("JWT_ISSUER", "TestIssuer");
             Environment.SetEnvironmentVariable("JWT_AUDIENCE", "TestAudience");
+            
             _factory = factory;
         }
 
         [Fact]
         public async Task GetStudentDetail_WhenWrongCoachId_ReturnsNotFound()
         {
-            // Arrange
-            var studentId = Guid.NewGuid();
-            
-            // Null vererek Dummy nesne kullanıyoruz (Gerçek DB bağlantısını bypass ediyoruz)
-            var mockRepo = new Mock<StudentRepository>(null);
-            
-            // IDOR Protection: The repository method requires BOTH the coachId from the JWT and the studentId.
-            // When `coach_id` filter is added, if it doesn't match the DB, it returns null. We mock this behavior here.
-            mockRepo.Setup(r => r.GetStudentDetailAsync(
-                It.Is<Guid>(g => g == Guid.Parse("11111111-1111-1111-1111-111111111111")), 
-                studentId))
-                .ReturnsAsync((StudentDetailDto?)null);
+            var studentId = Guid.Parse("33333333-3333-3333-3333-333333333333");
 
             var client = _factory.WithWebHostBuilder(builder =>
             {
                 builder.ConfigureServices(services =>
                 {
-                    // Override existing DI for testing
-                    var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(StudentRepository));
-                    if (descriptor != null) services.Remove(descriptor);
-                    
-                    var dbDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbConnectionFactory));
-                    if (dbDescriptor != null) services.Remove(dbDescriptor);
-
-                    services.AddScoped(_ => mockRepo.Object);
-                    services.AddSingleton<DbConnectionFactory, TestDbConnectionFactory>();
-
-                    // Authentication bypass (Mock scheme)
                     services.AddAuthentication(options =>
                     {
                         options.DefaultAuthenticateScheme = TestAuthHandler.DefaultScheme;
@@ -115,15 +122,10 @@ namespace MentorumApi.Tests
             
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(TestAuthHandler.DefaultScheme);
 
-            // Act
             var response = await client.GetAsync($"/api/v1/students/{studentId}");
-
-            // Assert
             var result = await response.Content.ReadAsStringAsync();
-            if (response.StatusCode != HttpStatusCode.NotFound)
-            {
-                Assert.Fail($"Beklenen 404 ama {response.StatusCode} döndü. Hata mesajı: {result}");
-            }
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
             Assert.Contains("Öğrenci bulunamadı", result);
         }
     }
