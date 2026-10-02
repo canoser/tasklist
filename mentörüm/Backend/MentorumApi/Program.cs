@@ -3,6 +3,7 @@ using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Dapper;
 using MentorumApi.Data;
 using MentorumApi.Services;
 using MentorumApi.Middleware;
@@ -91,6 +92,36 @@ try
 
     var app = builder.Build();
 
+    // Veritabanı Migration (--migrate-only komutuyla çalıştırılır)
+    if (args.Contains("--migrate-only"))
+    {
+        Log.Information("Migration modunda çalıştırılıyor...");
+        using var scope = app.Services.CreateScope();
+        var dbFactory = scope.ServiceProvider.GetRequiredService<DbConnectionFactory>();
+        using var conn = dbFactory.CreateConnection();
+        
+        var scriptPaths = new[] 
+        { 
+            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "001_InitialSchema.sql"),
+            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "002_Phase10_11.sql")
+        };
+        foreach(var path in scriptPaths)
+        {
+            if (File.Exists(path))
+            {
+                var sql = File.ReadAllText(path);
+                conn.Execute(sql);
+                Log.Information("Migration uygulandı: {Path}", path);
+            }
+            else
+            {
+                Log.Warning("Migration dosyası bulunamadı: {Path}", path);
+            }
+        }
+        Log.Information("Migration tamamlandı. Uygulama kapatılıyor.");
+        return;
+    }
+
     if (app.Environment.IsDevelopment())
     {
         app.MapOpenApi();
@@ -120,6 +151,22 @@ try
     app.MapNotificationEndpoints();
 
     app.MapGet("/", () => "Mentorum API Auth/Authz Katmanı Devrede!");
+
+    // Fly.io Sağlık Kontrolü (Health Check)
+    app.MapGet("/health", (DbConnectionFactory db) => 
+    {
+        try
+        {
+            using var conn = db.CreateConnection();
+            conn.Execute("SELECT 1"); // DB bağlantısını test et
+            return Results.Ok(new { status = "ok", db = "connected", version = "1.0.0" });
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Health check failed (DB bağlantı hatası)");
+            return Results.StatusCode(500); // 500 dönerse Fly.io deploy'u iptal eder
+        }
+    });
 
     app.Run();
 }
