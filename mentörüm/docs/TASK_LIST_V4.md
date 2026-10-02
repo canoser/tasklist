@@ -132,8 +132,8 @@
 
 ### 19.2 Fly.io Uygulaması
 - [ ] fly apps create mentorum-api
-- [ ] mentörüm/Backend/fly.toml oluştur (ALTYAPI_KURULUM.md §3.3 şablonu)
-- [ ] mentörüm/Backend/Dockerfile oluştur (ALTYAPI_KURULUM.md §3.5 şablonu)
+- [x] mentörüm/Backend/fly.toml oluştur (ALTYAPI_KURULUM.md §3.3 şablonu)
+- [x] mentörüm/Backend/Dockerfile oluştur (ALTYAPI_KURULUM.md §3.5 şablonu)
 - [ ] fly secrets set ... --app mentorum-api ile ortam değişkenlerini yükle
 - [ ] fly deploy --app mentorum-api — ilk manuel deploy
 - [ ] curl https://mentorum-api.fly.dev/health — 200 OK doğrula
@@ -141,15 +141,15 @@
 
 ### 19.3 Backend Kodu — Production Hazırlık
 - [x] Program.cs — CORS izin listesine mentorum.dersmatris.com ekle (ZATEN VAR, Program.cs satır 36 — sadece doğrula)
-- [ ] Program.cs — /health endpoint ekle (DB bağlantı kontrolü, Fly.io için zorunlu)
-- [ ] Program.cs — Başlangıçta SQL migration dosyalarını otomatik çalıştır
+- [x] Program.cs — /health endpoint ekle (DB bağlantı kontrolü, Fly.io için zorunlu)
+- [x] Program.cs — Başlangıçta SQL migration dosyalarını otomatik çalıştır
 
 ---
 
 ## Aşama 20: Frontend Altyapısı (Cloudflare Pages)
 
-- [ ] mentörüm/Frontend/.env.production oluştur: VITE_API_URL=https://mentorum-api.dersmatris.com/api/v1
-- [ ] apiClient.js — import.meta.env.VITE_API_URL kullanıldığını doğrula (zaten var)
+- [x] mentörüm/Frontend/.env.production oluştur: VITE_API_URL=https://mentorum-api.dersmatris.com/api/v1
+- [x] apiClient.js — import.meta.env.VITE_API_URL kullanıldığını doğrula (zaten var)
 - [ ] Cloudflare Dashboard → Pages → Create project:
   - GitHub repo: canoser/tasklist
   - Root Directory: mentörüm/Frontend
