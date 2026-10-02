@@ -107,16 +107,16 @@
 
 ---
 
-## Aşama 18: Capacitor Hazırlık (Native Mobil Temeli)
+## Aşama 18: Capacitor Hazırlık (Native Mobil Temeli) ✅ TAMAMLANDI
 
 > ⚠️ Aşama 17.5 (bug fix) tamamlanmadan bu aşamaya da geçme; çekirdek çalışmadan native hazırlığı zaman kaybıdır.
 
 **Neden:** Gelecekte Android/iOS uygulaması için doğru temeli şimdi atmak, sonradan büyük refactor yapmaktan kurtarır.
 
-- [ ] mentörüm/Frontend/capacitor.config.json oluştur (appId: com.dersmatris.mentorum, webDir: dist, androidScheme: https)
-- [ ] src/utils/platform.js oluştur — localStorage ve navigasyon Capacitor wrapper'ı üzerinden yapılacak
-- [ ] package.json'a Capacitor bağımlılıklarını not düş (kurma — Aşama 25'te yapılacak)
-- [ ] PORTABILITY.md güncelle — Capacitor hazırlığı tamamlandı
+- [x] mentörüm/Frontend/capacitor.config.json oluştur (appId: com.dersmatris.mentorum, webDir: dist, androidScheme: https)
+- [x] src/utils/platform.js oluştur — localStorage ve navigasyon Capacitor wrapper'ı üzerinden yapılacak
+- [x] package.json'a Capacitor bağımlılıklarını not düş (kurma — Aşama 25'te yapılacak)
+- [x] PORTABILITY.md oluştur / güncelle — Capacitor hazırlığı tamamlandı
 
 ---
 
@@ -269,5 +269,5 @@
 
 ## Sıradaki Görev
 
-**Aşama 17.5 (Kritik Bug Fix) tamamlandı.** Yerel ortamda Docker olmaması nedeniyle entegrasyon testleri CI/CD aşamasında çalışacaktır.
-Sonraki adım: **Aşama 18 (Capacitor Hazırlık)**.
+**Aşama 18 (Capacitor Hazırlık) tamamlandı.**
+Sonraki adım: **Aşama 19 (Backend Altyapısı - Neon + Fly.io)**. Altyapı kurulumuna başlanabilir.

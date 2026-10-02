@@ -9,6 +9,7 @@
     "lint": "oxlint",
     "preview": "vite preview"
   },
+  "//_capacitor_notes": "Aşama 25'te kurulacak: npm install @capacitor/core @capacitor/cli @capacitor/ios @capacitor/android",
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
     "@tanstack/react-query": "^5.103.2",
