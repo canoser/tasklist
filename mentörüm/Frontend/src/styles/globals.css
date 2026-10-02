@@ -51,6 +51,9 @@
   --border-color: #334155;
 }
 
+/* KURAL: Layout'larda 100vh/100vw YASAK — iOS Safari URL çubuğunu sayar, kırılır.
+   Her zaman 100dvh / 100dvw kullanın (Dynamic Viewport) */
+
 /* CSS Reset & Genel Ayarlar */
 *, *::before, *::after {
   box-sizing: border-box;

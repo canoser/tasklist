@@ -1,7 +1,7 @@
 .layout {
   display: flex;
-  height: 100vh;
-  width: 100vw;
+  height: 100dvh; /* 100vh iOS Safari'de URL çubuğunu sayar — kırılır */
+  width: 100dvw;
   overflow: hidden;
   background-color: var(--bg-color-main);
 }
