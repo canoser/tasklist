@@ -41,6 +41,13 @@ Neden ayrı Fly uygulaması?
   - Log'lar karışmaz, maliyet takibi netleşir
   - Fly free tier 3 VM'ye kadar ücretsiz: şu an 1 kullanılıyor, 1 daha açılıyor
 
+Ücretsiz Plan Limitleri (dersmatris + mentörüm birlikte)
+  Fly.io          : 3 VM ücretsiz → 1 (dersmatris-api) + 1 (mentorum-api) = 2/3 kullanıldı
+  Neon            : 0.5 GB depolama — iki database bu limiti PAYLAŞIR
+                    Dikkat: Kullanıcı sayısı arttıkça 0.5 GB aşılabilir → ücretli plana geçiş gerekir
+  Cloudflare R2   : Aylık 10 GB + 1M istek ücretsiz (MVP'de dosya yükleme yok, kullanılmayacak)
+  Cloudflare Pages: Sınırsız site ücretsiz → app.dersmatris.com + mentorum.dersmatris.com ikisi de ücretsiz
+
 ---
 
 ## 2. Neon — Yeni Database Oluşturma
