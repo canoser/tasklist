@@ -1,7 +1,7 @@
 # 🏁 Mentörüm — V4 Master Plan (Proje Tamamlama Yol Haritası)
-> **Tarih:** 2 Ekim 2026
-> **Durum:** MVP V3 kodlaması tamamlandı, tüm özellikler yazıldı.
-> Bu plan; teknik eksikliklerin giderilmesi, altyapının kurulması ve uygulamanın canlıya alınmasını kapsar.
+> **Tarih:** 2 Ekim 2026 (Güncelleme: 2 Ekim 2026, 21:55)
+> **Durum:** MVP V3 kodlaması yazıldı ancak üç ajan analizi (DeepSeek, Gemini, Claude) 5 kritik bug tespit etti.
+> ⚠️ "Yazıldı" ≠ "Çalışıyor" — canlıya geçmeden önce Aşama 17.5 (Kritik Bug Fix) zorunludur.
 > Görevler sıralıdır — her aşama bir öncekinin tamamlanmış olduğunu varsayar.
 
 ---
@@ -10,26 +10,67 @@
 
 | Katman | Durum | Notlar |
 |---|---|---|
-| Backend API | Tamamlandı | 10 Repository, Endpoint'ler, Auth, Cron Job |
-| Frontend (Koç) | Tamamlandı | Dashboard, Students, Homework, Calendar, Reports |
-| Frontend (Öğrenci) | Tamamlandı | Home, Homework, Layout |
-| Frontend (Veli) | Tamamlandı | Summary, Homework, Layout |
-| Mobil Uyumluluk | %95 Hazır | 100vh → 100dvh düzeltmesi eksik |
+| Backend API | ⚠️ Kırık | 5 kritik bug var — Aşama 17.5'te düzeltilecek |
+| Frontend (Koç) | ⚠️ Kırık | API double .data — her liste boş görünür |
+| Frontend (Öğrenci) | ⚠️ Kırık | /complete endpoint erişilemiyor (Coach-only group) |
+| Frontend (Veli) | ⚠️ Kırık | ParentEndpoints: yanlış claim + yanlış kolon adı |
+| Migration | ⚠️ Çakışıyor | 001+002 aynı kolonları tanımlıyor — çalıştırılamaz |
+| Mobil Uyumluluk | ✅ Düzeltildi | 100dvh uygulandı (Aşama 17) |
 | Altyapı (Fly, Neon) | Kurulmadı | Canlı sunucu yok |
 | CI/CD | Kurulmadı | GitHub Actions aktif değil |
-| Test | Yok | Backend/Frontend testler yazılmadı |
+| Test | Yok | Mock-tabanlı — gerçek PostgreSQL entegrasyon testi yok |
 | Capacitor (Native) | Faz 2 | Android/iOS paketleme henüz yok |
 
 ---
 
-## Aşama 17: Kritik CSS Düzeltmesi (100vh → 100dvh)
+## ~~Aşama 17: Kritik CSS Düzeltmesi (100vh → 100dvh)~~ ✅ TAMAMLANDI
 
-**Neden:** iOS Safari, 100vh değerini URL çubuğunu sayarak hesaplar. Tüm layout'ların iOS'ta kırılmasına yol açar.
+> 2 Ekim 2026 — StudentLayout, CoachLayout, ParentLayout ve globals.css güncellendi. Commit: `cccb193`
 
-- [ ] StudentLayout.module.css — .layout içinde height: 100vh → height: 100dvh, width: 100vw → width: 100dvw
-- [ ] CoachLayout.module.css — .layout içinde aynı değişiklik
-- [ ] ParentLayout.module.css — .layout içinde aynı değişiklik
-- [ ] globals.css — Yorum satırı ekle: Tüm layout'larda 100vh yasak — iOS Safari kırar. Doğrusu: 100dvh
+- [x] StudentLayout.module.css — 100dvh/100dvw
+- [x] CoachLayout.module.css — 100dvh/100dvw
+- [x] ParentLayout.module.css — 100dvh/100dvw
+- [x] globals.css — 100vh yasak kuralı eklendi
+
+---
+
+## Aşama 17.5: Kritik Bug Fix (Canlıya Geçmeden Zorunlu)
+
+> ⚠️ Bu aşama DeepSeek V4 Pro statik analizi + Claude/Gemini doğrulamasıyla eklendi (2 Ekim 2026, 21:52)
+> Öncelik sırası: Şema → Backend → Frontend → Entegrasyon Testi
+> **Bu aşama tamamlanmadan Aşama 19'a (altyapı) geçmek yasaktır.**
+
+### 17.5.1 Migration Şemasını Konsolide Et (KRİTİK 3)
+- [ ] `001_InitialSchema.sql` ile `002_Phase10_11.sql` karşılaştır — çakışan kolonları tespit et:
+  - `completion_percentage` → 001'de zaten var, 002'de tekrar ekleniyor
+  - `curriculum_topic_id` → 001 `homework_templates`'te zaten var
+  - `curriculum_subjects` vs `subjects` tablosu — hangisi canonical? Birini sil
+- [ ] 002'yi düzelt: zaten var olan `ALTER TABLE` satırlarını çıkar, çakışan tablo tanımlarını kaldır
+- [ ] Düzeltilmiş migration'ları sıfırdan boş bir PostgreSQL DB'ye çalıştır → hata yoksa onaylanmış şema
+
+### 17.5.2 Backend Endpoint Düzeltmeleri (KRİTİK 2, 4, 5 + YÜKSEK 6)
+- [ ] **ParentEndpoints.cs** — `ctx.User.FindFirst("id")` → `ctx.User.FindFirst(ClaimTypes.NameIdentifier)`
+- [ ] **ParentEndpoints.cs** — `s.area` → `s.track` (şema adıyla eşleştir)
+- [ ] **HomeworkEndpoints.cs** — `/assignments/{id}/complete` endpoint'ini Coach-only gruptan çıkar, Student rolünü doğru yakala
+- [ ] **NotificationRepository.cs** — `action_url AS ActionUrl` ya şemaya kolon ekle ya sorgudan çıkar
+- [ ] **AuthEndpoints.cs satır 201-209** — Google OAuth ilk kaydını `BeginTransaction` ile sar
+
+### 17.5.3 Frontend API Katmanını Düzelt (KRİTİK 1)
+- [ ] Strateji kararı ver (tek seferlik, tutarlı): 
+  - **Seçenek A:** `apiClient.js` interceptor'ı `response` döndürsün (`.data` açmadan); tüm hook'lar `response.data` okusun
+  - **Seçenek B:** interceptor `response.data` döndürmeye devam etsin; tüm hook'lardaki `response.data` → `response` olarak güncellenir
+- [ ] Seçilen stratejiyi tüm `coachApi.js`, `studentApi.js`, `parentApi.js` hook'larına uygula
+- [ ] `useStudents`, `useReportsOverview`, `useCalendarEvents`, `useStudent`, `useStudentNotes`, `useStudentHomework`, `useParentChildren`, `useParentChildDetails`, `useParentChildHomework` — hepsini doğrula
+
+### 17.5.4 Gerçek PostgreSQL Entegrasyon Testi (KRİTİK 7)
+- [ ] `Testcontainers.PostgreSql` NuGet paketi ekle
+- [ ] `WebApplicationFactory` ile in-process test sunucusu kur — repository mock'lama yok
+- [ ] Test setup'ında migration'ları gerçekten çalıştır (17.5.1'in doğrulanması da burada olur)
+- [ ] Minimum test senaryoları:
+  - Migration başarıyla çalışıyor mu?
+  - Coach A, Coach B'nin öğrencisini göremez mi? (gerçek IDOR — SQLBuilder filtresi)
+  - Öğrenci `/complete` ile kendi ödevini tamamlayabiliyor mu?
+  - Veli yalnızca kendi çocuğunun verisini görüyor mu?
 
 ---
 
@@ -52,7 +93,7 @@
 - [ ] Neon Console — mevcut proje içinde mentorum adlı yeni database oluştur
 - [ ] mentorum-dev branch oluştur (yerel geliştirme için)
 - [ ] Production ve Dev connection string'leri güvenli yerde sakla
-- [ ] 001_InitialSchema.sql ve 002_Phase10_11.sql — dev branch'te çalıştır, şemayı doğrula
+- [ ] Konsolide edilmiş migration (Aşama 17.5.1'den çıkan düzeltilmiş SQL) — dev branch'te çalıştır ve doğrula
 
 ### 19.2 Fly.io Uygulaması
 - [ ] fly apps create mentorum-api
