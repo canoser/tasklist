@@ -54,7 +54,9 @@
 - Connection string env variable olarak saklanır (asla koda gömme)
 - Neon, serverless olduğu için soğuk başlangıç (cold start) olabilir
   → Bağlantı pool boyutu dikkatli ayarlanmalı (max 10 bağlantı MVP için)
-- Branch özelliği: dev/staging için ayrı Neon branch kullan
+- Ayrı Neon PROJESİ kullanılır (dersmatris projesinden bağımsız — 1 GB/proje bedava)
+- Branch'ler: `production` (kök/prod, Console'da bu ad) + `mentorum-dev` (geliştirme/test)
+- ⚠️ KOD DEĞİŞİKLİĞİ GEREKMEZ: kod `DATABASE_URL` env var'ını okur (DbConnectionFactory.cs) — branch/proje agnostik. Dev↔Prod geçişi yalnızca `DATABASE_URL` değişimidir (yerel `.env` veya `fly secrets`).
 - Otomatik backup Neon tarafından yapılır
 
 #### Cloudflare R2 Notları

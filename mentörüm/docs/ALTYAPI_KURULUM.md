@@ -87,7 +87,7 @@ Production veritabanını geliştirme sırasında kirletmemek için:
 
   Sol menü → Branches → "New Branch"
   Branch Name  : mentorum-dev
-  Parent Branch: main
+  Parent Branch: production
   (Database seçimi istenirse: mentorum/neondb)
   "Create Branch" tıkla
 
@@ -96,8 +96,14 @@ Production veritabanını geliştirme sırasında kirletmemek için:
 
 Bu sayede:
   Local geliştirme → mentorum-dev branch'ine bağlanır
-  Production       → main branch'e bağlanır
-  main branch'teki production veri hiç risk almaz
+  Production       → production branch'e bağlanır
+  production branch'teki production veri hiç risk almaz
+
+#### 📌 Dev Branch (mentorum-dev) Ne Zaman Kullanılır?
+- Yerel geliştirme → local `.env` içindeki `DATABASE_URL` = dev branch connection string'i
+- Migration'ları production'a almadan önce test → dev branch'te `--migrate-only` çalıştır
+- Production (Fly.io) → `production` branch (ana/kök branch)
+- ⚠️ Dev ve production şifreleri başlangıçta AYNIDIR (copy-on-write). Dev branch'te `neondb_owner` şifresini reset'leyip production'dan FARKLI yap.
 
 ### 2.4 Bağlantı String Formatını Anla
 
