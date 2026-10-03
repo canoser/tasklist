@@ -12,6 +12,7 @@ const InviteAcceptPage = () => {
   const navigate = useNavigate();
   
   const [inviteData, setInviteData] = useState(null);
+  const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   
@@ -24,8 +25,7 @@ const InviteAcceptPage = () => {
     const fetchInviteInfo = async () => {
       try {
         const response = await apiClient.get(`/invites/${token}`);
-        const data = response.data || response;
-        setInviteData(data.data); // { email, role, fullName }
+        setInviteData(response); // { email, role }
       } catch {
         setError('Davetiye geçersiz veya süresi dolmuş.');
       } finally {
@@ -39,6 +39,11 @@ const InviteAcceptPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (!fullName.trim()) {
+      setError('Lütfen adınızı ve soyadınızı girin.');
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError('Şifreler eşleşmiyor.');
@@ -54,7 +59,7 @@ const InviteAcceptPage = () => {
 
     try {
       // Daveti kabul et ve şifre belirle
-      await apiClient.post(`/invites/${token}/accept`, { password });
+      await apiClient.post(`/invites/${token}/accept`, { password, fullName });
       
       // Kayıt başarılı, artık giriş yapabiliriz. 
       // Accept endpoint'i genelde direkt login yapmaz, login sayfasına yönlendiririz
@@ -105,6 +110,15 @@ const InviteAcceptPage = () => {
               <div className={styles.infoAlert}>
                 Lütfen hesabınızı güvende tutmak için bir şifre belirleyin.
               </div>
+
+              <Input
+                label="Ad Soyad"
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Adınız ve Soyadınız"
+                required
+              />
 
               <Input
                 label="Yeni Şifre"

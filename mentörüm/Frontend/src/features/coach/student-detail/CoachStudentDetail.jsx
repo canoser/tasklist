@@ -5,7 +5,8 @@ import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
 import AssignHomeworkModal from '../homework/AssignHomeworkModal';
 import styles from './CoachStudentDetail.module.css';
-import { useStudent, useStudentNotes, useUpdateCoachNotes, useAddExamResult } from '../coachApi';
+import { useStudent, useStudentNotes, useUpdateCoachNotes, useAddExamResult, useSendInvite } from '../coachApi';
+import InviteSharePanel from '../../../components/common/InviteSharePanel/InviteSharePanel';
 
 const CoachStudentDetail = () => {
   const { id } = useParams();
@@ -18,6 +19,9 @@ const CoachStudentDetail = () => {
   const { data: notesList, isLoading: isNotesLoading } = useStudentNotes(id);
   const updateNotesMutation = useUpdateCoachNotes();
   const addExamMutation = useAddExamResult();
+  const sendInviteMutation = useSendInvite();
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteResult, setInviteResult] = useState(null);
 
   if (isLoading) return <div className={styles.pageContainer}>Yükleniyor...</div>;
   if (isError || !student) return <div className={styles.pageContainer}>Öğrenci bulunamadı.</div>;
@@ -129,12 +133,39 @@ const CoachStudentDetail = () => {
             )) : (
               <p>Kayıtlı veli bulunamadı.</p>
             )}
-            <Card className={styles.addParentCard}>
-              <div className={styles.addParentContent}>
-                <span className={styles.addIcon}>+</span>
-                <p>2. Veliyi Ekle</p>
-                <Button variant="ghost" size="sm">Davet Gönder</Button>
+            <Card className={styles.addParentCard} title="Veli Davet Et">
+              <div className={styles.inviteForm}>
+                <Input
+                  label="Veli E-Posta"
+                  type="email"
+                  placeholder="veli@example.com"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                />
+                <Button
+                  variant="primary"
+                  size="sm"
+                  disabled={sendInviteMutation.isPending || !inviteEmail.trim()}
+                  onClick={() => {
+                    sendInviteMutation.mutate(
+                      { email: inviteEmail, role: 'Parent', relatedId: id },
+                      { onSuccess: (data) => setInviteResult(data) }
+                    );
+                  }}
+                >
+                  {sendInviteMutation.isPending ? 'Oluşturuluyor...' : 'Davet Oluştur'}
+                </Button>
+                {sendInviteMutation.isError && (
+                  <p style={{ color: 'red', fontSize: '0.85rem' }}>Davet oluşturulamadı.</p>
+                )}
               </div>
+              {inviteResult && (
+                <InviteSharePanel
+                  code={inviteResult.code}
+                  link={inviteResult.link}
+                  expiresAt={inviteResult.expiresAt}
+                />
+              )}
             </Card>
           </div>
         )}

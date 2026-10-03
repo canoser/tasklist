@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Dapper;
 using MentorumApi.Data;
 using MentorumApi.DTOs;
@@ -46,21 +47,25 @@ namespace MentorumApi.Endpoints
                     return Results.Conflict(new { error = "Bu e-posta sistemde zaten kayıtlı." });
 
                 var token = Guid.NewGuid();
+                var code = InviteCode.Generate();
+                var expiresAt = DateTime.UtcNow.AddHours(48); // Kısa geçerlilik: 48 saat
+                var inviteLink = $"https://mentorum.dersmatris.com/invite/{code}";
                 
                 await conn.ExecuteAsync(@"
-                    INSERT INTO invite_tokens (id, token, email, role, related_id, expires_at)
-                    VALUES (@Id, @Token, @Email, @Role, @RelatedId, @ExpiresAt)",
+                    INSERT INTO invite_tokens (id, token, code, email, role, related_id, expires_at)
+                    VALUES (@Id, @Token, @Code, @Email, @Role, @RelatedId, @ExpiresAt)",
                     new { 
                         Id = Guid.NewGuid(), 
                         Token = token, 
+                        Code = code,
                         Email = req.Email.ToLower(), 
                         Role = req.Role, 
                         RelatedId = req.RelatedId,
-                        ExpiresAt = DateTime.UtcNow.AddDays(2) 
+                        ExpiresAt = expiresAt 
                     });
 
-                await emailService.SendInviteEmailAsync(req.Email, req.Role, token.ToString());
-                return Results.Ok(new { message = "Davet başarıyla gönderildi." });
+                await emailService.SendInviteEmailAsync(req.Email, req.Role, code, inviteLink);
+                return Results.Ok(new { message = "Davet başarıyla oluşturuldu.", code, link = inviteLink, expiresAt });
             }).RequireAuthorization("RequireCoachRole"); // Sadece koç davet atabilir
 
             // Davet detayını görüntüle (token validasyonu)
@@ -68,42 +73,31 @@ namespace MentorumApi.Endpoints
                 string token,
                 [FromServices] DbConnectionFactory db) =>
             {
-                if (!Guid.TryParse(token, out var tokenGuid))
-                    return Results.BadRequest(new { error = "Geçersiz token formatı." });
-
-                using var conn = db.CreateConnection();
-                var invite = await conn.QuerySingleOrDefaultAsync(
-                    "SELECT email, role, expires_at, is_used FROM invite_tokens WHERE token = @Token",
-                    new { Token = tokenGuid });
-
+                var invite = await GetInviteByCodeAsync(db, token);
                 if (invite == null)
                     return Results.NotFound(new { error = "Davet bulunamadı." });
-                if (invite.is_used == 1)
+                if (invite.IsUsed == 1)
                     return Results.BadRequest(new { error = "Bu davet zaten kullanılmış." });
-                if ((DateTime)invite.expires_at < DateTime.UtcNow)
+                if (invite.ExpiresAt < DateTime.UtcNow)
                     return Results.BadRequest(new { error = "Bu davetin süresi dolmuş." });
 
-                return Results.Ok(new { email = invite.email, role = invite.role });
+                return Results.Ok(new { email = invite.Email, role = invite.Role });
             });
 
             // Daveti kabul et ve şifre belirleyip kayıt ol
-            group.MapPost("/accept", async (
+            group.MapPost("/{token}/accept", async (
+                string token,
                 [FromBody] InviteAcceptRequest req,
                 [FromServices] DbConnectionFactory db,
                 [FromServices] JwtService jwt,
                 HttpContext ctx) =>
             {
-                if (!Guid.TryParse(req.Token, out var tokenGuid))
-                    return Results.BadRequest(new { error = "Geçersiz token formatı." });
-
-                using var conn = db.CreateConnection();
-                // We need to fetch email, role, related_id, etc. Use dynamic or a quick struct.
-                var invite = await conn.QuerySingleOrDefaultAsync<InviteQueryModel>(
-                    "SELECT email AS Email, role AS Role, related_id AS RelatedId, expires_at AS ExpiresAt, is_used AS IsUsed FROM invite_tokens WHERE token = @Token",
-                    new { Token = tokenGuid });
-
+                var invite = await GetInviteByCodeAsync(db, token);
                 if (invite == null || invite.IsUsed == 1 || invite.ExpiresAt < DateTime.UtcNow)
                     return Results.BadRequest(new { error = "Geçersiz, kullanılmış veya süresi dolmuş davet." });
+
+                using var conn = db.CreateConnection();
+                conn.Open(); // Transaction için bağlantı açık olmalı
 
                 var userId = Guid.NewGuid();
                 var user = new User 
@@ -148,7 +142,7 @@ namespace MentorumApi.Endpoints
                     }
 
                     // Token'ı kullanıldı işaretle
-                    await conn.ExecuteAsync("UPDATE invite_tokens SET is_used = 1 WHERE token = @Token", new { Token = tokenGuid }, tx);
+                    await conn.ExecuteAsync("UPDATE invite_tokens SET is_used = 1 WHERE id = @Id", new { Id = invite.Id }, tx);
                     tx.Commit();
                 }
                 catch
@@ -180,14 +174,51 @@ namespace MentorumApi.Endpoints
                 });
             });
         }
+
+        // Daveti koda göre getirir (normalize + sorgu). Bulunamazsa null döner.
+        private static async Task<InviteQueryModel?> GetInviteByCodeAsync(DbConnectionFactory db, string token)
+        {
+            using var conn = db.CreateConnection();
+            var code = InviteCode.Normalize(token);
+            return await conn.QuerySingleOrDefaultAsync<InviteQueryModel>(
+                "SELECT id AS Id, email AS Email, role AS Role, related_id AS RelatedId, expires_at AS ExpiresAt, is_used AS IsUsed FROM invite_tokens WHERE code = @Code",
+                new { Code = code });
+        }
     }
 }
 
 public class InviteQueryModel
 {
+    public Guid Id { get; set; }
     public string Email { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
     public string? RelatedId { get; set; }
     public DateTime ExpiresAt { get; set; }
     public int IsUsed { get; set; }
+}
+
+internal static class InviteCode
+{
+    // Crockford Base32: 0-9 + A-Z (I, L, O, U hariç) — karıştırılabilir karakter yok
+    private const string Alphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+
+    public static string Generate(int length = 12)
+    {
+        var chars = new char[length];
+        for (int i = 0; i < length; i++)
+            chars[i] = Alphabet[RandomNumberGenerator.GetInt32(Alphabet.Length)];
+        return new string(chars);
+    }
+
+    public static string Normalize(string code)
+    {
+        if (string.IsNullOrWhiteSpace(code)) return string.Empty;
+        var sb = new System.Text.StringBuilder();
+        foreach (var c in code)
+        {
+            if (c == '-' || c == ' ') continue;
+            sb.Append(char.ToUpperInvariant(c));
+        }
+        return sb.ToString();
+    }
 }

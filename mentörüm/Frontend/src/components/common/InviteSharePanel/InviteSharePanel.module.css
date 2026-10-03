@@ -1,0 +1,84 @@
+.panel {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #166534;
+  margin: 0;
+}
+
+.codeRow,
+.linkRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.code {
+  font-family: monospace;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #111827;
+  background: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px dashed #86efac;
+  user-select: all;
+}
+
+.link {
+  font-size: 0.8rem;
+  color: #166534;
+  word-break: break-all;
+  background: #fff;
+  padding: 6px 10px;
+  border-radius: 8px;
+  flex: 1;
+}
+
+.copyBtn {
+  background: #fff;
+  border: 1px solid #86efac;
+  color: #166534;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.copyBtn:hover {
+  background: #f0fdf4;
+}
+
+.whatsappBtn {
+  background: #25d366;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.whatsappBtn:hover {
+  background: #1ebe5d;
+}
+
+.expiry {
+  font-size: 0.75rem;
+  color: #15803d;
+  margin: 0;
+}

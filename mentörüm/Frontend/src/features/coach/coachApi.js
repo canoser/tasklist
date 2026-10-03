@@ -11,6 +11,15 @@ export const useStudents = () => {
   });
 };
 
+export const useSendInvite = () => {
+  return useMutation({
+    mutationFn: async ({ email, role, relatedId }) => {
+      const response = await apiClient.post('/invites/send', { email, role, relatedId });
+      return response; // { code, link, expiresAt }
+    },
+  });
+};
+
 export const useReportsOverview = () => {
   return useQuery({
     queryKey: ['coach', 'reports', 'overview'],
