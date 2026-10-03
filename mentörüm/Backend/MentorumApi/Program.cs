@@ -104,7 +104,8 @@ try
             Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "001_InitialSchema.sql"),
             Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "002_Phase10_11.sql"),
             Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "003_InviteCode.sql"),
-            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "004_Curriculum2026.sql")
+            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "004_Curriculum2026.sql"),
+            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "005_HomeworkDirect.sql")
         };
         foreach(var path in scriptPaths)
         {

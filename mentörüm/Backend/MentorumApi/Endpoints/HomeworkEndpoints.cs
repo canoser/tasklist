@@ -32,7 +32,7 @@ namespace MentorumApi.Endpoints
                 if (!Guid.TryParse(coachIdStr, out var coachId)) return Results.Unauthorized();
 
                 var assignmentId = await repo.AssignHomeworkAsync(coachId, req);
-                if (assignmentId == null) return Results.BadRequest(new { error = "Şablon bulunamadı veya size ait değil." });
+                if (assignmentId == null) return Results.BadRequest(new { error = "Öğrenci bulunamadı veya size ait değil." });
 
                 return Results.Ok(new { assignmentId });
             });

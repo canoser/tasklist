@@ -36,14 +36,15 @@ const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
 
     assignHomeworkMutation.mutate({
       studentId: selectedStudent?.id,
-      subjectId: subject,
-      topicId: topic,
+      subjectId: subject || null,
+      curriculumTopicId: topic || null,
       title,
       description: desc,
       dueDate
     }, {
       onSuccess: () => {
         // Reset form and close
+        setLevel('');
         setSubject('');
         setTopic('');
         setTitle('');
