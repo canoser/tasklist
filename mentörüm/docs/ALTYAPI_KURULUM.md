@@ -61,10 +61,13 @@ Neden ayrı Fly uygulaması?
 ⚠️ NEDEN AYRI PROJE? İki uygulama (dersmatris + mentörüm) tamamen bağımsız, veri paylaşmıyor. Ayrı proje; depolama (1 GB+1 GB), compute (100 CU-saat/proje) ve izolasyon (birinin hatası diğerini etkilemez) açısından üstün. Neon da "her fikir için ayrı proje" öneriyor.
 Yeni proje açma adımları:
 
-  Neon Console ana sayfasında "New Project" butonuna tıkla
-  Project Name: mentorum
-  Region: Frankfurt (fra) — Fly.io ile aynı bölge, gecikme düşük
-  "Create Project" butonuna tıkla
+  1. Neon Console ana sayfasında (veya proje menüsünde) "New Project" butonuna tıkla
+  2. **Project Name:** `mentorum`
+  3. **Region:** `AWS Europe Central 1 (Frankfurt)` — Fly.io ile aynı bölge, gecikme düşük
+  4. **Postgres database:** Açık (Database name: `mentorum`, Version: `18` kalabilir)
+  5. **Object storage:** ❌ KAPATIN (Biz dosya depolama için Cloudflare R2 kullanacağız)
+  6. **Functions, AI gateway, Neon Auth:** ❌ KAPALI kalsın
+  7. "Create Project" butonuna tıkla
 
 Oluşan database için bağlantı bilgilerini al:
   Sol menü → Dashboard → Connection Details
