@@ -33,7 +33,7 @@ YENİ (mentörüm):
   Fly app adı   : mentorum-api         ← ayrı uygulama, ayrı VM
   Bölge         : fra (aynı bölge)     ← Neon'a olan gecikme düşük kalır
   URL           : mentorum.dersmatris.com/api
-  Neon DB       : mentorum             ← AYNI Neon projesi, YENİ database
+  Neon DB       : mentorum             ← AYRI Neon projesi (yeni proje, dersmatris'ten bağımsız)
 
 Neden ayrı Fly uygulaması?
   - Mentörüm patlarsa mevcut site etkilenmez
@@ -43,32 +43,32 @@ Neden ayrı Fly uygulaması?
 
 Ücretsiz Plan Limitleri (dersmatris + mentörüm birlikte)
   Fly.io          : 3 VM ücretsiz → 1 (dersmatris-api) + 1 (mentorum-api) = 2/3 kullanıldı
-  Neon            : 0.5 GB depolama — iki database bu limiti PAYLAŞIR
-                    Dikkat: Kullanıcı sayısı arttıkça 0.5 GB aşılabilir → ücretli plana geçiş gerekir
+  Neon            : 1 GB depolama / proje (2 Ekim 2026 itibarıyla; eskiden 0.5 GB idi) — ayrı projeler, paylaşılmaz
+                    Bedava: 100 proje, 10 branch/proje, 2 CU autoscaling — her uygulama kendi 1 GB + 100 CU-saatini alır
   Cloudflare R2   : Aylık 10 GB + 1M istek ücretsiz (MVP'de dosya yükleme yok, kullanılmayacak)
   Cloudflare Pages: Sınırsız site ücretsiz → app.dersmatris.com + mentorum.dersmatris.com ikisi de ücretsiz
 
 ---
 
-## 2. Neon — Yeni Database Oluşturma
+## 2. Neon — Yeni PROJE Oluşturma (mentorum)
 
 ### 2.1 Neon Paneline Giriş
 1. https://console.neon.tech adresine gir
-2. Mevcut projeyi seç (dersmatris veya planlama-app — hangisi ise)
+2. YENİ (ayrı) proje oluşturacağız — mevcut dersmatris projesine DOKUNMA
 
-### 2.2 Yeni Database Oluştur (Aynı Proje İçinde)
+### 2.2 Yeni PROJE Oluştur (mentorum — ayrı proje)
 
-Neon'da "proje" içinde birden fazla "database" açılabilir.
-Mevcut dersmatris database'i ile aynı proje içinde yeni bir database açmak:
+⚠️ NEDEN AYRI PROJE? İki uygulama (dersmatris + mentörüm) tamamen bağımsız, veri paylaşmıyor. Ayrı proje; depolama (1 GB+1 GB), compute (100 CU-saat/proje) ve izolasyon (birinin hatası diğerini etkilemez) açısından üstün. Neon da "her fikir için ayrı proje" öneriyor.
+Yeni proje açma adımları:
 
-  Sol menü → Databases → "New Database" butonuna tıkla
-  Database Name: mentorum
-  Owner: neondb_owner (varsayılan — değiştirme)
-  "Create" butonuna tıkla
+  Neon Console ana sayfasında "New Project" butonuna tıkla
+  Project Name: mentorum
+  Region: Frankfurt (fra) — Fly.io ile aynı bölge, gecikme düşük
+  "Create Project" butonuna tıkla
 
 Oluşan database için bağlantı bilgilerini al:
   Sol menü → Dashboard → Connection Details
-  Database açılır listesinden "mentorum" seç
+  Database açılır listesinden "mentorum" (veya "neondb") seç
   "Connection string" kopyala:
 
   Örnek format:
@@ -79,12 +79,13 @@ Oluşan database için bağlantı bilgilerini al:
 
 ### 2.3 Neon Branch Oluştur (Geliştirme Ortamı İçin)
 
+⚠️ Bu branch'i YENİ mentorum projesi İÇİNDE oluştur (dersmatris projesinde DEĞİL).
 Production veritabanını geliştirme sırasında kirletmemek için:
 
   Sol menü → Branches → "New Branch"
   Branch Name  : mentorum-dev
   Parent Branch: main
-  Add Database : mentorum (seç)
+  (Database seçimi istenirse: mentorum/neondb)
   "Create Branch" tıkla
 
   Dev bağlantı string'i ayrıca kopyala:

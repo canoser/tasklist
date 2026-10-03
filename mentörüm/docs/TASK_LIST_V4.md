@@ -125,8 +125,8 @@
 **Önkoşul:** ALTYAPI_KURULUM.md tam kılavuz olarak hazır, sırayla uygulanacak.
 
 ### 19.1 Neon PostgreSQL
-- [ ] Neon Console — mevcut proje içinde mentorum adlı yeni database oluştur
-- [ ] mentorum-dev branch oluştur (yerel geliştirme için)
+- [ ] Neon Console — **YENİ (ayrı) proje** oluştur: `mentorum` (mevcut dersmatris projesine DOKUNMA)
+- [ ] mentorum projesi İÇİNDE `mentorum-dev` branch oluştur (yerel geliştirme için)
 - [ ] Production ve Dev connection string'leri güvenli yerde sakla
 - [ ] Konsolide edilmiş migration (Aşama 17.5.1'den çıkan düzeltilmiş SQL) — dev branch'te çalıştır ve doğrula
 
@@ -143,7 +143,7 @@
 ### 19.3 Backend Kodu — Production Hazırlık
 - [x] Program.cs — CORS izin listesine mentorum.dersmatris.com ekle (ZATEN VAR, Program.cs satır 36 — sadece doğrula)
 - [x] Program.cs — /health endpoint ekle (DB bağlantı kontrolü, Fly.io için zorunlu)
-- [x] Program.cs — Başlangıçta SQL migration dosyalarını otomatik çalıştır
+- [x] Program.cs — Migration `--migrate-only` bayrağıyla MANUEL çalışır (auto-startup yok; 19.2'de `fly ssh console` ile tetiklenir)
 
 ---
 
