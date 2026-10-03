@@ -1,7 +1,7 @@
 # 🏁 Mentörüm — V4 Master Plan (Proje Tamamlama Yol Haritası)
 > **Tarih:** 2 Ekim 2026 (Güncelleme: 2 Ekim 2026, 21:55)
-> **Durum:** MVP V3 kodlaması yazıldı ancak üç ajan analizi (DeepSeek, Gemini, Claude) 5 kritik + 2 yüksek (toplam 12) hata tespit etti.
-> ⚠️ "Yazıldı" ≠ "Çalışıyor" — canlıya geçmeden önce Aşama 17.5 (Kritik Bug Fix) zorunludur.
+> **Durum:** Hatalar ÇÖZÜLDÜ, Altyapı Kuruldu (Neon + Fly.io + Cloudflare).
+> ⚠️ Backend ve Frontend hataları Aşama 17.5'te düzeltildi.
 > Görevler sıralıdır — her aşama bir öncekinin tamamlanmış olduğunu varsayar.
 
 ---
@@ -10,15 +10,13 @@
 
 | Katman | Durum | Notlar |
 |---|---|---|
-| Backend API | ⚠️ Kırık | 5 kritik bug var — Aşama 17.5'te düzeltilecek |
-| Frontend (Koç) | ⚠️ Kırık | API double .data — her liste boş görünür |
-| Frontend (Öğrenci) | ⚠️ Kırık | /complete endpoint erişilemiyor (Coach-only group) |
-| Frontend (Veli) | ⚠️ Kırık | ParentEndpoints: yanlış claim + yanlış kolon adı |
-| Migration | ⚠️ Çakışıyor | 001+002 aynı kolonları tanımlıyor — çalıştırılamaz |
+| Backend API | ✅ Düzeltildi | Fly.io üzerinde canlıda (HTTPS sertifikası bekleniyor) |
+| Frontend (Tümü) | ✅ Düzeltildi | Cloudflare Pages üzerinde canlıda |
+| Migration | ✅ Düzeltildi | Neon DB üzerinde başarıyla çalıştırıldı |
 | Mobil Uyumluluk | ✅ Düzeltildi | 100dvh uygulandı (Aşama 17) |
-| Altyapı (Fly, Neon) | Kurulmadı | Canlı sunucu yok |
-| CI/CD | Kurulmadı | GitHub Actions aktif değil |
-| Test | Yok | Mock-tabanlı — gerçek PostgreSQL entegrasyon testi yok |
+| Altyapı (Fly, Neon) | ✅ Kuruldu | Aşama 19 & 20 tamamlandı |
+| CI/CD | Kurulmadı | Aşama 21'de eklenecek |
+| Test | Bekliyor | Aşama 23 Canlı Ortam Smoke Testi Bekleniyor |
 | Capacitor (Native) | Faz 2 | Android/iOS paketleme henüz yok |
 
 ---
@@ -271,5 +269,5 @@
 
 ## Sıradaki Görev
 
-**Aşama 18 (Capacitor Hazırlık) tamamlandı.**
-Sonraki adım: **Aşama 19 (Backend Altyapısı - Neon + Fly.io)**. Altyapı kurulumuna başlanabilir.
+**Aşama 19 ve 20 (Altyapı) tamamlandı.**
+Sonraki adım: **SSL Sertifikası doğrulamasını tamamlamak ve Aşama 23 (Canlı Ortam Smoke Testleri)**.
