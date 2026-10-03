@@ -271,5 +271,9 @@
 
 ## Sıradaki Görev
 
-**Aşama 21 (CI/CD) tamamlandı.**
-Sonraki adım: **Aşama 22 (Initial Seeding & Role Management)** ve hemen ardından **Aşama 23 (Canlı Ortam Smoke Testleri)**.
+**Kalan tek iş: Aşama 23 — Canlı UI Smoke Testi (tarayıcı).**
+> Tamamlananlar (2 Ekim 2026): Aşama 17-22 + Aşama 24 (e-posta KALDIRILDI → davet linki/kodu yeterli) + ödev atama düzeltmesi (`f6a85cd`) + AuthEndpoints `conn.Open()` düzeltmesi (`6fbedb6`). Migration 004+005 canlıda uygulandı ve doğrulandı. GitHub ↔ Fly senkron, çalışma ağacı temiz.
+
+**Aşama 23 durumu:**
+- ✅ C2 (Seviye→Ders→Konu) — API bazında doğrulandı (levels TEXT, 10 ders, konular canlıda).
+- 🔄 Bekleyen (tarayıcı testi): C1 (kayıt/giriş), C2 (ödev ata → tamamla → **silinmesin**), C3 (davet kodu/linki + WhatsApp/kopyala), C4 (IDOR güvenlik).
