@@ -123,7 +123,7 @@
 **Önkoşul:** ALTYAPI_KURULUM.md tam kılavuz olarak hazır, sırayla uygulanacak.
 
 ### 19.1 Neon PostgreSQL
-- [ ] Neon Console — **YENİ (ayrı) proje** oluştur: `mentorum` (mevcut dersmatris projesine DOKUNMA)
+- [x] Neon Console — **YENİ (ayrı) proje** oluştur: `mentorum` (mevcut dersmatris projesine DOKUNMA)
 - [x] mentorum projesi İÇİNDE `mentorum-dev` branch oluştur (yerel geliştirme için)
 - [x] Production ve Dev connection string'leri güvenli yerde sakla
 - [x] Konsolide edilmiş migration (Aşama 17.5.1'den çıkan düzeltilmiş SQL) — dev branch'te çalıştır ve doğrula
