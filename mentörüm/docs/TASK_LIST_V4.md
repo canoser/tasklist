@@ -124,19 +124,19 @@
 
 ### 19.1 Neon PostgreSQL
 - [ ] Neon Console — **YENİ (ayrı) proje** oluştur: `mentorum` (mevcut dersmatris projesine DOKUNMA)
-- [ ] mentorum projesi İÇİNDE `mentorum-dev` branch oluştur (yerel geliştirme için)
-- [ ] Production ve Dev connection string'leri güvenli yerde sakla
-- [ ] Konsolide edilmiş migration (Aşama 17.5.1'den çıkan düzeltilmiş SQL) — dev branch'te çalıştır ve doğrula
+- [x] mentorum projesi İÇİNDE `mentorum-dev` branch oluştur (yerel geliştirme için)
+- [x] Production ve Dev connection string'leri güvenli yerde sakla
+- [x] Konsolide edilmiş migration (Aşama 17.5.1'den çıkan düzeltilmiş SQL) — dev branch'te çalıştır ve doğrula
 
 ### 19.2 Fly.io Uygulaması
-- [ ] fly apps create mentorum-api
+- [x] fly apps create mentorum-api
 - [x] mentörüm/Backend/fly.toml oluştur (ALTYAPI_KURULUM.md §3.3 şablonu)
 - [x] mentörüm/Backend/Dockerfile oluştur (ALTYAPI_KURULUM.md §3.5 şablonu)
-- [ ] fly secrets set ... --app mentorum-api ile ortam değişkenlerini yükle
-- [ ] fly deploy --app mentorum-api — ilk manuel deploy
-- [ ] fly ssh console -C "dotnet MentorumApi.dll --migrate-only" — Veritabanı şemasını (001 ve 002) oluştur
-- [ ] curl https://mentorum-api.fly.dev/health — 200 OK doğrula
-- [ ] fly status --app dersmatris-api — mevcut site zarar görmedi mi?
+- [x] fly secrets set ... --app mentorum-api ile ortam değişkenlerini yükle
+- [x] fly deploy --app mentorum-api — ilk manuel deploy
+- [x] fly ssh console -C "dotnet MentorumApi.dll --migrate-only" — Veritabanı şemasını (001 ve 002) oluştur
+- [x] curl https://mentorum-api.fly.dev/health — 200 OK doğrula
+- [x] fly status --app dersmatris-api — mevcut site zarar görmedi mi?
 
 ### 19.3 Backend Kodu — Production Hazırlık
 - [x] Program.cs — CORS izin listesine mentorum.dersmatris.com ekle (ZATEN VAR, Program.cs satır 36 — sadece doğrula)
