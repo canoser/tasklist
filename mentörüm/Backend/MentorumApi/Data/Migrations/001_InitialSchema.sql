@@ -1,7 +1,7 @@
 -- 001_InitialSchema.sql
 -- Mentorum MVP - Veritabanı Şeması (PostgreSQL)
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY,
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT,
@@ -14,12 +14,12 @@ CREATE TABLE users (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE coaches (
+CREATE TABLE IF NOT EXISTS coaches (
     id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
     plan_type TEXT DEFAULT 'free'
 );
 
-CREATE TABLE students (
+CREATE TABLE IF NOT EXISTS students (
     id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
     coach_id UUID REFERENCES users(id),
     grade INTEGER,
@@ -32,7 +32,7 @@ CREATE TABLE students (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE coach_notes (
+CREATE TABLE IF NOT EXISTS coach_notes (
     id UUID PRIMARY KEY,
     student_id UUID REFERENCES students(id) ON DELETE CASCADE,
     coach_id UUID REFERENCES coaches(id) ON DELETE CASCADE,
@@ -41,11 +41,11 @@ CREATE TABLE coach_notes (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE parents (
+CREATE TABLE IF NOT EXISTS parents (
     id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE student_parents (
+CREATE TABLE IF NOT EXISTS student_parents (
     id UUID PRIMARY KEY,
     student_id UUID REFERENCES students(id) ON DELETE CASCADE,
     parent_id UUID REFERENCES parents(id) ON DELETE SET NULL,
@@ -58,7 +58,7 @@ CREATE TABLE student_parents (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE exam_results (
+CREATE TABLE IF NOT EXISTS exam_results (
     id UUID PRIMARY KEY,
     student_id UUID REFERENCES students(id) ON DELETE CASCADE,
     coach_id UUID REFERENCES coaches(id) ON DELETE CASCADE,
@@ -70,7 +70,7 @@ CREATE TABLE exam_results (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE exam_scores (
+CREATE TABLE IF NOT EXISTS exam_scores (
     exam_id UUID REFERENCES exam_results(id) ON DELETE CASCADE,
     subject_code TEXT,
     score REAL,
@@ -78,7 +78,7 @@ CREATE TABLE exam_scores (
     PRIMARY KEY (exam_id, subject_code)
 );
 
-CREATE TABLE subjects (
+CREATE TABLE IF NOT EXISTS subjects (
     id UUID PRIMARY KEY,
     name TEXT NOT NULL,
     short_code TEXT,
@@ -86,7 +86,7 @@ CREATE TABLE subjects (
     is_system_subject INTEGER DEFAULT 1
 );
 
-CREATE TABLE student_subjects (
+CREATE TABLE IF NOT EXISTS student_subjects (
     id UUID PRIMARY KEY,
     student_id UUID REFERENCES students(id) ON DELETE CASCADE,
     subject_id UUID REFERENCES subjects(id) ON DELETE CASCADE,
@@ -97,14 +97,14 @@ CREATE TABLE student_subjects (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE curriculum_years (
+CREATE TABLE IF NOT EXISTS curriculum_years (
     id UUID PRIMARY KEY,
     year_label TEXT,
     is_active INTEGER DEFAULT 1,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE curriculum_topics (
+CREATE TABLE IF NOT EXISTS curriculum_topics (
     id UUID PRIMARY KEY,
     curriculum_year_id UUID REFERENCES curriculum_years(id) ON DELETE CASCADE,
     subject_id UUID REFERENCES subjects(id) ON DELETE CASCADE,
@@ -118,7 +118,7 @@ CREATE TABLE curriculum_topics (
     sort_order INTEGER
 );
 
-CREATE TABLE homework_templates (
+CREATE TABLE IF NOT EXISTS homework_templates (
     id UUID PRIMARY KEY,
     coach_id UUID REFERENCES coaches(id) ON DELETE CASCADE,
     subject_id UUID REFERENCES subjects(id) ON DELETE CASCADE,
@@ -131,7 +131,7 @@ CREATE TABLE homework_templates (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE homework_assignments (
+CREATE TABLE IF NOT EXISTS homework_assignments (
     id UUID PRIMARY KEY,
     template_id UUID REFERENCES homework_templates(id) ON DELETE SET NULL,
     snapshot_title TEXT NOT NULL,
@@ -152,7 +152,7 @@ CREATE TABLE homework_assignments (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE notifications (
+CREATE TABLE IF NOT EXISTS notifications (
     id UUID PRIMARY KEY,
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     type TEXT CHECK(type IN ('HOMEWORK_ASSIGNED','HOMEWORK_DUE','HOMEWORK_OVERDUE','HOMEWORK_DONE')),
@@ -164,7 +164,7 @@ CREATE TABLE notifications (
     read_at TIMESTAMP WITH TIME ZONE
 );
 
-CREATE TABLE invite_tokens (
+CREATE TABLE IF NOT EXISTS invite_tokens (
     id UUID PRIMARY KEY,
     token UUID UNIQUE NOT NULL,
     email TEXT NOT NULL,
@@ -175,7 +175,7 @@ CREATE TABLE invite_tokens (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE refresh_tokens (
+CREATE TABLE IF NOT EXISTS refresh_tokens (
     id UUID PRIMARY KEY,
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     token TEXT UNIQUE NOT NULL,

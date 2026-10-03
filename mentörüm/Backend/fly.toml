@@ -4,6 +4,9 @@ primary_region = "fra"
 [build]
   dockerfile = "Dockerfile"
 
+[deploy]
+  release_command = "dotnet MentorumApi.dll --migrate-only"
+
 [env]
   ASPNETCORE_ENVIRONMENT = "Production"
   ASPNETCORE_URLS = "http://+:8080"

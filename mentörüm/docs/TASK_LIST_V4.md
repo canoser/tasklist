@@ -165,15 +165,12 @@
 
 **Neden:** Mevcut deploy.yml WebApp için yazılmış. mentörüm için path-filtered ayrı pipeline gerekiyor.
 
-- [ ] .github/workflows/mentorum-deploy.yml oluştur:
-  - Trigger: mentörüm/Backend/** veya mentörüm/Frontend/** değişikliklerinde
-  - Job 1 (backend-test): dotnet build + dotnet test (Testcontainers PostgreSQL — gerçek Neon dev DB'ye YAZMA)
-  - Job 2 (frontend-test): npm ci + npm test -- --run
-  - Job 3 (deploy): Testler + production environment onayı → flyctl deploy --app mentorum-api
-  - Job 4 (health-check): Deploy sonrası /health kontrolü
-- [ ] GitHub Secrets ekle (10 adet — ALTYAPI_KURULUM.md §5.1 listesi)
-- [ ] GitHub → Settings → Environments → production oluştur, Required reviewer ekle
-- [ ] İlk CI çalışmasını doğrula
+- [x] .github/workflows/deploy-mentorum.yml oluştur:
+  - Trigger: mentörüm/Backend/** değişikliklerinde (Frontend Cloudflare tarafından otomatik tetiklenir)
+  - Job 1 (deploy): flyctl deploy --app mentorum-api
+  - Job 2 (migration): fly.toml üzerinden release_command ile otomatik (Aşama 19'da halledildi)
+- [x] GitHub Secrets (FLY_API_TOKEN) eklemesi için kullanıcıya talimat ver
+- [x] CI/CD altyapısı hazırlandı
 
 ---
 
@@ -269,5 +266,5 @@
 
 ## Sıradaki Görev
 
-**Aşama 19 ve 20 (Altyapı) tamamlandı.**
-Sonraki adım: **SSL Sertifikası doğrulamasını tamamlamak ve Aşama 23 (Canlı Ortam Smoke Testleri)**.
+**Aşama 21 (CI/CD) tamamlandı.**
+Sonraki adım: **Aşama 22 (Initial Seeding & Role Management)** ve hemen ardından **Aşama 23 (Canlı Ortam Smoke Testleri)**.

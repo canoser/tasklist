@@ -58,6 +58,7 @@
 - Branch'ler: `production` (kök/prod, Console'da bu ad) + `mentorum-dev` (geliştirme/test)
 - ⚠️ KOD DEĞİŞİKLİĞİ GEREKMEZ: kod `DATABASE_URL` env var'ını okur (DbConnectionFactory.cs) — branch/proje agnostik. Dev↔Prod geçişi yalnızca `DATABASE_URL` değişimidir (yerel `.env` veya `fly secrets`).
 - Otomatik backup Neon tarafından yapılır
+- Migration idempotenttir: 001 `CREATE TABLE IF NOT EXISTS` + 002 `ON CONFLICT DO NOTHING` → fly.toml `release_command` her deploy'da güvenle koşar. ⚠️ Sınır: `IF NOT EXISTS` mevcut tabloya yeni KOLON eklemez — ileride şema evrimi için versiyonlu migration (`_schema_migrations`) gerekir.
 
 #### Cloudflare R2 Notları
 - Dosya yükleme MVP'de kapsam dışı ama altyapı hazır

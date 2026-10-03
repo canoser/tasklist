@@ -173,6 +173,7 @@ try
 catch (Exception ex)
 {
     Log.Fatal(ex, "Uygulama başlatılırken kritik hata oluştu!");
+    Environment.ExitCode = 1; // Fly release_command/deploy, hata durumunda deploy'u iptal etsin
 }
 finally
 {
