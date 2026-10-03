@@ -253,19 +253,19 @@
 
 ## Güvenlik Kontrol Listesi (Canlıya Almadan Önce Zorunlu)
 
-| Kontrol | Durum |
-|---|---|
-| .env dosyası .gitignore'da | Var |
-| git-secrets kurulu | Kurulacak (ALTYAPI_KURULUM.md §7) |
-| Rate limiting aktif | Kod var, test edilmedi |
-| JWT access token süresi 15dk | Kodda var |
-| httpOnly cookie refresh token | Kodda var |
-| Tüm IDOR kontrolleri Backend'de | BaseRepository var |
-| Coach Notes ayrı endpoint'te | Var |
-| Davet token UUID + 48h + tek kullanım | Var |
-| HTTPS zorunlu (Fly force_https) | fly.toml'a eklenecek |
-| SQL Injection (Dapper parametrik) | Var |
-| XSS (React escape) | Var |
+| Kontrol                               | Durum                             |
+| ---------------------------------------| -----------------------------------|
+| .env dosyası .gitignore'da            | Var                               |
+| git-secrets kurulu                    | Kurulacak (ALTYAPI_KURULUM.md §7) |
+| Rate limiting aktif                   | Kod var, test edilmedi            |
+| JWT access token süresi 15dk          | Kodda var                         |
+| httpOnly cookie refresh token         | Kodda var                         |
+| Tüm IDOR kontrolleri Backend'de       | BaseRepository var                |
+| Coach Notes ayrı endpoint'te          | Var                               |
+| Davet token UUID + 48h + tek kullanım | Var                               |
+| HTTPS zorunlu (Fly force_https)       | fly.toml'a eklenecek              |
+| SQL Injection (Dapper parametrik)     | Var                               |
+| XSS (React escape)                    | Var                               |
 
 ---
 
