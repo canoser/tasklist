@@ -10,12 +10,12 @@
 
 | Katman | Durum | Notlar |
 |---|---|---|
-| Backend API | ✅ Düzeltildi | Fly.io üzerinde canlıda (HTTPS sertifikası bekleniyor) |
+| Backend API | ✅ Düzeltildi | Fly.io üzerinde canlıda (HTTPS sertifikası tamam) |
 | Frontend (Tümü) | ✅ Düzeltildi | Cloudflare Pages üzerinde canlıda |
 | Migration | ✅ Düzeltildi | Neon DB üzerinde başarıyla çalıştırıldı |
 | Mobil Uyumluluk | ✅ Düzeltildi | 100dvh uygulandı (Aşama 17) |
 | Altyapı (Fly, Neon) | ✅ Kuruldu | Aşama 19 & 20 tamamlandı |
-| CI/CD | Kurulmadı | Aşama 21'de eklenecek |
+| CI/CD | ✅ Kuruldu | deploy-mentorum.yml (Aşama 21) |
 | Test | Bekliyor | Aşama 23 Canlı Ortam Smoke Testi Bekleniyor |
 | Capacitor (Native) | Faz 2 | Android/iOS paketleme henüz yok |
 
@@ -149,15 +149,15 @@
 
 - [x] mentörüm/Frontend/.env.production oluştur: VITE_API_URL=https://mentorum-api.dersmatris.com/api/v1
 - [x] apiClient.js — import.meta.env.VITE_API_URL kullanıldığını doğrula (zaten var)
-- [ ] Cloudflare Dashboard → Pages → Create project:
+- [x] Cloudflare Dashboard → Pages → Create project:
   - GitHub repo: (Gerçek repo adınızı seçin, örn: canoser/tasklist)
   - Root Directory: mentörüm/Frontend
   - Build command: npm run build
   - Output directory: dist
   - Ortam değişkeni: VITE_API_URL=https://mentorum-api.dersmatris.com/api/v1
   - Ortam değişkeni: NODE_VERSION=20
-- [ ] Cloudflare DNS: mentorum CNAME → Pages (Frontend), mentorum-api CNAME → fly.dev (Backend)
-- [ ] Fly SSL: flyctl certs add mentorum-api.dersmatris.com --app mentorum-api
+- [x] Cloudflare DNS: mentorum CNAME → Pages (Frontend), mentorum-api CNAME → fly.dev (Backend)
+- [x] Fly SSL: flyctl certs add mentorum-api.dersmatris.com --app mentorum-api
 
 ---
 
@@ -216,6 +216,16 @@
 
 > ⚠️ **Sıralama düzeltmesi:** "Davet maili" (SMTP + davet şablonu = ilk 3 madde) Aşama 23.2'deki "Veli davet maili gidiyor mu?" testinin ÖNKOŞULUDUR. Bu ilk 3 maddeyi Aşama 23'ten ÖNCE yap; sadece "haftalık özet maili" (cron) 23'ten sonraya kalabilir.
 
+### ✅ Davet Sistemi Genişletmesi (Tamamlandı — commit `b113976`)
+- [x] Kısa + yüksek entropili davet kodu (12-char Crockford Base32, `RandomNumberGenerator`, ~60 bit)
+- [x] Davet linki (Zoom benzeri): `https://mentorum.dersmatris.com/invite/{code}`
+- [x] WhatsApp ile gönder + kod/link kopyala-yapıştır (`InviteSharePanel` bileşeni)
+- [x] Kısa geçerlilik: 48 saat (`AddHours(48)`)
+- [x] Koç arayüzüne "Veli Davet Et" formu (e-posta → davet oluştur → paylaşım paneli)
+- [x] `/invites/{token}/accept` route düzeltmesi + `InviteAcceptPage` (fullName + fetch) düzeltmesi
+
+### 📌 SMTP (hâlâ bekliyor — gerçek e-posta gönderimi için)
+
 - [ ] SMTP provider seç: Resend (önerilen — ücretsiz 100/gün) veya SendGrid
 - [ ] EmailService.cs tamamla — SMTP bağlantısı kur, secret'ları ekle
 - [ ] Davet maili HTML şablonu oluştur
@@ -257,7 +267,7 @@
 | httpOnly cookie refresh token         | Kodda var                         |
 | Tüm IDOR kontrolleri Backend'de       | BaseRepository var                |
 | Coach Notes ayrı endpoint'te          | Var                               |
-| Davet token UUID + 48h + tek kullanım | Var                               |
+| Davet kodu (12-char entropi) + 48h + tek kullanım | Var                               |
 | HTTPS zorunlu (Fly force_https)       | fly.toml'a eklenecek              |
 | SQL Injection (Dapper parametrik)     | Var                               |
 | XSS (React escape)                    | Var                               |
