@@ -18,7 +18,6 @@ namespace MentorumApi.Endpoints
             group.MapPost("/send", async (
                 [FromBody] InviteRequest req,
                 [FromServices] DbConnectionFactory db,
-                [FromServices] EmailService emailService,
                 System.Security.Claims.ClaimsPrincipal user) =>
             {
                 var coachIdStr = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -64,7 +63,6 @@ namespace MentorumApi.Endpoints
                         ExpiresAt = expiresAt 
                     });
 
-                await emailService.SendInviteEmailAsync(req.Email, req.Role, code, inviteLink);
                 return Results.Ok(new { message = "Davet başarıyla oluşturuldu.", code, link = inviteLink, expiresAt });
             }).RequireAuthorization("RequireCoachRole"); // Sadece koç davet atabilir
 

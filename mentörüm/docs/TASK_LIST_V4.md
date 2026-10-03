@@ -195,7 +195,7 @@
 - [ ] Google OAuth callback URL doğru mu?
 
 ### 23.2 Kritik İş Akışları
-- [ ] Öğrenci ekle → Veli davet maili gidiyor mu?
+- [ ] Öğrenci ekle → Veli davet kodu/linki çalışıyor mu?
 - [ ] Ödev ata → Öğrenci panelinde görünüyor mu?
 - [ ] Tamamladım → Koça bildirim gidiyor mu?
 - [ ] Veli davet linki → Aktivasyon → Panel açılıyor mu?
@@ -212,9 +212,9 @@
 
 ---
 
-## Aşama 24: E-posta Servisi
+## Aşama 24: Davet & Bildirim (E-posta yok)
 
-> ⚠️ **Sıralama düzeltmesi:** "Davet maili" (SMTP + davet şablonu = ilk 3 madde) Aşama 23.2'deki "Veli davet maili gidiyor mu?" testinin ÖNKOŞULUDUR. Bu ilk 3 maddeyi Aşama 23'ten ÖNCE yap; sadece "haftalık özet maili" (cron) 23'ten sonraya kalabilir.
+> 📌 **Karar:** E-posta gönderimi KALDIRILDI — davet linki/kodu (WhatsApp + kopyala-yapıştır) yeterli. SMTP / HTML şablon / haftalık özet maili GEREK YOK.
 
 ### ✅ Davet Sistemi Genişletmesi (Tamamlandı — commit `b113976`)
 - [x] Kısa + yüksek entropili davet kodu (12-char Crockford Base32, `RandomNumberGenerator`, ~60 bit)
@@ -223,14 +223,9 @@
 - [x] Kısa geçerlilik: 48 saat (`AddHours(48)`)
 - [x] Koç arayüzüne "Veli Davet Et" formu (e-posta → davet oluştur → paylaşım paneli)
 - [x] `/invites/{token}/accept` route düzeltmesi + `InviteAcceptPage` (fullName + fetch) düzeltmesi
+- [x] EmailService kaldırıldı (e-posta gönderimi gereksiz — link/kod yeterli)
 
-### 📌 SMTP (hâlâ bekliyor — gerçek e-posta gönderimi için)
-
-- [ ] SMTP provider seç: Resend (önerilen — ücretsiz 100/gün) veya SendGrid
-- [ ] EmailService.cs tamamla — SMTP bağlantısı kur, secret'ları ekle
-- [ ] Davet maili HTML şablonu oluştur
-- [ ] Haftalık özet maili — Cron'a her Pazar 09:00 görevi ekle
-- [ ] Gerçek adrese test maili gönder ve linki doğrula
+> ✅ E-posta gönderimi tamamen kaldırıldı (EmailService silindi). Davet kodu + linki yeterli.
 
 ---
 
