@@ -87,7 +87,6 @@ try
     });
 
     // Background Services
-    // builder.Services.AddHostedService<MentorumApi.Services.OverdueHomeworkJob>(); // İptal edildi: Hesaplanan kolon (Computed) kullanılacak.
 
     var app = builder.Build();
 

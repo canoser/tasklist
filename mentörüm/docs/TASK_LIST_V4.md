@@ -12,11 +12,11 @@
 |---|---|---|
 | Backend API | ✅ Düzeltildi | Fly.io üzerinde canlıda (HTTPS sertifikası tamam) |
 | Frontend (Tümü) | ✅ Düzeltildi | Cloudflare Pages üzerinde canlıda |
-| Migration | ✅ Düzeltildi | Neon DB üzerinde başarıyla çalıştırıldı |
+| Migration | ✅ 001-005 çalıştırıldı | Neon DB üzerinde başarıyla çalıştırıldı |
 | Mobil Uyumluluk | ✅ Düzeltildi | 100dvh uygulandı (Aşama 17) |
 | Altyapı (Fly, Neon) | ✅ Kuruldu | Aşama 19 & 20 tamamlandı |
 | CI/CD | ✅ Kuruldu | deploy-mentorum.yml (Aşama 21) |
-| Test | Bekliyor | Aşama 23 Canlı Ortam Smoke Testi Bekleniyor |
+| Test | 🔄 Aşama 23 yapılıyor | Canlı Ortam Smoke Testi |
 | Capacitor (Native) | Faz 2 | Android/iOS paketleme henüz yok |
 
 ---
@@ -174,15 +174,15 @@
 
 ---
 
-## Aşama 22: Veritabanı Seed Verisi
+## Aşama 22: Veritabanı Seed Verisi (Migrations/004_Curriculum2026.sql — commit d974e18)
 
 **Neden:** Müfredat konuları olmadan koç ödev atamasında konu seçemez — zorunlu.
 
-- [ ] Backend/MentorumApi/Data/Seeds/Curriculum2026.sql oluştur:
+- [x] Backend/MentorumApi/Data/Seeds/Curriculum2026.sql oluştur:
   - 8. Sınıf (LGS): Matematik, Türkçe, Fen, İnkılap, İngilizce
   - 12. Sınıf (TYT/AYT): Matematik, Türk Dili, Fizik, Kimya, Biyoloji, Tarih
-- [ ] Subjects tablosu seed: Sistem dersleri başlangıçta yüklenecek
-- [ ] Production Neon DB'de seed script'leri tek seferlik elle çalıştır
+- [x] Subjects tablosu seed: Sistem dersleri başlangıçta yüklenecek
+- [x] Production Neon DB'de seed script'leri tek seferlik elle çalıştır (fly deploy / release_command ile otomatik çözüldü)
 
 ---
 
@@ -194,7 +194,7 @@
 - [ ] Token refresh çalışıyor mu?
 - [ ] Google OAuth callback URL doğru mu?
 
-### 23.2 Kritik İş Akışları
+### 23.2 Kritik İş Akışları (Ödev atama kodları f6a85cd ile düzeltildi, hazır test edilecek)
 - [ ] Öğrenci ekle → Veli davet kodu/linki çalışıyor mu?
 - [ ] Ödev ata → Öğrenci panelinde görünüyor mu?
 - [ ] Tamamladım → Koça bildirim gidiyor mu?
