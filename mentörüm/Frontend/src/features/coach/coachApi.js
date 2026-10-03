@@ -20,6 +20,49 @@ export const useSendInvite = () => {
   });
 };
 
+export const useLevels = () => {
+  return useQuery({
+    queryKey: ['curriculum', 'levels'],
+    queryFn: async () => {
+      const response = await apiClient.get('/curriculum/levels');
+      return response || [];
+    },
+  });
+};
+
+export const useSubjects = (level) => {
+  return useQuery({
+    queryKey: ['curriculum', 'subjects', level],
+    queryFn: async () => {
+      const qs = level ? `?level=${encodeURIComponent(level)}` : '';
+      const response = await apiClient.get(`/curriculum/subjects${qs}`);
+      return response || [];
+    },
+    enabled: !!level,
+  });
+};
+
+export const useTopics = (subjectId, grade) => {
+  return useQuery({
+    queryKey: ['curriculum', 'topics', subjectId, grade],
+    queryFn: async () => {
+      const qs = grade ? `?grade=${encodeURIComponent(grade)}` : '';
+      const response = await apiClient.get(`/curriculum/subjects/${subjectId}/topics${qs}`);
+      return response || [];
+    },
+    enabled: !!subjectId,
+  });
+};
+
+export const useSeedCurriculum = () => {
+  return useMutation({
+    mutationFn: async () => {
+      const response = await apiClient.post('/curriculum/seed');
+      return response;
+    },
+  });
+};
+
 export const useReportsOverview = () => {
   return useQuery({
     queryKey: ['coach', 'reports', 'overview'],

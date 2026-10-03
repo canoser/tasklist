@@ -1,6 +1,7 @@
 using Dapper;
 using MentorumApi.Data;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MentorumApi.DTOs;
 
 namespace MentorumApi.Endpoints;
@@ -11,23 +12,37 @@ public static class CurriculumEndpoints
     {
         var group = app.MapGroup("/api/v1/curriculum").RequireAuthorization();
 
-        group.MapGet("/subjects", async (DbConnectionFactory db) =>
+        group.MapGet("/levels", async ([FromServices] CurriculumRepository repo) =>
         {
-            using var conn = db.CreateConnection();
-            var subjects = await conn.QueryAsync<dynamic>("SELECT id as Id, name as Name, grade as Grade FROM curriculum_subjects ORDER BY grade, name");
+            var levels = await repo.GetLevelsAsync();
+            return Results.Ok(levels);
+        });
+
+        group.MapGet("/subjects", async ([FromServices] CurriculumRepository repo, [FromQuery] string? level) =>
+        {
+            var subjects = string.IsNullOrEmpty(level)
+                ? await repo.GetAllSubjectsAsync()
+                : await repo.GetSubjectsByLevelAsync(level);
             return Results.Ok(subjects);
         });
 
-        group.MapGet("/subjects/{subjectId:guid}/topics", async (Guid subjectId, DbConnectionFactory db) =>
+        group.MapGet("/subjects/{subjectId:guid}/topics", async (Guid subjectId, [FromServices] CurriculumRepository repo, [FromQuery] string? grade) =>
         {
-            using var conn = db.CreateConnection();
-            var topics = await conn.QueryAsync<dynamic>(@"
-                SELECT id as Id, name as Name, parent_topic_id as ParentTopicId, order_index as OrderIndex 
-                FROM curriculum_topics 
-                WHERE subject_id = @SubjectId 
-                ORDER BY order_index
-            ", new { SubjectId = subjectId });
+            var topics = await repo.GetTopicsBySubjectAsync(subjectId, grade);
             return Results.Ok(topics);
         });
+
+        // Müfredatı yenile (seed'i tekrar çalıştır — idempotent). "Otomatik güncelle" butonu için.
+        group.MapPost("/seed", async ([FromServices] DbConnectionFactory db) =>
+        {
+            using var conn = db.CreateConnection();
+            var seedPath = Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "004_Curriculum2026.sql");
+            if (!File.Exists(seedPath))
+                return Results.NotFound(new { error = "Müfredat seed dosyası bulunamadı." });
+
+            var sql = File.ReadAllText(seedPath);
+            conn.Execute(sql);
+            return Results.Ok(new { message = "Müfredat başarıyla güncellendi." });
+        }).RequireAuthorization("RequireCoachRole");
     }
 }

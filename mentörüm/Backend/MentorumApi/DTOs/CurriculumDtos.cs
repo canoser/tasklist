@@ -15,7 +15,7 @@ namespace MentorumApi.DTOs
     {
         public Guid Id { get; set; }
         public Guid SubjectId { get; set; }
-        public int Grade { get; set; }
+        public string? Grade { get; set; } // '4'..'12', 'TYT', 'AYT'
         public string? CurriculumType { get; set; } // NEW, OLD
         public int? UnitNumber { get; set; }
         public string? UnitName { get; set; }

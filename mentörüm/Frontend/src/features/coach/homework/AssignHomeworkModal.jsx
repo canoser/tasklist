@@ -3,30 +3,10 @@ import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
 import styles from './AssignHomeworkModal.module.css';
-import { useAssignHomework } from '../coachApi';
-
-// Fake Data for Tree Select
-const MOCK_CURRICULUM = [
-  {
-    id: 'math',
-    name: 'Matematik',
-    topics: [
-      { id: 'math-1', name: 'Limit ve Süreklilik' },
-      { id: 'math-2', name: 'Türev' },
-      { id: 'math-3', name: 'İntegral' }
-    ]
-  },
-  {
-    id: 'fizik',
-    name: 'Fizik',
-    topics: [
-      { id: 'fizik-1', name: 'Kuvvet ve Hareket' },
-      { id: 'fizik-2', name: 'Elektrik ve Manyetizma' }
-    ]
-  }
-];
+import { useAssignHomework, useLevels, useSubjects, useTopics, useSeedCurriculum } from '../coachApi';
 
 const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
+  const [level, setLevel] = useState('');
   const [subject, setSubject] = useState('');
   const [topic, setTopic] = useState('');
   const [title, setTitle] = useState('');
@@ -34,10 +14,19 @@ const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
   const [dueDate, setDueDate] = useState('');
 
   const assignHomeworkMutation = useAssignHomework();
+  const seedMutation = useSeedCurriculum();
+  const { data: levels = [] } = useLevels();
+  const { data: subjects = [] } = useSubjects(level || undefined);
+  const { data: topics = [] } = useTopics(subject || undefined, level || undefined);
 
   if (!isOpen) return null;
 
-  const currentSubjectObj = MOCK_CURRICULUM.find(s => s.id === subject);
+  const handleSeed = () => {
+    seedMutation.mutate(undefined, {
+      onSuccess: () => alert('Müfredat güncellendi.'),
+      onError: () => alert('Müfredat güncellenemedi.')
+    });
+  };
 
   const handleAssign = () => {
     if (!title || !dueDate) {
@@ -77,9 +66,26 @@ const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
         </div>
         
         <div className={styles.modalBody}>
-          {/* Müfredat Ağacı (Tree Select Simülasyonu) */}
+          {/* Seviye (4-12, TYT, AYT) → Ders → Konu */}
           <div className={styles.formGroup}>
-            <label className={styles.label}>Ders (Müfredat)</label>
+            <label className={styles.label}>Seviye / Sınav</label>
+            <select 
+              className={styles.select} 
+              value={level} 
+              onChange={e => {
+                setLevel(e.target.value);
+                setSubject('');
+                setTopic('');
+              }}
+              disabled={assignHomeworkMutation.isPending}
+            >
+              <option value="">-- Seviye Seç --</option>
+              {levels.map(l => <option key={l} value={l}>{l}</option>)}
+            </select>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Ders</label>
             <select 
               className={styles.select} 
               value={subject} 
@@ -87,12 +93,10 @@ const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
                 setSubject(e.target.value);
                 setTopic('');
               }}
-              disabled={assignHomeworkMutation.isPending}
+              disabled={!level || assignHomeworkMutation.isPending}
             >
               <option value="">-- Ders Seç --</option>
-              {MOCK_CURRICULUM.map(s => (
-                <option key={s.id} value={s.id}>{s.name}</option>
-              ))}
+              {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
           </div>
 
@@ -104,10 +108,8 @@ const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
               onChange={e => setTopic(e.target.value)}
               disabled={!subject || assignHomeworkMutation.isPending}
             >
-              <option value="">-- Alt Konu Seç --</option>
-              {currentSubjectObj?.topics.map(t => (
-                <option key={t.id} value={t.id}>{t.name}</option>
-              ))}
+              <option value="">-- Konu Seç --</option>
+              {topics.map(t => <option key={t.id} value={t.id}>{t.unitName} → {t.topicName}</option>)}
             </select>
           </div>
 
@@ -140,6 +142,10 @@ const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
             onChange={e => setDueDate(e.target.value)}
             disabled={assignHomeworkMutation.isPending}
           />
+
+          <Button variant="ghost" size="sm" onClick={handleSeed} disabled={seedMutation.isPending}>
+            {seedMutation.isPending ? 'Güncelleniyor...' : '🔄 Müfredatı Güncelle'}
+          </Button>
 
         </div>
 

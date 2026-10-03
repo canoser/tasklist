@@ -14,7 +14,26 @@ namespace MentorumApi.Data
             return await connection.QueryAsync<SubjectDto>(sql);
         }
 
-        public async Task<IEnumerable<CurriculumTopicDto>> GetTopicsBySubjectAsync(Guid subjectId, int? grade)
+        public async Task<IEnumerable<string>> GetLevelsAsync()
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            var sql = "SELECT DISTINCT grade FROM curriculum_topics WHERE is_active = 1 ORDER BY grade";
+            return await connection.QueryAsync<string>(sql);
+        }
+
+        public async Task<IEnumerable<SubjectDto>> GetSubjectsByLevelAsync(string? level)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            var sql = @"
+                SELECT DISTINCT s.id, s.name, s.short_code AS ShortCode, s.default_color AS DefaultColor, s.is_system_subject AS IsSystemSubject
+                FROM subjects s
+                INNER JOIN curriculum_topics ct ON ct.subject_id = s.id
+                WHERE ct.is_active = 1 AND (@Level IS NULL OR ct.grade = @Level)
+                ORDER BY s.name";
+            return await connection.QueryAsync<SubjectDto>(sql, new { Level = level });
+        }
+
+        public async Task<IEnumerable<CurriculumTopicDto>> GetTopicsBySubjectAsync(Guid subjectId, string? grade)
         {
             using var connection = _connectionFactory.CreateConnection();
             var sql = @"
@@ -24,7 +43,7 @@ namespace MentorumApi.Data
                 FROM curriculum_topics 
                 WHERE subject_id = @SubjectId AND is_active = 1";
             
-            if (grade.HasValue)
+            if (!string.IsNullOrEmpty(grade))
             {
                 sql += " AND grade = @Grade";
             }
