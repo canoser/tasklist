@@ -408,3 +408,25 @@ Hatta mevcut `CrossTenantSecurityTests.cs`'in sorunu yalnızca "mock" olması de
 5. Sonra Aşama 19 → 20 → 23.
 
 > **Mutabakat:** Üç ajan da "canlıya geçmeden önce zorunlu bir bug-fix + gerçek entegrasyon testi evresi" gerektiği konusunda hemfikir. Bu evre, `TASK_LIST_V4.md`'e **Aşama 17.5** olarak eklenmeli.
+
+---
+
+## 🤖 Cline (DeepSeek V4 Pro) — Oturum Kapanış Notu
+> **Tarih/Saat:** 4 Ekim 2026, 02:16 (Türkiye saati, UTC+3)
+> **Amaç:** 2 Ekim'deki tespit raporundan bu yana yapılanları ve kalan işleri gelecek ajanlar için özetle.
+
+### Bu süreçte yapılanlar (2 Ekim → 4 Ekim)
+- Tüm KRİTİK/YÜKSEK hatalar düzeltildi (Aşama 17.5): migration konsolidasyonu, backend endpoint'leri, frontend `.data`, Testcontainers testi.
+- Altyapı canlıya alındı: Neon (ayrı proje) + Fly.io + Cloudflare Pages. SSL + DNS + CI/CD kuruldu.
+- **Müfredat sistemi (Aşama 22, `004_Curriculum2026.sql`)**: yıl + tip (NEW=Maarif / OLD=eski) + seviye (4..12, TYT, AYT) modeli. `curriculum_topics.grade` TEXT'e çevrildi (idempotent DO bloğu). `POST /curriculum/seed` + "Müfredatı Güncelle" butonu eklendi.
+- **Ödev atama düzeltildi (`005_HomeworkDirect.sql` + `f6a85cd`)**: şablonsuz doğrudan atama + snapshot. **Hard-delete YOK** (çözülen ödevler istatistik için korunur; `ON DELETE SET NULL`).
+- **E-posta KALDIRILDI (`8f13a22`)**: davet linki/kodu yeterli (WhatsApp + kopyala-yapıştır). `EmailService` silindi.
+- Davet sistemi: 12-char Crockford Base32 kod + link + 48h geçerlilik + yüksek entropi.
+
+### Dersler / Gelecek ajanlar için gotcha'lar
+1. **`BeginTransaction()` öncesi `conn.Open()` ŞART**: Dapper `ExecuteAsync/QueryAsync` bağlantıyı otomatik açıp KAPATIR → transaction'a gelince bağlantı kapalı → "Connection is not open" (500). `/register`'da yakalandı (`6fbedb6`). Yeni transaction yazarken DAİMA `conn.Open()` (veya `if (State != Open) conn.Open()`) ekle.
+2. **Migration'lar idempotent olmalı**: `release_command` her deploy'da çalıştırır. `CREATE TABLE IF NOT EXISTS`, `ADD COLUMN IF NOT EXISTS`, `ON CONFLICT DO NOTHING`, `DO $$ ... IF EXISTS` kullan.
+3. **CurriculumEndpoints başta bozuktu** (`curriculum_subjects` + eski kolonlar) → doğrusu `CurriculumRepository` kullanmak.
+
+### Kalan tek iş
+**Aşama 23 — Canlı UI Smoke Testi (tarayıcı)**: C1 (kayıt/giriş), C2 (ödev ata → tamamla → **silinmesin**), C3 (davet kodu/linki), C4 (IDOR). API bazında C2 (Seviye→Ders→Konu) doğrulandı; tarayıcı testi bekliyor.
