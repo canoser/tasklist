@@ -39,6 +39,7 @@ namespace MentorumApi.Endpoints
                     UpdatedAt = DateTime.UtcNow
                 };
 
+                conn.Open();
                 using var tx = conn.BeginTransaction();
                 try 
                 {
