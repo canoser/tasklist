@@ -225,6 +225,14 @@ namespace MentorumApi.Endpoints
                 {
                     return Results.Unauthorized();
                 }
+                else if (string.IsNullOrEmpty(user.GoogleId))
+                {
+                    // Existing user logged in with Google, link accounts
+                    user.GoogleId = payload.Subject;
+                    if (conn.State != System.Data.ConnectionState.Open) conn.Open();
+                    await conn.ExecuteAsync("UPDATE users SET google_id = @GoogleId, updated_at = @UpdatedAt WHERE id = @Id", 
+                        new { GoogleId = user.GoogleId, UpdatedAt = DateTime.UtcNow, Id = user.Id });
+                }
 
                 var token = jwt.GenerateAccessToken(user);
                 var refreshToken = jwt.GenerateRefreshToken();

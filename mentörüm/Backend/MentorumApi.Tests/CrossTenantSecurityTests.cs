@@ -60,13 +60,13 @@ namespace MentorumApi.Tests
             using var conn = new Npgsql.NpgsqlConnection(connectionString);
             await conn.OpenAsync();
             
-            var schema1Path = Path.Combine(AppContext.BaseDirectory, "../../../../MentorumApi/Data/Migrations/001_InitialSchema.sql");
-            var schema1 = await File.ReadAllTextAsync(schema1Path);
-            await conn.ExecuteAsync(schema1);
-
-            var schema2Path = Path.Combine(AppContext.BaseDirectory, "../../../../MentorumApi/Data/Migrations/002_Phase10_11.sql");
-            var schema2 = await File.ReadAllTextAsync(schema2Path);
-            await conn.ExecuteAsync(schema2);
+            var migrationsPath = Path.Combine(AppContext.BaseDirectory, "../../../../MentorumApi/Data/Migrations");
+            var migrationFiles = Directory.GetFiles(migrationsPath, "*.sql").OrderBy(f => f);
+            foreach (var file in migrationFiles)
+            {
+                var sql = await File.ReadAllTextAsync(file);
+                await conn.ExecuteAsync(sql);
+            }
 
             // Coach A (1111...), Coach B (2222...)
             // Student A (3333...) is assigned to Coach B.
