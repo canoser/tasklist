@@ -13,7 +13,12 @@ using MentorumApi.Endpoints;
 // Dapper: snake_case kolonları (örn. password_hash) PascalCase özelliklere (PasswordHash) eşle. Login/refresh/google SELECT * için zorunlu.
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
-Env.TraversePath().Load();
+// .env yalnızca gerekli değişkenler HENÜZ set edilmemişse yüklenir.
+// (Test/CI'da DATABASE_URL zaten Testcontainers'a set edilir; .env bunu EZMEMELİ.)
+if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DATABASE_URL")))
+{
+    Env.TraversePath().Load();
+}
 
 // 2. Serilog yapılandırması
 Log.Logger = new LoggerConfiguration()

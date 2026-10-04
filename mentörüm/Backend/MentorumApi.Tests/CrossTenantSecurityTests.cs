@@ -56,6 +56,9 @@ namespace MentorumApi.Tests
             await PostgreSqlContainer.StartAsync();
             var connectionString = PostgreSqlContainer.GetConnectionString();
             Environment.SetEnvironmentVariable("DATABASE_URL", connectionString);
+            Environment.SetEnvironmentVariable("JWT_SECRET", "dummy_secret_for_tests_that_is_long_enough_for_hmacsha256");
+            Environment.SetEnvironmentVariable("JWT_ISSUER", "TestIssuer");
+            Environment.SetEnvironmentVariable("JWT_AUDIENCE", "TestAudience");
 
             using var conn = new Npgsql.NpgsqlConnection(connectionString);
             await conn.OpenAsync();
