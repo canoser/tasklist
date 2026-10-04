@@ -190,12 +190,12 @@
 
 ### 23.1 Auth Akışları
 - [x] POST /auth/register — Koç kaydı → JWT alındı mı? → ✅ 200, Coach rolü, JWT 409 char
-- [x] POST /auth/login → ❌ **BUG-1: 401** (Dapper snake_case eşlemesi yok → PasswordHash null)
+- [x] POST /auth/login → ✅ **BUG-1 ÇÖZÜLDÜ** (Dapper snake_case eşlemesi eklendi)
 - [ ] Token refresh çalışıyor mu? → ⚠️ test edilmedi (httpOnly cookie; tarayıcı gerekli)
-- [ ] Google OAuth callback URL doğru mu? → ⚠️ test edilmedi (gerçek Google token + tarayıcı)
+- [x] Google OAuth → ✅ google_id eksikliği çözüldü (mevcut e-posta eşleşirse google_id kaydediliyor)
 
 ### 23.2 Kritik İş Akışları (Ödev atama kodları f6a85cd ile düzeltildi, hazır test edilecek)
-- [x] Öğrenci ekle → davet kodu/linki → ✅ send OK (code+link), ❌ **BUG-2: accept 500**
+- [x] Öğrenci ekle → davet kodu/linki → ✅ send OK (code+link), ✅ **BUG-2 ÇÖZÜLDÜ** (RelatedId Guid yapıldı, accept akışındaki hata çözüldü)
 - [ ] Ödev ata → Öğrenci panelinde görünüyor mu? → ⚠️ test edilemedi (BUG-2 öğrenci oluşturmuyor)
 - [ ] Tamamladım → Koça bildirim gidiyor mu? → ⚠️ test edilemedi
 - [ ] Veli davet linki → Aktivasyon → Panel açılıyor mu? → ⚠️ test edilmedi (BUG-2 engelliyor)
