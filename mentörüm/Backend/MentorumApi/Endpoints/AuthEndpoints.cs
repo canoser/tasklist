@@ -92,7 +92,7 @@ namespace MentorumApi.Endpoints
             {
                 using var conn = db.CreateConnection();
                 var user = await conn.QuerySingleOrDefaultAsync<User>(
-                    "SELECT * FROM users WHERE email = @Email AND is_active = 1", new { Email = req.Email.ToLower() });
+                    "SELECT id, email, password_hash, google_id, role, full_name, avatar_url, is_active, created_at, updated_at FROM users WHERE email = @Email AND is_active = 1", new { Email = req.Email.ToLower() });
 
                 if (user == null || user.PasswordHash == null || !BCrypt.Net.BCrypt.Verify(req.Password, user.PasswordHash))
                     return Results.Unauthorized();
@@ -139,7 +139,7 @@ namespace MentorumApi.Endpoints
                     return Results.Unauthorized();
 
                 var user = await conn.QuerySingleOrDefaultAsync<User>(
-                    "SELECT * FROM users WHERE id = @Id AND is_active = 1", new { Id = tokenRecord.UserId });
+                    "SELECT id, email, google_id, role, full_name, avatar_url, is_active, created_at, updated_at FROM users WHERE id = @Id AND is_active = 1", new { Id = tokenRecord.UserId });
                 
                 if (user == null) return Results.Unauthorized();
 
@@ -182,7 +182,7 @@ namespace MentorumApi.Endpoints
 
                 using var conn = db.CreateConnection();
                 var user = await conn.QuerySingleOrDefaultAsync<User>(
-                    "SELECT * FROM users WHERE email = @Email", new { Email = payload.Email });
+                    "SELECT id, email, google_id, role, full_name, avatar_url, is_active, created_at, updated_at FROM users WHERE email = @Email", new { Email = payload.Email });
 
                 if (user == null)
                 {
@@ -254,6 +254,6 @@ namespace MentorumApi.Endpoints
 
 public class RefreshTokenQueryModel
 {
-    public string UserId { get; set; } = string.Empty;
+    public Guid UserId { get; set; }
     public DateTime ExpiresAt { get; set; }
 }

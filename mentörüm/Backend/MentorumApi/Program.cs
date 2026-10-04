@@ -10,6 +10,9 @@ using MentorumApi.Middleware;
 using MentorumApi.Endpoints;
 
 // 1. .env dosyasını yükle
+// Dapper: snake_case kolonları (örn. password_hash) PascalCase özelliklere (PasswordHash) eşle. Login/refresh/google SELECT * için zorunlu.
+Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+
 Env.TraversePath().Load();
 
 // 2. Serilog yapılandırması

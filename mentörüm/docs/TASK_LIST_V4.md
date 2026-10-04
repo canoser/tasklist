@@ -16,7 +16,7 @@
 | Mobil Uyumluluk | ✅ Düzeltildi | 100dvh uygulandı (Aşama 17) |
 | Altyapı (Fly, Neon) | ✅ Kuruldu | Aşama 19 & 20 tamamlandı |
 | CI/CD | ✅ Kuruldu | deploy-mentorum.yml (Aşama 21) |
-| Test | 🔄 Aşama 23 yapılıyor | Canlı Ortam Smoke Testi |
+| Test | ❌ Aşama 23 yapıldı — 2 kritik bug | Smoke test: login 401 + davet kabulü 500 |
 | Capacitor (Native) | Faz 2 | Android/iOS paketleme henüz yok |
 
 ---
@@ -189,26 +189,26 @@
 ## Aşama 23: Smoke Test (Canlı Ortam Doğrulama)
 
 ### 23.1 Auth Akışları
-- [ ] POST /auth/register — Koç kaydı → JWT alındı mı?
-- [ ] POST /auth/login → Dashboard açılıyor mu?
-- [ ] Token refresh çalışıyor mu?
-- [ ] Google OAuth callback URL doğru mu?
+- [x] POST /auth/register — Koç kaydı → JWT alındı mı? → ✅ 200, Coach rolü, JWT 409 char
+- [x] POST /auth/login → ❌ **BUG-1: 401** (Dapper snake_case eşlemesi yok → PasswordHash null)
+- [ ] Token refresh çalışıyor mu? → ⚠️ test edilmedi (httpOnly cookie; tarayıcı gerekli)
+- [ ] Google OAuth callback URL doğru mu? → ⚠️ test edilmedi (gerçek Google token + tarayıcı)
 
 ### 23.2 Kritik İş Akışları (Ödev atama kodları f6a85cd ile düzeltildi, hazır test edilecek)
-- [ ] Öğrenci ekle → Veli davet kodu/linki çalışıyor mu?
-- [ ] Ödev ata → Öğrenci panelinde görünüyor mu?
-- [ ] Tamamladım → Koça bildirim gidiyor mu?
-- [ ] Veli davet linki → Aktivasyon → Panel açılıyor mu?
-- [ ] Takvim → Ödevler doğru tarihlerde görünüyor mu?
+- [x] Öğrenci ekle → davet kodu/linki → ✅ send OK (code+link), ❌ **BUG-2: accept 500**
+- [ ] Ödev ata → Öğrenci panelinde görünüyor mu? → ⚠️ test edilemedi (BUG-2 öğrenci oluşturmuyor)
+- [ ] Tamamladım → Koça bildirim gidiyor mu? → ⚠️ test edilemedi
+- [ ] Veli davet linki → Aktivasyon → Panel açılıyor mu? → ⚠️ test edilmedi (BUG-2 engelliyor)
+- [ ] Takvim → Ödevler doğru tarihlerde görünüyor mu? → ⚠️ test edilmedi (tarayıcı gerekli)
 
 ### 23.3 Güvenlik (IDOR) Kontrolleri
-- [ ] Öğrenci token'ı → başka öğrencinin ödevi → 403 mü?
-- [ ] Veli token'ı → koç notları → 403 mü?
-- [ ] Koç token'ı → başka koçun öğrencisi → 404 mü?
+- [x] Öğrenci token'ı → başka öğrencinin ödevi → ✅ unauthenticated 401 (öğrenci token üretilemedi, kısmi)
+- [ ] Veli token'ı → koç notları → 403 mü? → ⚠️ test edilmedi (veli oluşturulamadı)
+- [x] Koç token'ı → başka koçun öğrencisi → ✅ 400 "Öğrenci bulunamadı veya size ait değil." (IDOR koruması çalışıyor)
 
 ### 23.4 Bildirim ve Cron
-- [ ] Fly logs'ta OverdueHomeworkJob log'u görünüyor mu?
-- [ ] due_date geçmiş ödev → cron sonrası OVERDUE oluyor mu?
+- [ ] Fly logs'ta OverdueHomeworkJob log'u görünüyor mu? → ⚠️ flyctl erişimi yok (manuel)
+- [ ] due_date geçmiş ödev → cron sonrası OVERDUE oluyor mu? → ⚠️ test edilmedi (kod `/homework/me`'de anlık OVERDUE dönüyor)
 
 ---
 
@@ -271,7 +271,21 @@
 
 ## Sıradaki Görev
 
-**Kalan tek iş: Aşama 23 — Canlı UI Smoke Testi (tarayıcı).**
+**Aşama 23 Smoke Testi YAPILDI (5 Ekim 2026) — 2 kritik bug bulundu.**
+
+### 🐞 Kritik Bug Raporu
+1. **BUG-1 — E-posta+şifre girişi çalışmıyor (401).** Login `SELECT * FROM users` → Dapper, `password_hash` → `PasswordHash` eşlemesini yapamıyor (projede `DefaultTypeMap.MatchNamesWithUnderscores = true` YOK). Sonuç: `PasswordHash == null` → her giriş 401. Google giriş de etkilenir (`is_active` → `IsActive`=0 → 401). **Çözüm:** `Program.cs`'e `Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;` ekle VEYA login sorgusunu açık alias'la yaz (`password_hash AS PasswordHash`, `is_active AS IsActive`).
+2. **BUG-2 — Davet kabulü 500.** `POST /invites/{code}/accept` → 500. Muhtemel sebep: `InviteQueryModel.RelatedId` (`string?`) → `INSERT INTO students (coach_id UUID)`'a string geçince UUID tip uyuşmazlığı. **Çözüm:** `RelatedId`'yi `Guid?` yap.
+
+### ✅ Doğrulandı
+- Kayıt (`/auth/register`) → 200, Coach, JWT ✓ · Davet gönderme (`/invites/send`) → code+link ✓
+- IDOR: unauthenticated → 401 ✓ · koç başka öğrenci ID → 400 "size ait değil" ✓
+- Backend `/health` → 200, DB bağlı ✓ · Frontend yükleniyor ✓
+
+### ⚠️ Test edilemedi (engel/manüel)
+- Token refresh + Google OAuth (tarayıcı) · Ödev ata/tamamla/silinmesin (BUG-2 engelliyor) · Veli akışı + takvim + cron/OVERDUE (Fly log erişimi yok)
+
+> **Sonuç:** V4 kodu tamam; ama canlıda 2 kritik auth bug'ı var. Önce BUG-1 + BUG-2 düzeltilmeli, sonra kalan tarayıcı testleri tekrarlanmalı.
 > Tamamlananlar (2 Ekim 2026): Aşama 17-22 + Aşama 24 (e-posta KALDIRILDI → davet linki/kodu yeterli) + ödev atama düzeltmesi (`f6a85cd`) + AuthEndpoints `conn.Open()` düzeltmesi (`6fbedb6`). Migration 004+005 canlıda uygulandı ve doğrulandı. GitHub ↔ Fly senkron, çalışma ağacı temiz.
 
 **Aşama 23 durumu:**

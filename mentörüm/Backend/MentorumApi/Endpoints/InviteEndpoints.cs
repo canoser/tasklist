@@ -94,8 +94,14 @@ namespace MentorumApi.Endpoints
                 if (invite == null || invite.IsUsed == 1 || invite.ExpiresAt < DateTime.UtcNow)
                     return Results.BadRequest(new { error = "Geçersiz, kullanılmış veya süresi dolmuş davet." });
 
+                if (invite.Role == "Student" && invite.RelatedId == null)
+                    return Results.BadRequest(new { error = "Öğrenci davetinde koç bilgisi eksik." });
+
                 using var conn = db.CreateConnection();
                 conn.Open(); // Transaction için bağlantı açık olmalı
+
+                var emailExists = await conn.ExecuteScalarAsync<int>("SELECT COUNT(1) FROM users WHERE email = @Email", new { Email = invite.Email });
+                if (emailExists > 0) return Results.Conflict(new { error = "Bu e-posta zaten kayıtlı." });
 
                 var userId = Guid.NewGuid();
                 var user = new User 
@@ -140,7 +146,12 @@ namespace MentorumApi.Endpoints
                     }
 
                     // Token'ı kullanıldı işaretle
-                    await conn.ExecuteAsync("UPDATE invite_tokens SET is_used = 1 WHERE id = @Id", new { Id = invite.Id }, tx);
+                    var inviteClaimed = await conn.ExecuteAsync("UPDATE invite_tokens SET is_used = 1 WHERE id = @Id AND is_used = 0", new { Id = invite.Id }, tx);
+                    if (inviteClaimed == 0)
+                    {
+                        tx.Rollback();
+                        return Results.BadRequest(new { error = "Bu davet zaten kullanılmış." });
+                    }
                     tx.Commit();
                 }
                 catch
@@ -190,7 +201,7 @@ public class InviteQueryModel
     public Guid Id { get; set; }
     public string Email { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
-    public string? RelatedId { get; set; }
+    public Guid? RelatedId { get; set; }
     public DateTime ExpiresAt { get; set; }
     public int IsUsed { get; set; }
 }
