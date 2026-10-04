@@ -1,6 +1,7 @@
 # 🎓 Mentörüm — Ürün Planı (URUN_PLANI.md)
 > **Versiyon:** 1.0 — 23 Eylül 2026  
-> **Platform:** dersmatris.com (Web + Mobil PWA, ileride Capacitor)
+> **Platform:** mentorum.dersmatris.com (Web + Kurulabilir PWA + Capacitor)
+> **V5 (4 Ekim 2026):** Okul/Dershane Modeli eklendi — ayrıntılı tasarım `V5_OKUL_MODELI.md`, görev listesi `TASK_LIST_V5.md`.
 
 ---
 
@@ -38,22 +39,30 @@ ve müfredata dayalı konu takibini tek bir profesyonel platformdan yönetmesini
 ### 1.3 MVP Kapsamı (İlk Yayın)
 
 DAHIL:
-- Koç paneli (tablet-first)
+- Koç paneli (tablet-first) — "müdür" rolü: ders/öğretmen/öğrenci/grup/program yönetimi
 - Öğrenci paneli (mobil-first)
 - Veli paneli (mobil, salt okunur)
 - Ödev atama ve takip (ortak şablon, kişisel durum)
 - Müfredat tabanlı konu listesi (2026-2027)
 - Takvim görünümü (gün/hafta/ay)
 - Bildirimler (uygulama içi + push)
-- Google OAuth + e-posta giriş
+- Google OAuth + e-posta giriş (öğretmen dahil)
+- Öğretmen paneli (mobil-first) — kendi dersine ait öğrencileri koçun izin verdiği ölçüde görür/yönetir
+- Ders (Course) yönetimi: öğretmenli veya öğretmensiz (kendi kendine çalışma)
+- Öğrenci grupları (grup bazlı atama/ders/program)
+- Ödev atama ve takip (tek öğrenci / grup / ders bazlı)
+- Haftalık program (sürükle-bırak)
+- Ders kaynağı takibi (kitap sayfası, video serisi, soru seti — ilerleme %)
+- Kurulabilir uygulama (PWA: tablet/telefon/masaüstü) + Capacitor (mağaza, Faz 2)
 
 KAPSAM DIŞI (Sonraki Versiyon):
 - AI destekli analiz
 - Ödeme/abonelik sistemi
 - Canlı ders/video görüşme
-- Birden fazla koç — bir öğrenci
+- Birden fazla koç — bir öğrenci (öğretmenler koçun ALTINDA çalışır, bağımsız değil)
 - Dosya/PDF ek yükleme
 - SMS bildirimleri
+- Soru havuzu (hazır soru bankası — içerik yatırımı, Faz 3)
 
 ---
 
@@ -85,18 +94,30 @@ VELİ:
 - Birden fazla çocuğu varsa hepsini görebilir
 - Cihaz: Telefon
 
+ÖĞRETMEN:
+- Koç tarafından davet edilir (e-posta/Google ile giriş)
+- Yalnızca atandığı DERSİN öğrencilerini görür
+- Görünürlük/yetki, koçun ders bazında verdiği izinlerle sınırlıdır (bkz. `V5_OKUL_MODELI.md` §2.3)
+- Başka dersin veya diğer öğrencilerin verisine erişemez
+- Ödev/sınav girişi, koçun açtığı izinlere bağlıdır
+- Cihaz: Telefon/tablet
+
 ### 2.2 Yetki Matrisi
 
-| Veri                  | Koç | Öğrenci | Veli     |
-|-----------------------|-----|---------|----------|
-| Öğrenci adı/sınıfı    | ✅  | ✅(kendi)| ✅(çocuğu)|
-| Veli telefon/e-posta  | ✅  | ❌       | ✅(kendi) |
-| KOÇ ÖZEL NOTLARI      | ✅  | ❌       | ❌        |
-| Geçmiş sınav notları  | ✅  | ✅(kendi)| ✅(çocuğu)|
-| Hedef bilgisi         | ✅  | ✅(kendi)| ✅(çocuğu)|
-| Ödev listesi          | ✅  | ✅(kendi)| ✅(çocuğu)|
-| Diğer öğrenci verisi  | ✅  | ❌       | ❌        |
-| Takvim                | ✅(tüm)| ✅(kendi)| ✅(çocuğu)|
+| Veri                  | Koç | Öğretmen | Öğrenci | Veli     |
+|-----------------------|-----|----------|---------|----------|
+| Öğrenci adı/sınıfı    | ✅  | ⚙️(izin) | ✅(kendi)| ✅(çocuğu)|
+| Veli telefon/e-posta  | ✅  | ⚙️(varsayılan ❌) | ❌ | ✅(kendi) |
+| KOÇ ÖZEL NOTLARI      | ✅  | ⚙️(varsayılan ❌) | ❌ | ❌        |
+| Geçmiş sınav notları  | ✅  | ⚙️(izin) | ✅(kendi)| ✅(çocuğu)|
+| Hedef bilgisi         | ✅  | ⚙️(izin) | ✅(kendi)| ✅(çocuğu)|
+| Ödev listesi          | ✅  | ⚙️(izin) | ✅(kendi)| ✅(çocuğu)|
+| Diğer ders/öğrenci verisi | ✅ | ❌       | ❌       | ❌        |
+| Haftalık program      | ✅(tüm)| ✅(kendi dersi)| ✅(kendi)| ✅(çocuğu)|
+| Ders kaynağı ilerlemesi| ✅ | ⚙️(izin) | ✅(kendi)| ✅(çocuğu)|
+| Takvim                | ✅(tüm)| ✅(kendi dersi)| ✅(kendi)| ✅(çocuğu)|
+
+> ⚙️ = koçun ders bazında açıp kapattığı öğretmen izni. Ayrıntı: `V5_OKUL_MODELI.md` §2.3.
 
 ⚠️ KRİTİK GÜVENLİK: Bu yetki kontrolleri YALNIZCA frontend'de değil,
 her API endpoint'inde sunucu tarafında uygulanmalıdır.
@@ -224,6 +245,10 @@ GİRİŞ SAYFASI (dersmatris.com)
       │           ├── [Sekme: Takvim] (öğrenciye ait, renk kodlu)
       │           └── [Sekme: Raporlar] (tamamlama oranı, gecikme eğilimi)
       │
+      ├── 🧑‍🏫 ÖĞRETMENLER (liste + davet + profil)
+      ├── 📚 DERSLER (liste + yeni ders + ders detayı: öğrenci/grup/öğretmen/kaynak/izin)
+      ├── 👥 GRUPLAR (liste + üye yönetimi)
+      ├── 🗓️ HAFTALIK PROGRAM (sürükle-bırak ızgara)
       ├── 📅 TAKVİM (Genel — tüm öğrenciler)
       ├── 📊 RAPORLAR (Genel)
       └── ⚙️ AYARLAR (profil, bildirimler, müfredat)
@@ -254,6 +279,15 @@ GİRİŞ → Veli
 ├── [🏠] ÖZET (haftalık özet, pasta grafik)
 ├── [📋] ÖDEVLER (salt okunur)
 └── [📅] TAKVİM (aylık görünüm)
+
+### 5.4 Öğretmen Navigasyonu (Mobil — Alt Menü: 5 sekme)
+
+GİRİŞ → Öğretmen
+├── [🏠] DERSLERİM (atandığı dersler)
+├── [👥] ÖĞRENCİLERİM (izin verilen öğrenciler)
+├── [📋] ÖDEVLER (izin verildiyse)
+├── [🗓️] PROGRAM (kendi derslerinin programı)
+└── [👤] PROFİL
 
 ---
 

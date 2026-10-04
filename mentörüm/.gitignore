@@ -36,3 +36,13 @@ logs/
 # Sistem
 .DS_Store
 Thumbs.db
+
+# Hassas config / sertifika / anahtar dosyalari
+**/appsettings.Production.json
+**/appsettings.Staging.json
+*.pfx
+*.pem
+*.key
+**/google-*.json
+*.sqlite
+*.db

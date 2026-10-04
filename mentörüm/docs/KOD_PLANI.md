@@ -94,6 +94,7 @@ mentörüm/
 │   │   │   │   └── Calendar/
 │   │   │   └── layout/
 │   │   │       ├── CoachLayout/    ← Sidebar + içerik
+│   │   │       ├── TeacherLayout/  ← Bottom tab bar (V5)
 │   │   │       ├── StudentLayout/  ← Bottom tab bar
 │   │   │       └── ParentLayout/
 │   │   ├── features/           ← Vertical slice (özellik bazlı)
@@ -167,6 +168,8 @@ mentörüm/
 
 ## 3. Veri Modeli
 
+> ⚠️ V5 (Okul/Dershane Modeli) ile eklenen tablolar (teachers, courses, course_students, student_groups, student_group_members, course_groups, schedule_slots, course_resources, course_resource_progress) ve güncellenen rol/CHECK yapıları için bkz. **`V5_OKUL_MODELI.md` §3**. Bu dosya yalnızca mevcut MVP modelini gösterir.
+
 ### 3.1 Tablo Listesi ve İlişkiler
 
 Users (Kullanıcılar — tüm roller)
@@ -174,7 +177,7 @@ Users (Kullanıcılar — tüm roller)
 ├── Email        TEXT UNIQUE NOT NULL
 ├── PasswordHash TEXT (Google Auth'ta null)
 ├── GoogleId     TEXT (opsiyonel)
-├── Role         TEXT CHECK(Role IN ('Coach','Student','Parent'))
+├── Role         TEXT CHECK(Role IN ('Coach','Student','Parent','Teacher'))
 ├── FullName     TEXT NOT NULL
 ├── AvatarUrl    TEXT
 ├── IsActive     INTEGER DEFAULT 1

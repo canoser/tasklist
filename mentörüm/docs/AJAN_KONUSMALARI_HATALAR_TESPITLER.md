@@ -430,3 +430,22 @@ Hatta mevcut `CrossTenantSecurityTests.cs`'in sorunu yalnızca "mock" olması de
 
 ### Kalan tek iş
 **Aşama 23 — Canlı UI Smoke Testi (tarayıcı)**: C1 (kayıt/giriş), C2 (ödev ata → tamamla → **silinmesin**), C3 (davet kodu/linki), C4 (IDOR). API bazında C2 (Seviye→Ders→Konu) doğrulandı; tarayıcı testi bekliyor.
+
+---
+
+## 🏫 V5 Okul/Dershane Modeli — Planlama Kaydı
+> **Tarih/Saat:** 4 Ekim 2026 (Türkiye saati, UTC+3)
+> **Durum:** PLANLANDI — kodlanmadı, Sonnet/Opus onayına sunulacak.
+
+### Yapılan
+- Kullanıcı isteğiyle kapsam genişletildi: **Öğretmen rolü, Ders (Course) varlığı, Öğrenci Grupları, Haftalık Program (sürükle-bırak), Ders Kaynakları (kitap/video/soru) + ilerleme takibi, Kurulabilir PWA**.
+- Ayrıntılı tasarım: `V5_OKUL_MODELI.md`; görev listesi: `TASK_LIST_V5.md`.
+- `URUN_PLANI.md` (roller/yetki matrisi/kapsam/navigasyon) ve `KOD_PLANI.md` (rol CHECK + TeacherLayout + işaretçi) güncellendi.
+
+### Kritik kararlar (✅ Sonnet ile karara bağlandı — 4 Ekim 2026; i18n: yalnızca Türkçe)
+- `courses.subject_id` zorunlu mu, "Genel/Soru Çözümü" ders dışı kurs izni?
+- `student_subjects` ile `courses` ilişkisi (homework FK'sı ne olacak)?
+- Öğretmen izin modeli: ayrı kolonlar mı JSONB mi? (öneri: ayrı kolonlar)
+- Öğretmen çok dersli olabilir mi? (öneri: EVET)
+- Öğretmen kendi öğrencisini ekleyebilir mi? (öneri: HAYIR)
+- Program çakışma kontrolü MVP'de zorunlu mu? (öneri: uyarı yeterli)
