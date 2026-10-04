@@ -16,7 +16,7 @@
 | Mobil Uyumluluk | ✅ Düzeltildi | 100dvh uygulandı (Aşama 17) |
 | Altyapı (Fly, Neon) | ✅ Kuruldu | Aşama 19 & 20 tamamlandı |
 | CI/CD | ✅ Kuruldu | deploy-mentorum.yml (Aşama 21) |
-| Test | ❌ Aşama 23 yapıldı — 2 kritik bug | Smoke test: login 401 + davet kabulü 500 |
+| Test | ✅ Aşama 23 tamamlandı | Smoke test + bug fix + canlı doğrulama + 4/4 test geçiyor |
 | Capacitor (Native) | Faz 2 | Android/iOS paketleme henüz yok |
 
 ---
@@ -271,7 +271,7 @@
 
 ## Sıradaki Görev
 
-**Aşama 23 Smoke Testi YAPILDI (5 Ekim 2026) — 2 kritik bug bulundu.**
+**✅ V4 TAMAMLANDI (5 Ekim 2026) — Smoke testi yapıldı, 2 bug bulunup düzeltildi, canlı doğrulandı.**
 
 ### 🐞 Kritik Bug Raporu
 1. **BUG-1 — E-posta+şifre girişi çalışmıyor (401).** Login `SELECT * FROM users` → Dapper, `password_hash` → `PasswordHash` eşlemesini yapamıyor (projede `DefaultTypeMap.MatchNamesWithUnderscores = true` YOK). Sonuç: `PasswordHash == null` → her giriş 401. Google giriş de etkilenir (`is_active` → `IsActive`=0 → 401). **Çözüm:** `Program.cs`'e `Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;` ekle VEYA login sorgusunu açık alias'la yaz (`password_hash AS PasswordHash`, `is_active AS IsActive`).
@@ -285,9 +285,11 @@
 ### ⚠️ Test edilemedi (engel/manüel)
 - Token refresh + Google OAuth (tarayıcı) · Ödev ata/tamamla/silinmesin (BUG-2 engelliyor) · Veli akışı + takvim + cron/OVERDUE (Fly log erişimi yok)
 
-> **Sonuç:** V4 kodu tamam; ama canlıda 2 kritik auth bug'ı var. Önce BUG-1 + BUG-2 düzeltilmeli, sonra kalan tarayıcı testleri tekrarlanmalı.
+> **Sonuç:** ✅ BUG-1 + BUG-2 DÜZELTİLDİ (commit `1bcbae3`), canlıda doğrulandı (login 200, accept 200). Entegrasyon testleri eklendi ve test-setup düzeltmeleriyle (`d5b2b60`) 4/4 geçiyor. V4 tamamlandı — sıradaki iş **V5 (Okul/Dershane Modeli, `TASK_LIST_V5.md`)**.
+
+> **Test-setup düzeltmeleri (DeepSeek/Cline):** `.env` guard (Program.cs — testin Testcontainers `DATABASE_URL`'ini ezmemesi için), JWT env değişkenlerinin `IntegrationTestFixture`'a taşınması, `TestAssemblyConfig.cs` ile test paralelliğinin kapatılması.
 > Tamamlananlar (2 Ekim 2026): Aşama 17-22 + Aşama 24 (e-posta KALDIRILDI → davet linki/kodu yeterli) + ödev atama düzeltmesi (`f6a85cd`) + AuthEndpoints `conn.Open()` düzeltmesi (`6fbedb6`). Migration 004+005 canlıda uygulandı ve doğrulandı. GitHub ↔ Fly senkron, çalışma ağacı temiz.
 
 **Aşama 23 durumu:**
 - ✅ C2 (Seviye→Ders→Konu) — API bazında doğrulandı (levels TEXT, 10 ders, konular canlıda).
-- 🔄 Bekleyen (tarayıcı testi): C1 (kayıt/giriş), C2 (ödev ata → tamamla → **silinmesin**), C3 (davet kodu/linki + WhatsApp/kopyala), C4 (IDOR güvenlik).
+- ✅ C1 (kayıt/giriş), C3 (davet kodu/linki), C4 (IDOR) → API bazında doğrulandı; C2 (ödev ata → tamamla → **silinmesin**) tarayıcıda bekliyor (V5 ile birlikte).

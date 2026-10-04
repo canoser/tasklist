@@ -449,3 +449,23 @@ Hatta mevcut `CrossTenantSecurityTests.cs`'in sorunu yalnızca "mock" olması de
 - Öğretmen çok dersli olabilir mi? (öneri: EVET)
 - Öğretmen kendi öğrencisini ekleyebilir mi? (öneri: HAYIR)
 - Program çakışma kontrolü MVP'de zorunlu mu? (öneri: uyarı yeterli)
+
+---
+
+## ✅ V4 Tamamlandı — Auth Bug Düzeltmeleri ve Test Altyapısı
+> **Tarih/Saat:** 5 Ekim 2026 (Türkiye saati, UTC+3)
+
+### Smoke testi bulguları ve düzeltmeleri
+1. **BUG-1 (login 401):** Dapper snake_case→PascalCase eşlemesi yoktu. Çözüm: `Program.cs`'e `Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;` + 3 `SELECT *` → açık kolon + `RefreshTokenQueryModel.UserId` → `Guid`. Commit `1bcbae3`.
+2. **BUG-2 (davet kabulü 500):** `InviteQueryModel.RelatedId` string→UUID tip uyuşmazlığı. Çözüm: `Guid?` + accept'te koç null kontrolü (400), e-posta çakışması (409), yarış koşulu (`WHERE is_used = 0`). Commit `1bcbae3`.
+3. **Google google_id:** mevcut e-posta eşleşirse ilk girişte `google_id` kaydediliyor. Commit `3f7a285`.
+
+### Test altyapısı düzeltmeleri (DeepSeek/Cline)
+- `AuthIntegrationTests` ilk çalıştırmada `relation "users" does not exist` veriyordu. Kök neden: `Program.cs`'teki `Env.TraversePath().Load()` testin Testcontainers `DATABASE_URL`'ini `.env` ile eziyordu. Çözüm: `.env` guard (`DATABASE_URL` zaten set ise `.env` yüklenmez).
+- `SendInvite` testi paralel çalışmada "entry point exited" veriyordu. Çözüm: `TestAssemblyConfig.cs` ile paralellik kapatıldı (`[assembly: CollectionBehavior(DisableTestParallelization = true)]`).
+- JWT env değişkenleri `IntegrationTestFixture.InitializeAsync()`'e taşındı (app build'inden önce garantili set).
+- Sonuç: **4/4 test geçiyor** (register→login, invite→accept→login, cross-tenant 404, unit). Commit `d5b2b60`.
+
+### Kalan
+- Neon'da `DELETE FROM users WHERE email LIKE 'smoketest.%';` temizliği (kullanıcı panelinde).
+- C2 (ödev ata→tamamla→silinmesin) tarayıcı testi V5 ile birlikte.
