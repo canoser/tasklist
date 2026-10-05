@@ -48,16 +48,16 @@ namespace MentorumApi.Data
         public async Task<int> AddStudentNoteAsync(Guid coachId, Guid studentId, string content)
         {
             var sql = @"
-                INSERT INTO coach_notes (id, student_id, coach_id, content, created_at, updated_at)
-                SELECT @Id, @StudentId, @CoachId, @Content, @Now, @Now
+                INSERT INTO coach_notes (id, student_id, program_id, created_by, content, created_at, updated_at)
+                SELECT @Id, @StudentId, program_id, @CreatedBy, @Content, @Now, @Now
                 FROM students 
-                WHERE id = @StudentId AND coach_id = @CoachId";
+                WHERE id = @StudentId AND program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CreatedBy)";
             
             using var connection = _connectionFactory.CreateConnection();
             var rowsAffected = await connection.ExecuteAsync(sql, new { 
                 Id = Guid.NewGuid(),
                 StudentId = studentId,
-                CoachId = coachId,
+                CreatedBy = coachId,
                 Content = content,
                 Now = DateTime.UtcNow
             });

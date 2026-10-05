@@ -1,6 +1,6 @@
 # 🏫 Mentörüm — V5 Görev Listesi (Okul/Dershane Modeli)
 > **Tarih:** 6 Ekim 2026
-> **Durum:** ⏳ Planlandı — Koçluk Programı modeli (6 Ekim) ile güncellendi; kodlanmadı.
+> **Durum:** 🚧 Kodlama sürüyor — Aşama 0/1/1.6 + Aşama 2 (davet) tamam; `coach_id → program_id` geçişi (mevcut repo + endpoint + job) tamam. Kalan: Aşama 1.5, Aşama 2 (Google-teacher/idempotency), Aşama 3+.
 > **Kaynak:** `V5_OKUL_MODELI.md` (ayrıntılı tasarım). Görevler sıralıdır — her aşama bir öncekini varsayar.
 
 ---
@@ -41,6 +41,7 @@
 - [x] Yetki: yardımcı aynı iş yetkileri; koç yönetimi (davet/çıkarma/devir) + program silme yalnızca YÖNETİCİ
 - [x] Yönetici devri: transaction; eski yönetici → YARDIMCI, hedef → YÖNETİCİ (tek yönetici unique index); yönetici çıkarılamaz (K3)
 - [x] `program_id` filtresi tüm sorgularda (BaseRepository tenant = program_id); her istekte DB üyelik kontrolü (JWT'de program yok)
+- [x] `coach_id → program_id` geçişi (deploy güvenliği — 008 `coach_id` düşürdüğü için zorunlu): `BaseRepository` tenant filtresi + `StudentRepository`(coach_notes) + `HomeworkRepository` + `ExamRepository` + `CalendarRepository` + `ReportsRepository` + `HomeworkEndpoints`(complete) + `OverdueHomeworkJob`(RETURNING + program koç bildirimi); `homework_templates.coach_id` KORUNDU (kişisel kütüphane)
 - [x] Koç kaydı onayı (K5): `coaches.approval_status` (PENDING/APPROVED/REJECTED); PENDING giriş → 403 `COACH_PENDING`
 - [x] Süper yönetici: `SUPER_ADMIN_EMAIL` (canoser@gmail.com) → `Admin` rolü; koç onayı + X limiti belirleme
 - [x] Bildirimler (K4): `NotifyProgramCoachesAsync(programId, ...)` → programın tüm koçlarına, çan simgesi

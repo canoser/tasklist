@@ -38,8 +38,8 @@ namespace MentorumApi.Data
             try
             {
                 // IDOR koruması: öğrenci bu koça ait olmalı
-                var owned = await conn.QuerySingleOrDefaultAsync<int?>(
-                    "SELECT 1 FROM students WHERE id = @StudentId AND coach_id = @CoachId",
+                var owned = await conn.QuerySingleOrDefaultAsync<Guid?>(
+                    "SELECT program_id FROM students WHERE id = @StudentId AND program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)",
                     new { req.StudentId, CoachId = coachId }, tx);
 
                 if (owned == null) return null;
@@ -49,11 +49,11 @@ namespace MentorumApi.Data
                 await conn.ExecuteAsync(@"
                     INSERT INTO homework_assignments (
                         id, subject_id, curriculum_topic_id, snapshot_title, snapshot_desc, snapshot_source,
-                        student_id, coach_id, due_date, status, created_at, updated_at
+                        student_id, program_id, created_by, due_date, status, created_at, updated_at
                     )
                     VALUES (
                         @Id, @SubjectId, @CurriculumTopicId, @Title, @Description, @Source,
-                        @StudentId, @CoachId, @DueDate, 'PENDING', @Now, @Now
+                        @StudentId, @ProgramId, @CreatedBy, @DueDate, 'PENDING', @Now, @Now
                     )", new {
                     Id = assignId,
                     req.SubjectId,
@@ -62,7 +62,8 @@ namespace MentorumApi.Data
                     Description = req.Description,
                     Source = req.FreeTopic,
                     req.StudentId,
-                    CoachId = coachId,
+                    CreatedBy = coachId,
+                    ProgramId = owned,
                     req.DueDate,
                     Now = DateTime.UtcNow
                 }, tx);

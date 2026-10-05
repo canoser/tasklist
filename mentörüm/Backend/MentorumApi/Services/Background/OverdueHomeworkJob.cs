@@ -65,7 +65,7 @@ namespace MentorumApi.Services.Background
                             WHERE status = 'PENDING' AND due_date < CURRENT_DATE
                             LIMIT 100
                         )
-                        RETURNING id, student_id, coach_id;";
+                        RETURNING id, student_id, program_id;";
 
                     var overdueAssignments = await conn.QueryAsync(sql, new { Now = DateTime.UtcNow }, transaction);
                     
@@ -83,7 +83,11 @@ namespace MentorumApi.Services.Background
                             // Öğrenciye bildirim
                             await conn.ExecuteAsync(notifSql, new { Id = Guid.NewGuid(), UserId = hw.student_id, Body = "Bir ödevinizin süresi doldu.", Now = DateTime.UtcNow }, transaction);
                             // Koça bildirim
-                            await conn.ExecuteAsync(notifSql, new { Id = Guid.NewGuid(), UserId = hw.coach_id, Body = "Bir öğrencinizin ödev süresi doldu.", Now = DateTime.UtcNow }, transaction);
+                            await conn.ExecuteAsync(@"
+                                INSERT INTO notifications (id, user_id, type, title, body, created_at)
+                                SELECT @Id, pc.coach_id, 'HOMEWORK_OVERDUE', 'Gecikmiş Ödev', @Body, @Now
+                                FROM program_coaches pc WHERE pc.program_id = @ProgramId",
+                                new { Id = Guid.NewGuid(), ProgramId = hw.program_id, Body = "Bir öğrencinizin ödev süresi doldu.", Now = DateTime.UtcNow }, transaction);
                         }
                     }
                     else

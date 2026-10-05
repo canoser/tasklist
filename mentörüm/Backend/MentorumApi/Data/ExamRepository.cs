@@ -16,19 +16,20 @@ namespace MentorumApi.Data
             using var tx = conn.BeginTransaction();
             try 
             {
-                var owned = await conn.QuerySingleOrDefaultAsync<int?>(
-                    "SELECT 1 FROM students WHERE id = @StudentId AND coach_id = @CoachId",
+                var owned = await conn.QuerySingleOrDefaultAsync<Guid?>(
+                    "SELECT program_id FROM students WHERE id = @StudentId AND program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)",
                     new { req.StudentId, CoachId = coachId });
                 if (owned == null) throw new UnauthorizedAccessException("Bu öğrenci bu koça ait değil.");
 
                 var sql = @"
-                    INSERT INTO exam_results (id, student_id, coach_id, exam_date, exam_type, exam_name, total_net, notes, created_at)
-                    VALUES (@Id, @StudentId, @CoachId, @ExamDate, @ExamType, @ExamName, @TotalNet, @Notes, @Now)";
+                    INSERT INTO exam_results (id, student_id, program_id, created_by, exam_date, exam_type, exam_name, total_net, notes, created_at)
+                    VALUES (@Id, @StudentId, @ProgramId, @CreatedBy, @ExamDate, @ExamType, @ExamName, @TotalNet, @Notes, @Now)";
 
                 await conn.ExecuteAsync(sql, new {
                     Id = examId,
                     req.StudentId,
-                    CoachId = coachId,
+                    CreatedBy = coachId,
+                    ProgramId = owned,
                     req.ExamDate,
                     req.ExamType,
                     req.ExamName,

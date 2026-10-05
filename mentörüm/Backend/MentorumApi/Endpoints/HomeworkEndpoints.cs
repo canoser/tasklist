@@ -49,7 +49,7 @@ namespace MentorumApi.Endpoints
                 if (!Guid.TryParse(userIdStr, out var userId)) return Results.Unauthorized();
                 
                 var role = user.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
-                string whereClause = role == "Coach" ? "AND coach_id = @UserId" : "AND student_id = @UserId";
+                string whereClause = role == "Coach" ? "AND program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @UserId)" : "AND student_id = @UserId";
                 
                 int percentage = req.CompletionPercentage >= 0 && req.CompletionPercentage <= 100 ? req.CompletionPercentage : 100;
                 string status = percentage == 100 ? "DONE" : "PENDING";

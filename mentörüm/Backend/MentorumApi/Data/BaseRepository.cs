@@ -16,7 +16,7 @@ namespace MentorumApi.Data
         }
 
         /// <summary>
-        /// SQL sorgusuna otomatik olarak "AND coach_id = @CoachId" filtresi ekler.
+        /// SQL sorgusuna otomatik olarak "AND program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)" filtresi ekler.
         /// NOT: Verilen sqlTemplate içinde kesinlikle /**where**/ tag'i bulunmalıdır.
         /// </summary>
         protected async Task<IEnumerable<T>> QueryWithTenantAsync<T>(string sqlTemplate, object parameters, Guid coachId, string? additionalWhere = null)
@@ -25,7 +25,7 @@ namespace MentorumApi.Data
             var builder = new SqlBuilder();
             var template = builder.AddTemplate(sqlTemplate);
             
-            builder.Where("coach_id = @CoachId", new { CoachId = coachId });
+            builder.Where("program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)", new { CoachId = coachId });
             if (!string.IsNullOrEmpty(additionalWhere))
             {
                 builder.Where(additionalWhere);
@@ -43,7 +43,7 @@ namespace MentorumApi.Data
             var builder = new SqlBuilder();
             var template = builder.AddTemplate(sqlTemplate);
             
-            builder.Where("coach_id = @CoachId", new { CoachId = coachId });
+            builder.Where("program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)", new { CoachId = coachId });
             if (!string.IsNullOrEmpty(additionalWhere))
             {
                 builder.Where(additionalWhere);
@@ -61,7 +61,7 @@ namespace MentorumApi.Data
             var builder = new SqlBuilder();
             var template = builder.AddTemplate(sqlTemplate);
             
-            builder.Where("coach_id = @CoachId", new { CoachId = coachId });
+            builder.Where("program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)", new { CoachId = coachId });
             if (!string.IsNullOrEmpty(additionalWhere))
             {
                 builder.Where(additionalWhere);

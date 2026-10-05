@@ -11,10 +11,10 @@ namespace MentorumApi.Data
         {
             var sql = @"
                 SELECT 
-                    (SELECT COUNT(*) FROM students WHERE coach_id = @CoachId AND is_active = 1) AS TotalStudents,
-                    (SELECT COUNT(*) FROM homework_assignments WHERE coach_id = @CoachId AND status IN ('DONE', 'LATE_DONE') AND completed_at >= CURRENT_DATE) AS CompletedToday,
-                    (SELECT COUNT(*) FROM homework_assignments WHERE coach_id = @CoachId AND status = 'OVERDUE') AS TotalOverdue,
-                    (SELECT COUNT(*) FROM homework_assignments WHERE coach_id = @CoachId AND due_date >= date_trunc('week', CURRENT_DATE)) AS AssignedThisWeek,
+                    (SELECT COUNT(*) FROM students WHERE program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId) AND is_active = 1) AS TotalStudents,
+                    (SELECT COUNT(*) FROM homework_assignments WHERE program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId) AND status IN ('DONE', 'LATE_DONE') AND completed_at >= CURRENT_DATE) AS CompletedToday,
+                    (SELECT COUNT(*) FROM homework_assignments WHERE program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId) AND status = 'OVERDUE') AS TotalOverdue,
+                    (SELECT COUNT(*) FROM homework_assignments WHERE program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId) AND due_date >= date_trunc('week', CURRENT_DATE)) AS AssignedThisWeek,
                     
                     -- Başarı Oranı (Tamamlanan / Toplam)
                     (
@@ -22,7 +22,7 @@ namespace MentorumApi.Data
                             CAST(SUM(CASE WHEN status IN ('DONE', 'LATE_DONE') THEN 1 ELSE 0 END) AS FLOAT) / NULLIF(COUNT(*), 0) * 100, 
                         0)
                         FROM homework_assignments 
-                        WHERE coach_id = @CoachId
+                        WHERE program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)
                     ) AS SuccessRate
             ";
             
@@ -33,7 +33,7 @@ namespace MentorumApi.Data
         public async Task<dynamic> GetStudentReportAsync(Guid coachId, Guid studentId)
         {
             // Security check
-            var sqlCheck = "SELECT 1 FROM students WHERE id = @StudentId AND coach_id = @CoachId";
+            var sqlCheck = "SELECT 1 FROM students WHERE id = @StudentId AND program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)";
             using var conn = _connectionFactory.CreateConnection();
             var exists = await conn.QueryFirstOrDefaultAsync<int?>(sqlCheck, new { StudentId = studentId, CoachId = coachId });
             if (exists == null) return null;

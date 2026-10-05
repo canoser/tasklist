@@ -40,7 +40,7 @@ namespace MentorumApi.Data
 
             if (role == "Coach")
             {
-                sqlBuilder.Append(" AND h.coach_id = @UserId");
+                sqlBuilder.Append(" AND h.program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @UserId)");
                 if (studentId.HasValue)
                 {
                     sqlBuilder.Append(" AND h.student_id = @StudentId");
@@ -78,7 +78,7 @@ namespace MentorumApi.Data
 
             if (role == "Coach")
             {
-                sqlBuilder.Append(" AND e.coach_id = @UserId");
+                sqlBuilder.Append(" AND e.program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @UserId)");
                 if (studentId.HasValue)
                 {
                     sqlBuilder.Append(" AND e.student_id = @StudentId");
