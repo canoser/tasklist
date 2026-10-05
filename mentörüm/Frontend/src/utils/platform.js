@@ -3,10 +3,11 @@
  * When Capacitor is installed in Phase 25, this will handle native APIs.
  * Currently falls back to standard Web API to avoid crashes.
  */
+import { Capacitor } from '@capacitor/core';
 
 export const Platform = {
-    // Gelecekte Capacitor ile check edilecek (e.g., Capacitor.isNativePlatform())
-    isNative: false,
+    // Capacitor ile native tespiti (web'de false döner)
+    isNative: Capacitor.isNativePlatform(),
     
     // Güvenli Storage Wrapper'ı
     storage: {

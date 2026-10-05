@@ -17,7 +17,7 @@
 | Altyapı (Fly, Neon) | ✅ Kuruldu | Aşama 19 & 20 tamamlandı |
 | CI/CD | ✅ Kuruldu | deploy-mentorum.yml (Aşama 21) |
 | Test | ✅ Aşama 23 tamamlandı | Smoke test + bug fix + canlı doğrulama + 4/4 test geçiyor |
-| Capacitor (Native) | Faz 2 | Android/iOS paketleme henüz yok |
+| Capacitor (Native) | ✅ Android hazır | Paketler + android platform eklendi; emülatör/mağaza ertelendi (web-only) |
 
 ---
 
@@ -229,25 +229,29 @@
 
 ---
 
-## Aşama 25: Android Uygulaması (Capacitor)
+## Aşama 25: Android Uygulaması (Capacitor) — ✅ HAZIR (web-only)
+
+> 📌 **Karar (5 Ekim 2026):** Capacitor paketleri kuruldu + Android platformu eklendi + build/sync çalışıyor. **Emülatör testi, safe-area kontrolü ve Play Store yayını ERTELENDİ** — şimdilik yalnızca web'den çalışılıyor.
 
 **Önkoşul:** Aşama 17 ve 18 tamamlanmış olmalı.
 
-- [ ] npm install @capacitor/cli @capacitor/core @capacitor/android
-- [ ] npx cap add android
-- [ ] platform.js'te native URL kontrolü — Capacitor ortamında baseURL prod sunucu olmalı
-- [ ] npm run build && npx cap sync android && npx cap open android
-- [ ] Android Studio emülatöründe giriş, ödev listesi, takvim test et
-- [ ] S24 ve Pixel 8'de safe area kontrol et
-- [ ] Google Play: App ID, Signing Key, build.gradle ayarları
+- [x] npm install @capacitor/cli @capacitor/core @capacitor/android
+- [x] npx cap add android
+- [x] platform.js — `Capacitor.isNativePlatform()` ile native tespiti eklendi (baseURL: `.env.production` → prod sunucu)
+- [x] npm run build && npx cap sync android → ✅ build + sync başarılı (emülatör açılmadı — web-only)
+- [ ] ~~Android Studio emülatöründe giriş, ödev listesi, takvim test et~~ → ATLANDI (yalnızca web)
+- [ ] ~~S24 ve Pixel 8'de safe area kontrol et~~ → ATLANDI
+- [ ] ~~Google Play: App ID, Signing Key, build.gradle ayarları~~ → ATLANDI (henüz yayınlanmayacak)
 
 ---
 
-## Aşama 26: iOS Uygulaması (Faz 3 — Mac Gerektirir)
+## Aşama 26: iOS Uygulaması (Faz 3 — Mac Gerektirir) — ⏸️ ERTELENDİ
 
-- [ ] Mac ortamında npx cap add ios
-- [ ] Xcode'da build + Simulator testi
-- [ ] Apple Developer Account gerekli
+> 📌 **Karar (5 Ekim 2026):** iOS uygulaması **yayınlanmayacak** (Mac ortamı gerektirir). Web-only devam edilecek.
+
+- [ ] ~~Mac ortamında npx cap add ios~~ → ATLANDI (yayınlanmayacak)
+- [ ] ~~Xcode'da build + Simulator testi~~ → ATLANDI
+- [ ] ~~Apple Developer Account gerekli~~ → ATLANDI
 
 ---
 

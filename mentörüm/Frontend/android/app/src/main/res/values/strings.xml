@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Mentörüm</string>
+    <string name="title_activity_main">Mentörüm</string>
+    <string name="package_name">com.dersmatris.mentorum</string>
+    <string name="custom_url_scheme">com.dersmatris.mentorum</string>
+</resources>
