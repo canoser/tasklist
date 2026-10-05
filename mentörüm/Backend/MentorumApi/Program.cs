@@ -59,6 +59,7 @@ try
     builder.Services.AddScoped<CalendarRepository>();
     builder.Services.AddScoped<ReportsRepository>();
     builder.Services.AddScoped<NotificationRepository>();
+    builder.Services.AddScoped<ProgramRepository>();
     builder.Services.AddMemoryCache();
     builder.Services.AddHostedService<MentorumApi.Services.Background.OverdueHomeworkJob>();
 
@@ -92,6 +93,7 @@ try
         options.AddPolicy("RequireCoachRole", policy => policy.RequireRole("Coach"));
         options.AddPolicy("RequireStudentRole", policy => policy.RequireRole("Student"));
         options.AddPolicy("RequireParentRole", policy => policy.RequireRole("Parent"));
+        options.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
     });
 
     // Background Services
@@ -112,7 +114,10 @@ try
             Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "002_Phase10_11.sql"),
             Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "003_InviteCode.sql"),
             Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "004_Curriculum2026.sql"),
-            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "005_HomeworkDirect.sql")
+            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "005_HomeworkDirect.sql"),
+            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "006_SchoolModel.sql"),
+            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "007_AdminAndPrograms.sql"),
+            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "008_ContractCoachId.sql")
         };
         foreach(var path in scriptPaths)
         {
@@ -158,6 +163,7 @@ try
     app.MapCalendarEndpoints();
     app.MapReportsEndpoints();
     app.MapNotificationEndpoints();
+    app.MapProgramEndpoints();
 
     app.MapGet("/", () => "Mentorum API Auth/Authz Katmanı Devrede!");
 
@@ -176,6 +182,19 @@ try
             return Results.StatusCode(503); // 503 dönerse Fly.io deploy'u iptal eder
         }
     });
+
+    // Süper yönetici bootstrap: SUPER_ADMIN_EMAIL kullanıcısını Admin rolüne yükselt
+    var superAdminEmail = Environment.GetEnvironmentVariable("SUPER_ADMIN_EMAIL");
+    if (!string.IsNullOrEmpty(superAdminEmail))
+    {
+        using var bootstrapScope = app.Services.CreateScope();
+        var bootstrapDb = bootstrapScope.ServiceProvider.GetRequiredService<DbConnectionFactory>();
+        using var bootstrapConn = bootstrapDb.CreateConnection();
+        bootstrapConn.Open();
+        var adminId = bootstrapConn.ExecuteScalar<Guid?>("SELECT id FROM users WHERE email = @Email", new { Email = superAdminEmail.ToLower() });
+        if (adminId != null)
+            bootstrapConn.Execute("UPDATE users SET role = 'Admin' WHERE id = @Id", new { Id = adminId });
+    }
 
     app.Run();
 }

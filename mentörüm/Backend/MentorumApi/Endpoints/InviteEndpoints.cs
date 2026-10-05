@@ -23,8 +23,8 @@ namespace MentorumApi.Endpoints
                 var coachIdStr = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                 if (!Guid.TryParse(coachIdStr, out var coachId)) return Results.Unauthorized();
 
-                if (req.Role != "Student" && req.Role != "Parent")
-                    return Results.BadRequest(new { error = "Geçersiz rol. Sadece Student veya Parent davet edilebilir." });
+                if (req.Role != "Student" && req.Role != "Parent" && req.Role != "Teacher" && req.Role != "Coach")
+                    return Results.BadRequest(new { error = "Geçersiz rol. Student, Parent, Teacher veya Coach olabilir." });
 
                 using var conn = db.CreateConnection();
                 
@@ -32,13 +32,17 @@ namespace MentorumApi.Endpoints
                 {
                     if (req.RelatedId == null) return Results.BadRequest(new { error = "Veli daveti için öğrenci ID gerekli." });
                     var studentOwned = await conn.QuerySingleOrDefaultAsync<int?>(
-                        "SELECT 1 FROM students WHERE id = @RelatedId AND coach_id = @CoachId",
+                        @"SELECT 1 FROM students s JOIN program_coaches pc ON pc.program_id = s.program_id AND pc.coach_id = @CoachId WHERE s.id = @RelatedId",
                         new { req.RelatedId, CoachId = coachId });
                     if (studentOwned == null) return Results.BadRequest(new { error = "Öğrenci bulunamadı veya yetkiniz yok." });
                 }
-                else if (req.Role == "Student")
+                else // Student, Teacher, Coach → related_id = program_id
                 {
-                    req.RelatedId = coachId;
+                    if (req.RelatedId == null) return Results.BadRequest(new { error = "Davet için program ID gerekli." });
+                    var isAdmin = await conn.QuerySingleOrDefaultAsync<int?>(
+                        "SELECT 1 FROM program_coaches WHERE program_id = @ProgramId AND coach_id = @CoachId AND role = 'YONETICI'",
+                        new { ProgramId = req.RelatedId, CoachId = coachId });
+                    if (isAdmin == null) return Results.BadRequest(new { error = "Program bulunamadı veya yönetici değilsiniz." });
                 }
 
                 var exists = await conn.ExecuteScalarAsync<int>("SELECT COUNT(1) FROM users WHERE email = @Email", new { req.Email });
@@ -127,9 +131,9 @@ namespace MentorumApi.Endpoints
                     {
                         // Öğrenci olarak kaydedildi. Daveti atan CoachId = RelatedId olabilir
                         await conn.ExecuteAsync(@"
-                            INSERT INTO students (id, coach_id, is_active) 
-                            VALUES (@Id, @CoachId, 1)", 
-                            new { Id = userId, CoachId = invite.RelatedId }, tx);
+                            INSERT INTO students (id, program_id, is_active) 
+                            VALUES (@Id, @ProgramId, 1)", 
+                            new { Id = userId, ProgramId = invite.RelatedId }, tx);
                     }
                     else if (user.Role == "Parent")
                     {
@@ -143,6 +147,27 @@ namespace MentorumApi.Endpoints
                                 VALUES (@Id, @StudentId, @ParentId, @ParentEmail, 1)",
                                 new { Id = Guid.NewGuid(), StudentId = invite.RelatedId, ParentId = userId, ParentEmail = user.Email }, tx);
                         }
+                    }
+
+                    else if (user.Role == "Teacher")
+                    {
+                        await conn.ExecuteAsync("INSERT INTO teachers (id, is_active) VALUES (@Id, 1)", new { Id = userId }, tx);
+                        await conn.ExecuteAsync(@"
+                            INSERT INTO program_teachers (id, program_id, teacher_id)
+                            VALUES (@Id, @ProgramId, @TeacherId)",
+                            new { Id = Guid.NewGuid(), ProgramId = invite.RelatedId, TeacherId = userId }, tx);
+                    }
+                    else if (user.Role == "Coach")
+                    {
+                        // Yardımcı koç: onaysız (davet eden yönetici kefil), kendi programını açamaz (max_programs=0)
+                        await conn.ExecuteAsync(@"
+                            INSERT INTO coaches (id, plan_type, approval_status, max_programs)
+                            VALUES (@Id, 'free', 'APPROVED', 0)", 
+                            new { Id = userId }, tx);
+                        await conn.ExecuteAsync(@"
+                            INSERT INTO program_coaches (id, program_id, coach_id, role)
+                            VALUES (@Id, @ProgramId, @CoachId, 'YARDIMCI')",
+                            new { Id = Guid.NewGuid(), ProgramId = invite.RelatedId, CoachId = userId }, tx);
                     }
 
                     // Token'ı kullanıldı işaretle

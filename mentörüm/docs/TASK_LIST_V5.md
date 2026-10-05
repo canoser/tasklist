@@ -6,28 +6,28 @@
 ---
 
 ## Aşama 0: Ön Koşullar (kodlamadan önce)
-- [ ] Migration 001–005'in canlıda uygulandığını doğrula
-- [ ] `course_resources` V4'teki benzer özellikle (kitap/video/soru takibi) çakışıyor mu? kontrol et — çakışma varsa tekrar yazma
+- [x] Migration 001–005'in canlıda uygulandığını doğrula (canlı register/invite/müfredat/health çalışıyor; tablolar mevcut)
+- [x] `course_resources` V4 çakışma kontrolü → ÇAKIŞMA YOK (V4'te yalnızca `resource_book`/`resource_ref` basit metin; ayrı yeni özellik)
 - [ ] `.agents/AGENTS.md` kurallarını oku (i18n, CSS Modules, idempotency, PORTABILITY.md)
-- [ ] Not: V4 Aşama 23 beklenebilir; V5 Aşama 1–6 ondan bağımsız ilerleyebilir
+- [x] Not: V4 Aşama 23 beklenebilir; V5 Aşama 1–6 ondan bağımsız ilerleyebilir
 - [ ] Karar (6 Ekim): Koçluk Programı modeli — yönetici/yardımcı + süper yönetici onayı + X program limiti (bkz. `V5_OKUL_MODELI.md` §1.5)
 
 ## Aşama 1: Migration & Veri Modeli (006 expand → 007 program → 008 contract)
-- [ ] `006_SchoolModel.sql` yaz: `users.role` CHECK'e `'Teacher'` ekle (idempotent `DO $$` bloğu)
-- [ ] `invite_tokens.role` CHECK'e `'Teacher'` + `'Coach'` (yardımcı koç daveti) ekle
-- [ ] `notifications.type` CHECK genişlet: `SCHEDULE_UPDATED`, `TEACHER_ASSIGNED`, `RESOURCE_ASSIGNED`
-- [ ] `homework_assignments`'a `course_id` (NULL) + `created_by` (UUID) ekle; `exam_results`'a `created_by` ekle
-- [ ] `teachers` tablosu
-- [ ] `courses` tablosu (subject_id NULLABLE + `type` CHECK + teacher_id tenant + 10 izin kolonu)
-- [ ] `course_students` tablosu
-- [ ] `student_groups` + `student_group_members` + `course_groups`
-- [ ] `schedule_slots` (tek hedef CHECK + `start_time<end_time` CHECK + `valid_from`/`valid_to`; teacher/subject dersten türetilir)
-- [ ] `course_resources` + `course_resource_progress`
-- [ ] `Program.cs` `--migrate-only` script listesine 006 ekle
-- [ ] 007 (expand+backfill): `coaching_programs` + `program_coaches` (YONETICI/YARDIMCI) + `program_teachers` + `system_settings` + `coaches.approval_status`/`max_programs`; tüm tablolara `program_id` (NULL) ekle; her koç için "Koçluk Programım" aç (YÖNETİCİ), `program_id`'leri backfill, mevcut koçlar APPROVED
-- [ ] 008 (contract): canlıda doğrulandıktan SONRA `coach_id` kolonlarını DROP (aynı migration'da DROP yasak — Fly kesinti)
-- [ ] `homework_templates.coach_id` kalır (kişisel kütüphane)
-- [ ] Boş PostgreSQL'de 001→008 sırayla çalıştır, hata yoksa onayla
+- [x] `006_SchoolModel.sql` yaz: `users.role` CHECK'e `'Teacher'` ekle (idempotent `DO $$` bloğu)
+- [x] `invite_tokens.role` CHECK'e `'Teacher'` + `'Coach'` (yardımcı koç daveti) ekle
+- [x] `notifications.type` CHECK genişlet: `SCHEDULE_UPDATED`, `TEACHER_ASSIGNED`, `RESOURCE_ASSIGNED`
+- [x] `homework_assignments`'a `course_id` (NULL) + `created_by` (UUID) ekle; `exam_results`'a `created_by` ekle
+- [x] `teachers` tablosu
+- [x] `courses` tablosu (subject_id NULLABLE + `type` CHECK + teacher_id tenant + 10 izin kolonu)
+- [x] `course_students` tablosu
+- [x] `student_groups` + `student_group_members` + `course_groups`
+- [x] `schedule_slots` (tek hedef CHECK + `start_time<end_time` CHECK + `valid_from`/`valid_to`; teacher/subject dersten türetilir)
+- [x] `course_resources` + `course_resource_progress`
+- [x] `Program.cs` `--migrate-only` script listesine 006 ekle
+- [x] 007 (expand+backfill): `coaching_programs` + `program_coaches` (YONETICI/YARDIMCI) + `program_teachers` + `system_settings` + `coaches.approval_status`/`max_programs`; tüm tablolara `program_id` (NULL) ekle; her koç için "Koçluk Programım" aç (YÖNETİCİ), `program_id`'leri backfill, mevcut koçlar APPROVED
+- [x] 008 (contract): canlıda doğrulandıktan SONRA `coach_id` kolonlarını DROP (aynı migration'da DROP yasak — Fly kesinti)
+- [x] `homework_templates.coach_id` kalır (kişisel kütüphane)
+- [x] Boş PostgreSQL'de 001→008 sırayla çalıştır, hata yoksa onayla
 
 ## Aşama 1.5: İzin & Tenant Helper (KRİTİK — `program_id` Aşama 1.6'da tanımlı; ders/grup kodlamadan ÖNCE)
 - [ ] `CourseAccessHelper`: course.teacher_id doğrula + izin bayrağı + DTO maskeleme
@@ -36,21 +36,21 @@
 - [ ] Bu helper'lar için IDOR senaryolu testler (Testcontainers)
 
 ## Aşama 1.6: Koçluk Programı + Koç Hiyerarşisi + Süper Yönetici
-- [ ] `ProgramRepository` + `ProgramEndpoints`: program CRUD (liste/oluştur/düzenle/sil+arşiv), `POST /program/{id}/coaches` (yardımcı davet), `POST /program/{id}/transfer-admin`, `DELETE /program/{id}/coaches/{coachId}`
-- [ ] Program öğrencisiz oluşturulabilir (K1); koç X kadar program açabilir (K2, `ProgramLimitService.CanCreateProgram`)
-- [ ] Yetki: yardımcı aynı iş yetkileri; koç yönetimi (davet/çıkarma/devir) + program silme yalnızca YÖNETİCİ
-- [ ] Yönetici devri: transaction; eski yönetici → YARDIMCI, hedef → YÖNETİCİ (tek yönetici unique index); yönetici çıkarılamaz (K3)
-- [ ] `program_id` filtresi tüm sorgularda (BaseRepository tenant = program_id); her istekte DB üyelik kontrolü (JWT'de program yok)
-- [ ] Koç kaydı onayı (K5): `coaches.approval_status` (PENDING/APPROVED/REJECTED); PENDING giriş → 403 `COACH_PENDING`
-- [ ] Süper yönetici: `SUPER_ADMIN_EMAIL` (canoser@gmail.com) → `Admin` rolü; koç onayı + X limiti belirleme
-- [ ] Bildirimler (K4): `NotifyProgramCoachesAsync(programId, ...)` → programın tüm koçlarına, çan simgesi
+- [x] `ProgramRepository` + `ProgramEndpoints`: program CRUD (liste/oluştur/düzenle/sil+arşiv), `POST /program/{id}/coaches` (yardımcı davet), `POST /program/{id}/transfer-admin`, `DELETE /program/{id}/coaches/{coachId}`
+- [x] Program öğrencisiz oluşturulabilir (K1); koç X kadar program açabilir (K2, `ProgramLimitService.CanCreateProgram`)
+- [x] Yetki: yardımcı aynı iş yetkileri; koç yönetimi (davet/çıkarma/devir) + program silme yalnızca YÖNETİCİ
+- [x] Yönetici devri: transaction; eski yönetici → YARDIMCI, hedef → YÖNETİCİ (tek yönetici unique index); yönetici çıkarılamaz (K3)
+- [x] `program_id` filtresi tüm sorgularda (BaseRepository tenant = program_id); her istekte DB üyelik kontrolü (JWT'de program yok)
+- [x] Koç kaydı onayı (K5): `coaches.approval_status` (PENDING/APPROVED/REJECTED); PENDING giriş → 403 `COACH_PENDING`
+- [x] Süper yönetici: `SUPER_ADMIN_EMAIL` (canoser@gmail.com) → `Admin` rolü; koç onayı + X limiti belirleme
+- [x] Bildirimler (K4): `NotifyProgramCoachesAsync(programId, ...)` → programın tüm koçlarına, çan simgesi
 - [ ] IDOR testi: yardımcı başka programın verisine erişemiyor mu?
 
 ## Aşama 2: Backend — Rol & Davet (Teacher)
 - [ ] `Program.cs`: `RequireTeacherRole` policy ekle
-- [ ] `InviteEndpoints`: rol kontrolüne `Teacher` ekle (related_id = coach_id)
-- [ ] Davet kabulünde `teachers` tablosuna satır ekle (transaction içinde)
-- [ ] `User` modeli + JWT: `Teacher` rolünü destekle
+- [x] `InviteEndpoints`: rol kontrolüne `Teacher` + `Coach` ekle (related_id = program_id)
+- [x] Davet kabulünde `teachers` (+ `program_teachers`) ve `coaches` (+ `program_coaches`) satırı ekle (transaction içinde)
+- [x] `User` modeli + JWT: `Teacher` rolünü destekle
 - [ ] Google ile girişte öğretmen daveti → rol `Teacher` atanması
 - [ ] POST uçlarına idempotency (`Idempotency-Key` + ActionFilter): ders oluşturma, öğretmen daveti, grup oluşturma
 

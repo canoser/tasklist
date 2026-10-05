@@ -49,8 +49,8 @@ namespace MentorumApi.Endpoints
                         user, tx);
                     
                     await conn.ExecuteAsync(@"
-                        INSERT INTO coaches (id, plan_type) 
-                        VALUES (@Id, 'free')", 
+                        INSERT INTO coaches (id, plan_type, approval_status) 
+                        VALUES (@Id, 'free', 'PENDING')", 
                         new { Id = userId }, tx);
 
                     tx.Commit();
@@ -61,7 +61,13 @@ namespace MentorumApi.Endpoints
                     throw;
                 }
 
-                var token = jwt.GenerateAccessToken(user);
+                                if (user.Role == "Coach")
+                {
+                    var approval = await conn.ExecuteScalarAsync<string>("SELECT approval_status FROM coaches WHERE id = @Id", new { user.Id });
+                    if (approval == "PENDING") return Results.Json(new { error = "Onay bekleniyor.", code = "COACH_PENDING" }, statusCode: 403);
+                    if (approval == "REJECTED") return Results.Json(new { error = "Basvurunuz reddedildi.", code = "COACH_REJECTED" }, statusCode: 403);
+                }
+var token = jwt.GenerateAccessToken(user);
                 var refreshToken = jwt.GenerateRefreshToken();
 
                 await conn.ExecuteAsync(@"
@@ -97,7 +103,13 @@ namespace MentorumApi.Endpoints
                 if (user == null || user.PasswordHash == null || !BCrypt.Net.BCrypt.Verify(req.Password, user.PasswordHash))
                     return Results.Unauthorized();
 
-                var token = jwt.GenerateAccessToken(user);
+                                if (user.Role == "Coach")
+                {
+                    var approval = await conn.ExecuteScalarAsync<string>("SELECT approval_status FROM coaches WHERE id = @Id", new { user.Id });
+                    if (approval == "PENDING") return Results.Json(new { error = "Onay bekleniyor.", code = "COACH_PENDING" }, statusCode: 403);
+                    if (approval == "REJECTED") return Results.Json(new { error = "Basvurunuz reddedildi.", code = "COACH_REJECTED" }, statusCode: 403);
+                }
+var token = jwt.GenerateAccessToken(user);
                 var refreshToken = jwt.GenerateRefreshToken();
 
                 await conn.ExecuteAsync(@"
@@ -209,8 +221,8 @@ namespace MentorumApi.Endpoints
                             user, tx);
                         
                         await conn.ExecuteAsync(@"
-                            INSERT INTO coaches (id, plan_type) 
-                            VALUES (@Id, 'free')", 
+                            INSERT INTO coaches (id, plan_type, approval_status) 
+                            VALUES (@Id, 'free', 'PENDING')", 
                             new { Id = user.Id }, tx);
                         
                         tx.Commit();
@@ -234,7 +246,13 @@ namespace MentorumApi.Endpoints
                         new { GoogleId = user.GoogleId, UpdatedAt = DateTime.UtcNow, Id = user.Id });
                 }
 
-                var token = jwt.GenerateAccessToken(user);
+                                if (user.Role == "Coach")
+                {
+                    var approval = await conn.ExecuteScalarAsync<string>("SELECT approval_status FROM coaches WHERE id = @Id", new { user.Id });
+                    if (approval == "PENDING") return Results.Json(new { error = "Onay bekleniyor.", code = "COACH_PENDING" }, statusCode: 403);
+                    if (approval == "REJECTED") return Results.Json(new { error = "Basvurunuz reddedildi.", code = "COACH_REJECTED" }, statusCode: 403);
+                }
+var token = jwt.GenerateAccessToken(user);
                 var refreshToken = jwt.GenerateRefreshToken();
 
                 await conn.ExecuteAsync(@"

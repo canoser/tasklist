@@ -39,6 +39,19 @@ namespace MentorumApi.Data
             return rows > 0;
         }
 
+        public async Task NotifyProgramCoachesAsync(Guid programId, string type, string title, string body, string? payload = null, Guid? excludeUserId = null)
+        {
+            var sql = @"
+                INSERT INTO notifications (id, user_id, type, title, body, payload)
+                SELECT gen_random_uuid(), pc.coach_id, @Type, @Title, @Body, @Payload
+                FROM program_coaches pc
+                WHERE pc.program_id = @ProgramId
+                  AND (@ExcludeUserId IS NULL OR pc.coach_id <> @ExcludeUserId)";
+
+            using var conn = _connectionFactory.CreateConnection();
+            await conn.ExecuteAsync(sql, new { ProgramId = programId, Type = type, Title = title, Body = body, Payload = payload, ExcludeUserId = excludeUserId });
+        }
+
         public async Task<bool> MarkAllAsReadAsync(Guid userId)
         {
             var sql = @"
