@@ -168,7 +168,7 @@ mentörüm/
 
 ## 3. Veri Modeli
 
-> ⚠️ V5 (Okul/Dershane Modeli) ile eklenen tablolar (teachers, courses, course_students, student_groups, student_group_members, course_groups, schedule_slots, course_resources, course_resource_progress) ve güncellenen rol/CHECK yapıları için bkz. **`V5_OKUL_MODELI.md` §3**. Bu dosya yalnızca mevcut MVP modelini gösterir.
+> ⚠️ V5 (Okul/Dershane Modeli) ile eklenen tablolar (coaching_programs, program_coaches, program_teachers, system_settings, teachers, courses, course_students, student_groups, student_group_members, course_groups, schedule_slots, course_resources, course_resource_progress), `coach_id` → `program_id` değişikliği ve güncellenen rol/CHECK yapıları için bkz. **`V5_OKUL_MODELI.md` §1.5 ve §3**. Bu dosya yalnızca mevcut MVP modelini gösterir.
 
 ### 3.1 Tablo Listesi ve İlişkiler
 
@@ -188,9 +188,11 @@ Coaches (Koç profili — Users'ı extend eder)
 ├── Id           UUID PK = Users.Id
 └── PlanType     TEXT DEFAULT 'free'  ← ileride abonelik için
 
+V5: Koçluk Programı — `coaching_programs` + `program_coaches` (role: YONETICI/YARDIMCI) + `coaches.approval_status` (süper yönetici onayı) eklendi; bkz. `V5_OKUL_MODELI.md` §1.5.
+
 Students (Öğrenci profili)
 ├── Id           UUID PK = Users.Id
-├── CoachId      UUID FK → Users(Coach)   ← TENANT KİLİDİ
+├── CoachId      UUID FK → Users(Coach)   ← V5'te KALDIRILACAK → yerine `program_id` (öğrenci tek programda — bkz. V5_OKUL_MODELI.md §1.5)
 ├── Grade        INTEGER (5-12)
 ├── Track        TEXT ('SAY','EA','SOZ','ORTAOKUL',null)
 ├── TargetUniversity TEXT

@@ -1,6 +1,6 @@
 # 🏫 Mentörüm — V5 Görev Listesi (Okul/Dershane Modeli)
-> **Tarih:** 4 Ekim 2026
-> **Durum:** ⏳ Planlandı — Sonnet incelemesiyle güncellendi; kodlanmadı.
+> **Tarih:** 6 Ekim 2026
+> **Durum:** ⏳ Planlandı — Koçluk Programı modeli (6 Ekim) ile güncellendi; kodlanmadı.
 > **Kaynak:** `V5_OKUL_MODELI.md` (ayrıntılı tasarım). Görevler sıralıdır — her aşama bir öncekini varsayar.
 
 ---
@@ -10,10 +10,11 @@
 - [ ] `course_resources` V4'teki benzer özellikle (kitap/video/soru takibi) çakışıyor mu? kontrol et — çakışma varsa tekrar yazma
 - [ ] `.agents/AGENTS.md` kurallarını oku (i18n, CSS Modules, idempotency, PORTABILITY.md)
 - [ ] Not: V4 Aşama 23 beklenebilir; V5 Aşama 1–6 ondan bağımsız ilerleyebilir
+- [ ] Karar (6 Ekim): Koçluk Programı modeli — yönetici/yardımcı + süper yönetici onayı + X program limiti (bkz. `V5_OKUL_MODELI.md` §1.5)
 
-## Aşama 1: Migration & Veri Modeli (006_SchoolModel.sql)
+## Aşama 1: Migration & Veri Modeli (006 expand → 007 program → 008 contract)
 - [ ] `006_SchoolModel.sql` yaz: `users.role` CHECK'e `'Teacher'` ekle (idempotent `DO $$` bloğu)
-- [ ] `invite_tokens.role` CHECK'e `'Teacher'` ekle
+- [ ] `invite_tokens.role` CHECK'e `'Teacher'` + `'Coach'` (yardımcı koç daveti) ekle
 - [ ] `notifications.type` CHECK genişlet: `SCHEDULE_UPDATED`, `TEACHER_ASSIGNED`, `RESOURCE_ASSIGNED`
 - [ ] `homework_assignments`'a `course_id` (NULL) + `created_by` (UUID) ekle; `exam_results`'a `created_by` ekle
 - [ ] `teachers` tablosu
@@ -23,13 +24,27 @@
 - [ ] `schedule_slots` (tek hedef CHECK + `start_time<end_time` CHECK + `valid_from`/`valid_to`; teacher/subject dersten türetilir)
 - [ ] `course_resources` + `course_resource_progress`
 - [ ] `Program.cs` `--migrate-only` script listesine 006 ekle
-- [ ] Boş PostgreSQL'de 001→006 sırayla çalıştır, hata yoksa onayla
+- [ ] 007 (expand+backfill): `coaching_programs` + `program_coaches` (YONETICI/YARDIMCI) + `program_teachers` + `system_settings` + `coaches.approval_status`/`max_programs`; tüm tablolara `program_id` (NULL) ekle; her koç için "Koçluk Programım" aç (YÖNETİCİ), `program_id`'leri backfill, mevcut koçlar APPROVED
+- [ ] 008 (contract): canlıda doğrulandıktan SONRA `coach_id` kolonlarını DROP (aynı migration'da DROP yasak — Fly kesinti)
+- [ ] `homework_templates.coach_id` kalır (kişisel kütüphane)
+- [ ] Boş PostgreSQL'de 001→008 sırayla çalıştır, hata yoksa onayla
 
-## Aşama 1.5: İzin & Tenant Helper (KRİTİK — ders/grup kodlamadan ÖNCE)
+## Aşama 1.5: İzin & Tenant Helper (KRİTİK — `program_id` Aşama 1.6'da tanımlı; ders/grup kodlamadan ÖNCE)
 - [ ] `CourseAccessHelper`: course.teacher_id doğrula + izin bayrağı + DTO maskeleme
 - [ ] `GetCourseStudentIds(courseId)` — etkin öğrenci kümesi (distinct union) tek kaynak
-- [ ] Tenant doğrulama helper'ı: öğretmen/öğrenci/grup aynı coach_id'ye ait olmalı
+- [ ] Tenant doğrulama helper'ı: öğretmen/öğrenci/grup aynı `program_id`'ye ait olmalı
 - [ ] Bu helper'lar için IDOR senaryolu testler (Testcontainers)
+
+## Aşama 1.6: Koçluk Programı + Koç Hiyerarşisi + Süper Yönetici
+- [ ] `ProgramRepository` + `ProgramEndpoints`: program CRUD (liste/oluştur/düzenle/sil+arşiv), `POST /program/{id}/coaches` (yardımcı davet), `POST /program/{id}/transfer-admin`, `DELETE /program/{id}/coaches/{coachId}`
+- [ ] Program öğrencisiz oluşturulabilir (K1); koç X kadar program açabilir (K2, `ProgramLimitService.CanCreateProgram`)
+- [ ] Yetki: yardımcı aynı iş yetkileri; koç yönetimi (davet/çıkarma/devir) + program silme yalnızca YÖNETİCİ
+- [ ] Yönetici devri: transaction; eski yönetici → YARDIMCI, hedef → YÖNETİCİ (tek yönetici unique index); yönetici çıkarılamaz (K3)
+- [ ] `program_id` filtresi tüm sorgularda (BaseRepository tenant = program_id); her istekte DB üyelik kontrolü (JWT'de program yok)
+- [ ] Koç kaydı onayı (K5): `coaches.approval_status` (PENDING/APPROVED/REJECTED); PENDING giriş → 403 `COACH_PENDING`
+- [ ] Süper yönetici: `SUPER_ADMIN_EMAIL` (canoser@gmail.com) → `Admin` rolü; koç onayı + X limiti belirleme
+- [ ] Bildirimler (K4): `NotifyProgramCoachesAsync(programId, ...)` → programın tüm koçlarına, çan simgesi
+- [ ] IDOR testi: yardımcı başka programın verisine erişemiyor mu?
 
 ## Aşama 2: Backend — Rol & Davet (Teacher)
 - [ ] `Program.cs`: `RequireTeacherRole` policy ekle
@@ -43,7 +58,7 @@
 - [ ] `TeacherRepository` + DTO'lar + `TeacherEndpoints` (list, invite, detail, update, deactivate)
 - [ ] `CourseRepository` + `CourseEndpoints` (CRUD + öğrenci/grup ekle-çıkar)
 - [ ] `GroupRepository` + `GroupEndpoints` (CRUD + üye yönetimi)
-- [ ] Her sorguda `coach_id` filtresi + `INSERT ... SELECT ... WHERE coach_id=@CoachId` kalıbı
+- [ ] Her sorguda `program_id` filtresi + `INSERT ... SELECT ... WHERE program_id=@ProgramId` kalıbı
 - [ ] IDOR testi (her aşamayla birlikte): başka koçun öğretmen/öğrenci/grup verisine erişim → 404/403
 - [ ] Öğretmen pasife alınınca derslerde teacher_id = NULL + koça bildirim
 
@@ -76,6 +91,8 @@
 - [ ] Koç: Dersler sayfası (liste + yeni ders formu: konu + öğretmen + renk + izinler)
 - [ ] Koç: Ders detayı (sekmeler: öğrenciler / gruplar / kaynaklar / izinler)
 - [ ] Koç: Gruplar sayfası (liste + üye yönetimi)
+- [ ] Koç yönetimi: "Yardımcı davet et/çıkar" + "Yöneticiliği devret" (yalnızca yöneticide); program listesi/oluştur/düzenle/sil (K1)
+- [ ] Süper yönetici paneli (basit): koç onay/red + X limiti + program listesi (`AdminLayout`)
 - [ ] `coachApi.js`'e yeni mutation'lar (React Query + `Idempotency-Key` header)
 
 ## Aşama 9: Frontend — Haftalık Program (sürükle-bırak)
@@ -99,7 +116,7 @@
 - [ ] Tablet/telefon/masaüstü kurulum testi
 - [ ] Google giriş: standalone/iOS'ta popup yerine redirect; Capacitor'da native Google plugin
 - [ ] `[MOBILE_PORT_TODO]` yorumları + PORTABILITY.md güncelle
-- [ ] Capacitor: `npx cap add android` / `ios` (Aşama 25-26'ya bağla)
+- [ ] Capacitor: `npx cap add android` (iOS yayınlanmayacak — atlandı)
 
 ## Aşama 13: Test & Doğrulama
 - [ ] Migration 006 canlı Neon'da uygula + doğrula
@@ -107,5 +124,7 @@
 - [ ] IDOR: öğretmen başka dersin öğrencisini göremiyor mu?
 - [ ] İzin maskeleme: iletişim/not kapalıyken gizli mi?
 - [ ] Öğretmen pasife alınınca dersler teacher_id=NULL + bildirim
+- [ ] Koç onay akışı: PENDING koç giriş → 403 `COACH_PENDING`; süper yönetici onayı → APPROVED
+- [ ] Program limiti: X aşılınca yeni program → 409
 - [ ] `dotnet build` + `npm run build` başarılı
 - [ ] Canlı smoke testi (Aşama 23 ile birleşik)

@@ -19,7 +19,7 @@ Yeni model: **Koç (müdür) → Öğretmenler + Dersler + Öğrenci Grupları �
 | **Ders Kaynakları** | Bir ders altında tanımlanan kitap sayfası, video serisi, soru seti. Öğrenci ilerlemesini işaretler, koç/öğretmen takip eder. |
 | **Kurulabilir Uygulama** | Web uygulaması tablet/telefon/masaüstüne PWA olarak kurulabilir; Capacitor ile mağazaya da girebilir. |
 
-> ⚠️ **Kural:** Mevcut "bir öğrenci = bir koç" varsayımı **değişmiyor**. Öğretmenler koçun ALTINDA çalışır; ayrı/bağımsız hesap değildir. Çok-koçlu senaryo hâlâ Faz 2.
+> ⚠️ **Kural (6 Ekim 2026 GÜNCELLENDİ):** Veri izolasyonunun birimi artık **Koçluk Programı**dır (bkz. §1.5). Bir koçun **X adet** programı olabilir (X'i süper yönetici belirler). Her programda bir **YÖNETİCİ** koç ve isteğe bağlı **YARDIMCI** koçlar bulunur. **Bir öğrenci yalnızca BİR programa** aittir. **Öğretmen birden çok programda** çalışabilir. Koç kaydı **süper yönetici onayına** bağlıdır.
 
 ---
 
@@ -27,11 +27,11 @@ Yeni model: **Koç (müdür) → Öğretmenler + Dersler + Öğrenci Grupları �
 
 ### 1.1 İlişkiler
 ```
-Koç (Coach)
- ├── Öğretmenler (Teacher) ── 1:1 ──► bir koça bağlı
- ├── Öğrenciler (Student)
- ├── Öğrenci Grupları (Group) ── N:M ──► Öğrenciler
- └── Dersler (Course)
+Koç (Coach) ── 1:N ──► Koçluk Programları (coaching_programs)
+ ├── Program → öğretmenler (program_teachers; öğretmen çok programlı)
+ ├── Program → öğrenciler (students.program_id; 1 öğrenci = 1 program)
+ ├── Program → öğrenci grupları (student_groups)
+ └── Program → dersler (Course)
        ├── subject (müfredat dersi)
        ├── teacher (opsiyonel — yoksa öğrenci kendi çalışır)
        ├── öğrenciler (doğrudan: course_students)
@@ -46,11 +46,136 @@ Koç (Coach)
 3. **Grup kullanımı:** "11-A TYT" grubu oluşturulur; gruba 20 öğrenci eklenir; grup tek seferde "Matematik" dersine ve haftalık programa bağlanır.
 4. **Program:** Koç haftalık ızgaraya dersleri/grupları/öğrencileri sürükleyip bırakır; tüm paydaşlar kendi programını görür.
 
+## 1.5 Koçluk Programı, Koç Hiyerarşisi ve Süper Yönetici (6 Ekim 2026)
+
+> 📌 **Kullanıcı kararı (6 Ekim 2026):** Önceki taslaktaki "Team / çok koçlu öğrenci" modeli **iptal edildi**. Yerine aşağıdaki **Koçluk Programı** modeli geçerlidir.
+
+### 1.5.1 Kavramlar
+| Kavram | Açıklama |
+|---|---|
+| **Koçluk Programı** (`coaching_programs`) | Bir koçun bir öğrenci grubu ya da tek öğrenciyle yürüttüğü çalışma birimi. **Veri izolasyonu (tenant) bu seviyededir.** Öğrenciler, gruplar, dersler, program (takvim), ödev, sınav, not → hepsi bir programa aittir. |
+| **Yönetici Koç** | Programı oluşturan koç. Her şeye yetkili. Programda **her zaman tam 1** yönetici vardır. |
+| **Yardımcı Koç** | Yöneticinin programa atadığı koç. Yöneticiyle aynı iş yetkileri; ama koç yönetimi (yardımcı atama/çıkarma, devir) yapamaz. |
+| **Süper Yönetici** | Sistemin sahibi (`SUPER_ADMIN_EMAIL` env, şimdilik `canoser@gmail.com`). Koç kayıtlarını onaylar, her koçun program limitini (X) belirler. |
+
+### 1.5.2 Temel kurallar
+1. Bir koç **birden çok programa** sahip olabilir (yönetici olduğu aktif program sayısı ≤ X).
+2. Bir koç başka koçların programlarında **yardımcı** olabilir (yardımcılık X limitine sayılmaz).
+3. **Bir öğrenci yalnızca bir programa** aittir (`students.program_id`). İki programda aynı anda bulunmaz.
+4. **Öğretmen birden çok programda** çalışabilir (`program_teachers`). Her programda yalnızca o programın derslerini görür.
+5. Program **öğrenci eklenmeden** oluşturulabilir. Koç programlarını listeler, düzenler, siler.
+6. Program silme: öğrencisi olmayan program kalıcı silinir; öğrencisi olan program **arşivlenir** (`is_active=0`, `archived_at`) — veri kaybı olmaz, süper yönetici geri alabilir.
+7. Ödev şablonları (`homework_templates`) koçun **kişisel kütüphanesi** olarak `coach_id`'de kalır; koç bunları dahil olduğu tüm programlarda kullanabilir.
+
+### 1.5.3 Program içi koç yetki matrisi
+| Yetki | Yönetici | Yardımcı |
+|---|---|---|
+| Öğrenci/grup/ders/takvim/ödev/sınav/not yönetimi | ✅ | ✅ |
+| Öğretmen davet + izin yönetimi | ✅ | ✅ |
+| Program adını/ayarlarını düzenleme | ✅ | ✅ |
+| Programı silme/arşivleme | ✅ | ❌ |
+| Yardımcı koç davet etme / çıkarma | ✅ | ❌ |
+| Yöneticiliği devretme | ✅ | ❌ |
+| Programdan kendi isteğiyle ayrılma | ❌ (önce devretmeli) | ✅ |
+
+### 1.5.4 Yönetici devri ve çıkarma kuralları
+- Yönetici **hiç kimse tarafından (kendisi dahil) çıkarılamaz**. Çıkmak/çıkarılmak için önce yöneticiliği bir yardımcıya devretmelidir.
+- Devir (tek transaction): önce eski yönetici → `YARDIMCI`, sonra hedef yardımcı → `YONETICI` (sıra, "tek yönetici" unique index'ini ihlal etmemek için önemlidir).
+- Devir hedefi, devirle birlikte X limitini aşacaksa → `409` (süper yöneticiden limit artırımı istenir).
+- Yönetici yardımcıyı her zaman çıkarabilir; yardımcının oluşturduğu kayıtlar (ödev, not vb.) programda kalır (`created_by` korunur).
+
+### 1.5.5 Koç kaydı ve süper yönetici onayı
+- "Kaydol" (e-posta/şifre **veya** Google) → kullanıcı `role='Coach'`, `coaches.approval_status='PENDING'` olarak oluşur.
+- PENDING koç giriş yapınca `403 { code: "COACH_PENDING" }` döner → frontend "Onay bekleniyor" ekranı gösterir. REJECTED → `403 { code: "COACH_REJECTED" }`.
+- Süper yöneticiye çan bildirimi düşer (`COACH_APPROVAL_REQUESTED`).
+- Süper yönetici onaylarken X'i belirler (boş bırakırsa sistem varsayılanı `system_settings.default_max_programs`).
+- **Davetle gelen yardımcı koç** onay beklemez (davet eden yönetici kefildir): `approval_status='APPROVED'`, `max_programs=0` → yardımcılık yapabilir, kendi programını açamaz; süper yönetici sonra X verebilir.
+- Mevcut (V4) koçlar migration'da `APPROVED` + varsayılan X ile işaretlenir.
+- 📌 İleride üyelik/ödeme sistemine geçilince onay ve X, plan/abonelik koşullarına bağlanacak (bu yüzden limit kontrolü tek bir servis metodunda: `ProgramLimitService.CanCreateProgram(coachId)`).
+
+### 1.5.6 Bildirimler (çan simgesi)
+- Programdaki **tüm koçlar** (yönetici + yardımcılar) programdaki **tüm olayların** bildirimini alır: ödev atandı, ödev tamamlandı, gecikti, sınav eklendi, öğretmen atandı/pasif, takvim değişti vb.
+- Tek merkezi metot: `NotificationService.NotifyProgramCoachesAsync(programId, type, ...)` — hiçbir endpoint bildirim alıcılarını kendisi hesaplamaz (DRY).
+- Mevcut çan altyapısı (`useNotifications` + `CoachLayout`/`StudentLayout`/`ParentLayout`) genişletilir; `AdminLayout` ve `TeacherLayout`'a da eklenir.
+
+### 1.5.7 Tenant çözümleme (güvenlik)
+- Koç uçları program kapsamlıdır: `/api/v1/programs/{programId}/...`.
+- `ProgramAccessFilter` (endpoint filter) her istekte `program_coaches` tablosundan **veritabanından** üyeliği doğrular (JWT'ye program bilgisi KONMAZ — devir/çıkarma sonrası eski token yetki taşımasın).
+- Doğrulanan bilgi scoped `IProgramContext` (ProgramId, CoachRole) servisine yazılır; `BaseRepository` filtresi `program_id = @ProgramId` olur.
+- Yönetici-only uçlar `RequireProgramAdmin` kontrolüyle korunur (yardımcı → 403).
+- Öğrenci/veli uçları programı `students.program_id`'den türetir; öğretmen uçları `program_teachers` + `courses.teacher_id` üzerinden.
+
+### 1.5.8 Yeni / değişen tablolar
+**coaching_programs**
+```
+id UUID PK
+name TEXT NOT NULL
+description TEXT
+color TEXT
+is_active INTEGER DEFAULT 1
+archived_at TIMESTAMPTZ NULL
+created_by UUID REFERENCES users(id)
+created_at ..., updated_at ...
+```
+
+**program_coaches**
+```
+id UUID PK
+program_id UUID NOT NULL REFERENCES coaching_programs(id) ON DELETE CASCADE
+coach_id UUID NOT NULL REFERENCES coaches(id) ON DELETE CASCADE
+role TEXT NOT NULL CHECK(role IN ('YONETICI','YARDIMCI'))
+added_by UUID REFERENCES users(id)
+created_at ...
+UNIQUE(program_id, coach_id)
+-- Tek yönetici garantisi (DB seviyesinde):
+CREATE UNIQUE INDEX ux_program_one_admin ON program_coaches(program_id) WHERE role = 'YONETICI';
+```
+
+**program_teachers** (öğretmen çok programlı)
+```
+id UUID PK
+program_id UUID NOT NULL REFERENCES coaching_programs(id) ON DELETE CASCADE
+teacher_id UUID NOT NULL REFERENCES teachers(id) ON DELETE CASCADE
+is_active INTEGER DEFAULT 1
+added_by UUID REFERENCES users(id)
+created_at ...
+UNIQUE(program_id, teacher_id)
+```
+
+**system_settings** (süper yönetici ayarları)
+```
+key TEXT PK          -- örn. 'default_max_programs'
+value TEXT NOT NULL
+updated_at ..., updated_by UUID
+```
+
+**Mevcut tablolarda değişiklik**
+| Tablo | Değişiklik |
+|---|---|
+| `users.role` | CHECK'e `'Admin'` ve `'Teacher'` ekle |
+| `coaches` | `approval_status TEXT CHECK IN ('PENDING','APPROVED','REJECTED') DEFAULT 'PENDING'`, `max_programs INTEGER NULL` (NULL = sistem varsayılanı), `approved_by UUID`, `approved_at TIMESTAMPTZ` |
+| `students` | `program_id UUID REFERENCES coaching_programs(id)` ekle → backfill → `coach_id` **sonraki migration'da** kaldırılır |
+| `coach_notes`, `exam_results`, `student_subjects`, `homework_assignments` | `program_id` ekle (+ yoksa `created_by`) → backfill → `coach_id` sonraki migration'da kaldırılır |
+| `homework_templates` | **değişmez** (`coach_id` = kişisel kütüphane) |
+| `invite_tokens.role` | CHECK'e `'Teacher'`, `'Coach'` (yardımcı daveti) ekle; `related_id` = `program_id` |
+| `notifications.type` | `COACH_APPROVAL_REQUESTED`, `COACH_APPROVED`, `PROGRAM_COACH_ADDED`, `PROGRAM_ADMIN_TRANSFERRED` + V5 okul tipleri |
+
+### 1.5.9 Geçiş stratejisi (canlıda kesintisiz — expand / backfill / contract)
+1. **006_AdminAndPrograms.sql (expand + backfill):** yeni tablolar + yeni kolonlar NULL olarak eklenir. Her mevcut koç için bir "Koçluk Programım" programı açılır, koç YONETICI yapılır; `students.program_id` ve diğer tabloların `program_id`'si koçun programıyla doldurulur; mevcut koçlar APPROVED. Süper yönetici `SUPER_ADMIN_EMAIL` ile `Admin` rolüne yükseltilir.
+2. **Kod deploy'u:** tüm sorgular `program_id` kullanır. (Eski kolonlar hâlâ duruyor → rolling deploy sırasında eski makineler kırılmaz.)
+3. **008_ContractCoachId.sql:** canlıda doğrulandıktan sonra `program_id NOT NULL` + `coach_id` kolonları DROP.
+
+> ⚠️ Fly `release_command` migration'ı eski kod çalışırken uygular; bu yüzden aynı migration'da kolon DROP etmek **yasaktır**.
+
 ## 2. Roller ve Yetki Matrisi (GÜNCELLENDİ)
 
 ### 2.1 Roller
-- **KOÇ:** Değişmedi + artık öğretmen, ders, grup ve programı da yönetir (müdür yetkisi).
-- **ÖĞRETMEN:** Koç tarafından davet edilir. Yalnızca atandığı dersin öğrencilerini, koçun izin verdiği ölçüde görür/yönetir. Başka dersin/diğer öğrencinin verisini göremez.
+- **SÜPER YÖNETİCİ (Admin):** Koç kayıtlarını onaylar/reddeder, koç başına program limiti (X) ve varsayılan X'i belirler. Basit yönetici paneli.
+- **KOÇ (program bazında iki seviye — bkz. §1.5):**
+  - **YÖNETİCİ:** Programı oluşturan koç. Her şeye yetkili; yardımcı davet eder/çıkarır, yöneticiliği devreder, programı siler.
+  - **YARDIMCI:** Yöneticinin atadığı koç. Aynı iş yetkileri; koç yönetimi ve program silme yok. Yönetici çıkarılamaz.
+  - Bir koç bir programda yönetici, başka bir programda yardımcı olabilir.
+- **ÖĞRETMEN:** Bir programın koçu tarafından davet edilir; **birden çok programda** çalışabilir. Her programda yalnızca atandığı dersin öğrencilerini, izin verilen ölçüde görür/yönetir.
 - **ÖĞRENCİ:** Değişmedi + haftalık programı ve ders kaynaklarını görür, kendi ilerlemesini işaretler.
 - **VELİ:** Değişmedi + çocuğunun haftalık programını salt-okunur görür.
 
@@ -78,6 +203,8 @@ Tam tablo `URUN_PLANI.md` §2.2'de güncellendi. Özet kural: Öğretmen yalnız
 
 ## 3. Veri Modeli
 
+> ⚠️ **Koçluk Programı (6 Ekim 2026):** Aşağıdaki V5 tablolarındaki tüm `coach_id` alanları **`program_id UUID NOT NULL REFERENCES coaching_programs(id) ON DELETE CASCADE`** olarak okunmalıdır. `coaching_programs` / `program_coaches` / `program_teachers` / `system_settings` ve mevcut tablo değişiklikleri için bkz. **§1.5.8**.
+
 ### 3.1 Mevcut Tablolarda Değişiklik
 | Tablo | Değişiklik |
 |---|---|
@@ -89,13 +216,14 @@ Tam tablo `URUN_PLANI.md` §2.2'de güncellendi. Özet kural: Öğretmen yalnız
 
 ### 3.2 Yeni Tablolar
 
-**teachers**
+**teachers** (global öğretmen profili — programlara `program_teachers` ile bağlanır, bkz. §1.5.8)
 ```
 id UUID PK REFERENCES users(id) ON DELETE CASCADE
-coach_id UUID NOT NULL REFERENCES coaches(id) ON DELETE CASCADE
+branch TEXT                -- branş (opsiyonel)
 is_active INTEGER DEFAULT 1
 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 ```
+> `courses.teacher_id` atanırken öğretmenin `program_teachers`'ta **o programın aktif üyesi** olduğu doğrulanır. Öğretmen bir programda pasife alınınca yalnızca **o programın** derslerinde `teacher_id = NULL` + programın tüm koçlarına bildirim.
 
 **courses** (Dersler)
 ```
@@ -218,13 +346,15 @@ Bir dersin öğrenci kümesi = `course_students` ∪ (`course_groups` → `stude
 
 Tümü `/api/v1` altında. Her sorguda **ownership** (coach_id) filtresi zorunlu; öğretmen uçlarında **teacher_id + izin** kontrolü.
 
-### 4.1 Teachers (Koç)
+> 📌 **6 Ekim:** §4.1–4.5'teki tüm koç uçları program kapsamlıdır: `/programs/{programId}` ön ekiyle çağrılır (örn. `GET /programs/{pid}/courses`). Aşağıda kısalık için ön ek yazılmamıştır.
+
+### 4.1 Teachers (Koç — program kapsamlı)
 ```
-GET    /teachers                 → koçun öğretmen listesi
-POST   /teachers/invite          → { email } öğretmen davet (role=Teacher)
-GET    /teachers/:id             → öğretmen + atandığı dersler
+GET    /teachers                 → programın öğretmen listesi
+POST   /teachers/invite          → { email } öğretmen davet (role=Teacher; hesabı varsa join akışı)
+GET    /teachers/:id             → öğretmen + bu programda atandığı dersler
 PUT    /teachers/:id             → güncelle
-DELETE /teachers/:id             → pasife al
+DELETE /teachers/:id             → bu programda pasife al (diğer programları etkilenmez)
 ```
 
 ### 4.2 Courses (Koç)
@@ -283,19 +413,55 @@ POST   /me/courses/:id/exams              → manage_exams izni
 ```
 
 ### 4.7 Güvenlik Kuralları (ZORUNLU)
-1. Her yeni tablo sorgusu `coach_id = @CoachId` (BaseRepository) içerir.
+1. Her yeni tablo sorgusu `program_id = @ProgramId` (BaseRepository + `IProgramContext`) içerir; üyelik her istekte DB'den doğrulanır (§1.5.7).
 2. Öğretmen uçları: önce `course.teacher_id == @TeacherId` doğrulanır, sonra ilgili izin bayrağı kontrol edilir. İzin kapalıysa o alan DTO'dan çıkarılır (maskeleme).
 3. Öğrenci yalnızca kendi `student_id`; veli yalnızca bağlı çocuğu.
 4. `INSERT INTO ... SELECT ... WHERE ... coach_id=@CoachId` kalıbı yeni ekleme endpoint'lerinde de kullanılır.
-5. **Tenant doğrulama:** Ders/grup/program oluştururken öğretmen, öğrenci ve grup aynı `coach_id`'ye ait olmalı. Ayrı test senaryosu yazılır.
+5. **Tenant doğrulama:** Ders/grup/takvim oluştururken öğretmen (`program_teachers`), öğrenci ve grup aynı `program_id`'ye ait olmalı. Ayrı test senaryosu yazılır.
 6. **Öğretmen sızıntı koruması:** Öğretmen ödev/sınav/not uçları her zaman `course_id` ile filtrelenir — `manage_homework` açık olsa bile başka dersin ödevini göremez.
 7. **Idempotency:** POST uçları (ders oluşturma, öğretmen daveti, grup oluşturma) `Idempotency-Key` + ActionFilter ile korunur (AGENTS.md kuralı).
+
+### 4.8 Koçluk Programları ve Koç Hiyerarşisi
+```
+GET    /programs                              → koçun dahil olduğu programlar (rolüyle: YONETICI/YARDIMCI)
+POST   /programs                              → { name, description, color } (X limiti kontrolü → 409)
+GET    /programs/{pid}                        → detay (öğrenci/koç/öğretmen sayıları)
+PUT    /programs/{pid}                        → düzenle (yönetici + yardımcı)
+DELETE /programs/{pid}                        → öğrencisiz → sil; öğrencili → arşivle (YALNIZCA YÖNETİCİ)
+GET    /programs/{pid}/coaches                → programdaki koçlar + rolleri
+POST   /programs/{pid}/coaches/invite         → { email } yardımcı davet (YALNIZCA YÖNETİCİ)
+DELETE /programs/{pid}/coaches/{coachId}      → yardımcıyı çıkar (YALNIZCA YÖNETİCİ; hedef yönetici ise 400)
+POST   /programs/{pid}/coaches/leave          → yardımcı kendi ayrılır (yönetici → 400 "önce devredin")
+POST   /programs/{pid}/transfer-admin         → { coachId } yöneticiliği devret (YALNIZCA YÖNETİCİ)
+POST   /invites/{code}/join                   → (auth) hesabı olan kullanıcı daveti kabul eder — yeni kullanıcı açmaz
+```
+> Yardımcı, yönetici-only uçları çağıramaz (403). Tüm POST uçları `Idempotency-Key` ile korunur.
+
+### 4.9 Süper Yönetici (Admin rolü)
+```
+GET    /admin/coaches?status=PENDING|APPROVED|REJECTED  → koç listesi (program sayısı + limit)
+POST   /admin/coaches/{id}/approve            → { maxPrograms? }
+POST   /admin/coaches/{id}/reject             → { reason? }
+PUT    /admin/coaches/{id}/limit              → { maxPrograms }
+GET    /admin/settings                        → { defaultMaxPrograms }
+PUT    /admin/settings                        → { defaultMaxPrograms }
+GET    /admin/programs/archived               → arşivlenmiş programlar
+POST   /admin/programs/{pid}/restore          → arşivden geri al
+```
+> `Admin` rolü yalnızca `SUPER_ADMIN_EMAIL` env'indeki hesaba verilir (kodda e-posta sabit yazılmaz).
 
 ---
 
 ## 5. UI / Navigasyon
 
-### 5.1 Koç (sidebar'a eklenenler)
+### 5.0 Koç giriş akışı ve Süper Yönetici paneli (6 Ekim)
+- Koç giriş yapınca **"Programlarım"** ekranı açılır: program kartları (rol rozeti YÖNETİCİ/YARDIMCI, öğrenci sayısı), "Yeni Program" (limit dolunca pasif + açıklama), düzenle, sil/arşivle.
+- Program seçilince program kapsamlı panel açılır; aktif program **URL'de** tutulur (`/coach/programs/:programId/...`) — localStorage'a bağımlı değil (mobil/derin link uyumlu). Üst barda program değiştirici.
+- Program ayarlarında **"Koçlar"** sekmesi: yardımcı davet, çıkar, yöneticiliği devret (yalnızca yöneticide görünür; backend yine 403 ile korur).
+- PENDING koç → "Hesabınız onay bekliyor" ekranı.
+- **AdminLayout** (`/admin`, basit): Onay Bekleyenler (onayla + X / reddet), Koçlar (limit düzenle, program sayısı), Ayarlar (varsayılan X), Arşivlenmiş Programlar. Çan bildirimi dahil.
+
+### 5.1 Koç (program panelinde sidebar'a eklenenler)
 ```
 🧑‍🏫 ÖĞRETMENLER   → liste + davet + öğretmen profili (atanan dersler)
 📚 DERSLER        → liste + yeni ders + ders detayı (öğrenciler/gruplar/öğretmen/kaynaklar/izinler)
@@ -345,11 +511,27 @@ POST   /me/courses/:id/exams              → manage_exams izni
 | 6 | Çakışma kontrolü | Uyarı yeterli + hesaplama **sunucuda** |
 | 7 | Grup | Ayrı varlık |
 
+### Kararlar (6 Ekim 2026) — Koçluk Programı modeli (5 Ekim "Team" taslağının YERİNE)
+| # | Karar | Sonuç |
+|---|---|---|
+| 8 | Veri izolasyonu birimi | **Koçluk Programı** (`coaching_programs`); tüm program verisi `program_id` ile |
+| 9 | Öğrenci birden çok programda olabilir mi? | **HAYIR** — `students.program_id` (tek program) |
+| 10 | Program nasıl oluşur? | Koç **öğrenci eklemeden** oluşturur; listeler, düzenler, siler (öğrencili → arşiv) |
+| 11 | Koçun kaç programı olabilir? | **X** — süper yönetici koç bazında belirler (varsayılan `system_settings`) |
+| 12 | Yardımcı koç | Yönetici atar/çıkarır; yardımcı aynı iş yetkileri, koç yönetimi yok |
+| 13 | Yönetici çıkarılabilir mi? | **HAYIR** (kendisi dahil); önce yöneticiliği devretmeli |
+| 14 | Bildirimler | Programın **tüm koçlarına** (yönetici + yardımcı), tüm olaylar; çan simgesi |
+| 15 | Koç kaydı | **Süper yönetici onayı** (`SUPER_ADMIN_EMAIL`); davetli yardımcı onaysız ama `max_programs=0` |
+| 16 | Öğretmen çok programlı mı? | **EVET** — `program_teachers` |
+| 17 | Ödev şablonları | Koçun kişisel kütüphanesi (`coach_id`), tüm programlarında kullanılır |
+| 18 | Tenant çözümleme | Route'ta `programId` + her istekte DB üyelik kontrolü (JWT'de program yok) |
+| 19 | Hesabı olan kullanıcı ikinci programa | `POST /invites/{code}/join` (auth) — yeni kullanıcı açmaz |
+
 ### Sonnet incelemesinin eklediği kritik düzeltmeler
 - **Etkin öğrenci kümesi** tekilleştirilmiş union olarak tanımlandı (§3.3).
 - **schedule_slots**: tek hedef CHECK + `start_time < end_time` CHECK + `valid_from`/`valid_to`; `teacher_id`/`subject_id` dersten türetilir (saklanmaz).
 - **Öğretmen sızıntı koruması**: ödev/sınav/not uçları `course_id` ile filtrelenir; `created_by` eklendi.
-- **Tenant doğrulama**: öğretmen/öğrenci/grup aynı `coach_id`'ye ait olmalı + ayrı test.
+- **Tenant doğrulama**: öğretmen/öğrenci/grup aynı `program_id`'ye ait olmalı + ayrı test.
 - **Öğretmen yaşam döngüsü**: pasife alınınca `teacher_id = NULL` + koça bildirim.
 - **course_resources** V4'teki benzer özellikle çakışmasın diye kodlamadan önce kontrol edilecek.
 - **Proje kuralları**: i18n altyapısı (dil ve ton sonradan eklenebilecek şekilde hazır; şimdilik içerik yalnızca resmi Türkçe `tr` — bkz. `.agents/rules/i18n_guidelines.md`), CSS Modules, PORTABILITY.md + `[MOBILE_PORT_TODO]`, POST idempotency, PWA riskleri (service worker kimlikli yanıtları cache'lemez; iOS'ta Google redirect; Capacitor'da native plugin), dnd-kit dokunmatik sensör + form alternatifi.

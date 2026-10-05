@@ -1,7 +1,7 @@
 # 🎓 Mentörüm — Ürün Planı (URUN_PLANI.md)
-> **Versiyon:** 1.0 — 23 Eylül 2026  
+> **Versiyon:** 2.0 — 6 Ekim 2026 (V5 Koçluk Programı modeli)
 > **Platform:** mentorum.dersmatris.com (Web + Kurulabilir PWA + Capacitor)
-> **V5 (4 Ekim 2026):** Okul/Dershane Modeli eklendi — ayrıntılı tasarım `V5_OKUL_MODELI.md`, görev listesi `TASK_LIST_V5.md`.
+> **V5 (6 Ekim 2026):** Okul/Dershane Modeli + Koçluk Programı (yönetici/yardımcı + süper yönetici) — ayrıntılı tasarım `V5_OKUL_MODELI.md`, görev listesi `TASK_LIST_V5.md`.
 
 ---
 
@@ -40,6 +40,8 @@ ve müfredata dayalı konu takibini tek bir profesyonel platformdan yönetmesini
 
 DAHIL:
 - Koç paneli (tablet-first) — "müdür" rolü: ders/öğretmen/öğrenci/grup/program yönetimi
+- Koç hiyerarşisi: Yönetici (programı kuran) + Yardımcı koç (yöneticinin atadığı; aynı iş yetkileri, koç yönetimi yok)
+- Koçluk Programı: koçun birden çok programı (X); her programda yönetici + yardımcı koçlar
 - Öğrenci paneli (mobil-first)
 - Veli paneli (mobil, salt okunur)
 - Ödev atama ve takip (ortak şablon, kişisel durum)
@@ -59,7 +61,7 @@ KAPSAM DIŞI (Sonraki Versiyon):
 - AI destekli analiz
 - Ödeme/abonelik sistemi
 - Canlı ders/video görüşme
-- Birden fazla koç — bir öğrenci (öğretmenler koçun ALTINDA çalışır, bağımsız değil)
+- ~~Birden fazla koç — bir öğrenci~~ → KAPSAMDA ama öğrenci TEK programda; çok koçluluk yardımcı koçlar üzerinden
 - Dosya/PDF ek yükleme
 - SMS bildirimleri
 - Soru havuzu (hazır soru bankası — içerik yatırımı, Faz 3)
@@ -70,12 +72,17 @@ KAPSAM DIŞI (Sonraki Versiyon):
 
 ### 2.1 Roller
 
-KOÇ:
-- Sistemi oluşturan, hesabı açan kişi
-- Kendi altındaki tüm öğrencileri yönetir
+SÜPER YÖNETİCİ (Admin):
+- Sistem sahibi (canoser@gmail.com); koç kayıtlarını onaylar/reddeder, koç başına program limitini (X) belirler
+- Basit yönetici paneli
+- Cihaz: Web/masaüstü
+
+KOÇ (iki seviye — Yönetici/Yardımcı, bkz. `V5_OKUL_MODELI.md` §1.5):
+- YÖNETİCİ: Programı kuran koç; her şeye yetkili, yardımcı atar/çıkarır, yöneticiliği devreder, programı siler; çıkarılamaz
+- YARDIMCI: Yöneticinin atadığı koç; aynı iş yetkileri ama koç yönetimi + program silme yok
 - Ödev atar, konu işler, notlar tutar
 - Öğrenci profili oluşturur, veli bilgisi girer
-- Her şeyi görür — kısıtı yok
+- Ortak: ders/öğretmen/öğrenci/grup/program yönetimi, ödev/sınav, veli daveti
 - Cihaz: Öncelikle tablet/masaüstü
 
 ÖĞRENCİ:
@@ -118,6 +125,8 @@ VELİ:
 | Takvim                | ✅(tüm)| ✅(kendi dersi)| ✅(kendi)| ✅(çocuğu)|
 
 > ⚙️ = koçun ders bazında açıp kapattığı öğretmen izni. Ayrıntı: `V5_OKUL_MODELI.md` §2.3.
+> 👥 "Koç" sütunu = Yönetici + Yardımcı (ikisi de aynı veriye erişir; tek fark koç yönetimi — bkz. `V5_OKUL_MODELI.md` §1.5).
+> 🛡️ Süper Yönetici bu matrisin dışında (sistem yöneticisi): öğrenci/ders verisine erişmez; yalnızca koç onayı + X limiti + program listesi.
 
 ⚠️ KRİTİK GÜVENLİK: Bu yetki kontrolleri YALNIZCA frontend'de değil,
 her API endpoint'inde sunucu tarafında uygulanmalıdır.
@@ -420,7 +429,7 @@ P7 — Öğrenci uygulamayı hiç açmıyorsa bildirim işe yaramaz
 
 G1 — IDOR: Başkasının öğrencisini görme
 /api/students/42 → ID 42 başka koçun öğrencisi
-Her endpoint: WHERE coach_id = @aktifKoç kontrolü (BACKEND'DE)
+Her endpoint: WHERE program_id = @aktifProgram kontrolü (BACKEND'DE)
 
 G2 — Öğrenci başka öğrencinin ödevini görme
 /api/homework/99 → Her ödev: WHERE student_id = @aktifÖğrenci
@@ -450,9 +459,9 @@ Auth endpoint: 10 req/dk
 
 ### 11.1 Planın Zayıf Noktaları
 
-❶ Tek koç varsayımı kırılgan
-"Bir öğrenci, birden fazla koç" senaryosu gelirse veri modeli köklü değişir.
-MVP'de soyutlamayla önlem al: öğrenci-koç ilişkisi N:M olarak modelle.
+❶ ~~Tek koç varsayımı kırılgan~~ → ÇÖZÜLDÜ: çok koçluluk "yardımcı koç" ile, tek program içinde
+~~"Bir öğrenci, birden fazla koç" senaryosu gelirse veri modeli köklü değişir.~~ → artık destekleniyor (tek program, yardımcı koçlar)
+Çözüm: öğrenci↔program (1:1, `students.program_id`) + program↔koç (N:M, `program_coaches`) olarak modellendi.
 
 ❷ Müfredat verisi sabit bırakılırsa çürür
 Her yıl yazılımcı müdahalesi gerekir.
@@ -479,7 +488,7 @@ Veritabanı indeksleme + pagination baştan düşünülmeli.
 |------------------------|-------------------|---------------|
 | AI konu analizi        | Fazla erken       | Faz 2         |
 | Dosya yükleme          | Storage karmaşık  | Faz 2         |
-| İki koç / bir öğrenci  | Model karmaşıklaşır| Faz 2        |
+| ~~İki koç / bir öğrenci~~ | Yardımcı koçla çözüldü (tek program) | V5 (kapsamda) |
 | Gelişmiş raporlar      | Veri lazım önce   | Faz 2         |
 
 ---
@@ -491,7 +500,7 @@ Veritabanı indeksleme + pagination baştan düşünülmeli.
 | 1 | Alan adı yapısı                  | dersmatris.com / app.dersmatris.com / {koç}.dersmatris.com |
 | 2 | Ödev onay modu                   | Öğrenci işaretler = bitti / Koç onayı gerekli |
 | 3 | Veli koç notlarını görebilir mi? | Evet / Hayır (önerim: Hayır)                  |
-| 4 | Bir öğrenci birden fazla koç?    | MVP: Hayır / Gelecek: Evet                    |
+| 4 | Bir öğrenci birden fazla koç?    | ✅ EVET — tek programda, yardımcı koçlar ile   |
 | 5 | Müfredat kim düzenler?           | Yalnızca sistem / Koç ekleyip çıkarabilir     |
 | 6 | Gecikmeli tamamlanan ayrı renk?  | Evet (turuncu) / Hayır (yeşile çevrilsin)     |
 | 7 | MVP'de dosya eki var mı?         | Hayır (metin) / Evet (resim/PDF)              |
