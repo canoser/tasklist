@@ -96,7 +96,7 @@ const InviteAcceptPage = () => {
             {inviteData ? (
               <p className={styles.subtitle}>
                 <strong>{inviteData.fullName || inviteData.email}</strong>, Mentörüm uygulamasına 
-                {inviteData.role === 'Student' ? ' öğrenci' : ' veli'} olarak davet edildin.
+                {inviteData.role === 'Student' ? ' öğrenci' : inviteData.role === 'Teacher' ? ' öğretmen' : ' veli'} olarak davet edildin.
               </p>
             ) : (
               <p className={styles.subtitle}>Davetiye bilgileri alınamadı.</p>

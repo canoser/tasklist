@@ -81,7 +81,8 @@ namespace MentorumApi.Tests
                 ('33333333-3333-3333-3333-333333333333', 'studentA@test.com', 'Student', 'Student A'),
                 ('44444444-4444-4444-4444-444444444444', 'teacherA@test.com', 'Teacher', 'Teacher A'),
                 ('55555555-5555-5555-5555-555555555555', 'studentB@test.com', 'Student', 'Student B'),
-                ('66666666-6666-6666-6666-666666666666', 'studentC@test.com', 'Student', 'Student C');
+                ('66666666-6666-6666-6666-666666666666', 'studentC@test.com', 'Student', 'Student C'),
+                ('77777777-7777-7777-7777-777777777777', 'teacherB@test.com', 'Teacher', 'Teacher B');
                 
                 INSERT INTO coaches (id) VALUES ('11111111-1111-1111-1111-111111111111'), ('22222222-2222-2222-2222-222222222222');
                 
@@ -112,6 +113,13 @@ namespace MentorumApi.Tests
                 (gen_random_uuid(), 'dddddddd-dddd-dddd-dddd-dddddddddddd', '66666666-6666-6666-6666-666666666666', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
                 INSERT INTO course_groups (id, course_id, group_id, program_id) VALUES
                 (gen_random_uuid(), 'cccccccc-cccc-cccc-cccc-cccccccccccc', 'dddddddd-dddd-dddd-dddd-dddddddddddd', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
+
+                -- Program B: Teacher B + Course B + Group B (IDOR cross-tenant testi için)
+                INSERT INTO teachers (id, program_id) VALUES ('77777777-7777-7777-7777-777777777777', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb');
+                INSERT INTO program_teachers (id, program_id, teacher_id) VALUES (gen_random_uuid(), 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '77777777-7777-7777-7777-777777777777');
+                INSERT INTO courses (id, program_id, teacher_id, name, type) VALUES
+                ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '77777777-7777-7777-7777-777777777777', 'Fizik', 'DERS');
+                INSERT INTO student_groups (id, program_id, name) VALUES ('ffffffff-ffff-ffff-ffff-ffffffffffff', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Grup B');
             ");
         }
 

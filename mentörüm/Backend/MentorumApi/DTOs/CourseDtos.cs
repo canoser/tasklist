@@ -9,6 +9,9 @@ namespace MentorumApi.DTOs
         public Guid CourseId { get; set; }
         public Guid? TeacherId { get; set; }
         public Guid ProgramId { get; set; }
+        public string? Name { get; set; }
+        public string? Type { get; set; }
+        public string? Color { get; set; }
         public bool CanViewProfile { get; set; }
         public bool CanViewContact { get; set; }
         public bool CanViewHomework { get; set; }

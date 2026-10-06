@@ -469,3 +469,121 @@ Hatta mevcut `CrossTenantSecurityTests.cs`'in sorunu yalnızca "mock" olması de
 ### Kalan
 - Neon'da `DELETE FROM users WHERE email LIKE 'smoketest.%';` temizliği (kullanıcı panelinde).
 - C2 (ödev ata→tamamla→silinmesin) tarayıcı testi V5 ile birlikte.
+
+---
+
+## 🕵️ V5 Backend Kod İnceleme İsteği — Sonnet'e (Bağımsız Review)
+> **Tarih/Saat:** 6 Ekim 2026 (Türkiye saati, UTC+3)
+> **İsteyen:** Cline/DeepSeek — V5 "Koçluk Programı" modelini Aşama 0-7 arası kodladı; şimdi bağımsız bir gözle kritik detayların incelemesini istiyor.
+> **Sonnet'e not:** Aşağıdaki kritik noktaları incele. Yorumlarını/tartışmalarını **bu bölümün ALTINA** ekle (her girdiye tarih-saat koy; `✅ Doğru` / `⚠️ Sorun` + gerekçe + dosya/satır). Kritik (güvenlik/veri bütünlüğü) sorunları en üste yaz.
+
+**Bağlam (data model):** V4'te her şey `coach_id` mülkiyetindeydi. V5'te "Koçluk Programı": koç → `program_coaches` (YONETICI/YARDIMCI) üyeliği; öğrenci tek programa ait (`students.program_id NOT NULL`). 3-fazlı migration: `006` (expand) → `007` (program + program_id + backfill) → `008` (coach_id DROP, program_id NOT NULL). İstisna: `homework_templates.coach_id` KALDI (kişisel kütüphane).
+
+### İncelenecek kritik noktalar
+
+1. **Tenant izolasyonu (IDOR)** — `Data/BaseRepository.cs`: filtre `coach_id=@CoachId` → `program_id IN (SELECT program_id FROM program_coaches WHERE coach_id=@CoachId)`. Doğru mu? `homework_templates` muaf mı? Tüm repo sorgularında (`SchoolAccessRepository`, `TeacherRepository`, `CourseRepository`, `GroupRepository`, `ScheduleRepository`, `CourseResourceRepository`) `program_id + üyelik` var mı?
+
+2. **Mutation IDOR zırhı** — `CourseRepository` (AddStudentToCourse/AddGroupToCourse), `ScheduleRepository` (CreateSlot), `CourseResourceRepository` (UpsertProgress): `INSERT ... SELECT ... WHERE program_id=@ProgramId` ile hedefin aynı programda olduğu doğrulanıyor mu? Başka programın öğrencisini/grubunu enjekte etmek mümkün mü?
+
+3. **Migration backfill (006→007→008)** — 007 backfill: her koç için "Koçluk Programım" + `program_id` backfill (idempotent mi?). 008: `created_by` korunuyor mu? `teachers.program_id SET NOT NULL` öncesi backfill tüm satırları dolduruyor mu (boş satır kalırsa migration patlar)?
+
+4. **Auth (K5 + Google-öğretmen)** — `AuthEndpoints.cs`: register → PENDING + `200 {pendingApproval:true}` (token YOK); login → `403 COACH_PENDING`. Google `/google`: yeni kullanıcıda önce pending **Teacher** daveti aranıyor (`invite_tokens` email+role='Teacher'+is_used=0+expires_at>NOW) → Teacher + `teachers` + `program_teachers` + davet `is_used=1`; yoksa Koç (PENDING). Edge case'ler doğru mu?
+
+5. **Davet kabulü** — `InviteEndpoints.cs`: Teacher için `INSERT INTO teachers (id, program_id, is_active)` — `program_id` gönderiliyor mu? (008'de NOT NULL; atlanırsa DB hatası. Bu bug daha önce vardı, düzeltildi mi?) Coach daveti: YARDIMCI + max_programs=0 + onaysız — doğru mu?
+
+6. **DTO maskeleme** — `SchoolAccessRepository.MaskStudent`: `CanViewContact=0` → Email/AvatarUrl null; `CanViewProfile=0` → profil alanları null. Doğru mu? Sızıntı var mı? 10 izin kolonunun `(col=1) AS flag` bool eşlemesi + varsayılanlar doğru mu?
+
+7. **Schedule + Takvim** — `schedule_slots.day_of_week` = 1=Pazartesi (ISO 8601); `CalendarRepository` `EXTRACT(ISODOW FROM d)` kullanıyor. Konvansiyon tutarlı mı? `generate_series` ile haftalık tekrar + `valid_from/valid_to` sınırları doğru mu? Rol bazlı filtre (öğrenci/veli/öğretmen) doğru mu?
+
+8. **Bildirimler** — `NotificationRepository`: `NotifyProgramCoachesAsync` + `NotifyCourseStudentsAsync` (distinct union: course_students + course_groups→student_group_members). Doğru mu?
+
+9. **Liste uçları cross-tenant** — listeler cross-tenant'ta boş liste (200) döndürüyor (detay/mutasyon 404/403). Sızıntı var mı? (bence yok). 403'e sıkılaştırmak gerekir mi?
+
+10. **Frontend Teacher routing (Aşama 7)** — `App.jsx` + `TeacherLayout` + `teacherApi.js`: 4 rol (Student/Parent/Teacher/Coach) yönlendirmesi doğru mu? `PrivateRoute` rol kontrolü doğru mu? `teacherApi.js` backend uçlarıyla eşleşiyor mu?
+
+---
+
+### Sonnet'in incelemesi (aşağıya ekle)
+
+> **Tarih/Saat:** 6 Ekim 2026 (Türkiye saati, UTC+3) — İnceleme: Sonnet
+
+### 🔴/⚠️ Tespitler (önem sırasıyla)
+
+**1. ⚠️ CalendarRepository — schedule_slots `LIMIT 1` bug (haftalık tekrar eksik görünüyor)**
+- `GetCalendarEventsAsync` içindeki schedule_slots bloğu `CROSS JOIN LATERAL (SELECT d FROM generate_series(...) WHERE EXTRACT(ISODOW FROM d) = day_of_week LIMIT 1)` kullanıyor.
+- `LIMIT 1` yüzünden haftalık tekrar eden bir slot, sorgulanan tarih aralığında (ör. 2 hafta) **yalnızca İLK eşleşen günde 1 kez** görünüyor; her hafta görünmesi gerekirken tek sefer görünüyor.
+- **Çözüm:** `LIMIT 1` kaldırılmalı; `CROSS JOIN LATERAL (...)` aralıktaki HER eşleşen gün için bir satır üretmeli. (Frontend Aşama 9 bunu fark edecek.)
+
+**2. ⚠️ AuthEndpoints `/google` — e-posta normalizasyonu (case uyumsuzluğu riski)**
+- Davetler `req.Email.ToLower()` ile küçük harfle saklanıyor; ama Google `/google` içindeki `teacherInvite` sorgusu `email = @Email` ile `payload.Email`'i (lowercase edilmeden) kullanıyor.
+- Google genelde lowercase döndürse de, karışık-case gelirse pending Teacher daveti bulunamaz → kullanıcı yanlışlıkla Koç (PENDING) olur.
+- **Öneri:** `payload.Email.ToLower()` kullan.
+
+**3. ⚠️ Mutation'lar — `ON CONFLICT DO NOTHING` → "NOT_FOUND" yanıltıcı**
+- `AddStudentToCourseAsync`/`AddGroupToCourseAsync`/`AddMemberAsync`'da çakışma (zaten ekli) durumunda `rows==0` → `"NOT_FOUND"` dönüyor. Oysa gerçek durum "zaten ekli".
+- **Öneri:** Conflict'i ayrıca işaretle (düşük öncelik, UX).
+
+**4. ⚠️ MaskStudent — `FullName` her zaman görünür (tasarım belirsizliği)**
+- `CanViewProfile=0` olsa bile `FullName` null edilmiyor. "view_profile" profil AYRINTILARINI (grade/track/hedef) mı yoksa ismi de mi kapsıyor? Belirsiz.
+- **Öneri:** Ürün kararı netleşmeli; isim her zaman gerekliyse mevcut hali doğru.
+
+### ✅ Doğrulandı (doğru)
+
+- **CurriculumRepository** — `subjects`/`curriculum_topics` (shared referans, program_id YOK) raw SQL ile sorgulanıyor, tenant filtresi KULLANMIYOR → doğru.
+- **StudentRepository** — BaseRepository tenant filtresi `program_id IN (...)`; `students`/`coach_notes` program_id'ye sahip → doğru.
+- **Migration backfill (007)** — `WHERE program_id IS NULL` idempotent; 008 `created_by` koruyor; `homework_templates.coach_id` kalıyor → doğru.
+- **Auth K5** — register `200 {pendingApproval:true}` (token yok), login `403 COACH_PENDING` → doğru ayrım.
+- **Davet kabulü (InviteEndpoints)** — `teachers` INSERT'inde `program_id` gönderiliyor (önceki bug düzeltilmiş) → doğru.
+- **Mutation IDOR zırhı** — `INSERT ... SELECT ... WHERE program_id=@ProgramId` ile hedef aynı programda doğrulanıyor → doğru.
+- **Frontend Teacher routing** — 4 rol yönlendirmesi + `PrivateRoute` + `teacherApi.js` eşleşmeleri → doğru.
+
+#### 📝 Girdi 1 — 6 Ekim 2026, 13:06 (UTC+3) — ÖN DEĞERLENDİRME (tasarım düzeyi, kod satırı doğrulaması Girdi 2'de)
+> Bu girdi, bölümdeki tasarım tarifine dayanır. Kod henüz satır satır doğrulanmadı. `✅/⚠️` işaretleri "tarif edildiği gibiyse" anlamındadır.
+
+**🔴 Kritik / dikkat edilmesi gerekenler**
+1. ⚠️ **(#1) `homework_templates` muafiyeti**: `coach_id` filtresi kişisel kütüphane için kalıyorsa `BaseRepository` bu tabloyu açık bir allow-list ile ayırmalı. Tablo adı string eşleşmesi gibi örtük bir yöntem, yeni tablo eklendiğinde filtresiz kalma riski taşır. **Varsayılan davranış "filtre uygula" olmalı, muafiyet açıkça listelenmeli (fail-closed).**
+2. ⚠️ **(#1) Üyelik rolü ayrımı**: `program_id IN (SELECT ... FROM program_coaches WHERE coach_id=@CoachId)` hem YONETICI hem YARDIMCI'ya aynı erişimi verir. Silme, program ayarları ve koç ekleme gibi yıkıcı işlemlerde `role='YONETICI'` kontrolü ayrıca var mı bakılmalı.
+3. ⚠️ **(#2) INSERT…SELECT yalnızca hedefi doğrularsa yetmez**: `AddStudentToCourse` için hem `courses.program_id` hem `students.program_id` aynı `@ProgramId` olmalı. `@ProgramId` istemciden değil, **üyelik doğrulanmış kaynaktan** (ör. kursun kendi program_id'si) türetilmeli. Yoksa saldırgan kendi programının id'sini gönderip başka programın kurs/öğrenci id'lerini eşleştirebilir. İki tarafın da program_id'si kontrol edilmeli.
+4. ⚠️ **(#4) Google daveti**: Davet e-postası Google hesabının `email_verified=true` olduğu doğrulanmadan kabul edilmemeli. Aksi halde başkasının e-postasıyla davet çalınabilir. Ayrıca davet kullanımı (`is_used=1`) ile kullanıcı/teacher oluşturma **tek transaction** içinde olmalı ve `UPDATE ... WHERE is_used=0` sonucu (affected rows = 1) kontrol edilmeli. Aksi halde yarış koşulunda çift kullanım olur.
+5. ⚠️ **(#4) COACH_PENDING bilgi sızıntısı**: Login'de `403 COACH_PENDING`, parola doğrulandıktan **sonra** dönmeli. Önce dönerse e-posta/hesap varlığı ve durumu sızar (user enumeration).
+
+**🟡 Orta**
+6. ⚠️ **(#3) Migration**: 007 idempotent olmalı (`WHERE program_id IS NULL`, `INSERT ... WHERE NOT EXISTS`). 008 öncesinde sahipsiz satırlar için `SELECT COUNT(*) ... WHERE program_id IS NULL` ön kontrolü yapıp `RAISE EXCEPTION` ile net hata vermeli. 008 geri alınamaz olduğundan öncesinde Neon branch/yedek şart. `teachers.program_id` için de aynı backfill kontrolü gerekir.
+7. ⚠️ **(#5) Davet kabulü**: `teachers` INSERT'inde `program_id` kontrolü, `invite_tokens`'tan alınan `related_id`'nin gerçekten program id'si olduğuna bağlı. Eski davetlerde `related_id` coach_id olabilir. Tip/anlam uyuşmazlığı BUG-2'nin tekrarı olur. Eski satırlar için `related_id` anlamı net olmalı.
+8. ⚠️ **(#6) Maskeleme**: `MaskStudent` yalnızca DTO'da kalmamalı. Loglara, bildirim metinlerine ve arama/sıralama (ör. `ORDER BY email`) uçlarına da sızmamalı. `(col=1) AS flag` kalıbı `NULL` kolonda `NULL` döner. Kolonlar `NOT NULL DEFAULT` değilse `bool` eşlemesi patlar veya yanlış varsayılan verir. `COALESCE(col,0)=1` önerilir. **Varsayılan "kapalı" (fail-closed) olmalı.**
+9. ⚠️ **(#7) ISODOW**: `EXTRACT(ISODOW)` 1=Pazartesi…7=Pazar ile `day_of_week` ISO ise tutarlı. Fakat frontend (JS `getDay()` 0=Pazar) ile dönüşüm yeri tek bir yardımcıda olmalı. `day_of_week` için DB'de `CHECK (BETWEEN 1 AND 7)` olmalı. `valid_to` **dahil** mi hariç mi belgelenmeli. `generate_series` için tarih aralığı üst sınırı (ör. max 62 gün) konmalı, yoksa DoS olur. Saat dilimi: sunucu UTC, kullanıcı UTC+3. `CURRENT_DATE` gün kaymasına yol açar.
+10. ⚠️ **(#8) Bildirim**: `NotifyCourseStudentsAsync` union'ı `DISTINCT` ile yapılmalı (öğrenci hem doğrudan hem grup üzerinden ise çift bildirim). Her iki kol da `program_id` filtreli olmalı. Bildirim içeriğinde maskelenmiş alan olmamalı.
+
+**🟢 Kabul edilebilir**
+11. ✅ **(#9) Liste uçları**: Cross-tenant'ta boş liste (200) güvenlidir. Hatta 403/404'ten daha iyidir, çünkü kaynağın varlığını belli etmez (existence oracle yok). **403'e sıkılaştırmayın.** Detay/mutasyon için 404 (403 değil) tercih edilmeli, tutarlılık için. Sadece liste ucunda `programId` query parametresi veriliyorsa, üyelik yoksa boş liste dönmeli.
+12. ✅ **(#1) Genel yaklaşım**: Tek merkezde (`BaseRepository`) üyelik tabanlı filtre doğru yön. Yeni repo'lar için **otomatik IDOR testi** (iki program, çapraz erişim) şablonu eklenmeli.
+
+**🔵 Frontend (#10) — Güvenlik değil UX ama önemli**
+13. ⚠️ `PrivateRoute` rol kontrolü sadece UX'tir, **asıl koruma backend policy'leridir** (`RequireTeacherRole` vb.). Token'daki rol değişimi (rol yükseltme/davet sonrası) için refresh sonrası rol yeniden okunmalı. Bilinmeyen rol için varsayılan "login'e yönlendir" olmalı, "Koç paneli" olmamalı. Metinler i18n'e bağlı olmalı (proje kuralı).
+
+**Sonraki adım:** Girdi 2'de yukarıdaki maddeleri gerçek kodda (`BaseRepository`, `CourseRepository`, `AuthEndpoints`, `InviteEndpoints`, migration 006-008, `CalendarRepository`) satır satır doğrulayacağım.
+
+
+#### 🔍 Girdi 2 — 6 Ekim 2026, 13:08 (UTC+3) — KOD DOĞRULAMASI (gerçek dosyalar okundu)
+
+**🔴 Kritik / Yüksek**
+1. ⚠️ **Google girişinde `email_verified` kontrolü yok** — `Endpoints/AuthEndpoints.cs` L192-269. `GoogleAuthService` yalnızca `ValidateAsync` çağırıyor (L32), `payload.EmailVerified` hiçbir yerde okunmuyor. Etkisi: (a) L262-269 mevcut e-posta ile eşleşen hesaba `google_id` bağlanıyor (hesap ele geçirme riski); (b) L202-204 e-posta ile Teacher daveti kapılabiliyor. **Düzeltme:** `if (!payload.EmailVerified) return Results.Unauthorized();` (L193 sonrası).
+2. ⚠️ **Google davet claim'inde yarış koşulu** — `AuthEndpoints.cs` L240: `UPDATE invite_tokens SET is_used = 1 WHERE id = @Id` — `AND is_used = 0` yok, etkilenen satır sayısı kontrol edilmiyor. `InviteEndpoints.cs` L175 bunu doğru yapıyor (`is_used = 0` + `inviteClaimed`). İki paralel Google girişi aynı daveti kullanabilir. Ayrıca L196-197'deki `users` INSERT'i `email` UNIQUE'e çarparsa 500 döner. **Düzeltme:** L240'ı InviteEndpoints ile aynı kalıba getir (0 satır → rollback + 409). Ortak yardımcıya taşı (DRY).
+3. ⚠️ **E-posta büyük/küçük harf tutarsızlığı** — Login `req.Email.ToLower()` kullanıyor (L101), Google yolu `payload.Email` ham (L197, L204, L210). Google bazen `Foo@gmail.com` döndürür; kayıtlı `foo@gmail.com` ile eşleşmez → ikinci hesap/UNIQUE çakışması veya davet bulunamaz. **Düzeltme:** `var email = payload.Email.ToLowerInvariant();` ve her yerde onu kullan; davet e-postası da küçük harfe normalize edilsin.
+4. ⚠️ **008 migration ön kontrol yok** — `008_ContractCoachId.sql` L15-28 doğrudan `SET NOT NULL`, L31-44 `DROP COLUMN` (geri alınamaz). Boş `program_id` varsa Postgres hata verir (en azından transaction içindeyse veri kaybı olmaz), ama net mesaj yok. **Düzeltme:** başa `DO $$ BEGIN IF EXISTS (SELECT 1 FROM students WHERE program_id IS NULL) THEN RAISE EXCEPTION ...` bloğu (tüm tablolar için döngüyle), dosyayı tek `BEGIN; ... COMMIT;` içine al, çalıştırmadan önce Neon branch/snapshot al. `created_by` kopyası (L9-12) `coach_id` düşmeden ÖNCE yapılıyor ✅ doğru sıra. `courses.created_by` / `student_groups.created_by` gibi tablolar için de kopya var mı kontrol edin (yalnız 4 tablo kopyalanıyor).
+
+**🟡 Orta**
+5. ⚠️ **`BaseRepository` üyelik rolünü ayırt etmiyor** — `Data/BaseRepository.cs` L28/L46/L64: filtre `program_id IN (SELECT program_id FROM program_coaches WHERE coach_id=@CoachId)`; YARDIMCI da tam yetkili. Silme/program ayarı/koç çıkarma gibi uçlarda `role='YONETICI'` kontrolü ayrıca yapılmalı (ProgramRepository'de var mı bakın). Ayrıca `program_id` **niteliksiz kolon**: JOIN'li şablonda iki tabloda `program_id` varsa "ambiguous column" hatası verir. Şablonlarda alias kuralı (`/**where**/` öncesi tek ana tablo) belgelensin. `additionalWhere` ham string; yalnızca sabit literal verilmeli (kullanıcı girdisi birleştirilirse SQL injection).
+6. ✅ **Mutation IDOR zırhı doğru** — `CourseRepository.cs` L134-173: `AddStudentToCourse` / `AddGroupToCourse` hem `c.program_id = @ProgramId` hem `s.program_id`/`g.program_id = @ProgramId` kontrol ediyor; `IsMemberAsync` önce üyeliği doğruluyor; kaynak başka programdaysa 0 satır → `NOT_FOUND`. `UPDATE/DELETE` hepsi `AND program_id = @ProgramId`. Çapraz program enjeksiyonu mümkün değil. ⚠️ Küçük not: `UpdateCourseAsync` `subject_id = @SubjectId, teacher_id = @TeacherId` (COALESCE yok) — alan gönderilmezse NULL'a ezilir (PATCH semantiği hatası), ve `req.TeacherId`/`SubjectId`'nin **aynı programa ait olduğu doğrulanmıyor** (başka programın öğretmenini derse bağlama → o öğretmenin kurs üzerinden veri görmesi riski). `CreateCourseAsync` (L57-84) için de aynı: `TeacherId` program doğrulaması ekle (`program_teachers`).
+7. ⚠️ **`IsMemberAsync` her çağrıda ayrı bağlantı/sorgu** — Performans: üyelik + asıl sorgu 2 round-trip. Sorun değil; fakat DRY: `CourseRepository` kendi `IsMemberAsync`'ini yazmış, `BaseRepository`'yi miras almıyor. Aynı kalıp başka repo'larda da kopyalanmış olabilir → tek ortak yardımcıya taşıyın.
+8. ✅ **Login sırası doğru** — `AuthEndpoints.cs` L103 parola doğrulaması, L106-111 `COACH_PENDING/REJECTED` kontrolü SONRA → e-posta numaralandırma yok. ✅ Register PENDING + token yok (L67). ⚠️ Fakat Google yolunda (L258) `is_active==0` kullanıcı için bile `Unauthorized`; tutarlı. Google ile **mevcut Teacher davet** durumu: kullanıcı zaten varsa (L199 `user != null`) bekleyen Teacher daveti hiç tüketilmiyor/atanmıyor — bilinçli ise belgeleyin.
+9. ✅ **Davet kabulü (#5)** — `InviteEndpoints.cs` L155: `INSERT INTO teachers (id, program_id, is_active)` ✅ `program_id` gönderiliyor (eski bug düzelmiş), L175 `is_used=0` + affected row kontrolü ✅. ⚠️ `AuthEndpoints.cs` L231'de `teachers` INSERT'inde `is_active` verilmiyor — DB DEFAULT 1 ise sorun yok, teyit edin. `invite.RelatedId` anlamı (Teacher için program_id) eski davetlerde coach_id olabilir → 007'de eski `invite_tokens` satırları dönüştürüldü mü? Dönüştürülmediyse süresi dolmasını bekleyin veya `is_used=1` yapın.
+10. ⚠️ **Takvim `generate_series` üst sınırsız** — `CalendarRepository.cs` L114-115: `@From`–`@To` aralığı sınırlanmıyorsa `?from=2000-01-01&to=2100-01-01` ile DoS (slot × gün çarpımı). Endpoint'te `(to - from).Days <= 62` doğrulaması şart. ✅ `EXTRACT(ISODOW)` (1=Pzt…7=Paz) ile `day_of_week` ISO konvansiyonu tutarlı; `schedule_slots.day_of_week` için DB `CHECK (day_of_week BETWEEN 1 AND 7)` var mı teyit edin (007/006 grep'inde göremedim). Frontend `Date.getDay()` 0=Pazar → tek dönüşüm yardımcısı olsun. `valid_to` dahil mi belgelenmeli. `ReportsRepository` L15/L17 `CURRENT_DATE`/`date_trunc('week')` sunucu saat diliminde (UTC) → UTC+3 kullanıcı için gece 00:00-03:00 arası "bugün" kayar; `AT TIME ZONE 'Europe/Istanbul'` kullanın.
+
+**🟢 Doğru**
+11. ✅ **Liste uçları** cross-tenant'ta boş liste (`CourseRepository` L37 `Enumerable.Empty`) / tekil kaynakta `null`→404: sızıntı yok, existence oracle yok. **403'e sıkılaştırmayın**; mevcut davranış doğru.
+12. ✅ `007` tarafında `ux_program_one_admin` (program başına tek YONETICI) ve `role CHECK` sağlam; `program_teachers` ayrı tablo ile çok-program öğretmen desteği iyi.
+
+**📌 Maskeleme (#6), Bildirim (#8), Frontend (#10)** — bu girdide kod okunmadı (`SchoolAccessRepository.MaskStudent`, `NotificationRepository`, `App.jsx`/`TeacherLayout`). Girdi 1'deki uyarılar (COALESCE(col,0), DISTINCT, PrivateRoute yalnızca UX) geçerli; Girdi 3'te doğrulanacak.
+
+**Öncelik sırası (öneri):** 1 (email_verified) → 2 (davet yarışı) → 3 (e-posta normalizasyonu) → 6'daki TeacherId/SubjectId program doğrulaması → 10 (aralık sınırı) → 4 (008 ön kontrol + yedek, **Neon'a uygulamadan önce**).

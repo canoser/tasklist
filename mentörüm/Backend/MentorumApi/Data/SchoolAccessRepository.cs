@@ -14,6 +14,7 @@ namespace MentorumApi.Data
             using var conn = _connectionFactory.CreateConnection();
             return await conn.QuerySingleOrDefaultAsync<CourseAccessDto>(@"
                 SELECT id AS CourseId, teacher_id AS TeacherId, program_id AS ProgramId,
+                       name AS Name, type AS Type, color AS Color,
                        (teacher_can_view_profile = 1) AS CanViewProfile,
                        (teacher_can_view_contact = 1) AS CanViewContact,
                        (teacher_can_view_homework = 1) AS CanViewHomework,
@@ -96,6 +97,97 @@ namespace MentorumApi.Data
                 TargetScore = access.CanViewProfile ? student.TargetScore : null,
                 CoachingStartDate = access.CanViewProfile ? student.CoachingStartDate : null,
             };
+        }
+        // Öğretmenin dersleri (Aşama 6)
+        public async Task<IEnumerable<CourseAccessDto>> GetTeacherCoursesAsync(Guid teacherId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            return await conn.QueryAsync<CourseAccessDto>(@"
+                SELECT id AS CourseId, teacher_id AS TeacherId, program_id AS ProgramId,
+                       name AS Name, type AS Type, color AS Color,
+                       (teacher_can_view_profile = 1) AS CanViewProfile,
+                       (teacher_can_view_contact = 1) AS CanViewContact,
+                       (teacher_can_view_homework = 1) AS CanViewHomework,
+                       (teacher_can_manage_homework = 1) AS CanManageHomework,
+                       (teacher_can_view_exams = 1) AS CanViewExams,
+                       (teacher_can_manage_exams = 1) AS CanManageExams,
+                       (teacher_can_view_notes = 1) AS CanViewNotes,
+                       (teacher_can_add_notes = 1) AS CanAddNotes,
+                       (teacher_can_view_schedule = 1) AS CanViewSchedule,
+                       (teacher_can_manage_schedule = 1) AS CanManageSchedule
+                FROM courses
+                WHERE teacher_id = @TeacherId AND is_active = 1
+                ORDER BY name",
+                new { TeacherId = teacherId });
+        }
+
+        // Öğretmenin dersindeki öğrenciler (detay, maskeleme öncesi)
+        public async Task<IEnumerable<StudentDetailDto>> GetTeacherCourseStudentsAsync(Guid courseId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            return await conn.QueryAsync<StudentDetailDto>(@"
+                SELECT u.id, u.full_name AS FullName, u.email, u.avatar_url AS AvatarUrl,
+                       s.grade, s.track, s.target_university AS TargetUniversity, s.is_active AS IsActive,
+                       s.coaching_start_date AS CoachingStartDate, s.target_department AS TargetDepartment, s.target_score AS TargetScore
+                FROM users u
+                JOIN students s ON u.id = s.id
+                WHERE s.id IN (
+                    SELECT cs.student_id FROM course_students cs WHERE cs.course_id = @CourseId AND cs.is_active = 1
+                    UNION
+                    SELECT sgm.student_id FROM course_groups cg JOIN student_group_members sgm ON sgm.group_id = cg.group_id WHERE cg.course_id = @CourseId
+                )
+                ORDER BY u.full_name",
+                new { CourseId = courseId });
+        }
+
+        public async Task<IEnumerable<dynamic>> GetTeacherCourseHomeworkAsync(Guid courseId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            return await conn.QueryAsync(@"
+                SELECT h.id, h.student_id AS StudentId, u.full_name AS StudentName, h.snapshot_title AS Title, h.due_date AS DueDate, h.status AS Status
+                FROM homework_assignments h
+                JOIN users u ON u.id = h.student_id
+                WHERE h.student_id IN (
+                    SELECT cs.student_id FROM course_students cs WHERE cs.course_id = @CourseId AND cs.is_active = 1
+                    UNION
+                    SELECT sgm.student_id FROM course_groups cg JOIN student_group_members sgm ON sgm.group_id = cg.group_id WHERE cg.course_id = @CourseId
+                )
+                ORDER BY h.due_date DESC",
+                new { CourseId = courseId });
+        }
+
+        public async Task<IEnumerable<dynamic>> GetTeacherCourseExamsAsync(Guid courseId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            return await conn.QueryAsync(@"
+                SELECT e.id, e.student_id AS StudentId, u.full_name AS StudentName, COALESCE(e.exam_name, e.exam_type) AS Name, e.exam_date AS ExamDate, e.total_net AS TotalNet
+                FROM exam_results e
+                JOIN users u ON u.id = e.student_id
+                WHERE e.student_id IN (
+                    SELECT cs.student_id FROM course_students cs WHERE cs.course_id = @CourseId AND cs.is_active = 1
+                    UNION
+                    SELECT sgm.student_id FROM course_groups cg JOIN student_group_members sgm ON sgm.group_id = cg.group_id WHERE cg.course_id = @CourseId
+                )
+                ORDER BY e.exam_date DESC",
+                new { CourseId = courseId });
+        }
+        // Öğrencinin dersleri (Aşama 10)
+        public async Task<IEnumerable<dynamic>> GetStudentCoursesAsync(Guid studentId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            return await conn.QueryAsync(@"
+                SELECT c.id AS Id, c.name AS Name, c.type AS Type
+                FROM courses c
+                WHERE c.is_active = 1
+                  AND c.id IN (
+                      SELECT cs.course_id FROM course_students cs WHERE cs.student_id = @StudentId AND cs.is_active = 1
+                      UNION
+                      SELECT cg.course_id FROM course_groups cg
+                      JOIN student_group_members sgm ON sgm.group_id = cg.group_id
+                      WHERE sgm.student_id = @StudentId
+                  )
+                ORDER BY c.name",
+                new { StudentId = studentId });
         }
     }
 }

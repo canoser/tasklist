@@ -38,7 +38,12 @@ const LoginPage = () => {
       setAuth(data.user, data.accessToken);
       
       // Role göre yönlendir
-      navigate(data.user.role === 'Student' ? '/student/home' : '/coach/dashboard');
+      navigate(
+        data.user.role === 'Student' ? '/student/home' :
+        data.user.role === 'Parent' ? '/parent/summary' :
+        data.user.role === 'Teacher' ? '/teacher/courses' :
+        '/coach/dashboard'
+      );
     } catch (err) {
       setError(err.response?.data?.error?.message || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.');
     } finally {

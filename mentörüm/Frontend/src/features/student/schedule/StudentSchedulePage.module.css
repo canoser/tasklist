@@ -1,0 +1,8 @@
+.container { padding: var(--spacing-md); }
+.title { font-size: 1.5rem; font-weight: 700; margin-bottom: var(--spacing-md); }
+.list { display: flex; flex-direction: column; gap: var(--spacing-sm); }
+.card { margin: 0; }
+.dayHeader { font-weight: 600; margin-bottom: 8px; }
+.slot { display: flex; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--border-color, #e2e8f0); }
+.time { font-size: 0.85rem; color: var(--text-color-muted); min-width: 90px; }
+.slotTitle { font-size: 0.9rem; }

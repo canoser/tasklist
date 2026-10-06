@@ -2,9 +2,9 @@ import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../../features/auth/authStore';
 import { useNotifications } from '../../../hooks/useNotifications';
-import styles from './StudentLayout.module.css';
+import styles from './TeacherLayout.module.css';
 
-const StudentLayout = () => {
+const TeacherLayout = () => {
   const { user, clearAuth } = useAuthStore();
   const navigate = useNavigate();
   const { data: notifications } = useNotifications();
@@ -16,20 +16,17 @@ const StudentLayout = () => {
   };
 
   const tabs = [
-    { path: '/student/home', label: 'Ana Sayfa', icon: '🏠' },
-    { path: '/student/schedule', label: 'Programım', icon: '📅' },
-    { path: '/student/courses', label: 'Derslerim', icon: '📚' },
-    { path: '/student/homework', label: 'Ödevler', icon: '📝' },
-    { path: '/student/profile', label: 'Profil', icon: '👤' },
+    { path: '/teacher/courses', label: 'Derslerim', icon: '📚' },
+    { path: '/teacher/schedule', label: 'Program', icon: '📅' },
+    { path: '/teacher/profile', label: 'Profil', icon: '👤' },
   ];
 
   return (
     <div className={styles.layout}>
-      {/* Topbar for mobile/student view */}
       <header className={styles.topbar}>
         <div className={styles.userInfo}>
           <div className={styles.avatar}>
-            {user?.fullName?.charAt(0) || 'S'}
+            {user?.fullName?.charAt(0) || 'T'}
           </div>
           <div>
             <div className={styles.greeting}>Merhaba,</div>
@@ -46,18 +43,16 @@ const StudentLayout = () => {
         </div>
       </header>
 
-      {/* Main Content Area */}
       <main className={styles.main}>
         <Outlet />
       </main>
 
-      {/* Bottom Tab Bar */}
       <nav className={styles.bottomNav}>
         {tabs.map((tab) => (
           <NavLink
             key={tab.path}
             to={tab.path}
-            className={({ isActive }) => 
+            className={({ isActive }) =>
               isActive ? `${styles.tab} ${styles.tabActive}` : styles.tab
             }
           >
@@ -70,4 +65,4 @@ const StudentLayout = () => {
   );
 };
 
-export default StudentLayout;
+export default TeacherLayout;

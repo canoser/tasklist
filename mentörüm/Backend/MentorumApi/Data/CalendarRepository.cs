@@ -96,6 +96,56 @@ namespace MentorumApi.Data
                 ");
             }
 
+            sqlBuilder.Append(" UNION ALL ");
+
+            // Schedule slots (haftalık tekrar — gün içinde ilk oluşum)
+            sqlBuilder.Append(@"
+                SELECT
+                    s.id AS Id,
+                    s.title AS Title,
+                    (occ.d + s.start_time) AS Start,
+                    (occ.d + s.end_time) AS End,
+                    'SCHEDULE' AS Type,
+                    COALESCE(s.color, '#8B5CF6') AS Color,
+                    s.student_id AS StudentId,
+                    u.full_name AS StudentName
+                FROM schedule_slots s
+                CROSS JOIN LATERAL (
+                    SELECT d FROM generate_series(@From::date, @To::date, '1 day') AS d
+                    WHERE EXTRACT(ISODOW FROM d) = s.day_of_week
+                ) occ
+                LEFT JOIN users u ON s.student_id = u.id
+                WHERE s.is_active = 1
+                  AND (s.valid_from IS NULL OR s.valid_from <= @To::date)
+                  AND (s.valid_to IS NULL OR s.valid_to >= @From::date)
+            ");
+
+            if (role == "Coach")
+            {
+                sqlBuilder.Append(" AND s.program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @UserId)");
+                if (studentId.HasValue)
+                {
+                    sqlBuilder.Append(" AND s.student_id = @StudentId");
+                }
+            }
+            else if (role == "Student")
+            {
+                sqlBuilder.Append(@"
+                    AND (s.student_id = @UserId
+                         OR s.course_id IN (SELECT course_id FROM course_students WHERE student_id = @UserId AND is_active = 1)
+                         OR s.group_id IN (SELECT group_id FROM student_group_members WHERE student_id = @UserId))
+                ");
+            }
+            else if (role == "Parent")
+            {
+                sqlBuilder.Append(@"
+                    AND (s.student_id = @StudentId
+                         OR s.course_id IN (SELECT course_id FROM course_students WHERE student_id = @StudentId AND is_active = 1)
+                         OR s.group_id IN (SELECT group_id FROM student_group_members WHERE student_id = @StudentId))
+                    AND EXISTS (SELECT 1 FROM student_parents sp WHERE sp.student_id = @StudentId AND sp.parent_id = @UserId AND sp.is_accepted = 1)
+                ");
+            }
+
             using var conn = _connectionFactory.CreateConnection();
             return await conn.QueryAsync<CalendarEventDto>(sqlBuilder.ToString(), new {
                 UserId = userId,

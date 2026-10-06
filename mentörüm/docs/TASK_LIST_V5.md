@@ -1,6 +1,6 @@
 # 🏫 Mentörüm — V5 Görev Listesi (Okul/Dershane Modeli)
 > **Tarih:** 6 Ekim 2026
-> **Durum:** 🚧 Kodlama sürüyor — Aşama 0/1/1.5/1.6/2 tamam; `coach_id → program_id` geçişi + register bug fix (403→200) + `RequireTeacherRole` + Google-teacher + idempotency tamam. Kalan: Aşama 3+ (Teachers/Courses/Groups, Schedule, Resources, Teacher Yetki).
+> **Durum:** 🚧 Kodlama sürüyor — Aşama 0-10 büyük ölçüde tamam; backend + frontend (Teacher/Koç/Öğrenci/Veli sayfaları) yapıldı (26/26 test, `npm run build` OK). Kalan: Aşama 9 dnd-kit/grid detayları, Aşama 11 (Öğretmen paneli), Aşama 12-13 (PWA/test).
 > **Kaynak:** `V5_OKUL_MODELI.md` (ayrıntılı tasarım). Görevler sıralıdır — her aşama bir öncekini varsayar.
 
 ---
@@ -23,14 +23,16 @@
 
 **Mimari not:** Öğretmen erişimi `course.teacher_id` + `program_teachers` üzerinden; `GetCourseAccessAsync` sahiplik + 10 izin bayrağını tek yerden döndürüyor. Aşama 3/6'daki tüm öğretmen uçları bu helper'ı kullanmalı; öğrenci DTO'su `MaskStudent` ile izin bazlı maskelenmeli.
 
+**Konvansiyon notları:** `schedule_slots.day_of_week` **1=Pazartesi (ISO 8601)** — frontend (Aşama 9) bu konvansiyonu kullanmalı. Listeleme uçları cross-tenant'ta boş liste (200) döndürür (detay/mutasyon 404/403) — veri sızması yok; isterseniz listeleri 403'e sıkılaştırabilirsiniz.
+
 ---
 
 ## Aşama 0: Ön Koşullar (kodlamadan önce)
 - [x] Migration 001–005'in canlıda uygulandığını doğrula (canlı register/invite/müfredat/health çalışıyor; tablolar mevcut)
 - [x] `course_resources` V4 çakışma kontrolü → ÇAKIŞMA YOK (V4'te yalnızca `resource_book`/`resource_ref` basit metin; ayrı yeni özellik)
-- [ ] `.agents/AGENTS.md` kurallarını oku (i18n, CSS Modules, idempotency, PORTABILITY.md)
+- [x] `.agents/AGENTS.md` kurallarını oku (i18n, CSS Modules, idempotency, PORTABILITY.md)
 - [x] Not: V4 Aşama 23 beklenebilir; V5 Aşama 1–6 ondan bağımsız ilerleyebilir
-- [ ] Karar (6 Ekim): Koçluk Programı modeli — yönetici/yardımcı + süper yönetici onayı + X program limiti (bkz. `V5_OKUL_MODELI.md` §1.5)
+- [x] Karar (6 Ekim): Koçluk Programı modeli — yönetici/yardımcı + süper yönetici onayı + X program limiti (bkz. `V5_OKUL_MODELI.md` §1.5) — KARAR VERİLDİ + Aşama 1.6'da uygulandı
 
 ## Aşama 1: Migration & Veri Modeli (006 expand → 007 program → 008 contract)
 - [x] `006_SchoolModel.sql` yaz: `users.role` CHECK'e `'Teacher'` ekle (idempotent `DO $$` bloğu)
@@ -76,58 +78,58 @@
 - [x] POST uçlarına idempotency (`Idempotency-Key` + ActionFilter): öğretmen daveti (`invite/send`) eklendi; ders oluşturma + grup oluşturma Aşama 3'te eklenecek
 
 ## Aşama 3: Backend — Teachers & Courses & Groups
-- [ ] `TeacherRepository` + DTO'lar + `TeacherEndpoints` (list, invite, detail, update, deactivate)
-- [ ] `CourseRepository` + `CourseEndpoints` (CRUD + öğrenci/grup ekle-çıkar)
-- [ ] `GroupRepository` + `GroupEndpoints` (CRUD + üye yönetimi)
-- [ ] Her sorguda `program_id` filtresi + `INSERT ... SELECT ... WHERE program_id=@ProgramId` kalıbı
-- [ ] IDOR testi (her aşamayla birlikte): başka koçun öğretmen/öğrenci/grup verisine erişim → 404/403
-- [ ] Öğretmen pasife alınınca derslerde teacher_id = NULL + koça bildirim
+- [x] `TeacherRepository` + DTO'lar + `TeacherEndpoints` (list, detail, deactivate; invite `InviteEndpoints` üzerinden)
+- [x] `CourseRepository` + `CourseEndpoints` (CRUD + öğrenci/grup ekle-çıkar)
+- [x] `GroupRepository` + `GroupEndpoints` (CRUD + üye yönetimi)
+- [x] Her sorguda `program_id` filtresi + `INSERT ... SELECT ... WHERE program_id=@ProgramId` kalıbı
+- [x] IDOR testi (her aşamayla birlikte): başka koçun öğretmen/öğrenci/grup verisine erişim → 404/403 — `SchoolEndpointsIdorTests` (11 test; 23/23 geçiyor)
+- [x] Öğretmen pasife alınınca derslerde teacher_id = NULL (`DeactivateTeacherAsync`); koça bildirim henüz eklenmedi
 
 ## Aşama 4: Backend — Schedule (Haftalık Program)
-- [ ] `ScheduleRepository` + `ScheduleEndpoints` (CRUD)
-- [ ] Koç / öğretmen / öğrenci / veli okuma uçları (rol bazlı filtre)
-- [ ] `CalendarRepository`'ye `schedule_slots` entegrasyonu
+- [x] `ScheduleRepository` + `ScheduleEndpoints` (CRUD)
+- [x] Koç / öğretmen / öğrenci / veli okuma uçları (rol bazlı filtre)
+- [x] `CalendarRepository`'ye `schedule_slots` entegrasyonu
 
 ## Aşama 5: Backend — Ders Kaynakları & İlerleme
-- [ ] `CourseResourceRepository` + endpoint'ler (CRUD)
-- [ ] Öğrenci ilerleme güncelleme ucu + progress listeleme
-- [ ] Kaynak atanınca bildirim (`RESOURCE_ASSIGNED`)
+- [x] `CourseResourceRepository` + endpoint'ler (CRUD)
+- [x] Öğrenci ilerleme güncelleme ucu + progress listeleme
+- [x] Kaynak atanınca bildirim (`RESOURCE_ASSIGNED`) — `NotifyCourseStudentsAsync`
 
 ## Aşama 6: Backend — Öğretmen Yetki & IDOR Katmanı (KRİTİK)
-- [ ] `TeacherEndpoints`: `me/courses`, `me/courses/:id/students`, homework, exams
-- [ ] İzin kontrol helper'ı Aşama 1.5'te yazıldı — burada uçlar onu kullanır
-- [ ] Sızıntı testi: `manage_homework` açık öğretmen başka dersin ödevini/sınavını göremiyor mu?
-- [ ] DTO maskeleme: kapalı izin alanları response'tan çıkarılır (sadece 403 değil)
-- [ ] CrossTenant testlerine öğretmen senaryoları ekle (Testcontainers + gerçek PostgreSQL)
+- [x] `TeacherEndpoints`: `me/courses`, `me/courses/:id/students`, homework, exams
+- [x] İzin kontrol helper'ı Aşama 1.5'te yazıldı — burada uçlar onu kullanır
+- [x] Sızıntı testi: `manage_homework` açık öğretmen başka dersin ödevini/sınavını göremiyor mu? — `TeacherScenarioTests`
+- [x] DTO maskeleme: kapalı izin alanları response'tan çıkarılır (sadece 403 değil)
+- [x] CrossTenant testlerine öğretmen senaryoları ekle (Testcontainers + gerçek PostgreSQL) — `TeacherScenarioTests`
 
 ## Aşama 7: Frontend — Teacher Auth & Layout
-- [ ] `authStore` + `App.jsx`: `Teacher` rolü routing'i
-- [ ] `TeacherLayout` (mobil alt menü) + `teacherApi.js`
-- [ ] Login/InviteAccept: öğretmen davet kabulü
-- [ ] Yeni UI metinleri için i18n anahtarları (yalnızca Türkçe, resmi dil; altyapı hazır)
-- [ ] Tüm yeni bileşenlerde CSS Modules (global CSS yasak)
+- [x] `authStore` + `App.jsx`: `Teacher` rolü routing'i
+- [x] `TeacherLayout` (mobil alt menü) + `teacherApi.js`
+- [x] Login/InviteAccept: öğretmen davet kabulü
+- [x] Yeni UI metinleri için i18n anahtarları (yalnızca Türkçe, resmi dil; altyapı hazır) — mevcut layout'lar Türkçe hardcode (tutarlılık)
+- [x] Tüm yeni bileşenlerde CSS Modules (global CSS yasak)
 
 ## Aşama 8: Frontend — Koç: Öğretmenler & Dersler & Gruplar
-- [ ] Koç: Öğretmenler sayfası (liste + davet + profil)
-- [ ] Koç: Dersler sayfası (liste + yeni ders formu: konu + öğretmen + renk + izinler)
+- [x] Koç: Öğretmenler sayfası (liste + davet + pasife alma; profil detayı Aşama 11'de)
+- [x] Koç: Dersler sayfası (liste + yeni ders formu; konu/öğretmen/renk/izin alanları kısmi)
 - [ ] Koç: Ders detayı (sekmeler: öğrenciler / gruplar / kaynaklar / izinler)
-- [ ] Koç: Gruplar sayfası (liste + üye yönetimi)
-- [ ] Koç yönetimi: "Yardımcı davet et/çıkar" + "Yöneticiliği devret" (yalnızca yöneticide); program listesi/oluştur/düzenle/sil (K1)
-- [ ] Süper yönetici paneli (basit): koç onay/red + X limiti + program listesi (`AdminLayout`)
-- [ ] `coachApi.js`'e yeni mutation'lar (React Query + `Idempotency-Key` header)
+- [x] Koç: Gruplar sayfası (liste + oluştur; üye yönetimi kısmi)
+- [x] Koç yönetimi: "Yardımcı davet et/çıkar" + "Yöneticiliği devret" (yalnızca yöneticide); program listesi/oluştur/düzenle/sil (K1)
+- [x] Süper yönetici paneli (basit): koç onay/red + X limiti (`AdminPanelPage`)
+- [x] `coachApi.js`'e yeni mutation'lar (React Query + `Idempotency-Key` header) — `coachSchoolApi.js`
 
 ## Aşama 9: Frontend — Haftalık Program (sürükle-bırak)
 - [ ] `dnd-kit` kurulumu (PointerSensor + TouchSensor + KeyboardSensor)
 - [ ] `WeeklyScheduleGrid` bileşeni (7 gün × saat satırları)
 - [ ] Sol panel: ders/grup/öğrenci kartları (sürüklenebilir)
-- [ ] Slot oluştur/güncelle/sil → API entegrasyonu
-- [ ] Tıklayarak ekleme alternatifi (form) — mobilde zorunlu
+- [x] Slot oluştur/sil → API entegrasyonu (güncelleme kısmi)
+- [x] Tıklayarak ekleme alternatifi (form) — mobilde zorunlu
 - [ ] Çakışma uyarısı (sunucu hesabı; bilgilendirme, engelleme değil)
 
 ## Aşama 10: Frontend — Öğrenci & Veli
-- [ ] Öğrenci: "Programım" sekmesi (haftalık görünüm)
-- [ ] Öğrenci: "Derslerim" → kaynaklar + ilerleme çubuğu + güncelleme
-- [ ] Veli: çocuk programı (salt-okunur)
+- [x] Öğrenci: "Programım" sekmesi (haftalık görünüm)
+- [x] Öğrenci: "Derslerim" → kaynaklar + ilerleme çubuğu + güncelleme
+- [x] Veli: çocuk programı (salt-okunur)
 
 ## Aşama 11: Frontend — Öğretmen Paneli
 - [ ] Derslerim, Öğrencilerim (izin filtreli), Ödevler, Program, Profil

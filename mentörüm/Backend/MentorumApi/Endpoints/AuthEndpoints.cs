@@ -201,7 +201,7 @@ var token = jwt.GenerateAccessToken(user);
                     // Öğretmen daveti var mı? (Google ile öğretmen kaydı)
                     var teacherInvite = await conn.QuerySingleOrDefaultAsync<InviteQueryModel>(
                         "SELECT id AS Id, related_id AS RelatedId FROM invite_tokens WHERE email = @Email AND role = 'Teacher' AND is_used = 0 AND expires_at > NOW() LIMIT 1",
-                        new { Email = payload.Email });
+                        new { Email = payload.Email.ToLower() });
 
                     // Yeni google kullanıcısı (davet varsa Teacher, yoksa Koç)
                     user = new User

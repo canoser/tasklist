@@ -1,0 +1,10 @@
+.container { padding: var(--spacing-md); }
+.title { font-size: 1.5rem; font-weight: 700; margin-bottom: var(--spacing-md); }
+.list { display: flex; flex-direction: column; gap: var(--spacing-sm); }
+.card { margin: 0 0 var(--spacing-sm) 0; cursor: pointer; }
+.type { font-size: 0.8rem; color: var(--text-color-muted); margin-left: 8px; }
+.resList { display: flex; flex-direction: column; gap: var(--spacing-sm); margin-top: var(--spacing-sm); }
+.progressBar { height: 8px; background: #E2E8F0; border-radius: 4px; margin: 8px 0; overflow: hidden; }
+.progressFill { height: 100%; background: var(--color-success); border-radius: 4px; }
+.actions { display: flex; align-items: center; justify-content: space-between; }
+.pct { font-size: 0.85rem; color: var(--text-color-muted); }

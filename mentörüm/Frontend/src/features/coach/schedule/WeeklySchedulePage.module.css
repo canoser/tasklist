@@ -1,0 +1,14 @@
+.container { padding: var(--spacing-md); max-width: 1100px; margin: 0 auto; }
+.title { font-size: 1.5rem; font-weight: 700; margin-bottom: var(--spacing-md); color: var(--text-color-main); }
+.card { margin-bottom: var(--spacing-md); }
+.form { display: flex; flex-direction: column; gap: var(--spacing-sm); }
+.row { display: flex; gap: var(--spacing-sm); flex-wrap: wrap; }
+.select { padding: 8px; border-radius: 8px; border: 1px solid var(--border-color, #e2e8f0); flex: 1; min-width: 120px; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--spacing-sm); }
+.dayCol { background: var(--bg-color-surface); border-radius: 12px; padding: var(--spacing-sm); }
+.dayHeader { font-weight: 600; margin-bottom: 8px; font-size: 0.85rem; color: var(--text-color-main); }
+.slot { background: #EEF2FF; border-left: 3px solid #8B5CF6; border-radius: 6px; padding: 6px 8px; margin-bottom: 6px; display: flex; flex-direction: column; gap: 2px; }
+.slotTime { font-size: 0.75rem; color: var(--text-color-muted); }
+.slotTitle { font-size: 0.85rem; font-weight: 500; }
+.deleteBtn { align-self: flex-end; background: none; border: none; color: var(--color-danger); cursor: pointer; font-size: 0.8rem; }

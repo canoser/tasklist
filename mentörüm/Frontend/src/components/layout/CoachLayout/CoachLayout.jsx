@@ -21,6 +21,7 @@ const CoachLayout = () => {
 
   const navItems = [
     { path: '/coach/dashboard', label: 'Dashboard', icon: '📊' },
+    { path: '/coach/programs', label: 'Programlar', icon: '🏫' },
     { path: '/coach/students', label: 'Öğrenciler', icon: '👨‍🎓' },
     { path: '/coach/calendar', label: 'Takvim', icon: '📅' },
     { path: '/coach/reports', label: 'Raporlar', icon: '📈' },

@@ -61,6 +61,11 @@ try
     builder.Services.AddScoped<NotificationRepository>();
     builder.Services.AddScoped<ProgramRepository>();
     builder.Services.AddScoped<SchoolAccessRepository>();
+    builder.Services.AddScoped<TeacherRepository>();
+    builder.Services.AddScoped<CourseRepository>();
+    builder.Services.AddScoped<GroupRepository>();
+    builder.Services.AddScoped<ScheduleRepository>();
+    builder.Services.AddScoped<CourseResourceRepository>();
     builder.Services.AddMemoryCache();
     builder.Services.AddHostedService<MentorumApi.Services.Background.OverdueHomeworkJob>();
 
@@ -166,6 +171,11 @@ try
     app.MapReportsEndpoints();
     app.MapNotificationEndpoints();
     app.MapProgramEndpoints();
+    app.MapTeacherEndpoints();
+    app.MapCourseEndpoints();
+    app.MapGroupEndpoints();
+    app.MapScheduleEndpoints();
+    app.MapCourseResourceEndpoints();
 
     app.MapGet("/", () => "Mentorum API Auth/Authz Katmanı Devrede!");
 
