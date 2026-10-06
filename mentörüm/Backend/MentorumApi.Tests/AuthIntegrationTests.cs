@@ -23,13 +23,13 @@ namespace MentorumApi.Tests
         }
 
         [Fact]
-        public async Task Register_ThenLogin_ShouldSucceed()
+        public async Task Register_ThenLogin_PendingCoach_IsBlocked()
         {
             var client = _factory.CreateClient();
             var email = "newcoach@test.com";
             var password = "Password123!";
 
-            // 1. Register
+            // 1. Register → OK (koç PENDING oluşturulur; token verilmez)
             var registerReq = new RegisterRequest
             {
                 Email = email,
@@ -39,19 +39,14 @@ namespace MentorumApi.Tests
             var registerRes = await client.PostAsJsonAsync("/api/v1/auth/register", registerReq);
             Assert.Equal(HttpStatusCode.OK, registerRes.StatusCode);
 
-            // 2. Login
+            // 2. Login → 403 (onay bekleniyor)
             var loginReq = new LoginRequest
             {
                 Email = email,
                 Password = password
             };
             var loginRes = await client.PostAsJsonAsync("/api/v1/auth/login", loginReq);
-            Assert.Equal(HttpStatusCode.OK, loginRes.StatusCode);
-            
-            var authRes = await loginRes.Content.ReadFromJsonAsync<AuthResponse>();
-            Assert.NotNull(authRes);
-            Assert.NotNull(authRes.AccessToken);
-            Assert.Equal(email, authRes.User.Email);
+            Assert.Equal(HttpStatusCode.Forbidden, loginRes.StatusCode);
         }
 
         [Fact]
@@ -79,7 +74,8 @@ namespace MentorumApi.Tests
             var inviteReq = new InviteRequest
             {
                 Email = email,
-                Role = "Student"
+                Role = "Student",
+                RelatedId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa") // Program A (Coach A yöneticisi)
             };
             var inviteRes = await authClient.PostAsJsonAsync("/api/v1/invites/send", inviteReq);
             Assert.Equal(HttpStatusCode.OK, inviteRes.StatusCode);

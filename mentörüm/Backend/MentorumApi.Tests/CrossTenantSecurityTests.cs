@@ -78,11 +78,40 @@ namespace MentorumApi.Tests
                 INSERT INTO users (id, email, role, full_name) VALUES 
                 ('11111111-1111-1111-1111-111111111111', 'coachA@test.com', 'Coach', 'Coach A'),
                 ('22222222-2222-2222-2222-222222222222', 'coachB@test.com', 'Coach', 'Coach B'),
-                ('33333333-3333-3333-3333-333333333333', 'studentA@test.com', 'Student', 'Student A');
+                ('33333333-3333-3333-3333-333333333333', 'studentA@test.com', 'Student', 'Student A'),
+                ('44444444-4444-4444-4444-444444444444', 'teacherA@test.com', 'Teacher', 'Teacher A'),
+                ('55555555-5555-5555-5555-555555555555', 'studentB@test.com', 'Student', 'Student B'),
+                ('66666666-6666-6666-6666-666666666666', 'studentC@test.com', 'Student', 'Student C');
                 
                 INSERT INTO coaches (id) VALUES ('11111111-1111-1111-1111-111111111111'), ('22222222-2222-2222-2222-222222222222');
                 
-                INSERT INTO students (id, coach_id) VALUES ('33333333-3333-3333-3333-333333333333', '22222222-2222-2222-2222-222222222222');
+                INSERT INTO coaching_programs (id, name, created_by) VALUES
+                ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Program A', '11111111-1111-1111-1111-111111111111'),
+                ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Program B', '22222222-2222-2222-2222-222222222222');
+
+                INSERT INTO program_coaches (id, program_id, coach_id, role) VALUES
+                (gen_random_uuid(), 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '11111111-1111-1111-1111-111111111111', 'YONETICI'),
+                (gen_random_uuid(), 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '22222222-2222-2222-2222-222222222222', 'YONETICI');
+
+                INSERT INTO students (id, program_id) VALUES 
+                ('33333333-3333-3333-3333-333333333333', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'),
+                ('55555555-5555-5555-5555-555555555555', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+                ('66666666-6666-6666-6666-666666666666', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
+
+                INSERT INTO teachers (id, program_id) VALUES ('44444444-4444-4444-4444-444444444444', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
+                INSERT INTO program_teachers (id, program_id, teacher_id) VALUES (gen_random_uuid(), 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '44444444-4444-4444-4444-444444444444');
+
+                INSERT INTO courses (id, program_id, teacher_id, name, type) VALUES
+                ('cccccccc-cccc-cccc-cccc-cccccccccccc', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '44444444-4444-4444-4444-444444444444', 'Matematik', 'DERS');
+
+                INSERT INTO course_students (id, course_id, student_id, program_id) VALUES
+                (gen_random_uuid(), 'cccccccc-cccc-cccc-cccc-cccccccccccc', '55555555-5555-5555-5555-555555555555', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
+
+                INSERT INTO student_groups (id, program_id, name) VALUES ('dddddddd-dddd-dddd-dddd-dddddddddddd', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Grup 1');
+                INSERT INTO student_group_members (id, group_id, student_id, program_id) VALUES
+                (gen_random_uuid(), 'dddddddd-dddd-dddd-dddd-dddddddddddd', '66666666-6666-6666-6666-666666666666', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
+                INSERT INTO course_groups (id, course_id, group_id, program_id) VALUES
+                (gen_random_uuid(), 'cccccccc-cccc-cccc-cccc-cccccccccccc', 'dddddddd-dddd-dddd-dddd-dddddddddddd', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
             ");
         }
 

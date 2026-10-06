@@ -60,6 +60,7 @@ try
     builder.Services.AddScoped<ReportsRepository>();
     builder.Services.AddScoped<NotificationRepository>();
     builder.Services.AddScoped<ProgramRepository>();
+    builder.Services.AddScoped<SchoolAccessRepository>();
     builder.Services.AddMemoryCache();
     builder.Services.AddHostedService<MentorumApi.Services.Background.OverdueHomeworkJob>();
 

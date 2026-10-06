@@ -64,7 +64,7 @@ namespace MentorumApi.Endpoints
                                 if (user.Role == "Coach")
                 {
                     var approval = await conn.ExecuteScalarAsync<string>("SELECT approval_status FROM coaches WHERE id = @Id", new { user.Id });
-                    if (approval == "PENDING") return Results.Json(new { error = "Onay bekleniyor.", code = "COACH_PENDING" }, statusCode: 403);
+                    if (approval == "PENDING") return Results.Ok(new { pendingApproval = true, code = "COACH_PENDING" });
                     if (approval == "REJECTED") return Results.Json(new { error = "Basvurunuz reddedildi.", code = "COACH_REJECTED" }, statusCode: 403);
                 }
 var token = jwt.GenerateAccessToken(user);

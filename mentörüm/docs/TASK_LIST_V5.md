@@ -1,7 +1,27 @@
 # 🏫 Mentörüm — V5 Görev Listesi (Okul/Dershane Modeli)
 > **Tarih:** 6 Ekim 2026
-> **Durum:** 🚧 Kodlama sürüyor — Aşama 0/1/1.6 + Aşama 2 (davet) tamam; `coach_id → program_id` geçişi (mevcut repo + endpoint + job) tamam. Kalan: Aşama 1.5, Aşama 2 (Google-teacher/idempotency), Aşama 3+.
+> **Durum:** 🚧 Kodlama sürüyor — Aşama 0/1/1.5/1.6 + Aşama 2 (davet) tamam; `coach_id → program_id` geçişi + register bug fix (403→200) + testler (12/12) tamam. Kalan: Aşama 2 (RequireTeacherRole/Google-teacher/idempotency), Aşama 3+.
 > **Kaynak:** `V5_OKUL_MODELI.md` (ayrıntılı tasarım). Görevler sıralıdır — her aşama bir öncekini varsayar.
+
+---
+
+## 📌 Devam Notu (son oturum)
+
+**Tamamlanan (bu oturum):**
+- `coach_id → program_id` geçişi (deploy güvenliği): `BaseRepository` tenant filtresi + `StudentRepository`(coach_notes) + `HomeworkRepository` + `ExamRepository` + `CalendarRepository` + `ReportsRepository` + `HomeworkEndpoints`(complete) + `OverdueHomeworkJob`. `homework_templates.coach_id` KORUNDU.
+- Aşama 1.5: `Data/SchoolAccessRepository.cs` (CourseAccessHelper + GetCourseStudentIds + tenant doğrulama + MaskStudent), `DTOs/CourseDtos.cs`, DI kaydı (`Program.cs`), `SchoolAccessTests.cs` (8 test).
+- Bug fix: register endpoint `403 COACH_PENDING` → `200 { pendingApproval:true }` (K5: register PENDING oluşturur, **login** 403 döner — login/google'daki 403 check doğru bırakıldı).
+- Test düzeltmeleri: `AuthIntegrationTests` (K5 akışına göre), `CrossTenantSecurityTests` fixture (`coach_id` → `program_id`).
+
+**Doğrulama:** build 0 hata, `dotnet test` 12/12 geçiyor.
+
+**Sıradaki öneriler (öncelik sırasıyla):**
+1. **Aşama 2 kalan** (satır 50-56): `RequireTeacherRole` policy, Google ile öğretmen rol ataması, POST idempotency.
+2. **Aşama 3** (Teachers/Courses/Groups): `TeacherRepository`/`TeacherEndpoints`, `CourseRepository`/`CourseEndpoints`, `GroupRepository`/`GroupEndpoints` — hepsi `SchoolAccessRepository` helper'larını kullanmalı (IDOR).
+3. Aşama 1.6'daki `- [ ] IDOR testi: yardımcı başka programın verisine erişemiyor mu?` (henüz yazılmadı).
+4. Aşama 4 (Schedule), Aşama 5 (Course Resources), Aşama 6 (Teacher Yetki & IDOR).
+
+**Mimari not:** Öğretmen erişimi `course.teacher_id` + `program_teachers` üzerinden; `GetCourseAccessAsync` sahiplik + 10 izin bayrağını tek yerden döndürüyor. Aşama 3/6'daki tüm öğretmen uçları bu helper'ı kullanmalı; öğrenci DTO'su `MaskStudent` ile izin bazlı maskelenmeli.
 
 ---
 
@@ -30,10 +50,10 @@
 - [x] Boş PostgreSQL'de 001→008 sırayla çalıştır, hata yoksa onayla
 
 ## Aşama 1.5: İzin & Tenant Helper (KRİTİK — `program_id` Aşama 1.6'da tanımlı; ders/grup kodlamadan ÖNCE)
-- [ ] `CourseAccessHelper`: course.teacher_id doğrula + izin bayrağı + DTO maskeleme
-- [ ] `GetCourseStudentIds(courseId)` — etkin öğrenci kümesi (distinct union) tek kaynak
-- [ ] Tenant doğrulama helper'ı: öğretmen/öğrenci/grup aynı `program_id`'ye ait olmalı
-- [ ] Bu helper'lar için IDOR senaryolu testler (Testcontainers)
+- [x] `CourseAccessHelper`: course.teacher_id doğrula + izin bayrağı + DTO maskeleme (`SchoolAccessRepository.GetCourseAccessAsync` + `MaskStudent`)
+- [x] `GetCourseStudentIds(courseId)` — etkin öğrenci kümesi (distinct union) tek kaynak (`GetCourseStudentIdsAsync`)
+- [x] Tenant doğrulama helper'ı: öğretmen/öğrenci/grup aynı `program_id`'ye ait olmalı (`IsTeacherInProgramAsync` + `Get*ProgramIdAsync`)
+- [x] Bu helper'lar için IDOR senaryolu testler (Testcontainers) — `SchoolAccessTests` (8 test, hepsi geçiyor)
 
 ## Aşama 1.6: Koçluk Programı + Koç Hiyerarşisi + Süper Yönetici
 - [x] `ProgramRepository` + `ProgramEndpoints`: program CRUD (liste/oluştur/düzenle/sil+arşiv), `POST /program/{id}/coaches` (yardımcı davet), `POST /program/{id}/transfer-admin`, `DELETE /program/{id}/coaches/{coachId}`
