@@ -1,6 +1,6 @@
 # 🏫 Mentörüm — V5 Görev Listesi (Okul/Dershane Modeli)
 > **Tarih:** 6 Ekim 2026
-> **Durum:** 🚧 Kodlama sürüyor — Aşama 0/1/1.5/1.6 + Aşama 2 (davet) tamam; `coach_id → program_id` geçişi + register bug fix (403→200) + testler (12/12) tamam. Kalan: Aşama 2 (RequireTeacherRole/Google-teacher/idempotency), Aşama 3+.
+> **Durum:** 🚧 Kodlama sürüyor — Aşama 0/1/1.5/1.6/2 tamam; `coach_id → program_id` geçişi + register bug fix (403→200) + `RequireTeacherRole` + Google-teacher + idempotency tamam. Kalan: Aşama 3+ (Teachers/Courses/Groups, Schedule, Resources, Teacher Yetki).
 > **Kaynak:** `V5_OKUL_MODELI.md` (ayrıntılı tasarım). Görevler sıralıdır — her aşama bir öncekini varsayar.
 
 ---
@@ -68,12 +68,12 @@
 - [ ] IDOR testi: yardımcı başka programın verisine erişemiyor mu?
 
 ## Aşama 2: Backend — Rol & Davet (Teacher)
-- [ ] `Program.cs`: `RequireTeacherRole` policy ekle
+- [x] `Program.cs`: `RequireTeacherRole` policy ekle
 - [x] `InviteEndpoints`: rol kontrolüne `Teacher` + `Coach` ekle (related_id = program_id)
 - [x] Davet kabulünde `teachers` (+ `program_teachers`) ve `coaches` (+ `program_coaches`) satırı ekle (transaction içinde)
 - [x] `User` modeli + JWT: `Teacher` rolünü destekle
-- [ ] Google ile girişte öğretmen daveti → rol `Teacher` atanması
-- [ ] POST uçlarına idempotency (`Idempotency-Key` + ActionFilter): ders oluşturma, öğretmen daveti, grup oluşturma
+- [x] Google ile girişte öğretmen daveti → rol `Teacher` atanması (AuthEndpoints `/google`: pending Teacher daveti varsa `Teacher` + `teachers` + `program_teachers`, davet `is_used=1`)
+- [x] POST uçlarına idempotency (`Idempotency-Key` + ActionFilter): öğretmen daveti (`invite/send`) eklendi; ders oluşturma + grup oluşturma Aşama 3'te eklenecek
 
 ## Aşama 3: Backend — Teachers & Courses & Groups
 - [ ] `TeacherRepository` + DTO'lar + `TeacherEndpoints` (list, invite, detail, update, deactivate)

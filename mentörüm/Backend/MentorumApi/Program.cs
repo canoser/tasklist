@@ -95,6 +95,7 @@ try
         options.AddPolicy("RequireStudentRole", policy => policy.RequireRole("Student"));
         options.AddPolicy("RequireParentRole", policy => policy.RequireRole("Parent"));
         options.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
+        options.AddPolicy("RequireTeacherRole", policy => policy.RequireRole("Teacher"));
     });
 
     // Background Services

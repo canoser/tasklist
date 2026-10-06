@@ -198,13 +198,18 @@ var token = jwt.GenerateAccessToken(user);
 
                 if (user == null)
                 {
-                    // Yeni google kullanıcısı (Varsayılan Koç)
+                    // Öğretmen daveti var mı? (Google ile öğretmen kaydı)
+                    var teacherInvite = await conn.QuerySingleOrDefaultAsync<InviteQueryModel>(
+                        "SELECT id AS Id, related_id AS RelatedId FROM invite_tokens WHERE email = @Email AND role = 'Teacher' AND is_used = 0 AND expires_at > NOW() LIMIT 1",
+                        new { Email = payload.Email });
+
+                    // Yeni google kullanıcısı (davet varsa Teacher, yoksa Koç)
                     user = new User
                     {
                         Id = Guid.NewGuid(),
                         Email = payload.Email,
                         GoogleId = payload.Subject,
-                        Role = "Coach",
+                        Role = teacherInvite != null && teacherInvite.RelatedId != null ? "Teacher" : "Coach",
                         FullName = payload.Name ?? "Google User",
                         AvatarUrl = payload.Picture,
                         CreatedAt = DateTime.UtcNow,
@@ -220,10 +225,27 @@ var token = jwt.GenerateAccessToken(user);
                             VALUES (@Id, @Email, @GoogleId, @Role, @FullName, @AvatarUrl, @CreatedAt, @UpdatedAt)", 
                             user, tx);
                         
-                        await conn.ExecuteAsync(@"
-                            INSERT INTO coaches (id, plan_type, approval_status) 
-                            VALUES (@Id, 'free', 'PENDING')", 
-                            new { Id = user.Id }, tx);
+                        if (teacherInvite != null && teacherInvite.RelatedId != null)
+                        {
+                            await conn.ExecuteAsync(@"
+                                INSERT INTO teachers (id, program_id)
+                                VALUES (@Id, @ProgramId)",
+                                new { Id = user.Id, ProgramId = teacherInvite.RelatedId }, tx);
+
+                            await conn.ExecuteAsync(@"
+                                INSERT INTO program_teachers (id, program_id, teacher_id)
+                                VALUES (gen_random_uuid(), @ProgramId, @Id)",
+                                new { ProgramId = teacherInvite.RelatedId, Id = user.Id }, tx);
+
+                            await conn.ExecuteAsync("UPDATE invite_tokens SET is_used = 1 WHERE id = @Id", new { Id = teacherInvite.Id }, tx);
+                        }
+                        else
+                        {
+                            await conn.ExecuteAsync(@"
+                                INSERT INTO coaches (id, plan_type, approval_status)
+                                VALUES (@Id, 'free', 'PENDING')",
+                                new { Id = user.Id }, tx);
+                        }
                         
                         tx.Commit();
                     }

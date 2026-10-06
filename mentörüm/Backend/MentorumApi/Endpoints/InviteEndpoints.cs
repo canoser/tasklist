@@ -68,7 +68,8 @@ namespace MentorumApi.Endpoints
                     });
 
                 return Results.Ok(new { message = "Davet başarıyla oluşturuldu.", code, link = inviteLink, expiresAt });
-            }).RequireAuthorization("RequireCoachRole"); // Sadece koç davet atabilir
+            }).RequireAuthorization("RequireCoachRole")
+                .AddEndpointFilter<MentorumApi.Filters.IdempotencyFilter>(); // Sadece koç davet atabilir; idempotency
 
             // Davet detayını görüntüle (token validasyonu)
             group.MapGet("/{token}", async (
@@ -151,7 +152,7 @@ namespace MentorumApi.Endpoints
 
                     else if (user.Role == "Teacher")
                     {
-                        await conn.ExecuteAsync("INSERT INTO teachers (id, is_active) VALUES (@Id, 1)", new { Id = userId }, tx);
+                        await conn.ExecuteAsync("INSERT INTO teachers (id, program_id, is_active) VALUES (@Id, @ProgramId, 1)", new { Id = userId, ProgramId = invite.RelatedId }, tx);
                         await conn.ExecuteAsync(@"
                             INSERT INTO program_teachers (id, program_id, teacher_id)
                             VALUES (@Id, @ProgramId, @TeacherId)",
