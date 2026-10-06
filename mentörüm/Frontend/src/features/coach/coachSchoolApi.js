@@ -150,3 +150,48 @@ export const useRejectCoach = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'pending-coaches'] }),
   });
 };
+
+// --- Ders detayı ---
+export const useCourseStudents = (programId, courseId) => useQuery({
+  queryKey: ['coach', 'program', programId, 'course', courseId, 'students'],
+  queryFn: async () => (await apiClient.get(`/programs/${programId}/courses/${courseId}/students`)) || [],
+  enabled: !!programId && !!courseId,
+});
+
+export const useCourseGroups = (programId, courseId) => useQuery({
+  queryKey: ['coach', 'program', programId, 'course', courseId, 'groups'],
+  queryFn: async () => (await apiClient.get(`/programs/${programId}/courses/${courseId}/groups`)) || [],
+  enabled: !!programId && !!courseId,
+});
+
+export const useAddCourseStudent = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ programId, courseId, studentId }) => apiClient.post(`/programs/${programId}/courses/${courseId}/students`, { studentId }),
+    onSuccess: (_, v) => qc.invalidateQueries({ queryKey: ['coach', 'program', v.programId, 'course', v.courseId, 'students'] }),
+  });
+};
+
+export const useRemoveCourseStudent = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ programId, courseId, studentId }) => apiClient.delete(`/programs/${programId}/courses/${courseId}/students/${studentId}`),
+    onSuccess: (_, v) => qc.invalidateQueries({ queryKey: ['coach', 'program', v.programId, 'course', v.courseId, 'students'] }),
+  });
+};
+
+export const useAddCourseGroup = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ programId, courseId, groupId }) => apiClient.post(`/programs/${programId}/courses/${courseId}/groups`, { groupId }),
+    onSuccess: (_, v) => qc.invalidateQueries({ queryKey: ['coach', 'program', v.programId, 'course', v.courseId, 'groups'] }),
+  });
+};
+
+export const useRemoveCourseGroup = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ programId, courseId, groupId }) => apiClient.delete(`/programs/${programId}/courses/${courseId}/groups/${groupId}`),
+    onSuccess: (_, v) => qc.invalidateQueries({ queryKey: ['coach', 'program', v.programId, 'course', v.courseId, 'groups'] }),
+  });
+};

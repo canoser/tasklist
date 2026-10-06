@@ -25,7 +25,7 @@ namespace MentorumApi.Endpoints
                 try
                 {
                     var id = await repo.CreateResourceAsync(programId, courseId, coachId.Value, req);
-                    await notifications.NotifyCourseStudentsAsync(courseId, "RESOURCE_ASSIGNED", "Yeni Kaynak", $"'{req.Title}' kaynağı eklendi.");
+                    await notifications.NotifyCourseStudentsAsync(courseId, programId, "RESOURCE_ASSIGNED", "Yeni Kaynak", $"'{req.Title}' kaynağı eklendi.");
                     return Results.Ok(new { id });
                 }
                 catch (UnauthorizedAccessException)

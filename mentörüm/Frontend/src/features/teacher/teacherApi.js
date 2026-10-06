@@ -43,3 +43,13 @@ export const useTeacherCourseExams = (courseId) => {
     enabled: !!courseId,
   });
 };
+
+export const useTeacherSchedule = () => {
+  return useQuery({
+    queryKey: ['teacher', 'schedule'],
+    queryFn: async () => {
+      const response = await apiClient.get('/teacher/schedule');
+      return response || [];
+    },
+  });
+};

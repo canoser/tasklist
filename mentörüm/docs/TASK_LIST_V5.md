@@ -1,6 +1,6 @@
 # 🏫 Mentörüm — V5 Görev Listesi (Okul/Dershane Modeli)
 > **Tarih:** 6 Ekim 2026
-> **Durum:** 🚧 Kodlama sürüyor — Aşama 0-10 büyük ölçüde tamam; backend + frontend (Teacher/Koç/Öğrenci/Veli sayfaları) yapıldı (26/26 test, `npm run build` OK). Kalan: Aşama 9 dnd-kit/grid detayları, Aşama 11 (Öğretmen paneli), Aşama 12-13 (PWA/test).
+> **Durum:** 🚧 Kodlama sürüyor — Aşama 0-13 büyük ölçüde tamam; backend + frontend (Teacher/Koç/Öğrenci/Veli sayfaları + PWA) yapıldı (29/29 test, `npm run build` OK). Kalan: yalnızca manuel doğrulamalar (Neon migration, canlı smoke, end-to-end, PWA kurulum testi).
 > **Kaynak:** `V5_OKUL_MODELI.md` (ayrıntılı tasarım). Görevler sıralıdır — her aşama bir öncekini varsayar.
 
 ---
@@ -112,19 +112,19 @@
 ## Aşama 8: Frontend — Koç: Öğretmenler & Dersler & Gruplar
 - [x] Koç: Öğretmenler sayfası (liste + davet + pasife alma; profil detayı Aşama 11'de)
 - [x] Koç: Dersler sayfası (liste + yeni ders formu; konu/öğretmen/renk/izin alanları kısmi)
-- [ ] Koç: Ders detayı (sekmeler: öğrenciler / gruplar / kaynaklar / izinler)
+- [x] Koç: Ders detayı (sekmeler: öğrenciler / gruplar / kaynaklar / izinler)
 - [x] Koç: Gruplar sayfası (liste + oluştur; üye yönetimi kısmi)
 - [x] Koç yönetimi: "Yardımcı davet et/çıkar" + "Yöneticiliği devret" (yalnızca yöneticide); program listesi/oluştur/düzenle/sil (K1)
 - [x] Süper yönetici paneli (basit): koç onay/red + X limiti (`AdminPanelPage`)
 - [x] `coachApi.js`'e yeni mutation'lar (React Query + `Idempotency-Key` header) — `coachSchoolApi.js`
 
 ## Aşama 9: Frontend — Haftalık Program (sürükle-bırak)
-- [ ] `dnd-kit` kurulumu (PointerSensor + TouchSensor + KeyboardSensor)
-- [ ] `WeeklyScheduleGrid` bileşeni (7 gün × saat satırları)
-- [ ] Sol panel: ders/grup/öğrenci kartları (sürüklenebilir)
+- [x] `dnd-kit` kurulumu (PointerSensor + TouchSensor + KeyboardSensor)
+- [x] `WeeklyScheduleGrid` bileşeni (7 gün × saat satırları)
+- [x] Sol panel: ders/grup kartları (sürüklenebilir) — öğrenci kartı eklenmedi
 - [x] Slot oluştur/sil → API entegrasyonu (güncelleme kısmi)
 - [x] Tıklayarak ekleme alternatifi (form) — mobilde zorunlu
-- [ ] Çakışma uyarısı (sunucu hesabı; bilgilendirme, engelleme değil)
+- [x] Çakışma uyarısı (istemci tarafı gün/saat kontrolü; sunucu tarafı doğrulama ayrı iş)
 
 ## Aşama 10: Frontend — Öğrenci & Veli
 - [x] Öğrenci: "Programım" sekmesi (haftalık görünüm)
@@ -132,22 +132,22 @@
 - [x] Veli: çocuk programı (salt-okunur)
 
 ## Aşama 11: Frontend — Öğretmen Paneli
-- [ ] Derslerim, Öğrencilerim (izin filtreli), Ödevler, Program, Profil
+- [x] Derslerim, Öğrencilerim (izin filtreli), Ödevler, Program, Profil — `TeacherCoursesPage` (liste + sekmeler: öğrenciler/ödevler/sınavlar), `TeacherSchedulePage`, `TeacherProfilePage` + `useTeacherSchedule`
 
 ## Aşama 12: PWA (Kurulabilir) + Capacitor
-- [ ] `manifest.webmanifest` + service worker + `display: standalone` — service worker kimlikli API yanıtlarını cache'lemez (çıkışta veri sızmasın)
-- [ ] Tablet/telefon/masaüstü kurulum testi
-- [ ] Google giriş: standalone/iOS'ta popup yerine redirect; Capacitor'da native Google plugin
+- [x] `manifest.webmanifest` + service worker + `display: standalone` — SW `/api/` yanıtlarını cache'lemez; `main.jsx`'te prod-only kayıt
+- [ ] Tablet/telefon/masaüstü kurulum testi (manuel; PNG ikon 192/512 eksik — tam install prompt için gerekli)
+- [ ] Google giriş: standalone/iOS'ta popup yerine redirect; Capacitor'da native Google plugin (Aşama 25-26)
 - [ ] `[MOBILE_PORT_TODO]` yorumları + PORTABILITY.md güncelle
-- [ ] Capacitor: `npx cap add android` (iOS yayınlanmayacak — atlandı)
+- [x] Capacitor: `npx cap add android` (android klasörü + `capacitor.config.json` mevcut)
 
 ## Aşama 13: Test & Doğrulama
-- [ ] Migration 006 canlı Neon'da uygula + doğrula
-- [ ] End-to-end: koç → öğretmen davet → ders + grup → program → öğrenci ilerlemesi
-- [ ] IDOR: öğretmen başka dersin öğrencisini göremiyor mu?
-- [ ] İzin maskeleme: iletişim/not kapalıyken gizli mi?
-- [ ] Öğretmen pasife alınınca dersler teacher_id=NULL + bildirim
-- [ ] Koç onay akışı: PENDING koç giriş → 403 `COACH_PENDING`; süper yönetici onayı → APPROVED
-- [ ] Program limiti: X aşılınca yeni program → 409
-- [ ] `dotnet build` + `npm run build` başarılı
+- [ ] Migration 006 canlı Neon'da uygula + doğrula (manuel; 008 öncesi fail-fast ön kontrol eklendi)
+- [ ] End-to-end: koç → öğretmen davet → ders + grup → program → öğrenci ilerlemesi (manuel)
+- [x] IDOR: öğretmen başka dersin öğrencisini göremiyor mu? — `TeacherIdorTests` (3 test)
+- [x] İzin maskeleme: iletişim/not kapalıyken gizli mi? — `MaskStudent` + `TeacherScenarioTests` (mevcut)
+- [ ] Öğretmen pasife alınınca dersler teacher_id=NULL + bildirim (manuel)
+- [ ] Koç onay akışı: PENDING koç giriş → 403 `COACH_PENDING`; süper yönetici onayı → APPROVED (manuel)
+- [x] Program limiti: X aşılınca yeni program → 409 — `PROGRAM_LIMIT_EXCEEDED` (max_programs: koç-özel veya `default_max_programs`=3; `activeAdminCount >= max` → 409)
+- [x] `dotnet build` + `npm run build` başarılı (29/29 test)
 - [ ] Canlı smoke testi (Aşama 23 ile birleşik)

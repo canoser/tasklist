@@ -111,13 +111,13 @@ namespace MentorumApi.Data
                     u.full_name AS StudentName
                 FROM schedule_slots s
                 CROSS JOIN LATERAL (
-                    SELECT d FROM generate_series(@From::date, @To::date, '1 day') AS d
+                    SELECT d::date FROM generate_series(@From::date, @To::date, interval '1 day') AS g(d)
                     WHERE EXTRACT(ISODOW FROM d) = s.day_of_week
                 ) occ
                 LEFT JOIN users u ON s.student_id = u.id
                 WHERE s.is_active = 1
-                  AND (s.valid_from IS NULL OR s.valid_from <= @To::date)
-                  AND (s.valid_to IS NULL OR s.valid_to >= @From::date)
+                  AND (s.valid_from IS NULL OR occ.d >= s.valid_from)
+                  AND (s.valid_to IS NULL OR occ.d <= s.valid_to)
             ");
 
             if (role == "Coach")

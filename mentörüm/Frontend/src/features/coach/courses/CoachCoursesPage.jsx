@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useCourses, useCreateCourse } from '../coachSchoolApi';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
@@ -8,6 +8,7 @@ import styles from './CoachCoursesPage.module.css';
 
 const CoachCoursesPage = () => {
   const { programId } = useParams();
+  const navigate = useNavigate();
   const { data: courses, isLoading } = useCourses(programId);
   const createCourse = useCreateCourse();
   const [name, setName] = useState('');
@@ -41,6 +42,7 @@ const CoachCoursesPage = () => {
               <span className={styles.type}>{c.type}</span>
             </div>
             <div className={styles.meta}>Öğrenci: {c.studentCount}</div>
+            <Button size="sm" variant="outline" onClick={() => navigate(`/coach/programs/${programId}/courses/${c.id}`)}>Detay</Button>
           </Card>
         ))}
       </div>

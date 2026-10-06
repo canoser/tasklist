@@ -50,6 +50,8 @@ namespace MentorumApi.Data
 
             int targetCount = (req.CourseId != null ? 1 : 0) + (req.GroupId != null ? 1 : 0) + (req.StudentId != null ? 1 : 0);
             if (targetCount != 1) throw new InvalidOperationException("EXACTLY_ONE_TARGET");
+            if (req.DayOfWeek < 1 || req.DayOfWeek > 7) throw new InvalidOperationException("INVALID_DAY_OF_WEEK");
+            if (req.StartTime >= req.EndTime) throw new InvalidOperationException("INVALID_TIME_RANGE");
 
             var id = Guid.NewGuid();
             using var conn = _connectionFactory.CreateConnection();
@@ -78,8 +80,8 @@ namespace MentorumApi.Data
                     end_time = COALESCE(@EndTime, end_time),
                     title = COALESCE(@Title, title),
                     type = COALESCE(@Type, type),
-                    valid_from = @ValidFrom,
-                    valid_to = @ValidTo,
+                    valid_from = COALESCE(@ValidFrom, valid_from),
+                    valid_to = COALESCE(@ValidTo, valid_to),
                     color = COALESCE(@Color, color),
                     is_active = COALESCE(@IsActive, is_active),
                     updated_at = NOW()

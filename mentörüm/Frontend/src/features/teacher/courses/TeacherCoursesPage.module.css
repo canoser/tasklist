@@ -1,0 +1,11 @@
+.container { padding: var(--spacing-md); max-width: 720px; margin: 0 auto; }
+.title { font-size: 1.4rem; font-weight: 700; margin-bottom: var(--spacing-md); }
+.subtitle { font-size: 1.1rem; font-weight: 600; margin: var(--spacing-sm) 0; }
+.list { display: flex; flex-direction: column; gap: var(--spacing-sm); }
+.card { display: flex; flex-direction: column; gap: 4px; }
+.type { font-size: 0.8rem; color: var(--text-color-muted); }
+.meta { font-size: 0.8rem; color: var(--text-color-muted); }
+.empty { color: var(--text-color-muted); font-size: 0.9rem; padding: var(--spacing-sm) 0; }
+.tabs { display: flex; gap: var(--spacing-xs); margin: var(--spacing-sm) 0; flex-wrap: wrap; }
+.tab { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border-color, #e2e8f0); background: none; cursor: pointer; font-size: 0.8rem; }
+.tabActive { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }

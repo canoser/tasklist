@@ -1,0 +1,13 @@
+.container { padding: var(--spacing-md); max-width: 900px; margin: 0 auto; }
+.header { display: flex; align-items: center; gap: var(--spacing-sm); margin-bottom: var(--spacing-md); }
+.title { font-size: 1.25rem; font-weight: 700; }
+.tabs { display: flex; gap: var(--spacing-xs); margin-bottom: var(--spacing-md); flex-wrap: wrap; }
+.tab { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border-color, #e2e8f0); background: none; cursor: pointer; font-size: 0.85rem; }
+.tabActive { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+.card { margin-bottom: var(--spacing-sm); }
+.item { display: flex; align-items: center; gap: 12px; margin: 0 0 var(--spacing-sm) 0; }
+.meta { font-size: 0.8rem; color: var(--text-color-muted); flex: 1; }
+.formRow { display: flex; align-items: flex-end; gap: var(--spacing-sm); flex-wrap: wrap; }
+.permRow { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color, #e2e8f0); }
+.on { color: var(--color-success); font-weight: 600; }
+.off { color: var(--text-color-muted); }

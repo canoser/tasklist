@@ -40,6 +40,14 @@ namespace MentorumApi.Endpoints
                 {
                     return Results.BadRequest(new { error = "Hedef bu programda bulunamadı." });
                 }
+                catch (InvalidOperationException ex) when (ex.Message == "INVALID_DAY_OF_WEEK")
+                {
+                    return Results.BadRequest(new { error = "Gün değeri 1-7 arasında olmalıdır." });
+                }
+                catch (InvalidOperationException ex) when (ex.Message == "INVALID_TIME_RANGE")
+                {
+                    return Results.BadRequest(new { error = "Başlangıç saati bitişten küçük olmalıdır." });
+                }
             });
 
             coach.MapPut("/{slotId:guid}", async (Guid programId, Guid slotId, [FromBody] UpdateScheduleSlotRequest req, [FromServices] ScheduleRepository repo, ClaimsPrincipal user) =>

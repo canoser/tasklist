@@ -41,4 +41,19 @@ namespace MentorumApi.DTOs
         public float? TargetScore { get; set; }
         public DateTime? CoachingStartDate { get; set; }
     }
+
+    /// <summary>Ders detayı sekmesi: dersteki öğrenci (şema güvenli, minimal).</summary>
+    public class CourseStudentDto
+    {
+        public Guid Id { get; set; }
+        public required string FullName { get; set; }
+        public string? Email { get; set; }
+    }
+
+    /// <summary>Ders detayı sekmesi: dersteki grup (şema güvenli, minimal).</summary>
+    public class CourseGroupDto
+    {
+        public Guid Id { get; set; }
+        public required string Name { get; set; }
+    }
 }

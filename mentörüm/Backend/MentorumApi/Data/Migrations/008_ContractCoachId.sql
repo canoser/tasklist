@@ -11,6 +11,24 @@ UPDATE student_subjects SET created_by = coach_id WHERE created_by IS NULL AND c
 UPDATE homework_assignments SET created_by = coach_id WHERE created_by IS NULL AND coach_id IS NOT NULL;
 UPDATE exam_results SET created_by = coach_id WHERE created_by IS NULL AND coach_id IS NOT NULL;
 
+-- 0.5 Ön kontrol: program_id NULL kalan satır varsa net hata ver (fail-fast)
+DO $$
+DECLARE
+    tbl TEXT;
+    null_count BIGINT;
+    tables TEXT[] := ARRAY[
+        'students','coach_notes','exam_results','student_subjects','homework_assignments',
+        'teachers','courses','course_students','student_groups','student_group_members',
+        'course_groups','schedule_slots','course_resources','course_resource_progress'];
+BEGIN
+    FOREACH tbl IN ARRAY tables LOOP
+        EXECUTE format('SELECT COUNT(*) FROM %I WHERE program_id IS NULL', tbl) INTO null_count;
+        IF null_count > 0 THEN
+            RAISE EXCEPTION '%: program_id NULL olan % satır var (007 backfill eksik). 008 iptal edildi.', tbl, null_count;
+        END IF;
+    END LOOP;
+END $$;
+
 -- 1. program_id NOT NULL (007 backfill'i tamamlandı)
 ALTER TABLE students ALTER COLUMN program_id SET NOT NULL;
 ALTER TABLE coach_notes ALTER COLUMN program_id SET NOT NULL;

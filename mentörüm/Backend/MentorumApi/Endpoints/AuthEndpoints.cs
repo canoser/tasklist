@@ -191,23 +191,25 @@ var token = jwt.GenerateAccessToken(user);
             {
                 var payload = await googleAuth.VerifyGoogleTokenAsync(req.IdToken);
                 if (payload == null) return Results.Unauthorized();
+                if (payload.EmailVerified != true || string.IsNullOrEmpty(payload.Email)) return Results.Unauthorized();
+                var email = payload.Email.ToLowerInvariant();
 
                 using var conn = db.CreateConnection();
                 var user = await conn.QuerySingleOrDefaultAsync<User>(
-                    "SELECT id, email, google_id, role, full_name, avatar_url, is_active, created_at, updated_at FROM users WHERE email = @Email", new { Email = payload.Email });
+                    "SELECT id, email, google_id, role, full_name, avatar_url, is_active, created_at, updated_at FROM users WHERE email = @Email", new { Email = email });
 
                 if (user == null)
                 {
                     // Öğretmen daveti var mı? (Google ile öğretmen kaydı)
                     var teacherInvite = await conn.QuerySingleOrDefaultAsync<InviteQueryModel>(
                         "SELECT id AS Id, related_id AS RelatedId FROM invite_tokens WHERE email = @Email AND role = 'Teacher' AND is_used = 0 AND expires_at > NOW() LIMIT 1",
-                        new { Email = payload.Email.ToLower() });
+                        new { Email = email });
 
                     // Yeni google kullanıcısı (davet varsa Teacher, yoksa Koç)
                     user = new User
                     {
                         Id = Guid.NewGuid(),
-                        Email = payload.Email,
+                        Email = email,
                         GoogleId = payload.Subject,
                         Role = teacherInvite != null && teacherInvite.RelatedId != null ? "Teacher" : "Coach",
                         FullName = payload.Name ?? "Google User",
@@ -237,7 +239,8 @@ var token = jwt.GenerateAccessToken(user);
                                 VALUES (gen_random_uuid(), @ProgramId, @Id)",
                                 new { ProgramId = teacherInvite.RelatedId, Id = user.Id }, tx);
 
-                            await conn.ExecuteAsync("UPDATE invite_tokens SET is_used = 1 WHERE id = @Id", new { Id = teacherInvite.Id }, tx);
+                            var inviteClaimed = await conn.ExecuteAsync("UPDATE invite_tokens SET is_used = 1 WHERE id = @Id AND is_used = 0", new { Id = teacherInvite.Id }, tx);
+                            if (inviteClaimed == 0) { tx.Rollback(); return Results.Conflict(new { error = "Davet zaten kullanıldı." }); }
                         }
                         else
                         {

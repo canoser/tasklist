@@ -15,16 +15,16 @@ namespace MentorumApi.Data
             return await conn.QuerySingleOrDefaultAsync<CourseAccessDto>(@"
                 SELECT id AS CourseId, teacher_id AS TeacherId, program_id AS ProgramId,
                        name AS Name, type AS Type, color AS Color,
-                       (teacher_can_view_profile = 1) AS CanViewProfile,
-                       (teacher_can_view_contact = 1) AS CanViewContact,
-                       (teacher_can_view_homework = 1) AS CanViewHomework,
-                       (teacher_can_manage_homework = 1) AS CanManageHomework,
-                       (teacher_can_view_exams = 1) AS CanViewExams,
-                       (teacher_can_manage_exams = 1) AS CanManageExams,
-                       (teacher_can_view_notes = 1) AS CanViewNotes,
-                       (teacher_can_add_notes = 1) AS CanAddNotes,
-                       (teacher_can_view_schedule = 1) AS CanViewSchedule,
-                       (teacher_can_manage_schedule = 1) AS CanManageSchedule
+                       (COALESCE(teacher_can_view_profile, 0) = 1) AS CanViewProfile,
+                       (COALESCE(teacher_can_view_contact, 0) = 1) AS CanViewContact,
+                       (COALESCE(teacher_can_view_homework, 0) = 1) AS CanViewHomework,
+                       (COALESCE(teacher_can_manage_homework, 0) = 1) AS CanManageHomework,
+                       (COALESCE(teacher_can_view_exams, 0) = 1) AS CanViewExams,
+                       (COALESCE(teacher_can_manage_exams, 0) = 1) AS CanManageExams,
+                       (COALESCE(teacher_can_view_notes, 0) = 1) AS CanViewNotes,
+                       (COALESCE(teacher_can_add_notes, 0) = 1) AS CanAddNotes,
+                       (COALESCE(teacher_can_view_schedule, 0) = 1) AS CanViewSchedule,
+                       (COALESCE(teacher_can_manage_schedule, 0) = 1) AS CanManageSchedule
                 FROM courses
                 WHERE id = @CourseId AND teacher_id = @TeacherId AND is_active = 1",
                 new { CourseId = courseId, TeacherId = teacherId });
@@ -105,16 +105,16 @@ namespace MentorumApi.Data
             return await conn.QueryAsync<CourseAccessDto>(@"
                 SELECT id AS CourseId, teacher_id AS TeacherId, program_id AS ProgramId,
                        name AS Name, type AS Type, color AS Color,
-                       (teacher_can_view_profile = 1) AS CanViewProfile,
-                       (teacher_can_view_contact = 1) AS CanViewContact,
-                       (teacher_can_view_homework = 1) AS CanViewHomework,
-                       (teacher_can_manage_homework = 1) AS CanManageHomework,
-                       (teacher_can_view_exams = 1) AS CanViewExams,
-                       (teacher_can_manage_exams = 1) AS CanManageExams,
-                       (teacher_can_view_notes = 1) AS CanViewNotes,
-                       (teacher_can_add_notes = 1) AS CanAddNotes,
-                       (teacher_can_view_schedule = 1) AS CanViewSchedule,
-                       (teacher_can_manage_schedule = 1) AS CanManageSchedule
+                       (COALESCE(teacher_can_view_profile, 0) = 1) AS CanViewProfile,
+                       (COALESCE(teacher_can_view_contact, 0) = 1) AS CanViewContact,
+                       (COALESCE(teacher_can_view_homework, 0) = 1) AS CanViewHomework,
+                       (COALESCE(teacher_can_manage_homework, 0) = 1) AS CanManageHomework,
+                       (COALESCE(teacher_can_view_exams, 0) = 1) AS CanViewExams,
+                       (COALESCE(teacher_can_manage_exams, 0) = 1) AS CanManageExams,
+                       (COALESCE(teacher_can_view_notes, 0) = 1) AS CanViewNotes,
+                       (COALESCE(teacher_can_add_notes, 0) = 1) AS CanAddNotes,
+                       (COALESCE(teacher_can_view_schedule, 0) = 1) AS CanViewSchedule,
+                       (COALESCE(teacher_can_manage_schedule, 0) = 1) AS CanManageSchedule
                 FROM courses
                 WHERE teacher_id = @TeacherId AND is_active = 1
                 ORDER BY name",

@@ -1,0 +1,14 @@
+{
+  "name": "Mentörüm",
+  "short_name": "Mentörüm",
+  "description": "Koçluk programı, ders ve program yönetimi",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#8B5CF6",
+  "lang": "tr",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

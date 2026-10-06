@@ -1,14 +1,24 @@
-.container { padding: var(--spacing-md); max-width: 1100px; margin: 0 auto; }
+.container { padding: var(--spacing-md); max-width: 1200px; margin: 0 auto; }
 .title { font-size: 1.5rem; font-weight: 700; margin-bottom: var(--spacing-md); color: var(--text-color-main); }
-.card { margin-bottom: var(--spacing-md); }
-.form { display: flex; flex-direction: column; gap: var(--spacing-sm); }
-.row { display: flex; gap: var(--spacing-sm); flex-wrap: wrap; }
-.select { padding: 8px; border-radius: 8px; border: 1px solid var(--border-color, #e2e8f0); flex: 1; min-width: 120px; }
-
-.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--spacing-sm); }
-.dayCol { background: var(--bg-color-surface); border-radius: 12px; padding: var(--spacing-sm); }
-.dayHeader { font-weight: 600; margin-bottom: 8px; font-size: 0.85rem; color: var(--text-color-main); }
-.slot { background: #EEF2FF; border-left: 3px solid #8B5CF6; border-radius: 6px; padding: 6px 8px; margin-bottom: 6px; display: flex; flex-direction: column; gap: 2px; }
-.slotTime { font-size: 0.75rem; color: var(--text-color-muted); }
-.slotTitle { font-size: 0.85rem; font-weight: 500; }
-.deleteBtn { align-self: flex-end; background: none; border: none; color: var(--color-danger); cursor: pointer; font-size: 0.8rem; }
+.layout { display: flex; gap: var(--spacing-md); align-items: flex-start; }
+.sidePanel { width: 160px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; }
+.sidePanel h3 { font-size: 0.85rem; margin: 12px 0 4px; }
+.dragCard { background: #EEF2FF; border-left: 3px solid #8B5CF6; border-radius: 6px; padding: 8px; font-size: 0.85rem; cursor: grab; user-select: none; }
+.grid { flex: 1; display: flex; flex-direction: column; gap: 2px; overflow-x: auto; min-width: 0; }
+.gridRow { display: grid; grid-template-columns: 56px repeat(7, 1fr); gap: 2px; }
+.hourLabel { font-size: 0.7rem; color: var(--text-color-muted); text-align: right; padding-right: 6px; }
+.dayHeader { font-size: 0.75rem; font-weight: 600; text-align: center; padding: 4px 0; }
+.cell { min-height: 46px; background: var(--bg-color-surface); border-radius: 6px; padding: 2px; }
+.cellOver { outline: 2px dashed var(--color-primary); }
+.slot { background: #EEF2FF; border-left: 3px solid #8B5CF6; border-radius: 4px; padding: 2px 4px; margin-bottom: 2px; display: flex; justify-content: space-between; align-items: center; }
+.slotTitle { font-size: 0.7rem; }
+.del { background: none; border: none; color: var(--color-danger); cursor: pointer; font-size: 0.7rem; }
+.addBtn { width: 100%; background: none; border: none; color: var(--text-color-muted); cursor: pointer; font-size: 0.8rem; }
+.addBtn:hover { color: var(--color-primary); }
+.formCard { margin-top: var(--spacing-md); max-width: 360px; }
+.formTitle { font-weight: 600; margin-bottom: 8px; }
+.input { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color, #e2e8f0); margin-bottom: 8px; }
+.formActions { display: flex; gap: 8px; }
+.btn { padding: 8px 16px; border-radius: 8px; background: var(--color-primary); color: #fff; border: none; cursor: pointer; }
+.btnOutline { padding: 8px 16px; border-radius: 8px; background: none; border: 1px solid var(--border-color, #e2e8f0); cursor: pointer; }
+.conflict { color: var(--color-danger); font-size: 0.85rem; margin-top: 8px; }

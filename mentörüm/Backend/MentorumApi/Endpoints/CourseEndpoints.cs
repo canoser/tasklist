@@ -57,6 +57,20 @@ namespace MentorumApi.Endpoints
                 return ok ? Results.Ok(new { message = "Ders silindi." }) : Results.NotFound(new { error = "Ders bulunamadı." });
             });
 
+            group.MapGet("/{courseId:guid}/students", async (Guid programId, Guid courseId, [FromServices] CourseRepository repo, ClaimsPrincipal user) =>
+            {
+                var coachId = GetCoachId(user);
+                if (coachId == null) return Results.Unauthorized();
+                return Results.Ok(await repo.GetCourseStudentsAsync(programId, courseId, coachId.Value));
+            });
+
+            group.MapGet("/{courseId:guid}/groups", async (Guid programId, Guid courseId, [FromServices] CourseRepository repo, ClaimsPrincipal user) =>
+            {
+                var coachId = GetCoachId(user);
+                if (coachId == null) return Results.Unauthorized();
+                return Results.Ok(await repo.GetCourseGroupsAsync(programId, courseId, coachId.Value));
+            });
+
             group.MapPost("/{courseId:guid}/students", async (Guid programId, Guid courseId, [FromBody] AddCourseStudentRequest req, [FromServices] CourseRepository repo, ClaimsPrincipal user) =>
             {
                 var coachId = GetCoachId(user);

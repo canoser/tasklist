@@ -23,6 +23,7 @@ namespace MentorumApi.Endpoints
                 var userIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (!Guid.TryParse(userIdStr, out var userId)) return Results.Unauthorized();
 
+                if ((to - from).TotalDays > 62) return Results.BadRequest(new { error = "Tarih aralığı en fazla 62 gün olabilir." });
                 var events = await repo.GetCalendarEventsAsync(userId, "Coach", from, to, studentId);
                 return Results.Ok(events);
             });
@@ -37,6 +38,7 @@ namespace MentorumApi.Endpoints
                 var userIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (!Guid.TryParse(userIdStr, out var userId)) return Results.Unauthorized();
 
+                if ((to - from).TotalDays > 62) return Results.BadRequest(new { error = "Tarih aralığı en fazla 62 gün olabilir." });
                 var events = await repo.GetCalendarEventsAsync(userId, "Student", from, to, null);
                 return Results.Ok(events);
             });
@@ -52,6 +54,7 @@ namespace MentorumApi.Endpoints
                 var userIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (!Guid.TryParse(userIdStr, out var userId)) return Results.Unauthorized();
 
+                if ((to - from).TotalDays > 62) return Results.BadRequest(new { error = "Tarih aralığı en fazla 62 gün olabilir." });
                 var events = await repo.GetCalendarEventsAsync(userId, "Parent", from, to, id);
                 return Results.Ok(events);
             });

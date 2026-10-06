@@ -11,16 +11,16 @@ namespace MentorumApi.Data
         private const string CourseSelect = @"
             SELECT c.id, c.program_id AS ProgramId, c.subject_id AS SubjectId, c.teacher_id AS TeacherId,
                    c.name AS Name, c.type AS Type, c.color AS Color, c.is_active AS IsActive,
-                   (c.teacher_can_view_profile = 1) AS TeacherCanViewProfile,
-                   (c.teacher_can_view_contact = 1) AS TeacherCanViewContact,
-                   (c.teacher_can_view_homework = 1) AS TeacherCanViewHomework,
-                   (c.teacher_can_manage_homework = 1) AS TeacherCanManageHomework,
-                   (c.teacher_can_view_exams = 1) AS TeacherCanViewExams,
-                   (c.teacher_can_manage_exams = 1) AS TeacherCanManageExams,
-                   (c.teacher_can_view_notes = 1) AS TeacherCanViewNotes,
-                   (c.teacher_can_add_notes = 1) AS TeacherCanAddNotes,
-                   (c.teacher_can_view_schedule = 1) AS TeacherCanViewSchedule,
-                   (c.teacher_can_manage_schedule = 1) AS TeacherCanManageSchedule,
+                   (COALESCE(c.teacher_can_view_profile, 0) = 1) AS TeacherCanViewProfile,
+                   (COALESCE(c.teacher_can_view_contact, 0) = 1) AS TeacherCanViewContact,
+                   (COALESCE(c.teacher_can_view_homework, 0) = 1) AS TeacherCanViewHomework,
+                   (COALESCE(c.teacher_can_manage_homework, 0) = 1) AS TeacherCanManageHomework,
+                   (COALESCE(c.teacher_can_view_exams, 0) = 1) AS TeacherCanViewExams,
+                   (COALESCE(c.teacher_can_manage_exams, 0) = 1) AS TeacherCanManageExams,
+                   (COALESCE(c.teacher_can_view_notes, 0) = 1) AS TeacherCanViewNotes,
+                   (COALESCE(c.teacher_can_add_notes, 0) = 1) AS TeacherCanAddNotes,
+                   (COALESCE(c.teacher_can_view_schedule, 0) = 1) AS TeacherCanViewSchedule,
+                   (COALESCE(c.teacher_can_manage_schedule, 0) = 1) AS TeacherCanManageSchedule,
                    (SELECT COUNT(1) FROM course_students cs WHERE cs.course_id = c.id AND cs.is_active = 1) AS StudentCount";
 
         private async Task<bool> IsMemberAsync(Guid programId, Guid coachId)
@@ -181,6 +181,42 @@ namespace MentorumApi.Data
                 WHERE course_id = @CourseId AND group_id = @GroupId AND program_id = @ProgramId",
                 new { CourseId = courseId, GroupId = groupId, ProgramId = programId });
             return rows > 0 ? "OK" : "NOT_FOUND";
+        }
+        public async Task<IEnumerable<CourseStudentDto>> GetCourseStudentsAsync(Guid programId, Guid courseId, Guid coachId)
+        {
+            if (!await IsMemberAsync(programId, coachId)) return Enumerable.Empty<CourseStudentDto>();
+            using var conn = _connectionFactory.CreateConnection();
+            return await conn.QueryAsync<CourseStudentDto>(@"
+                SELECT u.id AS Id, u.full_name AS FullName, u.email AS Email
+                FROM users u
+                JOIN students s ON s.id = u.id AND s.program_id = @ProgramId
+                WHERE u.is_active = 1
+                  AND s.id IN (
+                    SELECT cs.student_id FROM course_students cs
+                    JOIN courses c ON c.id = cs.course_id AND c.program_id = @ProgramId
+                    WHERE cs.course_id = @CourseId AND cs.is_active = 1
+                    UNION
+                    SELECT sgm.student_id FROM course_groups cg
+                    JOIN courses c ON c.id = cg.course_id AND c.program_id = @ProgramId
+                    JOIN student_group_members sgm ON sgm.group_id = cg.group_id
+                    WHERE cg.course_id = @CourseId
+                )
+                ORDER BY u.full_name",
+                new { CourseId = courseId, ProgramId = programId });
+        }
+
+        public async Task<IEnumerable<CourseGroupDto>> GetCourseGroupsAsync(Guid programId, Guid courseId, Guid coachId)
+        {
+            if (!await IsMemberAsync(programId, coachId)) return Enumerable.Empty<CourseGroupDto>();
+            using var conn = _connectionFactory.CreateConnection();
+            return await conn.QueryAsync<CourseGroupDto>(@"
+                SELECT g.id AS Id, g.name AS Name
+                FROM student_groups g
+                JOIN course_groups cg ON cg.group_id = g.id
+                JOIN courses c ON c.id = cg.course_id AND c.program_id = @ProgramId
+                WHERE cg.course_id = @CourseId AND g.program_id = @ProgramId
+                ORDER BY g.name",
+                new { CourseId = courseId, ProgramId = programId });
         }
     }
 }

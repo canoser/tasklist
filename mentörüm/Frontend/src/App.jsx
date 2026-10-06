@@ -22,6 +22,7 @@ import ComingSoon from './components/common/Card/ComingSoon';
 import CoachProgramsPage from './features/coach/programs/CoachProgramsPage';
 import CoachTeachersPage from './features/coach/teachers/CoachTeachersPage';
 import CoachCoursesPage from './features/coach/courses/CoachCoursesPage';
+import CoachCourseDetailPage from './features/coach/courses/CoachCourseDetailPage';
 import CoachGroupsPage from './features/coach/groups/CoachGroupsPage';
 import CoachProgramSettingsPage from './features/coach/settings/CoachProgramSettingsPage';
 import WeeklySchedulePage from './features/coach/schedule/WeeklySchedulePage';
@@ -29,6 +30,9 @@ import AdminPanelPage from './features/admin/AdminPanelPage';
 import StudentSchedulePage from './features/student/schedule/StudentSchedulePage';
 import StudentCoursesPage from './features/student/courses/StudentCoursesPage';
 import ParentSchedulePage from './features/parent/schedule/ParentSchedulePage';
+import TeacherCoursesPage from './features/teacher/courses/TeacherCoursesPage';
+import TeacherSchedulePage from './features/teacher/schedule/TeacherSchedulePage';
+import TeacherProfilePage from './features/teacher/profile/TeacherProfilePage';
 
 // Korumalı Route Bileşeni
 const PrivateRoute = ({ children, allowedRoles }) => {
@@ -106,6 +110,7 @@ function App() {
           <Route path="programs" element={<CoachProgramsPage />} />
           <Route path="programs/:programId/teachers" element={<CoachTeachersPage />} />
           <Route path="programs/:programId/courses" element={<CoachCoursesPage />} />
+          <Route path="programs/:programId/courses/:courseId" element={<CoachCourseDetailPage />} />
           <Route path="programs/:programId/groups" element={<CoachGroupsPage />} />
           <Route path="programs/:programId/schedule" element={<WeeklySchedulePage />} />
           <Route path="programs/:programId/settings" element={<CoachProgramSettingsPage />} />
@@ -152,9 +157,9 @@ function App() {
             </PrivateRoute>
           } 
         >
-          <Route path="courses" element={<ComingSoon title="Derslerim" icon="📚" />} />
-          <Route path="schedule" element={<ComingSoon title="Program" icon="📅" />} />
-          <Route path="profile" element={<ComingSoon title="Profil" icon="👤" />} />
+          <Route path="courses" element={<TeacherCoursesPage />} />
+          <Route path="schedule" element={<TeacherSchedulePage />} />
+          <Route path="profile" element={<TeacherProfilePage />} />
         </Route>
 
         {/* Süper Yönetici */}
