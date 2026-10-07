@@ -5,6 +5,8 @@ const InviteSharePanel = ({ code, link, expiresAt }) => {
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
+  // [MOBILE_PORT_TODO]: navigator.clipboard + window.open web'e özgüdür; Capacitor'da
+  // @capacitor/clipboard ve @capacitor/share (Share API) kullanılmalıdır.
   const copyToClipboard = async (text, setState) => {
     try {
       await navigator.clipboard.writeText(text);

@@ -82,9 +82,10 @@ namespace MentorumApi.Tests
                 ('44444444-4444-4444-4444-444444444444', 'teacherA@test.com', 'Teacher', 'Teacher A'),
                 ('55555555-5555-5555-5555-555555555555', 'studentB@test.com', 'Student', 'Student B'),
                 ('66666666-6666-6666-6666-666666666666', 'studentC@test.com', 'Student', 'Student C'),
-                ('77777777-7777-7777-7777-777777777777', 'teacherB@test.com', 'Teacher', 'Teacher B');
+                ('77777777-7777-7777-7777-777777777777', 'teacherB@test.com', 'Teacher', 'Teacher B'),
+                ('88888888-8888-8888-8888-888888888888', 'assistantA@test.com', 'Coach', 'Assistant A');
                 
-                INSERT INTO coaches (id) VALUES ('11111111-1111-1111-1111-111111111111'), ('22222222-2222-2222-2222-222222222222');
+                INSERT INTO coaches (id) VALUES ('11111111-1111-1111-1111-111111111111'), ('22222222-2222-2222-2222-222222222222'), ('88888888-8888-8888-8888-888888888888');
                 
                 INSERT INTO coaching_programs (id, name, created_by) VALUES
                 ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Program A', '11111111-1111-1111-1111-111111111111'),
@@ -92,7 +93,8 @@ namespace MentorumApi.Tests
 
                 INSERT INTO program_coaches (id, program_id, coach_id, role) VALUES
                 (gen_random_uuid(), 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '11111111-1111-1111-1111-111111111111', 'YONETICI'),
-                (gen_random_uuid(), 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '22222222-2222-2222-2222-222222222222', 'YONETICI');
+                (gen_random_uuid(), 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '22222222-2222-2222-2222-222222222222', 'YONETICI'),
+                (gen_random_uuid(), 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '88888888-8888-8888-8888-888888888888', 'YARDIMCI');
 
                 INSERT INTO students (id, program_id) VALUES 
                 ('33333333-3333-3333-3333-333333333333', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'),

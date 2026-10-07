@@ -43,6 +43,7 @@ const CoachLayout = () => {
           </button>
         </div>
 
+        {/* [MOBILE_PORT_TODO]: window.innerWidth yerine platform servisi (utils/platform.js) kullanılmalı */}
         <nav className={styles.nav}>
           {navItems.map((item) => (
             <NavLink

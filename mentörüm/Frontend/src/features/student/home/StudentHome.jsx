@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useStudentHomework } from '../studentApi';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
@@ -6,6 +7,7 @@ import { formatDate } from '../../../utils/dateUtils';
 import styles from './StudentHome.module.css';
 
 const StudentHome = () => {
+  const navigate = useNavigate();
   const { data: homeworks, isLoading } = useStudentHomework();
 
   // Hesaplamalar
@@ -53,7 +55,7 @@ const StudentHome = () => {
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>Yaklaşan Ödevler</h2>
-          <Button variant="ghost" size="sm" onClick={() => window.location.href='/student/homework'}>Tümünü Gör</Button>
+          <Button variant="ghost" size="sm" onClick={() => navigate('/student/homework')}>Tümünü Gör</Button>
         </div>
         
         <div className={styles.homeworkList}>
@@ -69,7 +71,7 @@ const StudentHome = () => {
                     <p className={styles.hwDate}>Son Teslim: {formatDate(hw.dueDate, 'dd MMM')}</p>
                   </div>
                 </div>
-                <Button size="sm" variant="secondary" onClick={() => window.location.href='/student/homework'}>İncele</Button>
+                <Button size="sm" variant="secondary" onClick={() => navigate('/student/homework')}>İncele</Button>
               </Card>
             ))
           ) : (

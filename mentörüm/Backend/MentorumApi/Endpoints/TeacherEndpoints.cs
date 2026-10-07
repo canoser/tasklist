@@ -25,12 +25,17 @@ namespace MentorumApi.Endpoints
                 return t == null ? Results.NotFound(new { error = "Öğretmen bulunamadı." }) : Results.Ok(t);
             });
 
-            group.MapDelete("/{teacherId:guid}", async (Guid programId, Guid teacherId, [FromServices] TeacherRepository repo, ClaimsPrincipal user) =>
+            group.MapDelete("/{teacherId:guid}", async (Guid programId, Guid teacherId, [FromServices] TeacherRepository repo, [FromServices] NotificationRepository notifications, ClaimsPrincipal user) =>
             {
                 var coachId = GetCoachId(user);
                 if (coachId == null) return Results.Unauthorized();
                 var r = await repo.DeactivateTeacherAsync(programId, teacherId, coachId.Value);
-                return r == "OK" ? Results.Ok(new { message = "Öğretmen pasife alındı." }) : Results.NotFound(new { error = "Öğretmen bulunamadı." });
+                if (r == "OK")
+                {
+                    await notifications.NotifyProgramCoachesAsync(programId, "TEACHER_DEACTIVATED", "Öğretmen pasife alındı", "Bir öğretmen pasife alındı ve dersleri öğretmensiz bırakıldı.");
+                    return Results.Ok(new { message = "Öğretmen pasife alındı." });
+                }
+                return Results.NotFound(new { error = "Öğretmen bulunamadı." });
             });
             // Öğretmen tarafı (Aşama 6)
             var me = app.MapGroup("/api/v1/teacher").RequireAuthorization("RequireTeacherRole");

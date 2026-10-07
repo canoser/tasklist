@@ -141,7 +141,7 @@ BEGIN
         ALTER TABLE notifications DROP CONSTRAINT notifications_type_check;
     END IF;
 END $$;
-ALTER TABLE notifications ADD CONSTRAINT notifications_type_check CHECK (type IN ('HOMEWORK_ASSIGNED','HOMEWORK_DUE','HOMEWORK_OVERDUE','HOMEWORK_DONE','SCHEDULE_UPDATED','TEACHER_ASSIGNED','RESOURCE_ASSIGNED'));
+ALTER TABLE notifications ADD CONSTRAINT notifications_type_check CHECK (type IN ('HOMEWORK_ASSIGNED','HOMEWORK_DUE','HOMEWORK_OVERDUE','HOMEWORK_DONE','SCHEDULE_UPDATED','TEACHER_ASSIGNED','TEACHER_DEACTIVATED','RESOURCE_ASSIGNED'));
 
 -- 5. homework_assignments'a course_id + created_by ekle
 ALTER TABLE homework_assignments

@@ -39,8 +39,7 @@ Uygulamanın telefon ve masaüstüne (PWA) tam olarak yüklenebilmesi için `192
 
 V5 için hazırlanan yeni migration dosyalarının (`006`, `007`, `008`) canlı Neon veritabanında çalıştırılması gerekmektedir. Eğer Neon veritabanınız canlıda aktifse şu adımları izleyin:
 
-1. **Yedek (Branch) Alın:** Neon konsoluna girip mevcut branch'inizin (ör. `main`) bir yedeğini oluşturun (örn. `v5-pre-migration-backup`).
-2. **Migration'ları Çalıştırın:** Backend API'nizi canlıya (deploy) gönderdiğinizde, proje ayağa kalkarken EF/Dapper hangisi kullanılıyorsa, DbUp veya startup migration mekanizması otomatik çalışmalıdır. 
+1. **Migration'ları Çalıştırın:** Backend API'nizi canlıya (deploy) gönderdiğinizde, proje ayağa kalkarken EF/Dapper hangisi kullanılıyorsa, DbUp veya startup migration mekanizması otomatik çalışmalıdır. (Veritabanında henüz kayıt olmadığı için yedek almaya gerek yoktur).
    - Eğer manuel çalıştırıyorsanız:
      ```bash
      cd Backend/MentorumApi

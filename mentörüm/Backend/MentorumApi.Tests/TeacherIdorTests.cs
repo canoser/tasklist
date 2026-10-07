@@ -98,5 +98,27 @@ namespace MentorumApi.Tests
             var body = await response.Content.ReadAsStringAsync();
             Assert.Equal("[]", body);
         }
+
+        [Fact]
+        public async Task Yardimci_CannotAccess_OtherProgramsCourses()
+        {
+            // Yardımcı koç (8888, Program A YARDIMCI) → Program B ders listesi → boş (cross-tenant)
+            var client = CreateClient("88888888-8888-8888-8888-888888888888", "Coach");
+            var response = await client.GetAsync("/api/v1/programs/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/courses");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.Equal("[]", body);
+        }
+
+        [Fact]
+        public async Task Yardimci_CanAccess_OwnProgramCourses()
+        {
+            // Yardımcı koç (8888, Program A YARDIMCI) → kendi programı A ders listesi → 200 + içerik var
+            var client = CreateClient("88888888-8888-8888-8888-888888888888", "Coach");
+            var response = await client.GetAsync("/api/v1/programs/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/courses");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.Contains("Matematik", body);
+        }
     }
 }

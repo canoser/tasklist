@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from './authStore';
 import { apiClient } from '../../api/apiClient';
@@ -16,40 +16,82 @@ const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const googleButtonRef = useRef(null);
+
+  const redirectByRole = (role) => {
+    navigate(
+      role === 'Student' ? '/student/home' :
+      role === 'Parent' ? '/parent/summary' :
+      role === 'Teacher' ? '/teacher/courses' :
+      '/coach/dashboard'
+    );
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
     try {
-      // GEÇİCİ BYPASS (Sadece UI Testi İçin - Backend DB olmadan girebilmek adına)
-      if (email === 'test@coach.com' || email === 'test@student.com') {
-        const fakeRole = email.includes('coach') ? 'Coach' : 'Student';
-        const fakeUser = { id: 'test-1', email, role: fakeRole, fullName: 'Test Kullanıcısı' };
-        setAuth(fakeUser, 'fake-token');
-        navigate(fakeRole === 'Student' ? '/student/home' : '/coach/dashboard');
-        return;
-      }
-
-      const response = await apiClient.post('/auth/login', { email, password });
-      // API yanıtına göre data extraction
-      const data = response.data || response;
-      
+      const data = await apiClient.post('/auth/login', { email, password });
       setAuth(data.user, data.accessToken);
-      
-      // Role göre yönlendir
-      navigate(
-        data.user.role === 'Student' ? '/student/home' :
-        data.user.role === 'Parent' ? '/parent/summary' :
-        data.user.role === 'Teacher' ? '/teacher/courses' :
-        '/coach/dashboard'
-      );
+      redirectByRole(data.user.role);
     } catch (err) {
-      setError(err.response?.data?.error?.message || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.');
+      const code = err?.response?.data?.code;
+      if (code === 'COACH_PENDING') setError('Hesabınız onay bekliyor. Yönetici onayı sonrası tekrar deneyin.');
+      else if (code === 'COACH_REJECTED') setError('Başvurunuz reddedildi.');
+      else setError(err.response?.data?.error?.message || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.');
     } finally {
       setIsLoading(false);
     }
   };
+
+  const handleGoogleCredential = async (response) => {
+    setError('');
+    setIsLoading(true);
+    try {
+      const data = await apiClient.post('/auth/google', { idToken: response.credential });
+      setAuth(data.user, data.accessToken);
+      redirectByRole(data.user.role);
+    } catch (err) {
+      const code = err?.response?.data?.code;
+      if (code === 'COACH_PENDING') setError('Hesabınız onay bekliyor. Yönetici onayı sonrası tekrar deneyin.');
+      else if (code === 'COACH_REJECTED') setError('Başvurunuz reddedildi.');
+      else setError('Google girişi başarısız. Lütfen tekrar deneyin.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // [MOBILE_PORT_TODO]: Google Identity Services (GIS) web'e özgüdür; Capacitor native'de
+  // @capacitor-community/google-sign-in (veya Firebase Auth native) ile değiştirilmelidir.
+  useEffect(() => {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    if (!clientId) return;
+
+    const initGoogle = () => {
+      window.google.accounts.id.initialize({
+        client_id: clientId,
+        callback: handleGoogleCredential,
+      });
+      if (googleButtonRef.current) {
+        window.google.accounts.id.renderButton(googleButtonRef.current, {
+          theme: 'outline', size: 'large', width: 320,
+        });
+      }
+    };
+
+    if (window.google?.accounts?.id) {
+      initGoogle();
+    } else {
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      script.onload = initGoogle;
+      document.head.appendChild(script);
+    }
+  }, []);
 
   return (
     <div className={styles.pageContainer}>
@@ -110,16 +152,7 @@ const LoginPage = () => {
             <span>veya</span>
           </div>
 
-          <Button 
-            variant="outline" 
-            fullWidth 
-            size="md"
-            onClick={() => alert('Google girişi yakında eklenecek!')}
-            className={styles.googleBtn}
-          >
-            <span className={styles.googleIcon}>G</span>
-            Google ile Giriş Yap
-          </Button>
+          <div ref={googleButtonRef} style={{ display: 'flex', justifyContent: 'center', minHeight: 40 }} />
         </Card>
       </div>
     </div>
