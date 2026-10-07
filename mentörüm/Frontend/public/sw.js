@@ -21,6 +21,9 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // Sadece HTTP/HTTPS protokollerine izin ver (chrome-extension gibi eklentileri cache'lemeye çalışma)
+  if (!url.protocol.startsWith('http')) return;
+
   // API istekleri ve GET dışı istekler: network-only (hiç cache'e yazılmaz).
   if (url.pathname.startsWith('/api/')) return;
   if (request.method !== 'GET') return;
@@ -36,16 +39,16 @@ self.addEventListener('fetch', (event) => {
   // Statik varlıklar: cache-first + arka planda tazele.
   event.respondWith(
     caches.match(request).then((cached) => {
-      const network = fetch(request)
-        .then((response) => {
-          if (response && response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          }
-          return response;
-        })
-        .catch(() => cached);
-      return cached || network;
+      const fetchPromise = fetch(request).then((response) => {
+        if (response && response.ok) {
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, response.clone()));
+        }
+        return response;
+      }).catch((err) => {
+        if (!cached) throw err; // Eğer cache de yoksa gerçek ağ hatasını fırlat (undefined dönme)
+        return cached;
+      });
+      return cached || fetchPromise;
     })
   );
 });
