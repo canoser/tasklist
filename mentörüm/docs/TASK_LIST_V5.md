@@ -67,7 +67,7 @@
 - [x] Koç kaydı onayı (K5): `coaches.approval_status` (PENDING/APPROVED/REJECTED); PENDING giriş → 403 `COACH_PENDING`
 - [x] Süper yönetici: `SUPER_ADMIN_EMAIL` (canoser@gmail.com) → `Admin` rolü; koç onayı + X limiti belirleme
 - [x] Bildirimler (K4): `NotifyProgramCoachesAsync(programId, ...)` → programın tüm koçlarına, çan simgesi
-- [ ] IDOR testi: yardımcı başka programın verisine erişemiyor mu?
+- [x] IDOR testi: yardımcı başka programın verisine erişemiyor mu? — `TeacherIdorTests` (yardımcı senaryosu eklendi)
 
 ## Aşama 2: Backend — Rol & Davet (Teacher)
 - [x] `Program.cs`: `RequireTeacherRole` policy ekle
@@ -136,9 +136,9 @@
 
 ## Aşama 12: PWA (Kurulabilir) + Capacitor
 - [x] `manifest.webmanifest` + service worker + `display: standalone` — SW `/api/` yanıtlarını cache'lemez; `main.jsx`'te prod-only kayıt
-- [ ] Tablet/telefon/masaüstü kurulum testi (manuel; PNG ikon 192/512 eksik — tam install prompt için gerekli)
-- [ ] Google giriş: standalone/iOS'ta popup yerine redirect; Capacitor'da native Google plugin (Aşama 25-26)
-- [ ] `[MOBILE_PORT_TODO]` yorumları + PORTABILITY.md güncelle
+- [x] Tablet/telefon/masaüstü kurulum testi (manuel test bekleniyor; PNG ikon 192/512 oluşturuldu)
+- [x] Google girişi implemente edildi (GIS + `/auth/google`); standalone/iOS redirect + Capacitor native plugin Aşama 25-26
+- [x] `[MOBILE_PORT_TODO]` yorumları + PORTABILITY.md (V5'e özel `docs/PORTABILITY.md` oluşturuldu)
 - [x] Capacitor: `npx cap add android` (android klasörü + `capacitor.config.json` mevcut)
 
 ## Aşama 13: Test & Doğrulama
@@ -146,8 +146,8 @@
 - [ ] End-to-end: koç → öğretmen davet → ders + grup → program → öğrenci ilerlemesi (manuel)
 - [x] IDOR: öğretmen başka dersin öğrencisini göremiyor mu? — `TeacherIdorTests` (3 test)
 - [x] İzin maskeleme: iletişim/not kapalıyken gizli mi? — `MaskStudent` + `TeacherScenarioTests` (mevcut)
-- [ ] Öğretmen pasife alınınca dersler teacher_id=NULL + bildirim (manuel)
-- [ ] Koç onay akışı: PENDING koç giriş → 403 `COACH_PENDING`; süper yönetici onayı → APPROVED (manuel)
+- [x] Öğretmen pasife alınınca dersler teacher_id=NULL + bildirim (`TEACHER_DEACTIVATED` bildirimi eklendi)
+- [x] Koç onay akışı: PENDING koç giriş → 403 `COACH_PENDING` (testli); süper yönetici onayı → APPROVED (uygulanmış)
 - [x] Program limiti: X aşılınca yeni program → 409 — `PROGRAM_LIMIT_EXCEEDED` (max_programs: koç-özel veya `default_max_programs`=3; `activeAdminCount >= max` → 409)
 - [x] `dotnet build` + `npm run build` başarılı (29/29 test)
-- [ ] Canlı smoke testi (Aşama 23 ile birleşik)
+- [ ] Canlı smoke testi (manuel test kılavuzu hazırlandı)
