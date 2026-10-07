@@ -118,23 +118,39 @@ namespace MentorumApi.Endpoints
             // --- Süper yönetici ---
             var admin = app.MapGroup("/api/v1/admin").RequireAuthorization("RequireAdminRole");
 
-            admin.MapGet("/pending-coaches", async ([FromServices] ProgramRepository repo) =>
-                Results.Ok(await repo.GetPendingCoachesAsync()));
+            admin.MapGet("/pending-approvals", async ([FromServices] ProgramRepository repo) =>
+                Results.Ok(await repo.GetPendingApprovalsAsync()));
 
-            admin.MapPost("/coaches/{coachId:guid}/approve", async (Guid coachId, [FromBody] ApproveCoachRequest req, [FromServices] ProgramRepository repo, ClaimsPrincipal user) =>
+            admin.MapPost("/users/{userId:guid}/approve", async (Guid userId, [FromBody] ApproveUserRequest req, [FromServices] ProgramRepository repo, ClaimsPrincipal user) =>
             {
                 var adminId = GetCoachId(user);
                 if (adminId == null) return Results.Unauthorized();
-                var ok = await repo.SetCoachApprovalAsync(coachId, "APPROVED", req.MaxPrograms, adminId.Value);
-                return ok ? Results.Ok(new { message = "Koç onaylandı." }) : Results.NotFound(new { error = "Koç bulunamadı." });
+                var role = req.Role == "Student" || req.Role == "Parent" || req.Role == "Coach" ? req.Role : "Coach";
+                var ok = await repo.ApproveUserAsync(userId, role, req.MaxPrograms, adminId.Value);
+                return ok ? Results.Ok(new { message = "Kullanıcı onaylandı." }) : Results.NotFound(new { error = "Kullanıcı bulunamadı." });
             });
 
-            admin.MapPost("/coaches/{coachId:guid}/reject", async (Guid coachId, [FromServices] ProgramRepository repo, ClaimsPrincipal user) =>
+            admin.MapPost("/users/{userId:guid}/reject", async (Guid userId, [FromServices] ProgramRepository repo, ClaimsPrincipal user) =>
             {
                 var adminId = GetCoachId(user);
                 if (adminId == null) return Results.Unauthorized();
-                var ok = await repo.SetCoachApprovalAsync(coachId, "REJECTED", null, adminId.Value);
-                return ok ? Results.Ok(new { message = "Koç reddedildi." }) : Results.NotFound(new { error = "Koç bulunamadı." });
+                var ok = await repo.RejectUserAsync(userId);
+                return ok ? Results.Ok(new { message = "Kullanıcı reddedildi." }) : Results.NotFound(new { error = "Kullanıcı bulunamadı." });
+            });
+
+            admin.MapPost("/users", async ([FromBody] AddUserRequest req, [FromServices] ProgramRepository repo, ClaimsPrincipal user) =>
+            {
+                var adminId = GetCoachId(user);
+                if (adminId == null) return Results.Unauthorized();
+                if (string.IsNullOrEmpty(req.Email) || string.IsNullOrEmpty(req.FullName))
+                    return Results.BadRequest(new { error = "Eksik bilgi" });
+                var role = req.Role == "Student" || req.Role == "Parent" ? req.Role : "Coach";
+                var password = GenerateRandomPassword();
+                var passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
+                var r = await repo.AddUserByAdminAsync(req.Email, req.FullName, passwordHash, role);
+                return r == "OK"
+                    ? Results.Ok(new { message = "Kullanıcı eklendi.", email = req.Email.ToLowerInvariant(), password })
+                    : Results.Conflict(new { error = "Bu e-posta zaten kullanımda." });
             });
         }
 
@@ -143,11 +159,35 @@ namespace MentorumApi.Endpoints
             var idStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             return Guid.TryParse(idStr, out var id) ? id : null;
         }
+
+        private static string GenerateRandomPassword()
+        {
+            const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+            var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
+            var bytes = new byte[12];
+            rng.GetBytes(bytes);
+            var sb = new System.Text.StringBuilder(12);
+            foreach (var b in bytes) sb.Append(chars[b % chars.Length]);
+            return sb.ToString();
+        }
     }
 
     public class ApproveCoachRequest
     {
         public int? MaxPrograms { get; set; }
+    }
+
+    public class ApproveUserRequest
+    {
+        public string? Role { get; set; }   // Student / Parent / Coach
+        public int? MaxPrograms { get; set; }
+    }
+
+    public class AddUserRequest
+    {
+        public string? Email { get; set; }
+        public string? FullName { get; set; }
+        public string? Role { get; set; }
     }
 }
 

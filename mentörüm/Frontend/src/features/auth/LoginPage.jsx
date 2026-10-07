@@ -12,9 +12,11 @@ const LoginPage = () => {
   const { setAuth } = useAuthStore();
   
   const [isRegister, setIsRegister] = useState(false);
+  const [isForgot, setIsForgot] = useState(false);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('Coach');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -26,8 +28,7 @@ const LoginPage = () => {
       role === 'Student' ? '/student/home' :
       role === 'Parent' ? '/parent/summary' :
       role === 'Teacher' ? '/teacher/courses' :
-      role === 'Admin' ? '/admin' :
-      '/coach/dashboard'
+      '/coach/dashboard'  // Coach + Admin (süper yönetici)
     );
   };
 
@@ -38,8 +39,15 @@ const LoginPage = () => {
     setIsLoading(true);
 
     try {
+      if (isForgot) {
+        await apiClient.post('/auth/forgot-password', { email });
+        setSuccessMsg('Eğer e-posta kayıtlıysa şifre sıfırlama bağlantısı gönderildi.');
+        setIsForgot(false);
+        return;
+      }
+
       if (isRegister) {
-        const data = await apiClient.post('/auth/register', { email, password, fullName });
+        const data = await apiClient.post('/auth/register', { email, password, fullName, role });
         if (data.pendingApproval) {
           setSuccessMsg('Kayıt başarılı! Yönetici onayından sonra giriş yapabilirsiniz.');
           setIsRegister(false);
@@ -55,7 +63,7 @@ const LoginPage = () => {
       }
     } catch (err) {
       const code = err?.response?.data?.code;
-      if (code === 'COACH_PENDING') setError('Hesabınız onay bekliyor. Yönetici onayı sonrası tekrar deneyin.');
+      if (code === 'PENDING_APPROVAL') setError('Hesabınız onay bekliyor. Yönetici onayı sonrası tekrar deneyin.');
       else if (code === 'COACH_REJECTED') setError('Başvurunuz reddedildi.');
       else setError(err.response?.data?.error || err.response?.data?.error?.message || (isRegister ? 'Kayıt başarısız.' : 'Giriş başarısız. Bilgilerinizi kontrol edin.'));
     } finally {
@@ -77,7 +85,7 @@ const LoginPage = () => {
       }
     } catch (err) {
       const code = err?.response?.data?.code;
-      if (code === 'COACH_PENDING') setError('Hesabınız onay bekliyor. Yönetici onayı sonrası tekrar deneyin.');
+      if (code === 'PENDING_APPROVAL') setError('Hesabınız onay bekliyor. Yönetici onayı sonrası tekrar deneyin.');
       else if (code === 'COACH_REJECTED') setError('Başvurunuz reddedildi.');
       else setError('Google işlemi başarısız. Lütfen tekrar deneyin.');
     } finally {
@@ -126,7 +134,7 @@ const LoginPage = () => {
         </div>
 
         <Card className={styles.loginCard} padding="lg">
-          <h2 className={styles.formTitle}>{isRegister ? 'Kayıt Ol' : 'Hoş Geldiniz'}</h2>
+          <h2 className={styles.formTitle}>{isForgot ? 'Şifremi Unuttum' : isRegister ? 'Kayıt Ol' : 'Hoş Geldiniz'}</h2>
           <p className={styles.formSubtitle}>
             {isRegister ? 'Aramıza katılmak için hesap oluşturun.' : 'Hesabınıza giriş yaparak devam edin.'}
           </p>
@@ -144,6 +152,25 @@ const LoginPage = () => {
               />
             )}
 
+            {isRegister && (
+              <div className={styles.roleGroup} style={{ marginBottom: '14px' }}>
+                <label className={styles.roleLabel} style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>Ben:</label>
+                {['Student', 'Parent', 'Coach'].map((r) => (
+                  <label key={r} style={{ display: 'inline-flex', alignItems: 'center', marginRight: '16px', fontSize: '14px', cursor: 'pointer' }}>
+                    <input
+                      type="radio"
+                      name="role"
+                      value={r}
+                      checked={role === r}
+                      onChange={() => setRole(r)}
+                      style={{ marginRight: '6px' }}
+                    />
+                    {{ Student: 'Öğrenciyim', Parent: 'Veliyim', Coach: 'Koçum' }[r]}
+                  </label>
+                ))}
+              </div>
+            )}
+
             <Input
               label="E-posta Adresi"
               type="email"
@@ -154,23 +181,33 @@ const LoginPage = () => {
               icon={<span role="img" aria-label="email">✉️</span>}
             />
 
-            <Input
-              label="Şifre"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              icon={<span role="img" aria-label="lock">🔒</span>}
-            />
+            {!isForgot && (
+              <Input
+                label="Şifre"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                icon={<span role="img" aria-label="lock">🔒</span>}
+              />
+            )}
 
             {error && <div className={styles.errorBox}>{error}</div>}
             {successMsg && <div className={styles.successBox} style={{ color: 'green', padding: '10px', backgroundColor: '#e6ffe6', borderRadius: '8px', fontSize: '14px', marginBottom: '15px' }}>{successMsg}</div>}
 
-            {!isRegister && (
+            {!isRegister && !isForgot && (
               <div className={styles.forgotPassword}>
-                <a href="#forgot" onClick={(e) => { e.preventDefault(); alert('Yakında eklenecek!'); }}>
+                <a href="#forgot" onClick={(e) => { e.preventDefault(); setIsForgot(true); setError(''); setSuccessMsg(''); }}>
                   Şifremi Unuttum
+                </a>
+              </div>
+            )}
+
+            {isForgot && (
+              <div className={styles.forgotPassword}>
+                <a href="#login" onClick={(e) => { e.preventDefault(); setIsForgot(false); }}>
+                  ← Girişe Dön
                 </a>
               </div>
             )}
@@ -181,7 +218,7 @@ const LoginPage = () => {
               size="lg" 
               isLoading={isLoading}
             >
-              {isRegister ? 'Kayıt Ol' : 'Giriş Yap'}
+              {isForgot ? 'Gönder' : isRegister ? 'Kayıt Ol' : 'Giriş Yap'}
             </Button>
           </form>
 

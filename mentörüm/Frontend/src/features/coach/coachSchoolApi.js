@@ -130,24 +130,30 @@ export const useTransferAdmin = () => {
 };
 
 // --- Süper yönetici ---
-export const usePendingCoaches = () => useQuery({
-  queryKey: ['admin', 'pending-coaches'],
-  queryFn: async () => (await apiClient.get('/admin/pending-coaches')) || [],
+export const usePendingApprovals = () => useQuery({
+  queryKey: ['admin', 'pending-approvals'],
+  queryFn: async () => (await apiClient.get('/admin/pending-approvals')) || [],
 });
 
-export const useApproveCoach = () => {
+export const useApproveUser = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ coachId, maxPrograms }) => apiClient.post(`/admin/coaches/${coachId}/approve`, { maxPrograms }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'pending-coaches'] }),
+    mutationFn: ({ userId, role, maxPrograms }) => apiClient.post(`/admin/users/${userId}/approve`, { role, maxPrograms }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'pending-approvals'] }),
   });
 };
 
-export const useRejectCoach = () => {
+export const useRejectUser = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ coachId }) => apiClient.post(`/admin/coaches/${coachId}/reject`, {}),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'pending-coaches'] }),
+    mutationFn: ({ userId }) => apiClient.post(`/admin/users/${userId}/reject`, {}),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'pending-approvals'] }),
+  });
+};
+
+export const useAddUser = () => {
+  return useMutation({
+    mutationFn: ({ email, fullName, role }) => apiClient.post('/admin/users', { email, fullName, role }),
   });
 };
 

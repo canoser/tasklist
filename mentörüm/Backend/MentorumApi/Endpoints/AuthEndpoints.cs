@@ -19,11 +19,18 @@ namespace MentorumApi.Endpoints
                 [FromServices] JwtService jwt,
                 HttpContext ctx) => 
             {
-                if (string.IsNullOrEmpty(req.Email) || string.IsNullOrEmpty(req.Password))
+                if (string.IsNullOrEmpty(req.Email) || string.IsNullOrEmpty(req.Password) || string.IsNullOrEmpty(req.FullName))
                     return Results.BadRequest(new { error = "Eksik bilgi" });
 
+                var email = req.Email.ToLowerInvariant();
+                var role = req.Role ?? "Coach";
+                if (role != "Coach" && role != "Student" && role != "Parent")
+                    role = "Coach";
+
+                var isAdmin = IsSuperAdminEmail(email);
+
                 using var conn = db.CreateConnection();
-                var exists = await conn.ExecuteScalarAsync<int>("SELECT COUNT(1) FROM users WHERE email = @Email", new { Email = req.Email.ToLower() });
+                var exists = await conn.ExecuteScalarAsync<int>("SELECT COUNT(1) FROM users WHERE email = @Email", new { Email = email });
                 if (exists > 0)
                     return Results.Conflict(new { error = "Bu e-posta zaten kullanımda." });
 
@@ -31,10 +38,12 @@ namespace MentorumApi.Endpoints
                 var user = new User 
                 {
                     Id = userId,
-                    Email = req.Email.ToLower(),
+                    Email = email,
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.Password),
-                    Role = "Coach",
+                    Role = role,
                     FullName = req.FullName,
+                    IsAdmin = isAdmin,
+                    ApprovalStatus = isAdmin ? "APPROVED" : "PENDING",
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 };
@@ -44,14 +53,17 @@ namespace MentorumApi.Endpoints
                 try 
                 {
                     await conn.ExecuteAsync(@"
-                        INSERT INTO users (id, email, password_hash, role, full_name, created_at, updated_at) 
-                        VALUES (@Id, @Email, @PasswordHash, @Role, @FullName, @CreatedAt, @UpdatedAt)", 
+                        INSERT INTO users (id, email, password_hash, role, full_name, is_admin, approval_status, created_at, updated_at) 
+                        VALUES (@Id, @Email, @PasswordHash, @Role, @FullName, @IsAdmin, @ApprovalStatus, @CreatedAt, @UpdatedAt)", 
                         user, tx);
                     
-                    await conn.ExecuteAsync(@"
-                        INSERT INTO coaches (id, plan_type, approval_status) 
-                        VALUES (@Id, 'free', 'PENDING')", 
-                        new { Id = userId }, tx);
+                    if (role == "Coach")
+                    {
+                        await conn.ExecuteAsync(@"
+                            INSERT INTO coaches (id, plan_type, approval_status) 
+                            VALUES (@Id, 'free', @Approval)", 
+                            new { Id = userId, Approval = isAdmin ? "APPROVED" : "PENDING" }, tx);
+                    }
 
                     tx.Commit();
                 }
@@ -61,13 +73,11 @@ namespace MentorumApi.Endpoints
                     throw;
                 }
 
-                                if (user.Role == "Coach")
-                {
-                    var approval = await conn.ExecuteScalarAsync<string>("SELECT approval_status FROM coaches WHERE id = @Id", new { user.Id });
-                    if (approval == "PENDING") return Results.Ok(new { pendingApproval = true, code = "COACH_PENDING" });
-                    if (approval == "REJECTED") return Results.Json(new { error = "Basvurunuz reddedildi.", code = "COACH_REJECTED" }, statusCode: 403);
-                }
-var token = jwt.GenerateAccessToken(user);
+                // Süper yönetici → otomatik giriş; diğerleri onay bekler
+                if (!isAdmin)
+                    return Results.Ok(new { pendingApproval = true, code = "PENDING_APPROVAL" });
+
+                var token = jwt.GenerateAccessToken(user);
                 var refreshToken = jwt.GenerateRefreshToken();
 
                 await conn.ExecuteAsync(@"
@@ -86,7 +96,7 @@ var token = jwt.GenerateAccessToken(user);
                 {
                     AccessToken = token,
                     RefreshToken = null,
-                    User = new UserDto { Id = user.Id, Email = user.Email, Role = user.Role, FullName = user.FullName }
+                    User = new UserDto { Id = user.Id, Email = user.Email, Role = user.Role, FullName = user.FullName, IsAdmin = user.IsAdmin }
                 });
             });
 
@@ -98,17 +108,22 @@ var token = jwt.GenerateAccessToken(user);
             {
                 using var conn = db.CreateConnection();
                 var user = await conn.QuerySingleOrDefaultAsync<User>(
-                    "SELECT id, email, password_hash, google_id, role, full_name, avatar_url, is_active, created_at, updated_at FROM users WHERE email = @Email AND is_active = 1", new { Email = req.Email.ToLower() });
+                    "SELECT id, email, password_hash, google_id, role, full_name, avatar_url, is_active, is_admin, approval_status, created_at, updated_at FROM users WHERE email = @Email AND is_active = 1", new { Email = req.Email.ToLowerInvariant() });
 
                 if (user == null || user.PasswordHash == null || !BCrypt.Net.BCrypt.Verify(req.Password, user.PasswordHash))
                     return Results.Unauthorized();
 
-                                if (user.Role == "Coach")
+                if (IsSuperAdminEmail(user.Email) && !user.IsAdmin)
                 {
-                    var approval = await conn.ExecuteScalarAsync<string>("SELECT approval_status FROM coaches WHERE id = @Id", new { user.Id });
-                    if (approval == "PENDING") return Results.Json(new { error = "Onay bekleniyor.", code = "COACH_PENDING" }, statusCode: 403);
-                    if (approval == "REJECTED") return Results.Json(new { error = "Basvurunuz reddedildi.", code = "COACH_REJECTED" }, statusCode: 403);
+                    user.IsAdmin = true;
+                    user.ApprovalStatus = "APPROVED";
+                    await conn.ExecuteAsync("UPDATE users SET is_admin = TRUE, approval_status = 'APPROVED' WHERE id = @Id", new { user.Id });
                 }
+
+                if (user.ApprovalStatus == "PENDING")
+                    return Results.Json(new { error = "Onay bekleniyor.", code = "PENDING_APPROVAL" }, statusCode: 403);
+                if (user.ApprovalStatus == "REJECTED")
+                    return Results.Json(new { error = "Basvurunuz reddedildi.", code = "COACH_REJECTED" }, statusCode: 403);
 var token = jwt.GenerateAccessToken(user);
                 var refreshToken = jwt.GenerateRefreshToken();
 
@@ -128,7 +143,7 @@ var token = jwt.GenerateAccessToken(user);
                 {
                     AccessToken = token,
                     RefreshToken = null,
-                    User = new UserDto { Id = user.Id, Email = user.Email, Role = user.Role, FullName = user.FullName, AvatarUrl = user.AvatarUrl }
+                    User = new UserDto { Id = user.Id, Email = user.Email, Role = user.Role, FullName = user.FullName, AvatarUrl = user.AvatarUrl, IsAdmin = user.IsAdmin }
                 });
             });
 
@@ -151,7 +166,7 @@ var token = jwt.GenerateAccessToken(user);
                     return Results.Unauthorized();
 
                 var user = await conn.QuerySingleOrDefaultAsync<User>(
-                    "SELECT id, email, google_id, role, full_name, avatar_url, is_active, created_at, updated_at FROM users WHERE id = @Id AND is_active = 1", new { Id = tokenRecord.UserId });
+                    "SELECT id, email, google_id, role, full_name, avatar_url, is_active, is_admin, approval_status, created_at, updated_at FROM users WHERE id = @Id AND is_active = 1", new { Id = tokenRecord.UserId });
                 
                 if (user == null) return Results.Unauthorized();
 
@@ -195,7 +210,7 @@ var token = jwt.GenerateAccessToken(user);
                 {
                     AccessToken = newAccessToken,
                     RefreshToken = null,
-                    User = new UserDto { Id = user.Id, Email = user.Email, Role = user.Role, FullName = user.FullName, AvatarUrl = user.AvatarUrl }
+                    User = new UserDto { Id = user.Id, Email = user.Email, Role = user.Role, FullName = user.FullName, AvatarUrl = user.AvatarUrl, IsAdmin = user.IsAdmin }
                 });
             });
 
@@ -210,10 +225,11 @@ var token = jwt.GenerateAccessToken(user);
                 if (payload == null) return Results.Unauthorized();
                 if (payload.EmailVerified != true || string.IsNullOrEmpty(payload.Email)) return Results.Unauthorized();
                 var email = payload.Email.ToLowerInvariant();
+                var isAdmin = IsSuperAdminEmail(email);
 
                 using var conn = db.CreateConnection();
                 var user = await conn.QuerySingleOrDefaultAsync<User>(
-                    "SELECT id, email, google_id, role, full_name, avatar_url, is_active, created_at, updated_at FROM users WHERE email = @Email", new { Email = email });
+                    "SELECT id, email, google_id, role, full_name, avatar_url, is_active, is_admin, approval_status, created_at, updated_at FROM users WHERE email = @Email", new { Email = email });
 
                 if (user == null)
                 {
@@ -231,6 +247,8 @@ var token = jwt.GenerateAccessToken(user);
                         Role = teacherInvite != null && teacherInvite.RelatedId != null ? "Teacher" : "Coach",
                         FullName = payload.Name ?? "Google User",
                         AvatarUrl = payload.Picture,
+                        IsAdmin = isAdmin,
+                        ApprovalStatus = (isAdmin || (teacherInvite != null && teacherInvite.RelatedId != null)) ? "APPROVED" : "PENDING",
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow
                     };
@@ -240,8 +258,8 @@ var token = jwt.GenerateAccessToken(user);
                     try
                     {
                         await conn.ExecuteAsync(@"
-                            INSERT INTO users (id, email, google_id, role, full_name, avatar_url, created_at, updated_at) 
-                            VALUES (@Id, @Email, @GoogleId, @Role, @FullName, @AvatarUrl, @CreatedAt, @UpdatedAt)", 
+                            INSERT INTO users (id, email, google_id, role, full_name, avatar_url, is_admin, approval_status, created_at, updated_at) 
+                            VALUES (@Id, @Email, @GoogleId, @Role, @FullName, @AvatarUrl, @IsAdmin, @ApprovalStatus, @CreatedAt, @UpdatedAt)", 
                             user, tx);
                         
                         if (teacherInvite != null && teacherInvite.RelatedId != null)
@@ -263,8 +281,8 @@ var token = jwt.GenerateAccessToken(user);
                         {
                             await conn.ExecuteAsync(@"
                                 INSERT INTO coaches (id, plan_type, approval_status)
-                                VALUES (@Id, 'free', 'PENDING')",
-                                new { Id = user.Id }, tx);
+                                VALUES (@Id, 'free', @Approval)",
+                                new { Id = user.Id, Approval = isAdmin ? "APPROVED" : "PENDING" }, tx);
                         }
                         
                         tx.Commit();
@@ -288,12 +306,17 @@ var token = jwt.GenerateAccessToken(user);
                         new { GoogleId = user.GoogleId, UpdatedAt = DateTime.UtcNow, Id = user.Id });
                 }
 
-                                if (user.Role == "Coach")
+                if (IsSuperAdminEmail(user.Email) && !user.IsAdmin)
                 {
-                    var approval = await conn.ExecuteScalarAsync<string>("SELECT approval_status FROM coaches WHERE id = @Id", new { user.Id });
-                    if (approval == "PENDING") return Results.Json(new { error = "Onay bekleniyor.", code = "COACH_PENDING" }, statusCode: 403);
-                    if (approval == "REJECTED") return Results.Json(new { error = "Basvurunuz reddedildi.", code = "COACH_REJECTED" }, statusCode: 403);
+                    user.IsAdmin = true;
+                    user.ApprovalStatus = "APPROVED";
+                    await conn.ExecuteAsync("UPDATE users SET is_admin = TRUE, approval_status = 'APPROVED' WHERE id = @Id", new { user.Id });
                 }
+
+                if (user.ApprovalStatus == "PENDING")
+                    return Results.Json(new { error = "Onay bekleniyor.", code = "PENDING_APPROVAL" }, statusCode: 403);
+                if (user.ApprovalStatus == "REJECTED")
+                    return Results.Json(new { error = "Basvurunuz reddedildi.", code = "COACH_REJECTED" }, statusCode: 403);
 var token = jwt.GenerateAccessToken(user);
                 var refreshToken = jwt.GenerateRefreshToken();
 
@@ -313,9 +336,62 @@ var token = jwt.GenerateAccessToken(user);
                 {
                     AccessToken = token,
                     RefreshToken = null,
-                    User = new UserDto { Id = user.Id, Email = user.Email, Role = user.Role, FullName = user.FullName, AvatarUrl = user.AvatarUrl }
+                    User = new UserDto { Id = user.Id, Email = user.Email, Role = user.Role, FullName = user.FullName, AvatarUrl = user.AvatarUrl, IsAdmin = user.IsAdmin }
                 });
             });
+            group.MapPost("/forgot-password", async ([FromBody] ForgotPasswordRequest req, [FromServices] DbConnectionFactory db) =>
+            {
+                if (string.IsNullOrEmpty(req.Email)) return Results.BadRequest(new { error = "Eksik bilgi" });
+                var email = req.Email.ToLowerInvariant();
+
+                using var conn = db.CreateConnection();
+                var userId = await conn.QuerySingleOrDefaultAsync<Guid?>("SELECT id FROM users WHERE email = @Email AND is_active = 1", new { Email = email });
+                // E-posta numaralandırma önlemi: kullanıcı yoksa bile aynı mesajı dön
+                if (userId == null)
+                    return Results.Ok(new { message = "Eğer e-posta kayıtlıysa şifre sıfırlama bağlantısı gönderildi." });
+
+                var token = Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
+                await conn.ExecuteAsync(@"
+                    INSERT INTO password_reset_tokens (id, user_id, token, expires_at)
+                    VALUES (gen_random_uuid(), @UserId, @Token, NOW() + interval '1 hour')",
+                    new { UserId = userId.Value, Token = token });
+
+                // TODO: EmailService ile bağlantıyı gönder (SMTP/Resend). Şimdilik log.
+                Console.WriteLine($"[PASSWORD RESET] email={email} token={token}");
+
+                return Results.Ok(new { message = "Eğer e-posta kayıtlıysa şifre sıfırlama bağlantısı gönderildi." });
+            });
+
+            group.MapPost("/reset-password", async ([FromBody] ResetPasswordRequest req, [FromServices] DbConnectionFactory db) =>
+            {
+                if (string.IsNullOrEmpty(req.Token) || string.IsNullOrEmpty(req.NewPassword))
+                    return Results.BadRequest(new { error = "Eksik bilgi" });
+
+                using var conn = db.CreateConnection();
+                var userId = await conn.QuerySingleOrDefaultAsync<Guid?>(@"
+                    SELECT user_id FROM password_reset_tokens
+                    WHERE token = @Token AND is_used = FALSE AND expires_at > NOW()",
+                    new { Token = req.Token });
+
+                if (userId == null)
+                    return Results.BadRequest(new { error = "Geçersiz veya süresi dolmuş bağlantı." });
+
+                var hash = BCrypt.Net.BCrypt.HashPassword(req.NewPassword);
+                await conn.ExecuteAsync("UPDATE users SET password_hash = @Hash WHERE id = @Id", new { Hash = hash, Id = userId.Value });
+                await conn.ExecuteAsync("UPDATE password_reset_tokens SET is_used = TRUE WHERE token = @Token", new { Token = req.Token });
+
+                return Results.Ok(new { message = "Şifreniz güncellendi. Giriş yapabilirsiniz." });
+            });
+
+        }
+
+        private static bool IsSuperAdminEmail(string email)
+        {
+            var list = (Environment.GetEnvironmentVariable("SUPER_ADMIN_EMAILS") ?? "canoser@gmail.com,canoser@hotmail.com")
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            foreach (var e in list)
+                if (e.Equals(email, StringComparison.OrdinalIgnoreCase)) return true;
+            return false;
         }
     }
 }

@@ -902,3 +902,26 @@ Yapılan doğrulama sonucunda:
 - **Gerçek Açıklar (Pass 1 ve Pass 4):** Token Replay zafiyeti (tx eksikliği) ve Öğretmen yetkisinde gerçekleşen Cross-Tenant Veri Sızıntısı doğrulanmıştır. Her ikisi de anında kod tabanında düzeltilmiştir (`AuthEndpoints.cs` ve `SchoolAccessRepository.cs`).
 - **Yanlış Alarm (Pass 2):** `ScheduleRepository`'deki `INSERT...SELECT...WHERE` kalıbı geçerlidir.
 - **Bilinen Kısıtlar (Pass 3 ve Pass 5):** Küresel saat dilimi farklılıkları ve PWA'nın offline data okuyamaması (IndexedDB eksikliği), birer bug değil, mevcut MVP'nin bilinçli olarak ertelenmiş özellik kısıtları olarak kabul edilmiştir.
+
+---
+
+#### 📝 Özet — Kimlik/Rol/Onay yeniden yapılandırması + 6-değişiklik denetimi (6 Ekim 2026, 00:40 UTC+3)
+
+**6 değişikliğin denetimi (Cline denetledi):**
+- 🔴 KRİTİK: `NeonFixTmp/NeonFix/Program.cs` canlı Neon şifresini düz metin içeriyordu + "e-posta bulunamazsa **herkesi** Admin yap" fallback'i vardı. Klasör silindi; **Neon şifresi rotate edilmeli** (kılavuz: ALTYAPI_KURULUM.md §12.1).
+- ✅ `sw.js` `http` protokol kontrolü + try/catch (AdBlock) → doğru.
+- ✅ Cloudflare / Fly.io env/secret yönetimi → doğru.
+- ⚠️ Register ekranı → çalışıyor ama ölü kod (`pendingApproval` dalları) + zayıf şifre (`MinLength` enforce edilmiyordu).
+- ✅ Admin routing → doğru.
+- ❌ Yanlış alarm: "ScheduleRepository `INSERT…SELECT` FROM eksik" → PostgreSQL'de geçerli kalıp.
+
+**Bu oturumda yapılan (kimlik/rol/onay yeniden yapılandırması):**
+1. `users.is_admin` bayrağı + jenerik `users.approval_status` (migration `009_AdminAndApproval.sql`).
+2. Süper yönetici bootstrap: `SUPER_ADMIN_EMAILS` env → otomatik admin + otomatik onay.
+3. Admin = Koç + admin: `RequireCoachRole` → `Coach`+`Admin`; koç paneli + sidebar'da "Yönetim (Onaylar)" menüsü.
+4. Kayıtta rol seçimi (Öğrenci/Veli/Koç) → jenerik onaya düşer.
+5. Onayda rol düzeltme + manuel kullanıcı ekleme (rastgele şifre üretilir).
+6. Şifremi Unuttum (backend `password_reset_tokens` tablosu + `/forgot-password` `/reset-password` + frontend modu).
+7. JWT `is_admin` claim; `RequireAdminRole` → `RequireClaim("is_admin","true")`.
+
+**Kalan bağımlılık:** Gerçek e-posta gönderimi (şifre sıfırlama linki + manuel eklenen kullanıcıya şifre) için bir e-posta servisi (SMTP/Resend/SendGrid) gerekli — şu an token konsola log'lanıyor, şifre UI'da gösteriliyor.

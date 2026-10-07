@@ -30,7 +30,8 @@ namespace MentorumApi.Services
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role), // Coach, Student, Parent
+                new Claim(ClaimTypes.Role, user.Role), // Coach, Student, Parent, Teacher
+                new Claim("is_admin", user.IsAdmin.ToString().ToLowerInvariant()),
                 new Claim("FullName", user.FullName)
             };
 

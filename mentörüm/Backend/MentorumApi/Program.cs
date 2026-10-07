@@ -96,10 +96,10 @@ try
     // Authorization Policies
     builder.Services.AddAuthorization(options =>
     {
-        options.AddPolicy("RequireCoachRole", policy => policy.RequireRole("Coach"));
+        options.AddPolicy("RequireCoachRole", policy => policy.RequireRole("Coach", "Admin"));
         options.AddPolicy("RequireStudentRole", policy => policy.RequireRole("Student"));
         options.AddPolicy("RequireParentRole", policy => policy.RequireRole("Parent"));
-        options.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
+        options.AddPolicy("RequireAdminRole", policy => policy.RequireClaim("is_admin", "true"));
         options.AddPolicy("RequireTeacherRole", policy => policy.RequireRole("Teacher"));
     });
 
@@ -124,7 +124,8 @@ try
             Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "005_HomeworkDirect.sql"),
             Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "006_SchoolModel.sql"),
             Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "007_AdminAndPrograms.sql"),
-            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "008_ContractCoachId.sql")
+            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "008_ContractCoachId.sql"),
+            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "009_AdminAndApproval.sql")
         };
         foreach(var path in scriptPaths)
         {

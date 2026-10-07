@@ -254,28 +254,75 @@ namespace MentorumApi.Data
             }
         }
 
-        public async Task<IEnumerable<dynamic>> GetPendingCoachesAsync()
+        public async Task<IEnumerable<dynamic>> GetPendingApprovalsAsync()
         {
             using var conn = _connectionFactory.CreateConnection();
             return await conn.QueryAsync(@"
-                SELECT c.id, u.full_name, u.email, c.approval_status, u.created_at
-                FROM coaches c JOIN users u ON u.id = c.id
-                WHERE c.approval_status = 'PENDING'
+                SELECT u.id, u.full_name AS FullName, u.email AS Email, u.role AS Role, u.created_at AS CreatedAt
+                FROM users u
+                WHERE u.approval_status = 'PENDING'
                 ORDER BY u.created_at");
         }
 
-        public async Task<bool> SetCoachApprovalAsync(Guid coachId, string status, int? maxPrograms, Guid adminId)
+        public async Task<bool> ApproveUserAsync(Guid userId, string role, int? maxPrograms, Guid adminId)
         {
             using var conn = _connectionFactory.CreateConnection();
-            var rows = await conn.ExecuteAsync(@"
-                UPDATE coaches SET
-                    approval_status = @Status,
-                    max_programs = COALESCE(@MaxPrograms, max_programs),
-                    approved_by = @AdminId,
-                    approved_at = NOW()
-                WHERE id = @CoachId",
-                new { CoachId = coachId, Status = status, MaxPrograms = maxPrograms, AdminId = adminId });
+            conn.Open();
+            using var tx = conn.BeginTransaction();
+            try
+            {
+                await conn.ExecuteAsync(
+                    "UPDATE users SET approval_status = 'APPROVED', role = @Role, is_admin = FALSE WHERE id = @UserId AND approval_status = 'PENDING'",
+                    new { UserId = userId, Role = role }, tx);
+
+                if (role == "Coach")
+                {
+                    await conn.ExecuteAsync(@"
+                        INSERT INTO coaches (id, plan_type, approval_status, max_programs, approved_by, approved_at)
+                        VALUES (@Id, 'free', 'APPROVED', @MaxPrograms, @AdminId, NOW())
+                        ON CONFLICT (id) DO UPDATE SET approval_status = 'APPROVED', max_programs = COALESCE(@MaxPrograms, coaches.max_programs), approved_by = @AdminId, approved_at = NOW()",
+                        new { Id = userId, MaxPrograms = maxPrograms, AdminId = adminId }, tx);
+                }
+
+                tx.Commit();
+                return true;
+            }
+            catch { tx.Rollback(); throw; }
+        }
+
+        public async Task<bool> RejectUserAsync(Guid userId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            var rows = await conn.ExecuteAsync(
+                "UPDATE users SET approval_status = 'REJECTED' WHERE id = @UserId AND approval_status = 'PENDING'",
+                new { UserId = userId });
             return rows > 0;
+        }
+
+        public async Task<string> AddUserByAdminAsync(string email, string fullName, string passwordHash, string role)
+        {
+            email = email.ToLowerInvariant();
+            using var conn = _connectionFactory.CreateConnection();
+            var exists = await conn.ExecuteScalarAsync<int>("SELECT COUNT(1) FROM users WHERE email = @Email", new { Email = email });
+            if (exists > 0) return "EMAIL_EXISTS";
+
+            var userId = Guid.NewGuid();
+            conn.Open();
+            using var tx = conn.BeginTransaction();
+            try
+            {
+                await conn.ExecuteAsync(@"
+                    INSERT INTO users (id, email, password_hash, role, full_name, is_admin, approval_status, created_at, updated_at)
+                    VALUES (@Id, @Email, @Hash, @Role, @FullName, FALSE, 'APPROVED', NOW(), NOW())",
+                    new { Id = userId, Email = email, Hash = passwordHash, Role = role, FullName = fullName }, tx);
+
+                if (role == "Coach")
+                    await conn.ExecuteAsync("INSERT INTO coaches (id, plan_type, approval_status) VALUES (@Id, 'free', 'APPROVED')", new { Id = userId }, tx);
+
+                tx.Commit();
+                return "OK";
+            }
+            catch { tx.Rollback(); throw; }
         }
     }
 }

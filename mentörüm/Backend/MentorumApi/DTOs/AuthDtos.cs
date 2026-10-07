@@ -12,6 +12,9 @@ namespace MentorumApi.DTOs
         
         [Required]
         public required string FullName { get; set; }
+
+        // Öğrenci / Veli / Koç — kayıt olan kullanıcının seçtiği rol
+        public string? Role { get; set; }
     }
 
     public class LoginRequest
@@ -41,6 +44,17 @@ namespace MentorumApi.DTOs
         public string? RefreshToken { get; set; }
     }
 
+    public class ForgotPasswordRequest
+    {
+        public string? Email { get; set; }
+    }
+
+    public class ResetPasswordRequest
+    {
+        public string? Token { get; set; }
+        public string? NewPassword { get; set; }
+    }
+
     public class UserDto
     {
         public Guid Id { get; set; }
@@ -48,5 +62,6 @@ namespace MentorumApi.DTOs
         public required string Role { get; set; }
         public required string FullName { get; set; }
         public string? AvatarUrl { get; set; }
+        public bool IsAdmin { get; set; }
     }
 }

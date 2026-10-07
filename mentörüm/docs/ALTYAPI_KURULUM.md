@@ -810,3 +810,157 @@ SON KONTROL
   [ ] https://mentorum.dersmatris.com açılıyor
   [ ] https://mentorum.dersmatris.com/api/health → 200 OK
   [ ] https://app.dersmatris.com hâlâ çalışıyor (mevcut site zarar görmemiş)
+
+---
+
+## 12. V5.1 — Güvenlik Denetimi Sonrası Yapılacaklar (6 Ekim 2026)
+
+> Bu bölüm, son güvenlik denetimi ve kimlik/rol/onay yeniden yapılandırması sonrası
+> SADECE SENİN (insanın) yapması gereken tek seferlik işlemleri adım adım anlatır.
+> Kod değişiklikleri zaten uygulanmış ve derlenmiş durumda; buradakiler panel/CLI işlemleri.
+
+### 12.1 🔴 ACİL — Neon şifresini değiştir (rotate)
+
+**Neden:** Geçici bir konsol testi (`NeonFixTmp`) canlı Neon şifreni düz metin olarak içeriyordu.
+Dosya silindi ama şifre bir kez yazılmış olduğu için güvenli sayılmaz; mutlaka değiştir.
+
+1. Tarayıcıdan https://console.neon.tech adresine gir.
+2. **mentorum** projesini aç.
+3. Sol menü → **Settings** → **Compute** (veya **Connection Details**) bölümüne gel.
+4. **"Reset password"** (şifreyi sıfırla) butonuna tıkla. Neon sana yeni bir şifre üretir.
+5. Yeni **connection string**'i kopyala (şifre içinde `@`, `:` gibi karakterler olabilir — dikkatli kopyala).
+6. Fly.io'daki `DATABASE_URL` secret'ini güncelle (terminalde):
+   ```powershell
+   fly secrets set DATABASE_URL="postgresql://KULLANICI:YENI_SIFRE@ep-xxx.eu-central-1.aws.neon.tech/mentorum?sslmode=require" --app mentorum-api
+   ```
+7. Uygulamayı yeniden başlat (yeni şifreyi alması için):
+   ```powershell
+   fly apps restart mentorum-api
+   ```
+8. Doğrula: `fly logs --app mentorum-api` içinde bağlantı hatası olmadığını ve
+   `https://mentorum.dersmatris.com/api/health` → 200 döndüğünü gör.
+
+> ⚠️ Bu adımı atlamadan canlıya geçme. Şifre artık "bilinen" sayılır.
+
+---
+
+### 12.2 — Migration 009'u Neon'a uygula
+
+**Neden:** `is_admin`, `approval_status`, `password_reset_tokens` kolonları/tablosu
+`MentorumApi/Data/Migrations/009_AdminAndApproval.sql` içinde; henüz canlı DB'ye işlenmedi.
+
+1. `009_AdminAndApproval.sql` dosyasını aç (kendi cihazında):
+   `mentörüm\Backend\MentorumApi\Data\Migrations\009_AdminAndApproval.sql`
+2. Neon Console'da **mentorum** projesini aç → **SQL Editor** (SQL düzenleyici).
+3. Dosyanın içeriğini kopyala ve SQL Editor'e yapıştır.
+4. **Run** çalıştır. Çıktıda hata olmadığından emin ol (idempotent yazıldı; ikinci kez çalıştırırsan "already exists" uyarısı normaldir).
+5. Kontrol et (SQL Editor'de şunları çalıştır):
+   ```sql
+   SELECT column_name FROM information_schema.columns WHERE table_name = 'users';
+   SELECT table_name FROM information_schema.tables WHERE table_name = 'password_reset_tokens';
+   ```
+
+> 💡 Fly.io uygulaması açılışta migration'ları otomatik uyguluyorsa bu adım gerekmeyebilir;
+> ancak `009`'un canlıda var olduğundan emin olmak için yukarıdaki kontrolü yap.
+
+---
+
+### 12.3 — E-posta servisi kur (Şifremi Unuttum + kullanıcı ekleme şifresi)
+
+**Durum:** Backend'de `/auth/forgot-password` bir reset token'ı üretiyor ve şu an
+sadece **konsola log'luyor**; manuel kullanıcı ekleme şifresi de şu an sadece **UI'da** gösteriliyor.
+Gerçek e-posta göndermek için bir sağlayıcı bağlanmalı.
+
+Önerilen sağlayıcı: **Resend** (basit HTTP API, ücretsiz tier günde 100 e-posta).
+
+**A) Resend hesabı ve API anahtarı:**
+1. https://resend.com adresine gir, hesap oluştur.
+2. **API Keys** bölümünden yeni bir key oluştur (ör. `re_xxxxxx`).
+3. (Production için) kendi domain'ini ekle: **Domains → Add Domain** → `dersmatris.com`
+   DNS doğrulamasını (SPF + DKIM) Cloudflare'a ekle. Test için Resend'in `onboarding@resend.dev`
+   adresini kullanabilirsin.
+
+**B) Backend'e bağla (kod değişikliği — sonraki adım):**
+- Yeni bir `Services/EmailService.cs` (veya `IEmailService`) eklenir:
+  - `POST https://api.resend.com/emails` → `Authorization: Bearer <RESEND_API_KEY>`
+  - `from: "Mentörüm <onboarding@resend.dev>"`, `to`, `subject`, `html`.
+- `RESEND_API_KEY` env/secret olarak tanımlanır.
+- `AuthEndpoints.cs` içinde `[PASSWORD RESET]` log'unun olduğu yere
+  `emailService.SendPasswordReset(user.Email, resetLink)` çağrısı eklenir.
+- Manuel kullanıcı eklemede (Admin → Kullanıcı Ekle) üretilen şifre, aynı servisle
+  e-posta ile kullanıcıya gönderilir.
+
+> Bu kodu ben (Cline) yazabilirim — sadece `RESEND_API_KEY`'i (veya hangi sağlayıcıyı
+> seçtiğini) söylemen yeterli.
+
+---
+
+### 12.4 — Yeni ortam değişkenlerini (env/secrets) ayarla
+
+**Backend (Fly.io secret'ları):**
+```powershell
+# Süper yönetici e-postaları (virgülle ayrılmış). Bu adreslerle giriş yapan otomatik admin olur.
+fly secrets set SUPER_ADMIN_EMAILS="canoser@gmail.com,canoser@hotmail.com" --app mentorum-api
+
+# Google ile giriş (zaten tanımlıysa atla; yeni değeri gir)
+fly secrets set GOOGLE_CLIENT_ID="<google oauth client id>.apps.googleusercontent.com" --app mentorum-api
+
+# (EmailService eklenince) Resend/SMTP anahtarı
+fly secrets set RESEND_API_KEY="re_xxxxxx" --app mentorum-api
+```
+Kontrol:
+```powershell
+fly secrets list --app mentorum-api
+```
+
+**Frontend (Cloudflare Pages ortam değişkenleri):**
+- Cloudflare Dashboard → **Workers & Pages** → mentorum frontend projesi → **Settings → Environment variables**:
+  - `VITE_GOOGLE_CLIENT_ID` = Google OAuth Client ID (Google Cloud Console'dan).
+  - `VITE_API_URL` = `https://mentorum.dersmatris.com/api` (zaten olmalı).
+
+> ⚠️ `VITE_` önekli değişkenler derleme (build) zamanında gömülür; ekledikten sonra **yeni bir deploy** tetikle.
+
+---
+
+### 12.5 — İlk admin (canoser) girişini doğrula
+
+1. `https://mentorum.dersmatris.com` aç → giriş yap (canoser@gmail.com).
+2. Backend, `SUPER_ADMIN_EMAILS` eşleşmesiyle bu kullanıcıyı otomatik `is_admin=TRUE` + onaylı yapar.
+3. Sidebar'da **"Yönetim (Onaylar)"** menüsü görünmeli → `/admin`.
+4. Admin panelinde: bekleyen kullanıcılar listelenir; rolünü değiştirip **onaylayabilir**,
+   ya da **"Kullanıcı Ekle"** ile elle yeni kullanıcı oluşturabilirsin (şifre ekranda görünür;
+   e-posta servisi bağlanana kadar şifreyi kullanıcıya kendin ilet).
+5. Normal koçluk sayfaları (`/coach/*`) senin için de açık olmalı (Admin, `Coach` gibi kabul edilir).
+   İlk programını oluşturarak koç panelini kullanmaya başlayabilirsin.
+
+---
+
+### 12.6 — Kontrol Listesi (V5.1)
+
+```
+ACİL GÜVENLİK
+  [ ] Neon şifresi rotate edildi (12.1)
+  [ ] Fly DATABASE_URL yeni şifreyle güncellendi
+  [ ] mentorum-api yeniden başlatıldı ve /health 200 dönüyor
+
+VERİTABANI
+  [ ] Migration 009 Neon'da uygulandı (is_admin + approval_status + password_reset_tokens)
+
+E-POSTA (isteğe bağlı ama önerilir)
+  [ ] Resend (veya SMTP/SendGrid) hesabı + API key alındı
+  [ ] Domain doğrulandı (SPF/DKIM)
+  [ ] EmailService koda bağlandı (sonraki adım)
+  [ ] RESEND_API_KEY Fly secret olarak eklendi
+
+ORTAM DEĞİŞKENLERİ
+  [ ] SUPER_ADMIN_EMAILS Fly secret eklendi
+  [ ] GOOGLE_CLIENT_ID (backend) güncel
+  [ ] VITE_GOOGLE_CLIENT_ID (frontend) eklendi + yeni deploy yapıldı
+
+İLK ADMIN
+  [ ] canoser@gmail.com ile giriş yapıldı
+  [ ] "Yönetim (Onaylar)" menüsü görünüyor
+  [ ] Onay akışı test edildi (rol değiştirme + onaylama)
+```
+
+

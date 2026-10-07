@@ -35,11 +35,15 @@ import TeacherSchedulePage from './features/teacher/schedule/TeacherSchedulePage
 import TeacherProfilePage from './features/teacher/profile/TeacherProfilePage';
 
 // Korumalı Route Bileşeni
-const PrivateRoute = ({ children, allowedRoles }) => {
+const PrivateRoute = ({ children, allowedRoles, requireAdmin }) => {
   const { user } = useAuthStore();
 
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (requireAdmin && !user.isAdmin) {
+    return <Navigate to="/coach/dashboard" replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
@@ -87,7 +91,6 @@ function App() {
               user.role === 'Student' ? '/student/home' :
               user.role === 'Parent' ? '/parent/summary' :
               user.role === 'Teacher' ? '/teacher/courses' :
-              user.role === 'Admin' ? '/admin' :
               '/coach/dashboard'
             } replace />
           ) : <LoginPage />
@@ -98,7 +101,7 @@ function App() {
         <Route 
           path="/coach" 
           element={
-            <PrivateRoute allowedRoles={['Coach']}>
+            <PrivateRoute allowedRoles={['Coach', 'Admin']}>
               <CoachLayout />
             </PrivateRoute>
           } 
@@ -164,7 +167,7 @@ function App() {
         </Route>
 
         {/* Süper Yönetici */}
-        <Route path="/admin" element={<PrivateRoute allowedRoles={['Admin']}><AdminPanelPage /></PrivateRoute>} />
+        <Route path="/admin" element={<PrivateRoute requireAdmin><AdminPanelPage /></PrivateRoute>} />
 
         {/* Ana sayfa yönlendirmesi */}
         <Route path="/" element={<Navigate to="/login" replace />} />
