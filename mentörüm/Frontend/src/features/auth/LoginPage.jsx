@@ -11,10 +11,13 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const { setAuth } = useAuthStore();
   
+  const [isRegister, setIsRegister] = useState(false);
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
   const googleButtonRef = useRef(null);
 
@@ -27,20 +30,33 @@ const LoginPage = () => {
     );
   };
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccessMsg('');
     setIsLoading(true);
 
     try {
-      const data = await apiClient.post('/auth/login', { email, password });
-      setAuth(data.user, data.accessToken);
-      redirectByRole(data.user.role);
+      if (isRegister) {
+        const data = await apiClient.post('/auth/register', { email, password, fullName });
+        if (data.pendingApproval) {
+          setSuccessMsg('Kayıt başarılı! Yönetici onayından sonra giriş yapabilirsiniz.');
+          setIsRegister(false);
+          setPassword('');
+        } else {
+          setAuth(data.user, data.accessToken);
+          redirectByRole(data.user.role);
+        }
+      } else {
+        const data = await apiClient.post('/auth/login', { email, password });
+        setAuth(data.user, data.accessToken);
+        redirectByRole(data.user.role);
+      }
     } catch (err) {
       const code = err?.response?.data?.code;
       if (code === 'COACH_PENDING') setError('Hesabınız onay bekliyor. Yönetici onayı sonrası tekrar deneyin.');
       else if (code === 'COACH_REJECTED') setError('Başvurunuz reddedildi.');
-      else setError(err.response?.data?.error?.message || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.');
+      else setError(err.response?.data?.error || err.response?.data?.error?.message || (isRegister ? 'Kayıt başarısız.' : 'Giriş başarısız. Bilgilerinizi kontrol edin.'));
     } finally {
       setIsLoading(false);
     }
@@ -48,23 +64,26 @@ const LoginPage = () => {
 
   const handleGoogleCredential = async (response) => {
     setError('');
+    setSuccessMsg('');
     setIsLoading(true);
     try {
       const data = await apiClient.post('/auth/google', { idToken: response.credential });
-      setAuth(data.user, data.accessToken);
-      redirectByRole(data.user.role);
+      if (data.pendingApproval) {
+        setSuccessMsg('Kayıt başarılı! Yönetici onayından sonra giriş yapabilirsiniz.');
+      } else {
+        setAuth(data.user, data.accessToken);
+        redirectByRole(data.user.role);
+      }
     } catch (err) {
       const code = err?.response?.data?.code;
       if (code === 'COACH_PENDING') setError('Hesabınız onay bekliyor. Yönetici onayı sonrası tekrar deneyin.');
       else if (code === 'COACH_REJECTED') setError('Başvurunuz reddedildi.');
-      else setError('Google girişi başarısız. Lütfen tekrar deneyin.');
+      else setError('Google işlemi başarısız. Lütfen tekrar deneyin.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // [MOBILE_PORT_TODO]: Google Identity Services (GIS) web'e özgüdür; Capacitor native'de
-  // @capacitor-community/google-sign-in (veya Firebase Auth native) ile değiştirilmelidir.
   useEffect(() => {
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     if (!clientId) return;
@@ -76,7 +95,7 @@ const LoginPage = () => {
       });
       if (googleButtonRef.current) {
         window.google.accounts.id.renderButton(googleButtonRef.current, {
-          theme: 'outline', size: 'large', width: 320,
+          theme: 'outline', size: 'large', width: 320, text: isRegister ? 'signup_with' : 'signin_with'
         });
       }
     };
@@ -91,7 +110,7 @@ const LoginPage = () => {
       script.onload = initGoogle;
       document.head.appendChild(script);
     }
-  }, []);
+  }, [isRegister]); // isRegister değiştiğinde Google buton metnini güncelle
 
   return (
     <div className={styles.pageContainer}>
@@ -106,10 +125,24 @@ const LoginPage = () => {
         </div>
 
         <Card className={styles.loginCard} padding="lg">
-          <h2 className={styles.formTitle}>Hoş Geldiniz</h2>
-          <p className={styles.formSubtitle}>Hesabınıza giriş yaparak devam edin.</p>
+          <h2 className={styles.formTitle}>{isRegister ? 'Kayıt Ol' : 'Hoş Geldiniz'}</h2>
+          <p className={styles.formSubtitle}>
+            {isRegister ? 'Aramıza katılmak için hesap oluşturun.' : 'Hesabınıza giriş yaparak devam edin.'}
+          </p>
 
-          <form onSubmit={handleLogin} className={styles.form}>
+          <form onSubmit={handleSubmit} className={styles.form}>
+            {isRegister && (
+              <Input
+                label="Ad Soyad"
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Örn: Ahmet Yılmaz"
+                required
+                icon={<span role="img" aria-label="user">👤</span>}
+              />
+            )}
+
             <Input
               label="E-posta Adresi"
               type="email"
@@ -131,12 +164,15 @@ const LoginPage = () => {
             />
 
             {error && <div className={styles.errorBox}>{error}</div>}
+            {successMsg && <div className={styles.successBox} style={{ color: 'green', padding: '10px', backgroundColor: '#e6ffe6', borderRadius: '8px', fontSize: '14px', marginBottom: '15px' }}>{successMsg}</div>}
 
-            <div className={styles.forgotPassword}>
-              <a href="#forgot" onClick={(e) => { e.preventDefault(); alert('Yakında eklenecek!'); }}>
-                Şifremi Unuttum
-              </a>
-            </div>
+            {!isRegister && (
+              <div className={styles.forgotPassword}>
+                <a href="#forgot" onClick={(e) => { e.preventDefault(); alert('Yakında eklenecek!'); }}>
+                  Şifremi Unuttum
+                </a>
+              </div>
+            )}
 
             <Button 
               type="submit" 
@@ -144,9 +180,17 @@ const LoginPage = () => {
               size="lg" 
               isLoading={isLoading}
             >
-              Giriş Yap
+              {isRegister ? 'Kayıt Ol' : 'Giriş Yap'}
             </Button>
           </form>
+
+          <div style={{ textAlign: 'center', marginTop: '15px', fontSize: '14px' }}>
+            {isRegister ? (
+              <span>Zaten hesabınız var mı? <a href="#login" onClick={(e) => { e.preventDefault(); setIsRegister(false); setError(''); setSuccessMsg(''); }} style={{ color: 'var(--primary-color)', fontWeight: 'bold' }}>Giriş Yap</a></span>
+            ) : (
+              <span>Hesabınız yok mu? <a href="#register" onClick={(e) => { e.preventDefault(); setIsRegister(true); setError(''); setSuccessMsg(''); }} style={{ color: 'var(--primary-color)', fontWeight: 'bold' }}>Kayıt Ol</a></span>
+            )}
+          </div>
 
           <div className={styles.divider}>
             <span>veya</span>
