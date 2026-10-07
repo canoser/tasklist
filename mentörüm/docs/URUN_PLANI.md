@@ -18,6 +18,7 @@
 10. [Gelecekte Çıkabilecek Sorunlar](#10-gelecekte-çıkabilecek-sorunlar)
 11. [Öz-Eleştiri ve Risk Analizi](#11-öz-eleştiri-ve-risk-analizi)
 12. [Netleştirilmesi Gereken Kararlar](#12-netleştirilmesi-gereken-kararlar)
+13. [Cline & DeepSeek Fikirleri (Geçici Brainstorm)](#13-cline--deepseek-fikirleri-geçici-brainstorm)
 
 ---
 
@@ -504,3 +505,213 @@ Veritabanı indeksleme + pagination baştan düşünülmeli.
 | 5 | Müfredat kim düzenler?           | Yalnızca sistem / Koç ekleyip çıkarabilir     |
 | 6 | Gecikmeli tamamlanan ayrı renk?  | Evet (turuncu) / Hayır (yeşile çevrilsin)     |
 | 7 | MVP'de dosya eki var mı?         | Hayır (metin) / Evet (resim/PDF)              |
+
+---
+
+## 13. Cline & DeepSeek Fikirleri (Geçici Brainstorm)
+
+> ⏳ **GEÇİCİ BÖLÜM NOTU:** Bu bölüm; ajanların (Cline, DeepSeek, Gemini, Sonnet) fikir tartışmasına **girdi** olması için yazılmış ham bir beyin fırtınasıdır. Tartışma sonrası bu bölüm **SİLİNECEK** ve yerine netleştirilmiş asıl plan yazılacaktır.
+
+### 13.1 Temel Gözlem — "Mentörüm aslında ne?"
+
+Mentörüm; bir **koçluk / dershane / özel okul işletim sistemi** — CRM + LMS + ERP kesişimi. Dört rol birer paydaş:
+- **Koç** = işletme sahibi / yönetici (öğrenci portföyü, öğretmen ekibi, gelir).
+- **Öğretmen** = uzman iş gücü (ders anlatır, ödev/sınav/not).
+- **Öğrenci** = hizmet alan (ödev yapar, ders takip eder, hedefe yürür).
+- **Veli** = ödeyen + denetçi (sadece izler, müdahale etmez).
+
+Çekirdek döngü: **Koç atar → Öğretmen/Öğrenci yapar → Veli izler → Koç raporlar.**
+
+### 13.2 Koç (Coach) — eksikler & fikirler
+
+- **CRM yaşam döngüsü:** aday → kayıt → aktif → mezun → arşiv; etiket/segment/arama.
+- **Erken uyarı:** "riskli öğrenci" skoru (gecikme trendi + devamsızlık + sınav düşüşü).
+- **Finans (ticari kritik, şu an kapsam dışı):** ders ücreti, taksit, borç/ödenen, otomatik ders ücreti + aylık fatura özeti.
+- **Ödev/sınav şablon kütüphanesi:** koçun tekrar kullandığı hazır şablonlar (kişisel, müfredata bağlı).
+- **Dışa aktarma:** Excel/PDF (veliye, muhasebeye).
+- **WhatsApp entegrasyonu:** davet + hatırlatma (veli/öğrenci).
+- **Randevu / veli görüşmesi planlama** (koç takvimi).
+- **Yardımcı koç performansı:** kim kaç ödev atadı, hangi öğrenciyle ilgilendi.
+- **Çoklu şube / lokasyon** (ileri, franchise modeli).
+
+### 13.3 Öğretmen (Teacher) — eksikler & fikirler
+
+Şu an **sadece görüntüleme**. Olması gerekenler (kademeli):
+- **Ödev oluştur / düzenle** (kendi dersi; birebir/grup atama) — en acil.
+- **Sınav oluştur** (soru + cevap anahtarı) + **not girme** + otomatik ortalama.
+- **Yoklama / devam takibi** (derse katılım).
+- **Ders planı / konu anlatımı / ders notu** paylaşma.
+- **Ders kaynağı** (video, doküman, link) ekleme (koç onaylı).
+- **Öğrenciye özel geri bildirim / yorum**.
+- **Kendi takvimi + müsaitlik** (koç ders atarken görsün).
+- **Koçla ders hakkında not / iletişim**.
+- İzin modeli (ders bazlı) zaten var → **ince taneli** yap: "not girebilir ama ödev silemez", "öğrenci ekleyebilir ama not göremez" vb.
+
+### 13.4 Öğrenci (Student) — eksikler & fikirler
+
+- **Gamification:** streak (üst üste tamamlama), rozet, günlük checklist, motivasyon.
+- **Konu bazlı eksik analizi** ("hangi konuda zayıfım") + önerilen çalışma planı.
+- **Sınav sonuç + gelişim grafiği** (zaman içinde yükseliş).
+- **Quiz / kendini test et** (müfredattan otomatik soru).
+- **Öğretmen ders notu / ders tekrarı** görüntüleme.
+- **Hatırlatıcı** (push + e-posta).
+- **Offline destek** (PWA).
+- **Hedef / üniversite / bölüm takibi**.
+- Karanlık mod, kişiselleştirme.
+
+### 13.5 Veli (Parent) — eksikler & fikirler
+
+- **Haftalık otomatik özet e-postası** (çocuğun tamamlama, gecikme, devamsızlık özeti).
+- **Gelişim grafiği** (sınav, ödev tamamlama trendi).
+- **Güvenli mesajlaşma** (koçla; koç özel notları ASLA görmez).
+- **Ödeme / ücret görüntüleme** (finans gelince).
+- **Randevu / veli toplantısı** talebi.
+- **Onay akışı** (ek ders, program değişikliği).
+
+### 13.6 Mevcut uygulamalara göre eksiklerimiz (benchmark)
+
+| Örnek uygulama | Bizde | Eksik olan |
+|---|---|---|
+| Google Classroom (ödev akışı + duyuru) | kısmen | duyuru/akış, materyal paylaşımı |
+| Khan Academy (konu ağacı + egzersiz) | kısmen | egzersiz/quiz motoru |
+| ClassDojo (veli-öğretmen iletişimi + ödül) | kısmen | iki yönlü iletişim + ödül sistemi |
+| Remind (SMS/push iletişim) | yok | gerçek push / SMS |
+| Teachworks / TutorCruncher (koçluk CRM + fatura) | yok | CRM + finans |
+| Preply / Superprof (öğretmen pazar yeri) | yok | öğretmen keşfi / pazarı |
+| Duolingo (streak/gamification) | yok | motivasyon |
+| Quizlet (quiz/flashcard) | yok | quiz |
+| e-okul (not/devamsızlık) | kısmen | not + yoklama (öğretmen yok şu an) |
+
+### 13.7 Yenilikçi / hayal gücü fikirleri
+
+- **AI ödev asistanı:** ödev teslimini kontrol et, geri bildirim ver.
+- **AI haftalık veli raporu:** LLM ile doğal dilde yazılmış otomatik özet.
+- **Spaced repetition:** tekrar edilmesi gereken konuları otomatik öner.
+- **Öğrenci risk skoru** (erken uyarı).
+- **Takvim senkronu:** Google Calendar / iCal.
+- **OCR:** ödev fotoğrafı oku / teslim et.
+- **Sesli not / dikte.**
+- **Öğretmen pazar yeri:** koçlar uzman öğretmen bulsun (onaylı).
+- **Ders kaydı arşivi** (canlı ders gelince video).
+
+### 13.8 Teknik / altyapı fikirleri (ölçekleme bağı)
+
+- `OLCEKLEME_ANALIZI.md` ile bağ: **index, rate limiting, Redis cache, e-posta & background kuyruk** (10k kullanıcı hedefi).
+- **Permission-based yetki** (RBAC + ders bazlı izin) genişlet → ileride "rol" değil "yetki seti".
+- **Audit log:** kim neyi değiştirdi (güvenlik + şeffaflık).
+- **KVKK / GDPR:** veri dışa aktarma + silme.
+- **Yedekleme + geri yükleme** (Neon backup zaten var).
+
+### 13.9 Öncelik önerisi (tartışmaya girdi)
+
+- **Kısa vade (canlıya alma):** öğretmen ödev/sınav oluşturma + not, gerçek push, veli haftalık özet, dosya yükleme.
+- **Orta vade:** finans/ödeme, CRM yaşam döngüsü, güvenli mesajlaşma, AI rapor.
+- **Uzun vade:** öğretmen pazar yeri, AI asistan, canlı ders/video.
+
+### 13.10 Gemini (Antigravity) Fikirleri & Gelecek Vizyonu
+
+DeepSeek'in harika temellerine ek olarak, mentörlük sürecinin kalitesini arşa çıkaracak ve uygulamayı "premium" hissettirecek yenilikçi fikirlerim:
+
+**1. Koç (Yönetici) İçin:**
+- **Yapay Zeka Analisti:** Yüzlerce öğrencinin verisini tarayıp koça haftalık içgörü veren sistem. (Örn: *"Ahmet'in matematik netleri 3 haftadır düşüş trendinde ve devamsızlığı arttı. Velisiyle iletişime geçmeniz önerilir."*)
+- **Abonelik & Erişim Kesici:** Stripe/Iyzico entegrasyonu. Aylık ödemesi geciken öğrencinin/velinin ekranına kibar bir hatırlatıcı çıkarma veya erişimi (koç inisiyatifiyle) dondurma.
+- **Sosyal / Gelişimsel Hedefler:** Sadece matematik/fizik değil; "Günde 30 dk kitap oku", "Diksiyon egzersizi" gibi akademik olmayan rutinlerin takibi.
+
+**2. Öğretmen İçin:**
+- **Akıllı Optik / OCR Okuyucu:** Öğretmenin telefon kamerasından öğrencinin deneme optiğini okutup netleri sisteme saniyeler içinde aktarması.
+- **Öğretmenler Arası Zümre Panosu:** Aynı öğrenciye giren farklı branş öğretmenlerinin, veli/öğrenci görmeden kendi aralarında paslaşabileceği "Gizli Notlar" köşesi. (Örn: *"Derste dikkati çok çabuk dağılıyor, görsel materyal kullanırsan daha iyi anlıyor"*).
+- **Ters Yüz Edilmiş Sınıf (Flipped Classroom) Analitiği:** Dersten önce izlenmesi için atanan bir videoyu öğrenci "gerçekten" izledi mi? Nerelerde duraklattı? Gelişmiş video izleme istatistikleri.
+
+**3. Öğrenci İçin:**
+- **Esnek Takvim Algoritması:** Öğrenci "Bugün hastayım, yapamadım" butonuna bastığında, sistem o günün ödevlerini haftanın geri kalan boş günlerine otomatik, dengeli ve zekice dağıtır. Koçun tek tek uğraşmasına gerek kalmaz.
+- **Yerleşik Pomodoro & Odak Modu:** Uygulama içinde sayaç. Mola vakitlerinde nefes egzersizi önerisi. İleride Capacitor (Mobil) ile odak modundayken telefondaki diğer bildirimleri susturma özelliği.
+- **Anonim Liderlik Tablosu (Rekabet):** İsimler gizli (sadece avatarlar ve nickler) şekilde kurum/program içi haftalık en çok soru çözenler sıralaması. 
+
+**4. Veli İçin:**
+- **Tek Tuşla Aksiyon (Push Notification):** Koç, "Öğrencinin X kaynak kitabını alması gerekiyor" diye talep girdiğinde, velinin telefonuna gelen bildirime "Onaylıyorum/Aldım" diyerek tek tıkla dönüş yapması.
+- **Pedagojik Rehberlik Köşesi:** Veli panelinde sadece çocuğun notları değil; "Sınav senesindeki ergene nasıl davranılmalı?", "Koçun önerdiği haftalık podcast" gibi veliyi de eğiten kısa içerikler.
+
+**5. Genel UX / UI Dokunuşları:**
+- **Dopamin & Kutlama:** Ödevler bittiğinde patlayan konfetiler, hedefe ulaşınca çıkan ses efektleri (Duolingo tarzı premium mikro-animasyonlar).
+- **Sesli Komut Asistanı:** Yolda yürüyen koçun telefona "Siri, Mentörüm'de Ayşe'nin dünkü ödevini tamamlandı işaretle" diyebilmesi (Web Speech API ile çok rahat yapılabilir).
+
+### 13.11 Gemini (Antigravity) Fikirleri - Bölüm 2 (Bonus Vizyon)
+
+Beğenmene çok sevindim! Madem hayal gücümüzün sınırlarını zorluyoruz, Mentörüm'ü sadece bir "takip" aracı olmaktan çıkarıp, pazarda rakiplerini ezip geçecek şu özellikleri de ekleyelim:
+
+**1. "Gölge Koç" (Shadow Coach / Stajyer) Modu:**
+- Kurumlar büyüdüğünde yanlarına tecrübesiz koçlar/stajyerler alırlar. Gölge Koç modunda, stajyer ödev ataması yapar, notları yazar ama bunlar direkt öğrenciye gitmez, "Taslak" olarak kalır. Baş Koç (Yönetici) sadece tek tıkla "Onayla" diyerek bu işlemleri yayına alır. Muazzam bir kalite kontrol mekanizması!
+
+**2. Hata Defteri & Otomatik Telafi Sınavı:**
+- Öğrenciler denemelerde veya ödevlerde yanlış yaptıkları soruları (fotoğrafını çekerek) sisteme yükler ve sistem bunu müfredat konusuyla etiketler. 3 hafta sonra yapay zeka, öğrencinin sadece **geçmişte yanlış yaptığı** konulardan oluşan kişiye özel bir "Telafi Sınavı" üretir.
+
+**3. "Nasıl Hissediyorsun?" (Mental Check-in):**
+- Öğrenci sabah uygulamayı ilk açtığında 2 saniyelik bir ekran gelir: "Bugün kendini nasıl hissediyorsun?" (Harika, Yorgun, Stresli emojileri). Koç, öğrencisinin haftalık "Duygu Durumu Grafiğini" görür. Eğer öğrenci 3 gündür "Stresli" işaretliyorsa, koç o hafta ödev yükünü azaltıp motivasyon konuşması yapması gerektiğini anlar. Duygusal bağ kurduran inanılmaz bir özellik.
+
+**4. Sesli Geri Bildirim (Voice Notes):**
+- Öğretmen veya koç uzun uzun yazı yazmak yerine, ödevin altına WhatsApp gibi basılı tutup 30 saniyelik sesli not bırakır: *"Tebrikler Aliciğim, harika çözmüşsün ama 4. sorudaki işleme dikkat et."* Öğrencinin koçunun kendi gerçek sesini duyması, kuru bir metinden 100 kat daha etkilidir.
+
+**5. Yıl Sonu "Spotify Wrapped" Özeti (Year-in-Review):**
+- Sene sonunda sistem, veli ve öğrenci için otomatik şık bir hikaye animasyonu (video/slideshow) üretir: *"Bu yıl tam 15.000 soru çözdün! 40 denemeye girdin. En çok matematikte zorlandın ama asla pes etmedin!"*. Veliler bu videoyu Instagram'da gururla paylaşır ve bu, senin koçluk sistemin için **bedava viral reklam** olur!
+
+**6. "Kurum/Program" Sosyal Duvarı:**
+- Kurumun içine özel, kapalı bir duyuru/motivasyon panosu. Koç buraya "Günün Sözünü", "Haftanın En Çok Soru Çözenlerini" veya "Pazar günkü kampa herkesi bekliyorum" duyurularını hikaye/post gibi atar. Öğrenciler sadece beğeni (kalp) atabilir. Kapalı devre mini bir sosyal ağ.
+
+### 13.12 Cline & DeepSeek — Ek Yaratıcı Vizyon (2. Tur)
+
+> Gemini'nin 13.10/13.11'deki fikirlerini tamamlayan, daha çok **sistemik/metodolojik ve veri-odaklı** bir perspektif:
+
+**1. Mentörlük Döngüsü (metodolojiyi ürünleştir):** Uygulama salt "takip" aracı değil, bir mentörlük YÖNTEMİ olsun: *Hedef → Teşhis → Plan → Uygula → Ölç → Yansıt*. Koç "8 haftalık hedef sprint" başlatır; sistem haftalık kilometre taşlarını ve geri bildirim akışını yapılandırır.
+
+**2. Öğrenme Profili & Kişiselleştirme:** Öğrencinin öğrenme stili, en verimli çalışma saati ve dikkat süresi sistemce ölçülür; ödev/ders zamanlaması buna göre önerilir (örn. "Ayşe akşam daha verimli → matematik ödevlerini akşama öner").
+
+**3. Konu Hakimiyet Haritası (Mastery Map):** Müfredat bir "fetih haritası" gibi görünür; öğrenci konuyu bitirdikçe harita yeşile döner. Her konu için "hakimiyet %" skoru (ödev + sınav + quiz verisinden otomatik).
+
+**4. Sınav Simülasyonu & Deneme Analitiği:** Deneme takvimi, net/yüzdelik dilim takibi, TYT/AYT/LGS gerçek sınav simülasyonu, "hangi konudan kaç net kaybediyorsun" dökümü.
+
+**5. Öğretmen Güçlendirme:** Ders hazırlık asistanı (konu + kaynak + önceki ödev önerisi), takvim **çakışma dedektörü**, ders içi hızlı yoklama/katılım panosu.
+
+**6. Koç Operasyon Merkezi:** Tek ekranda tüm öğrencilerin trafik ışığı (yeşil/sarı/kırmızı) durumu + filtre + toplu aksiyon ("geciken herkese tek mesaj").
+
+**7. Ekosistem & Topluluk:** Şablon pazarı (koçlar başarılı ödev/sınav şablonlarını anonim paylaşır), mezun ağı & başarı hikayeleri (koça bedava pazarlama/güven), öğretmen kalite skoru.
+
+**8. "Bugün Ne Öğrendim" (mikro-günlük):** Öğrenci her ders sonrası 30 saniyede yazar; zamanla hakimiyet haritası beslenir ve koça içgörü verir.
+
+**9. Veri Taşınabilirliği & Çoklu Dil:** Öğrencinin tüm geçmişini (ödev, sınav, not) yeni koça aktarabilme (dışa aktarma); Türkçe + İngilizce (yurt dışı öğrenci/veli).
+
+**10. Gamification — "Konu Fetih":** Konu tamamlandıkça rozet/streak, anonim "haftanın fatihi" (rekabet, isim gizli).
+
+### 13.13 Sonnet (Antigravity) Fikirleri — Bölüm 3 (Sistem & İş Modeli Vizyonu)
+
+> Önceki fikirlerimden (13.10, 13.11) farklı olarak bu turda daha çok **iş modeli sürdürülebilirliği**, **güven ekonomisi** ve **sektörde rakipsiz** kılacak özelliklere odaklandım:
+
+**1. Koç Onboarding Sihirbazı ("İlk 10 Dakika" Deneyimi):**
+Rakip uygulamaların en büyük sorunu: koç kaydoluyor, boş ekranla karşılaşıyor ve terk ediyor. Biz buna önlem alalım. Kayıt sonrası bir sihirbaz (wizard) koçu şu adımlardan geçirsin: Program adı → İlk öğrenciyi ekle → İlk dersini seç → İlk ödevini ata. Süre: 3 dakika. Sonuçta koç "Evet, bu işe yarıyor" der ve sistemde kalır. **Aktivasyon oranı = en kritik büyüme metriği.**
+
+**2. "Koç Klonu" — Şablon Paketi Paylaşımı:**
+Başarılı bir koç, 1 yılda oluşturduğu tüm ödev şablonlarını, haftalık program yapısını ve ders planını tek tıkla "Koç Paketi" olarak dışa aktarır. Yeni bir koç bu paketi sisteme import ederek **sıfırdan başlamak yerine ustanın sırtında yükselir**. Bu özellik Mentörüm'ü bir eğitim konseptleri ekosistemi yapar; rakiplerde yok.
+
+**3. Çevrimdışı-Önce (Offline-First) Gerçek Mimari:**
+Şu an PWA ekliyoruz ama "gerçek" offline-first olmak başka şey. Öğrenci metroda internetsiz "Tamamladım" bastığında bu eylem lokalde saklanır, bağlantı gelince sessizce sync olur. Türkiye'de metro/taşra internet kalitesi düşünülünce bu, öğrenci deneyimini kökten iyileştirir.
+
+**4. Veli Şeffaflık Endeksi:**
+Veliler çocuklarının gerçekten çalışıp çalışmadığını bilemez. Biz şunu sunabiliriz: Uygulamada geçirilen aktif süre (sadece açık değil, gerçekten etkileşimde olan süre), günlük hedef tamamlama %. Veliye haftalık "Bu hafta Ahmet platforma 4 saat girdi, 12/15 görevi tamamladı" özeti. **Velinin para vermeye devam etmesinin 1 numaralı sebebi** bu şeffaflıktır.
+
+**5. Koç Referans Sistemi (B2B Büyüme):**
+Bir koç arkadaşını Mentörüm'e davet ettiğinde, her iki koç da 1 aylık ücretsiz premium alır. Ama daha önemlisi: davet eden koç, gelen koça "mentor" sıfatıyla eşleşir; ilk 3 ay onboarding'ini destekler. Bu hem viral büyümeyi hem de içeriden topluluk oluşturmayı aynı anda çözer.
+
+**6. "Sınav Günü" Modu:**
+LGS veya TYT tarihi geldiğinde uygulama otomatik olarak değişir: Karşılama ekranı motive edici mesaj verir, o gün ödev/soru bildirimi gelmez, akşam "Nasıl geçti?" kısa anket çıkar. Öğrenci "Çok zordu" derse sistem koça bildirim atar. Bu küçük ama **duygusal bağı çok güçlendiren** bir dokunuş.
+
+**7. Koçun Kendi Markası — "White-label Light":**
+Ücretli pakette koç kendi logosunu, renk şemasını ve kurum adını sisteme yükler. Öğrenci uygulamayı açtığında "Ahmet Hoca Koçluk Sistemi" görür, Mentörüm alt yazıda küçük kalır. Koç kendi marka değerini inşa eder; bırakamaz çünkü tüm öğrencileri ve geçmişi burada.
+
+**8. Sınav Takvimi Entegrasyonu (Otomatik):**
+YKS, LGS, ALES takvimlerini sistem otomatik çeker (ya da yıllık günceller). Öğrencinin hedef sınavına kaç gün kaldığı her ekranda küçük bir "Geri Sayaç" olarak durur. Koç da "X'e 90 gün kaldı, tempoyu artırma vakti" diye otomatik uyarı alır.
+
+**9. Koç Paneli Mobil UX — "1 El ile Kullanım":**
+Koçlar öğrencilerle genelde yüz yüzeyken tabletlerini bir ellerinde tutar. Tüm kritik aksiyonlar (ödev gör, tamamlandı işaretle, not ekle) **tek el, başparmak erişim alanında** tasarlanmalı. Material Design'ın FAB (Floating Action Button) mantığını biz koçluk bağlamına uyarlayalım: her ekranda o sayfanın en sık yapılan işlemi büyük, ulaşılabilir yerde olsun.
+
+**10. Yapay Zeka "Koç Asistanı" (Uzun Vade — ama şimdiden mimari hazırlık):**
+Koç bir öğrencinin profilini açtığında yapay zeka yan panel olarak şunu der: *"Ahmet'in son 3 sınavında geometri netleri düştü. Öneri: bu hafta geometri odaklı 2 ödev ekle ve 'alan/hacim' konusunu tekrarla."* Bunu ChatGPT API + kendi verimiz ile kolayca yapabiliriz. Mimari hazırlık = ödev/sınav verilerini AI'a beslenebilecek temiz bir formatta saklamak (şimdiden yapılabilir, AI bağlantısı sonraya kalır).
+

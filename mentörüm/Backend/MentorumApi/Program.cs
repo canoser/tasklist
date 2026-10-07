@@ -52,6 +52,8 @@ try
     builder.Services.AddSingleton<DbConnectionFactory>();
     builder.Services.AddScoped<JwtService>();
     builder.Services.AddScoped<GoogleAuthService>();
+    builder.Services.AddHttpClient();
+    builder.Services.AddSingleton<IEmailService, ResendEmailService>();
     builder.Services.AddScoped<StudentRepository>();
     builder.Services.AddScoped<CurriculumRepository>();
     builder.Services.AddScoped<HomeworkRepository>();

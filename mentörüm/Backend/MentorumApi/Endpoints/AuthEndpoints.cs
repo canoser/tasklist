@@ -339,7 +339,7 @@ var token = jwt.GenerateAccessToken(user);
                     User = new UserDto { Id = user.Id, Email = user.Email, Role = user.Role, FullName = user.FullName, AvatarUrl = user.AvatarUrl, IsAdmin = user.IsAdmin }
                 });
             });
-            group.MapPost("/forgot-password", async ([FromBody] ForgotPasswordRequest req, [FromServices] DbConnectionFactory db) =>
+            group.MapPost("/forgot-password", async ([FromBody] ForgotPasswordRequest req, [FromServices] DbConnectionFactory db, [FromServices] IEmailService emailService) =>
             {
                 if (string.IsNullOrEmpty(req.Email)) return Results.BadRequest(new { error = "Eksik bilgi" });
                 var email = req.Email.ToLowerInvariant();
@@ -356,8 +356,9 @@ var token = jwt.GenerateAccessToken(user);
                     VALUES (gen_random_uuid(), @UserId, @Token, NOW() + interval '1 hour')",
                     new { UserId = userId.Value, Token = token });
 
-                // TODO: EmailService ile bağlantıyı gönder (SMTP/Resend). Şimdilik log.
-                Console.WriteLine($"[PASSWORD RESET] email={email} token={token}");
+                var baseUrl = (Environment.GetEnvironmentVariable("APP_BASE_URL") ?? "https://mentorum.dersmatris.com").TrimEnd('/');
+                var resetLink = $"{baseUrl}/reset-password?token={token}";
+                await emailService.SendPasswordResetEmailAsync(email, resetLink);
 
                 return Results.Ok(new { message = "Eğer e-posta kayıtlıysa şifre sıfırlama bağlantısı gönderildi." });
             });

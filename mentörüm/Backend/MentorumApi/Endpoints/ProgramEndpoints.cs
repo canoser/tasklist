@@ -1,5 +1,6 @@
 using MentorumApi.Data;
 using MentorumApi.DTOs;
+using MentorumApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -138,7 +139,7 @@ namespace MentorumApi.Endpoints
                 return ok ? Results.Ok(new { message = "Kullanıcı reddedildi." }) : Results.NotFound(new { error = "Kullanıcı bulunamadı." });
             });
 
-            admin.MapPost("/users", async ([FromBody] AddUserRequest req, [FromServices] ProgramRepository repo, ClaimsPrincipal user) =>
+            admin.MapPost("/users", async ([FromBody] AddUserRequest req, [FromServices] ProgramRepository repo, [FromServices] IEmailService emailService, ClaimsPrincipal user) =>
             {
                 var adminId = GetCoachId(user);
                 if (adminId == null) return Results.Unauthorized();
@@ -147,10 +148,14 @@ namespace MentorumApi.Endpoints
                 var role = req.Role == "Student" || req.Role == "Parent" ? req.Role : "Coach";
                 var password = GenerateRandomPassword();
                 var passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
-                var r = await repo.AddUserByAdminAsync(req.Email, req.FullName, passwordHash, role);
-                return r == "OK"
-                    ? Results.Ok(new { message = "Kullanıcı eklendi.", email = req.Email.ToLowerInvariant(), password })
-                    : Results.Conflict(new { error = "Bu e-posta zaten kullanımda." });
+                var email = req.Email.ToLowerInvariant();
+                var r = await repo.AddUserByAdminAsync(email, req.FullName, passwordHash, role);
+                if (r != "OK")
+                    return Results.Conflict(new { error = "Bu e-posta zaten kullanımda." });
+
+                await emailService.SendWelcomeEmailAsync(email, role, password);
+
+                return Results.Ok(new { message = "Kullanıcı eklendi.", email, password });
             });
         }
 
