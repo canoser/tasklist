@@ -87,6 +87,7 @@ function App() {
               user.role === 'Student' ? '/student/home' :
               user.role === 'Parent' ? '/parent/summary' :
               user.role === 'Teacher' ? '/teacher/courses' :
+              user.role === 'Admin' ? '/admin' :
               '/coach/dashboard'
             } replace />
           ) : <LoginPage />

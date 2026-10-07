@@ -26,6 +26,7 @@ const LoginPage = () => {
       role === 'Student' ? '/student/home' :
       role === 'Parent' ? '/parent/summary' :
       role === 'Teacher' ? '/teacher/courses' :
+      role === 'Admin' ? '/admin' :
       '/coach/dashboard'
     );
   };
