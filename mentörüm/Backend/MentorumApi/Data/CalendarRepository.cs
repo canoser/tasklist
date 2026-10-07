@@ -15,6 +15,10 @@ namespace MentorumApi.Data
             DateTime toDate, 
             Guid? studentId = null)
         {
+            // Fail-closed: yalnızca bilinen roller takvime erişir (bilinmeyen rol → boş).
+            if (role != "Coach" && role != "Student" && role != "Parent")
+                return Array.Empty<CalendarEventDto>();
+
             var sqlBuilder = new StringBuilder();
             
             // Homeworks (due_date between From and To)

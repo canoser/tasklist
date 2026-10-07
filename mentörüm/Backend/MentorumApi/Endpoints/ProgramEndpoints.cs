@@ -31,7 +31,7 @@ namespace MentorumApi.Endpoints
                 {
                     return Results.Conflict(new { error = "Program limiti aşıldı.", code = "PROGRAM_LIMIT_EXCEEDED" });
                 }
-            });
+            }).AddEndpointFilter<MentorumApi.Filters.IdempotencyFilter>();
 
             group.MapGet("/{id:guid}", async (Guid id, [FromServices] ProgramRepository repo, ClaimsPrincipal user) =>
             {
@@ -108,6 +108,7 @@ namespace MentorumApi.Endpoints
                 return r switch
                 {
                     "OK" => Results.Ok(new { message = "Yöneticilik devredildi." }),
+                    "CONFLICT" => Results.Conflict(new { error = "Eşzamanlı işlem nedeniyle devir gerçekleştirilemedi. Lütfen tekrar deneyin." }),
                     "TARGET_NOT_ASSISTANT" => Results.BadRequest(new { error = "Hedef yardımcı koç değil." }),
                     "FORBIDDEN" => Results.Forbid(),
                     _ => Results.NotFound(new { error = "Program bulunamadı." })

@@ -52,7 +52,8 @@ namespace MentorumApi.Data
             {
                 var maxPrograms = await conn.ExecuteScalarAsync<int?>(@"
                     SELECT COALESCE(c.max_programs, (SELECT value::int FROM system_settings WHERE key = 'default_max_programs'), 3)
-                    FROM coaches c WHERE c.id = @CoachId",
+                    FROM coaches c WHERE c.id = @CoachId
+                    FOR UPDATE",
                     new { CoachId = coachId }, tx);
 
                 var activeAdminCount = await conn.ExecuteScalarAsync<int>(@"
@@ -240,6 +241,11 @@ namespace MentorumApi.Data
 
                 tx.Commit();
                 return "OK";
+            }
+            catch (Npgsql.PostgresException ex) when (ex.SqlState == "23505")
+            {
+                tx.Rollback();
+                return "CONFLICT";
             }
             catch
             {

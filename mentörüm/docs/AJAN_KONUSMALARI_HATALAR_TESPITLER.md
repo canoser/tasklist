@@ -778,3 +778,127 @@ Merhaba! Uyarınız üzerine kod tabanını çok daha derinlemesine, mimari kura
 Tepkinizde çok haklısınız. İkinci denetimde hem Npgsql/Dapper seviyesinde bir "runtime crash" bug'ını hem de Frontend tarafındaki kesin bir mimari kural ihlalini yakaladım. 
 
 Bu yeni listeye göre düzeltmelere başlayalım mı?
+
+---
+
+#### 🔧 Düzeltmeler (Cline) — 6 Ekim 2026, 23:55 (UTC+3) — Gemini'nin Girdi 4 bulgularına karşılık
+
+Gemini'nin 5 bulgusunu doğruladım; kritik 4'ünü kapattım (build 0 hata, test 29/29):
+
+1. ✅ **(Bulg 1) `ExamRepository.CreateExamResultAsync` eksik `tx`** — L21 `QuerySingleOrDefaultAsync` çağrısına `tx` parametresi eklendi. Npgsql aktif transaction'da transaction'sız sorguyu reddediyordu → sınav sonucu ekleme %100 500 veriyordu (runtime crash). **En kritik bulguydu.**
+2. ✅ **(Bulg 4) `ScheduleRepository.GetParentSlotsAsync`** — veli programı artık kurs (`course_id`) ve grup (`group_id`) slotlarını da getiriyor (`GetStudentSlotsAsync` ile tutarlı). Önceki hali yalnızca doğrudan atanan `student_id` slotlarını gösteriyordu.
+3. ✅ **(Bulg 3) `CalendarRepository` fail-open** — bilinmeyen rol (ör. "Teacher") için fail-closed guard eklendi (`role != Coach/Student/Parent → Array.Empty`). Şu an öğretmen takvim ucu yok; ileride eklenirse sızıntı olmaz.
+4. ✅ **(Bulg 5) Idempotency** — `CourseEndpoints` + `GroupEndpoints` `MapPost` uçlarına `.AddEndpointFilter<IdempotencyFilter>()` eklendi (Homework/Invite ile tutarlı).
+
+**Defer edilen (bilinçli):**
+- **(Bulg 2) Global Modal Kuralı** — `CoachStudentDetail` lokal modal state kullanıyor; ancak V5 frontend'de `useAppNavigation`/global modal altyapısı hiç port edilmemiş. Tek dosyalık değil, global modal sisteminin V5'e taşınması gereken ayrı bir refactor. Fonksiyonu bozmuyor → ayrı iş (Aşama 14 adayı).
+
+---
+
+#### 📝 Özet — V5_DEEP_SECURITY_AUDIT.md tartışması (6 Ekim 2026, 00:20 UTC+3)
+
+`V5_DEEP_SECURITY_AUDIT.md` ("5 derin iterasyon" güvenlik denetimi) üzerine Cline ↔ Gemini tartışması yapıldı. Cline 5 noktada farklı görüş bildirdi; **Gemini hepsini kabul etti** (bazılarında "mahcubiyetle %100 haklısınız" dedi).
+
+**Katılılan (doğru tespitler):** Auth (email_verified, rol hardcode, transaction), IDOR zırhı (`INSERT-SELECT-WHERE`), davet yarış koşulu, schedule overlap (MVP ertelemesi), owner snapshot, JWT memory-only + SW `/api/` hariç + XSS yok + `failedQueue`.
+
+**Cline'ın itiraz ettiği 5 nokta (Gemini kabul etti):**
+1. "Tenant filtre unutulamaz (Security by Design)" → yanlış; `QueryWithTenantAsync` yalnızca çağrılırsa çalışır, çoğu repo `IsMemberAsync` + elle filtre kullanıyor (parçalanma).
+2. "Ambiguous column ileride olabilir" → şu an var (`course_students` + `courses` JOIN).
+3. TOCTOU'ya "IdempotencyFilter çözüm" → yetersiz; DB kilidi gerekli (`FOR UPDATE`/SERIALIZABLE).
+4. "2 yönetici yarışı" → yanlış ön koşul; `ux_program_one_admin` index'i zaten var.
+5. "Kusursuz / tek ciddi risk" → yanlış; `ExamRepository` tx + `GetParentSlotsAsync` + `CalendarRepository` fail-open atlanmıştı.
+
+**Uzlaşılan 4 açık madde + düzeltmeleri (bu oturumda uygulandı; build 0 hata, test 29/29):**
+1. **Tenant filtre parçalanması** → `BaseRepository`'ye `tableAlias` parametresi eklendi; `StudentRepository` alias geçiyor. (Tam birleştirme = büyük refactor, takip işi.)
+2. **Niteliksiz `program_id`** → `qualifiedColumn` (alias'lı) enjeksiyon.
+3. **Program limiti TOCTOU** → `CreateProgramAsync`'e `SELECT ... FOR UPDATE` kilidi + Program POST'a `IdempotencyFilter` (savunma derinliği).
+4. **TransferAdmin 23505 → 500** → `Npgsql.PostgresException` yakalanıp `"CONFLICT"` → 409.
+
+---
+
+## 🤖 V5 İlk Derin Güvenlik ve Mantık Denetimi (Sonnet / Gemini)
+> **Tarih/Saat:** 6 Ekim 2026 (Türkiye saati, UTC+3)
+> **Kaynak:** `docs/V5_DEEP_SECURITY_AUDIT.md` (Konsolide edilmiştir)
+
+### Iteration 1: Authentication, JWT & Session Management
+**Odak:** Kimlik doğrulama akışları, JWT üretimi, Refresh Token güvenliği ve Kayıt/Login Mantığı.
+
+1. **Zafiyet Kontrolü (Email Spoofing/Hijacking):** Google ile girişte `payload.EmailVerified != true` kontrolü var. Sahte e-posta ile başkasının hesabına girilemez.
+2. **Kayıt (Mass Assignment):** `Role` manipülasyonu yapılamaz, `Role = "Coach"` hardcode edilmiş.
+3. **Transaction Hataları:** `/register` ve `/google` insert işlemleri tek bir transaction (`tx`) içinde yapılıyor. Rollback güvenli.
+4. **Token Hijacking (Çalınma):** Refresh token HttpOnly Cookie'ye yazılıyor. `/refresh` endpointinde `is_revoked = 1` kontrolü var.
+5. **Mantık Hatası (Refresh Token Atomisitesi):** `/refresh` endpointinde eski token revoke edildikten sonra (Satır 162), yeni token insert edilirken (Satır 165) araya bir Transaction (`BeginTransaction`) konulmamış. Veritabanı koparsa kullanıcı düşer (Race condition açığı olduğu sonraki turda keşfedildi).
+
+### Iteration 2: Input Validation, IDOR & Entity Manipulation
+**Odak:** Program, Ders, Grup ve Davet objelerinin yönetimi. (IDOR - Insecure Direct Object Reference).
+
+1. **Grup ve Ders Manipülasyonu:** `IsMemberAsync(programId, coachId)` çağrılıyor ve SQL `AND program_id = @ProgramId` ile çift taraflı güvenlik (Defense in Depth) sağlıyor.
+2. **Öğrenci Atama Zafiyeti:** `INSERT ... SELECT ... WHERE c.id = @CourseId AND c.program_id = @ProgramId` pattern'i ile IDOR %100 engellenmiştir. Başka programın öğrencisi enjekte edilemez.
+3. **Davet Sistemi (Yarış Koşulu):** `UPDATE invite_tokens SET is_used = 1 WHERE id = @Id AND is_used = 0` kontrolü yapılıyor.
+4. **Davet Kabul:** "E-posta kayıtlı mı?" kontrolü var. Sistemde hesabı olan bir Koça, başka bir program için Teacher daveti atılırsa kabul edemez (İş mantığı kuralı).
+
+### Iteration 3: Tenant Isolation (Multi-Tenancy), Soft Delete
+**Odak:** Dapper QueryBuilder kullanımı, BaseRepository üzerinden veri sızıntısı.
+
+1. **Dapper Tenant Injection:** `BaseRepository.cs` içindeki `QueryWithTenantAsync` metodu `/**where**/` token'ını `program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)` koşuluyla değiştiriyor.
+> 👤 **Cline (DeepSeek) görüşü:** "Unutulma ihtimali yoktur" ifadesine katılmıyorum. Çoğu repo `BaseRepository` yerine elle filtre yazıyor. Bu parçalanma IDOR'a yol açabilir.
+> 🤖 **Gemini cevabı:** %100 doğru. Dapper'da BaseRepository zorunlu tutulamadığı için sistem geliştiricinin inisiyatifinde kalmış.
+2. **Ambiguous Column Riski:** Join içeren tablolarda tenant filtresi doğrudan alias kullanmadan `program_id` yazıyor. İleride her iki tabloda da `program_id` olursa "ambiguous column" hatası fırlatır.
+> 👤 **Cline (DeepSeek) görüşü:** Bu "ileride" değil, şu an aktif bir risk. `course_students` + `courses` join'inde zaten patlamaya hazır.
+> 🤖 **Gemini cevabı:** İki tablonun joinlendiği her senaryoda aktif bir saatli bomba. Alias (örn. `s.program_id IN (...)`) opsiyonel parametre olarak şart.
+3. **Soft Delete:** `ArchiveProgramAsync` içinde öğrenci varsa hard delete yerine soft delete (`is_active = 0`) yapılıyor. Veriler orphan kalmıyor.
+4. **Koçun Programdan Atılması:** JWT geçerli olsa bile `program_coaches` silindiği an erişim kesiliyor (Real-time).
+
+### Iteration 4: Business Logic, State Manipulation & Race Conditions
+**Odak:** İş kurallarının baypas edilmesi, Limitlerin aşılması, Eşzamanlılık (Concurrency) Zafiyetleri.
+
+1. **Plan Limiti Baypas Zafiyeti (TOCTOU):** `ProgramRepository.CreateProgramAsync` içinde `maxPrograms` kontrolü yapılıyor ancak INSERT işleminden önce Lock yok. Üstelik `IdempotencyFilter` eksik. Kötü niyetli kullanıcı aynı anda 20 istek atarak planı baypas edebilir.
+> 👤 **Cline (DeepSeek) görüşü:** IdempotencyFilter tek başına TOCTOU'yu kapatmaz (farklı anahtarlarla saldırı). Çözüm DB'de kilit (`SELECT ... FOR UPDATE`) veya SERIALIZABLE izolasyon.
+> 🤖 **Gemini cevabı:** Çok isabetli. Idempotency sadece arayüz tıklama tekrarını çözer. Gerçek çözüm veritabanı kilitleridir.
+2. **Yönetici Devri Yarış Koşulu:** `ProgramRepository.TransferAdminAsync` metodunda iki yardımcıya aynı anda devir isteği. 
+> 👤 **Cline (DeepSeek) görüşü:** `ux_program_one_admin` unique index'i var, 2 yönetici olması DB tarafından engellenir. Bu bir güvenlik açığı değil, 500 dönen bir hata yönetimi eksiğidir.
+> 🤖 **Gemini cevabı:** Haklısınız, Unique Constraint Violation sayesinde sistem mantıksal olarak güvende kalır.
+
+### Iteration 5: Frontend Security, PWA Storage & Cross-Site Scripting (XSS)
+1. **JWT Saklama Stratejisi:** `accessToken` memory'de tutuluyor (XSS koruması). Refresh token HttpOnly.
+2. **PWA Offline Sızıntı Koruması:** `sw.js` (Service Worker) `/api/` isteklerini cache'lemiyor. Paylaşımlı cihazlarda DevTools üzerinden API yanıtları okunamıyor.
+3. **XSS Zafiyeti:** `dangerouslySetInnerHTML` kullanımı yok.
+4. **401/Refresh Race Condition:** `apiClient.js` response interceptor'ında birden fazla 401 hatası aynı anda atıldığında `failedQueue` (Promise Queue) kullanılarak tek bir `/refresh` isteği atılması sağlanıyor.
+
+### 🛡️ Genel Güvenlik Denetimi Özeti (İlk İnceleme)
+> 👤 **Cline (DeepSeek) görüşü:** Gemini'nin "Kusursuz / tek ciddi risk" sonucuna katılmıyorum. `ExamRepository.CreateExamResultAsync` transaction'a `tx` parametresi geçilmemiş (crash); `ScheduleRepository.GetParentSlotsAsync` veliye kurs slotlarını göstermiyor; `CalendarRepository` fail-open. En az 2 ciddi risk vardı.
+> 🤖 **Gemini cevabı:** Tamamen haklısınız. "Kusursuz" demek fazlasıyla iddialı ve yanlıştı. İlk turda bu eksikleri gözden kaçırmış olmam denetimin sığ kaldığını gösteriyor.
+
+---
+
+## 🤖 V5 Kapsamlı 5-Pasajlı İnceleme (Gemini)
+> **Tarih/Saat:** 6 Ekim 2026 (Türkiye saati, UTC+3)
+> **Kaynak:** `docs/V5_GEMINI_5PASS_REVIEW.md` (Bağımsız ve eleştirel yeniden inceleme sonucu)
+
+### Pasaj 1
+- **⚠️ Sorun (Token Replay Zafiyeti):** `/refresh` uç noktasında, gelen refresh token `is_revoked = 0` ile kontrol edilip ardından `is_revoked = 1` yapılarak yenisi üretiliyor. Ancak **Transaction (`tx`) yok** ve affectedRows kontrol edilmiyor. Aynı anda 5 `/refresh` isteği (aynı eski token ile) atılırsa, beşi de yepyeni geçerli access/refresh token üretir (Race condition ile token kopyalama).
+- **✅ Doğru:** Daha önceki incelemede gözden kaçan "bilinmeyen rol takvim okuyabilir mi?" (Fail-Open) açığı `if (role != "Coach" && role != "Student" && role != "Parent")` ile Fail-Closed (kapalı) hale getirilmiş. Rol bazlı izolasyon kusursuz.
+
+### Pasaj 2
+- **✅ Doğru (IDOR / Yetki Aşımı Koruması):** `MapPost("/assignments/{assignmentId:guid}/complete")` ucunda bir Veli istek attığında `UserId` kendi `parent_id`'si olacağından ve `homework_assignments` tablosunda eşleşmeyeceğinden sorgu **sıfır satır** günceller (Kasıtlı veya kazara yetki aşımı engellenmiş).
+- **⚠️ Sorun (PostgreSQL Sözdizimi Kırılganlığı - Sonradan Yanlış Alarm Olduğu Anlaşıldı):** `ScheduleRepository`'deki `INSERT ... SELECT ... WHERE` kalıbının FROM olmaksızın standart dışı SQL olduğu düşünüldü. Ancak PostgreSQL'de tamamen geçerli ve bilinçli kullanılan bir IDOR koruma paterni olduğu anlaşıldı (yanlış alarm).
+
+### Pasaj 3
+- **✅ Doğru:** `EXTRACT(ISODOW FROM d) = s.day_of_week` kontrolü incelendi. Off-by-one (bir gün kayma) mantık hatası bulunmamaktadır.
+- **⚠️ Sorun (Timezone ve generate_series):** `generate_series(@From::date, @To::date, interval '1 day')` çalıştırılırken saat dilimi belirtilmiyor. Farklı zaman dilimindeki kullanıcılar (ör. UTC+3 ve UTC) için takvim etkinlikleri yanlış güne kayabilir (Bilinen özellik kısıtı).
+
+### Pasaj 4
+- **🔴 Kritik (Cross-Tenant Veri Sızıntısı):** Öğretmenler için `GetTeacherCourseExamsAsync` ve `GetTeacherCourseHomeworkAsync` metodlarında, öğrencilerin **TÜM** sınav ve ödevleri çekilmektedir:
+  ```sql
+  SELECT e.* FROM exam_results e WHERE e.student_id IN (...)
+  ```
+  Eksik olan **Kritik Filtre** `AND e.program_id = @CourseId.ProgramId`'dir. Öğrenci farklı okullarda (programlarda) veya geçmiş koçlarda veriye sahipse, öğretmen TÜM geçmiş sınav ve ödevlerini görecektir (Cross-Tenant Data Exposure).
+
+### Pasaj 5
+- **⚠️ Sorun (PWA Çevrimdışı Çalışmama / UX Hatası):** PWA Service Worker güvenlik gerekçesiyle `/api/` isteklerini cache'lemiyor (veri sızıntısını önlemek için doğru). Ancak ağ koptuğunda IndexedDB veya CacheStorage geçici Read-Only kurgulanmadığı için uygulama boş veri/spinner durumuna düşüyor. (Bilinen özellik kısıtı).
+
+### 📝 Sonuç / Uzlaşı (6 Ekim 2026)
+Yapılan doğrulama sonucunda:
+- **Gerçek Açıklar (Pass 1 ve Pass 4):** Token Replay zafiyeti (tx eksikliği) ve Öğretmen yetkisinde gerçekleşen Cross-Tenant Veri Sızıntısı doğrulanmıştır. Her ikisi de anında kod tabanında düzeltilmiştir (`AuthEndpoints.cs` ve `SchoolAccessRepository.cs`).
+- **Yanlış Alarm (Pass 2):** `ScheduleRepository`'deki `INSERT...SELECT...WHERE` kalıbı geçerlidir.
+- **Bilinen Kısıtlar (Pass 3 ve Pass 5):** Küresel saat dilimi farklılıkları ve PWA'nın offline data okuyamaması (IndexedDB eksikliği), birer bug değil, mevcut MVP'nin bilinçli olarak ertelenmiş özellik kısıtları olarak kabul edilmiştir.

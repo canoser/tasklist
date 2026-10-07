@@ -17,7 +17,7 @@ namespace MentorumApi.Data
                 /**where**/ 
                 ORDER BY u.full_name";
             
-            return await QueryWithTenantAsync<StudentListDto>(sql, new {}, coachId);
+            return await QueryWithTenantAsync<StudentListDto>(sql, new {}, coachId, tableAlias: "s");
         }
 
         public virtual async Task<StudentDetailDto?> GetStudentDetailAsync(Guid coachId, Guid studentId)
@@ -31,7 +31,7 @@ namespace MentorumApi.Data
                 JOIN students s ON u.id = s.id 
                 /**where**/";
             
-            return await QuerySingleOrDefaultWithTenantAsync<StudentDetailDto>(sql, new { StudentId = studentId }, coachId, "s.id = @StudentId");
+            return await QuerySingleOrDefaultWithTenantAsync<StudentDetailDto>(sql, new { StudentId = studentId }, coachId, "s.id = @StudentId", tableAlias: "s");
         }
 
         public async Task<IEnumerable<StudentNoteDto>> GetStudentNotesAsync(Guid coachId, Guid studentId)

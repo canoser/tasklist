@@ -19,13 +19,14 @@ namespace MentorumApi.Data
         /// SQL sorgusuna otomatik olarak "AND program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)" filtresi ekler.
         /// NOT: Verilen sqlTemplate içinde kesinlikle /**where**/ tag'i bulunmalıdır.
         /// </summary>
-        protected async Task<IEnumerable<T>> QueryWithTenantAsync<T>(string sqlTemplate, object parameters, Guid coachId, string? additionalWhere = null)
+        protected async Task<IEnumerable<T>> QueryWithTenantAsync<T>(string sqlTemplate, object parameters, Guid coachId, string? additionalWhere = null, string? tableAlias = null)
         {
             using var connection = _connectionFactory.CreateConnection();
             var builder = new SqlBuilder();
             var template = builder.AddTemplate(sqlTemplate);
             
-            builder.Where("program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)", new { CoachId = coachId });
+            var qualifiedColumn = string.IsNullOrEmpty(tableAlias) ? "program_id" : $"{tableAlias}.program_id";
+            builder.Where($"{qualifiedColumn} IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)", new { CoachId = coachId });
             if (!string.IsNullOrEmpty(additionalWhere))
             {
                 builder.Where(additionalWhere);
@@ -37,13 +38,14 @@ namespace MentorumApi.Data
             return await connection.QueryAsync<T>(template.RawSql, dp);
         }
 
-        protected async Task<T?> QuerySingleOrDefaultWithTenantAsync<T>(string sqlTemplate, object parameters, Guid coachId, string? additionalWhere = null)
+        protected async Task<T?> QuerySingleOrDefaultWithTenantAsync<T>(string sqlTemplate, object parameters, Guid coachId, string? additionalWhere = null, string? tableAlias = null)
         {
             using var connection = _connectionFactory.CreateConnection();
             var builder = new SqlBuilder();
             var template = builder.AddTemplate(sqlTemplate);
             
-            builder.Where("program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)", new { CoachId = coachId });
+            var qualifiedColumn = string.IsNullOrEmpty(tableAlias) ? "program_id" : $"{tableAlias}.program_id";
+            builder.Where($"{qualifiedColumn} IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)", new { CoachId = coachId });
             if (!string.IsNullOrEmpty(additionalWhere))
             {
                 builder.Where(additionalWhere);
@@ -55,13 +57,14 @@ namespace MentorumApi.Data
             return await connection.QuerySingleOrDefaultAsync<T>(template.RawSql, dp);
         }
 
-        protected async Task<int> ExecuteWithTenantAsync(string sqlTemplate, object parameters, Guid coachId, string? additionalWhere = null)
+        protected async Task<int> ExecuteWithTenantAsync(string sqlTemplate, object parameters, Guid coachId, string? additionalWhere = null, string? tableAlias = null)
         {
             using var connection = _connectionFactory.CreateConnection();
             var builder = new SqlBuilder();
             var template = builder.AddTemplate(sqlTemplate);
             
-            builder.Where("program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)", new { CoachId = coachId });
+            var qualifiedColumn = string.IsNullOrEmpty(tableAlias) ? "program_id" : $"{tableAlias}.program_id";
+            builder.Where($"{qualifiedColumn} IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)", new { CoachId = coachId });
             if (!string.IsNullOrEmpty(additionalWhere))
             {
                 builder.Where(additionalWhere);

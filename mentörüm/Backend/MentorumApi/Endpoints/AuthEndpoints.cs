@@ -158,14 +158,31 @@ var token = jwt.GenerateAccessToken(user);
                 var newAccessToken = jwt.GenerateAccessToken(user);
                 var newRefreshToken = jwt.GenerateRefreshToken();
 
-                // Revoke old
-                await conn.ExecuteAsync("UPDATE refresh_tokens SET is_revoked = 1 WHERE token = @Token", new { Token = inputToken });
+                if (conn.State != System.Data.ConnectionState.Open) conn.Open();
+                using var tx = conn.BeginTransaction();
+                try
+                {
+                    // Revoke old
+                    var affected = await conn.ExecuteAsync("UPDATE refresh_tokens SET is_revoked = 1 WHERE token = @Token AND is_revoked = 0", new { Token = inputToken }, tx);
+                    if (affected == 0)
+                    {
+                        tx.Rollback();
+                        return Results.Unauthorized();
+                    }
 
-                // Insert new
-                await conn.ExecuteAsync(@"
-                    INSERT INTO refresh_tokens (id, user_id, token, expires_at)
-                    VALUES (@Id, @UserId, @Token, @ExpiresAt)",
-                    new { Id = Guid.NewGuid(), UserId = user.Id, Token = newRefreshToken, ExpiresAt = DateTime.UtcNow.AddDays(7) });
+                    // Insert new
+                    await conn.ExecuteAsync(@"
+                        INSERT INTO refresh_tokens (id, user_id, token, expires_at)
+                        VALUES (@Id, @UserId, @Token, @ExpiresAt)",
+                        new { Id = Guid.NewGuid(), UserId = user.Id, Token = newRefreshToken, ExpiresAt = DateTime.UtcNow.AddDays(7) }, tx);
+
+                    tx.Commit();
+                }
+                catch
+                {
+                    tx.Rollback();
+                    throw;
+                }
 
                 ctx.Response.Cookies.Append("refresh_token", newRefreshToken, new CookieOptions {
                     HttpOnly = true,

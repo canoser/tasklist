@@ -31,7 +31,7 @@ namespace MentorumApi.Endpoints
                 {
                     return Results.NotFound(new { error = "Program bulunamadı veya yetkiniz yok." });
                 }
-            });
+            }).AddEndpointFilter<MentorumApi.Filters.IdempotencyFilter>();
 
             group.MapGet("/{groupId:guid}", async (Guid programId, Guid groupId, [FromServices] GroupRepository repo, ClaimsPrincipal user) =>
             {

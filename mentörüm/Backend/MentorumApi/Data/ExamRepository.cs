@@ -18,7 +18,7 @@ namespace MentorumApi.Data
             {
                 var owned = await conn.QuerySingleOrDefaultAsync<Guid?>(
                     "SELECT program_id FROM students WHERE id = @StudentId AND program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)",
-                    new { req.StudentId, CoachId = coachId });
+                    new { req.StudentId, CoachId = coachId }, tx);
                 if (owned == null) throw new UnauthorizedAccessException("Bu öğrenci bu koça ait değil.");
 
                 var sql = @"

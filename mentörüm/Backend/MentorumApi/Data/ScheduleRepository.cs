@@ -138,7 +138,11 @@ namespace MentorumApi.Data
                 {SlotSelect}
                 FROM schedule_slots s
                 WHERE s.is_active = 1
-                  AND s.student_id IN (SELECT student_id FROM student_parents WHERE parent_id = @ParentId AND is_accepted = 1)
+                  AND (
+                      s.student_id IN (SELECT student_id FROM student_parents WHERE parent_id = @ParentId AND is_accepted = 1)
+                      OR s.course_id IN (SELECT cs.course_id FROM course_students cs WHERE cs.student_id IN (SELECT student_id FROM student_parents WHERE parent_id = @ParentId AND is_accepted = 1) AND cs.is_active = 1)
+                      OR s.group_id IN (SELECT sgm.group_id FROM student_group_members sgm WHERE sgm.student_id IN (SELECT student_id FROM student_parents WHERE parent_id = @ParentId AND is_accepted = 1))
+                  )
                 ORDER BY s.day_of_week, s.start_time", new { ParentId = parentId });
         }
     }

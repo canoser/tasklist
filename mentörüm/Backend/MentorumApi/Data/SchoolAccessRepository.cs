@@ -147,7 +147,8 @@ namespace MentorumApi.Data
                 SELECT h.id, h.student_id AS StudentId, u.full_name AS StudentName, h.snapshot_title AS Title, h.due_date AS DueDate, h.status AS Status
                 FROM homework_assignments h
                 JOIN users u ON u.id = h.student_id
-                WHERE h.student_id IN (
+                WHERE h.program_id = (SELECT program_id FROM courses WHERE id = @CourseId)
+                  AND h.student_id IN (
                     SELECT cs.student_id FROM course_students cs WHERE cs.course_id = @CourseId AND cs.is_active = 1
                     UNION
                     SELECT sgm.student_id FROM course_groups cg JOIN student_group_members sgm ON sgm.group_id = cg.group_id WHERE cg.course_id = @CourseId
@@ -163,7 +164,8 @@ namespace MentorumApi.Data
                 SELECT e.id, e.student_id AS StudentId, u.full_name AS StudentName, COALESCE(e.exam_name, e.exam_type) AS Name, e.exam_date AS ExamDate, e.total_net AS TotalNet
                 FROM exam_results e
                 JOIN users u ON u.id = e.student_id
-                WHERE e.student_id IN (
+                WHERE e.program_id = (SELECT program_id FROM courses WHERE id = @CourseId)
+                  AND e.student_id IN (
                     SELECT cs.student_id FROM course_students cs WHERE cs.course_id = @CourseId AND cs.is_active = 1
                     UNION
                     SELECT sgm.student_id FROM course_groups cg JOIN student_group_members sgm ON sgm.group_id = cg.group_id WHERE cg.course_id = @CourseId
