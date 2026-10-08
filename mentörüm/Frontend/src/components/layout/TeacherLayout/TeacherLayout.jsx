@@ -10,7 +10,10 @@ const TeacherLayout = () => {
   const { data: notifications } = useNotifications();
   const unreadCount = notifications?.filter(n => !n.isRead)?.length || 0;
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await import('../../../api/apiClient').then(m => m.apiClient.post('/auth/logout'));
+    } catch (e) {}
     clearAuth();
     navigate('/login');
   };

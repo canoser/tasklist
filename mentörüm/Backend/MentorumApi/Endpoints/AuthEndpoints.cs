@@ -108,7 +108,7 @@ namespace MentorumApi.Endpoints
             {
                 using var conn = db.CreateConnection();
                 var user = await conn.QuerySingleOrDefaultAsync<User>(
-                    "SELECT id, email, password_hash, google_id, role, full_name, avatar_url, is_active, is_admin, approval_status, created_at, updated_at FROM users WHERE email = @Email AND is_active = 1", new { Email = req.Email.ToLowerInvariant() });
+                    "SELECT id AS Id, email AS Email, password_hash AS PasswordHash, google_id AS GoogleId, role AS Role, full_name AS FullName, avatar_url AS AvatarUrl, is_active AS IsActive, is_admin AS IsAdmin, approval_status AS ApprovalStatus, created_at AS CreatedAt, updated_at AS UpdatedAt FROM users WHERE email = @Email AND is_active = 1", new { Email = req.Email.ToLowerInvariant() });
 
                 if (user == null || user.PasswordHash == null || !BCrypt.Net.BCrypt.Verify(req.Password, user.PasswordHash))
                     return Results.Unauthorized();
@@ -166,7 +166,7 @@ var token = jwt.GenerateAccessToken(user);
                     return Results.Unauthorized();
 
                 var user = await conn.QuerySingleOrDefaultAsync<User>(
-                    "SELECT id, email, google_id, role, full_name, avatar_url, is_active, is_admin, approval_status, created_at, updated_at FROM users WHERE id = @Id AND is_active = 1", new { Id = tokenRecord.UserId });
+                    "SELECT id AS Id, email AS Email, google_id AS GoogleId, role AS Role, full_name AS FullName, avatar_url AS AvatarUrl, is_active AS IsActive, is_admin AS IsAdmin, approval_status AS ApprovalStatus FROM users WHERE id = @Id AND is_active = 1", new { Id = tokenRecord.UserId });
                 
                 if (user == null) return Results.Unauthorized();
 
@@ -219,6 +219,18 @@ var token = jwt.GenerateAccessToken(user);
                 });
             });
 
+            group.MapPost("/logout", async (HttpContext ctx, [FromServices] DbConnectionFactory db) => 
+            {
+                var inputToken = ctx.Request.Cookies["refresh_token"];
+                if (!string.IsNullOrEmpty(inputToken))
+                {
+                    using var conn = db.CreateConnection();
+                    await conn.ExecuteAsync("UPDATE refresh_tokens SET is_revoked = 1 WHERE token = @Token", new { Token = inputToken });
+                }
+                ctx.Response.Cookies.Delete("refresh_token");
+                return Results.Ok(new { message = "Çıkış yapıldı" });
+            });
+
             group.MapPost("/google", async (
                 [FromBody] GoogleLoginRequest req,
                 [FromServices] DbConnectionFactory db,
@@ -234,7 +246,7 @@ var token = jwt.GenerateAccessToken(user);
 
                 using var conn = db.CreateConnection();
                 var user = await conn.QuerySingleOrDefaultAsync<User>(
-                    "SELECT id, email, google_id, role, full_name, avatar_url, is_active, is_admin, approval_status, created_at, updated_at FROM users WHERE email = @Email", new { Email = email });
+                    "SELECT id AS Id, email AS Email, google_id AS GoogleId, role AS Role, full_name AS FullName, avatar_url AS AvatarUrl, is_active AS IsActive, is_admin AS IsAdmin, approval_status AS ApprovalStatus, created_at AS CreatedAt, updated_at AS UpdatedAt FROM users WHERE email = @Email", new { Email = email });
 
                 if (user == null)
                 {
