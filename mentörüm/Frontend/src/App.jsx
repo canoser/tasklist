@@ -65,7 +65,7 @@ function App() {
       try {
         // App ilk açıldığında cookie'den refresh token ile oturum açmayı dene
         if (!user) {
-          const response = await apiClient.post('/auth/refresh');
+          const response = await apiClient.post('/auth/refresh', {});
           // apiClient.js response interceptor'ı içindeki veriyi döndürüyor
           const data = response.data || response; // API yanıt formatına göre
           setAuth(data.user, data.accessToken);
@@ -123,6 +123,7 @@ function App() {
           <Route path="programs/:programId/groups" element={<CoachGroupsPage />} />
           <Route path="programs/:programId/schedule" element={<WeeklySchedulePage />} />
           <Route path="programs/:programId/settings" element={<CoachProgramSettingsPage />} />
+          <Route path="admin" element={<PrivateRoute requireAdmin><AdminPanelPage /></PrivateRoute>} />
         </Route>
 
         {/* Öğrenci Rotaları */}
@@ -170,9 +171,6 @@ function App() {
           <Route path="schedule" element={<TeacherSchedulePage />} />
           <Route path="profile" element={<TeacherProfilePage />} />
         </Route>
-
-        {/* Süper Yönetici */}
-        <Route path="/admin" element={<PrivateRoute requireAdmin><AdminPanelPage /></PrivateRoute>} />
 
         {/* Ana sayfa yönlendirmesi */}
         <Route path="/" element={<Navigate to="/login" replace />} />

@@ -1,7 +1,7 @@
 // Mentörüm PWA Service Worker
 // Güvenlik kuralı: /api/ altındaki kimlikli yanıtlar ASLA cache'lenmez (çıkışta veri sızmasın).
 
-const CACHE_NAME = 'mentorum-v1';
+const CACHE_NAME = 'mentorum-v2';
 const APP_SHELL = ['/', '/index.html', '/favicon.svg', '/icons.svg'];
 
 self.addEventListener('install', (event) => {
@@ -39,9 +39,14 @@ self.addEventListener('fetch', (event) => {
   // Statik varlıklar: cache-first + arka planda tazele.
   event.respondWith(
     caches.match(request).then((cached) => {
-      const fetchPromise = fetch(request).then((response) => {
-        if (response && response.ok) {
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, response.clone()));
+const fetchPromise = fetch(request).then((response) => {
+        if (response && response.status === 200) {
+          try {
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, responseToCache)).catch(() => {});
+          } catch (e) {
+            // Yarış durumu veya reklam engelleyici kaynaklı clone hatalarını yoksay
+          }
         }
         return response;
       }).catch((err) => {
