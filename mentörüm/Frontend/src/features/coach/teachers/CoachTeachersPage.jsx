@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useTeachers, useDeactivateTeacher } from '../coachSchoolApi';
 import { useSendInvite } from '../coachApi';
 import Button from '../../../components/common/Button/Button';
@@ -9,6 +9,7 @@ import styles from './CoachTeachersPage.module.css';
 
 const CoachTeachersPage = () => {
   const { programId } = useParams();
+  const navigate = useNavigate();
   const { data: teachers, isLoading } = useTeachers(programId);
   const deactivateTeacher = useDeactivateTeacher();
   const sendInvite = useSendInvite();
@@ -39,14 +40,14 @@ const CoachTeachersPage = () => {
       <div className={styles.list}>
         {isLoading && <p>Yükleniyor...</p>}
         {teachers?.map((t) => (
-          <Card key={t.id} className={styles.item} padding="md">
+          <Card key={t.id} className={styles.item} padding="md" interactive onClick={() => navigate(`/coach/programs/${programId}/teachers/${t.id}`)}>
             <div className={styles.itemHeader}>
               <strong>{t.fullName}</strong>
               <span className={t.isActive ? styles.active : styles.inactive}>{t.isActive ? 'Aktif' : 'Pasif'}</span>
             </div>
             <div className={styles.email}>{t.email}</div>
             {t.isActive === 1 && (
-              <Button size="sm" variant="outline" onClick={() => deactivateTeacher.mutateAsync({ programId, teacherId: t.id })}>
+              <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); deactivateTeacher.mutateAsync({ programId, teacherId: t.id }); }}>
                 Pasife Al
               </Button>
             )}

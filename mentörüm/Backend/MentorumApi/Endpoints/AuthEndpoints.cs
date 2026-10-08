@@ -170,6 +170,11 @@ var token = jwt.GenerateAccessToken(user);
                 
                 if (user == null) return Results.Unauthorized();
 
+                if (user.ApprovalStatus == "PENDING")
+                    return Results.Json(new { error = "Onay bekleniyor.", code = "PENDING_APPROVAL" }, statusCode: 403);
+                if (user.ApprovalStatus == "REJECTED")
+                    return Results.Json(new { error = "Başvurunuz reddedildi.", code = "COACH_REJECTED" }, statusCode: 403);
+
                 var newAccessToken = jwt.GenerateAccessToken(user);
                 var newRefreshToken = jwt.GenerateRefreshToken();
 
@@ -233,22 +238,22 @@ var token = jwt.GenerateAccessToken(user);
 
                 if (user == null)
                 {
-                    // Öğretmen daveti var mı? (Google ile öğretmen kaydı)
-                    var teacherInvite = await conn.QuerySingleOrDefaultAsync<InviteQueryModel>(
-                        "SELECT id AS Id, related_id AS RelatedId FROM invite_tokens WHERE email = @Email AND role = 'Teacher' AND is_used = 0 AND expires_at > NOW() LIMIT 1",
+                    // Geçerli davet var mı? (Google ile tüm roller: Student/Parent/Teacher/Coach)
+                    var validInvite = await conn.QuerySingleOrDefaultAsync<InviteQueryModel>(
+                        "SELECT id AS Id, role AS Role, related_id AS RelatedId FROM invite_tokens WHERE email = @Email AND is_used = 0 AND expires_at > NOW() LIMIT 1",
                         new { Email = email });
 
-                    // Yeni google kullanıcısı (davet varsa Teacher, yoksa Koç)
+                    // Yeni google kullanıcısı (davet varsa davetteki rol, yoksa Koç)
                     user = new User
                     {
                         Id = Guid.NewGuid(),
                         Email = email,
                         GoogleId = payload.Subject,
-                        Role = teacherInvite != null && teacherInvite.RelatedId != null ? "Teacher" : "Coach",
+                        Role = validInvite?.Role ?? "Coach",
                         FullName = payload.Name ?? "Google User",
                         AvatarUrl = payload.Picture,
                         IsAdmin = isAdmin,
-                        ApprovalStatus = (isAdmin || (teacherInvite != null && teacherInvite.RelatedId != null)) ? "APPROVED" : "PENDING",
+                        ApprovalStatus = (isAdmin || validInvite != null) ? "APPROVED" : "PENDING",
                         CreatedAt = DateTime.UtcNow,
                         UpdatedAt = DateTime.UtcNow
                     };
@@ -262,19 +267,52 @@ var token = jwt.GenerateAccessToken(user);
                             VALUES (@Id, @Email, @GoogleId, @Role, @FullName, @AvatarUrl, @IsAdmin, @ApprovalStatus, @CreatedAt, @UpdatedAt)", 
                             user, tx);
                         
-                        if (teacherInvite != null && teacherInvite.RelatedId != null)
+                        if (validInvite != null)
                         {
-                            await conn.ExecuteAsync(@"
-                                INSERT INTO teachers (id, program_id)
-                                VALUES (@Id, @ProgramId)",
-                                new { Id = user.Id, ProgramId = teacherInvite.RelatedId }, tx);
+                            if (user.Role == "Student")
+                            {
+                                await conn.ExecuteAsync(@"
+                                    INSERT INTO students (id, program_id, is_active)
+                                    VALUES (@Id, @ProgramId, 1)",
+                                    new { Id = user.Id, ProgramId = validInvite.RelatedId }, tx);
+                            }
+                            else if (user.Role == "Parent")
+                            {
+                                await conn.ExecuteAsync("INSERT INTO parents (id) VALUES (@Id)", new { Id = user.Id }, tx);
+                                if (validInvite.RelatedId != null)
+                                {
+                                    await conn.ExecuteAsync(@"
+                                        INSERT INTO student_parents (id, student_id, parent_id, parent_email, is_accepted)
+                                        VALUES (gen_random_uuid(), @StudentId, @ParentId, @ParentEmail, 1)",
+                                        new { StudentId = validInvite.RelatedId, ParentId = user.Id, ParentEmail = user.Email }, tx);
+                                }
+                            }
+                            else if (user.Role == "Teacher")
+                            {
+                                await conn.ExecuteAsync(@"
+                                    INSERT INTO teachers (id, program_id, is_active)
+                                    VALUES (@Id, @ProgramId, 1)",
+                                    new { Id = user.Id, ProgramId = validInvite.RelatedId }, tx);
 
-                            await conn.ExecuteAsync(@"
-                                INSERT INTO program_teachers (id, program_id, teacher_id)
-                                VALUES (gen_random_uuid(), @ProgramId, @Id)",
-                                new { ProgramId = teacherInvite.RelatedId, Id = user.Id }, tx);
+                                await conn.ExecuteAsync(@"
+                                    INSERT INTO program_teachers (id, program_id, teacher_id)
+                                    VALUES (gen_random_uuid(), @ProgramId, @Id)",
+                                    new { ProgramId = validInvite.RelatedId, Id = user.Id }, tx);
+                            }
+                            else if (user.Role == "Coach")
+                            {
+                                await conn.ExecuteAsync(@"
+                                    INSERT INTO coaches (id, plan_type, approval_status, max_programs)
+                                    VALUES (@Id, 'free', 'APPROVED', 0)",
+                                    new { Id = user.Id }, tx);
 
-                            var inviteClaimed = await conn.ExecuteAsync("UPDATE invite_tokens SET is_used = 1 WHERE id = @Id AND is_used = 0", new { Id = teacherInvite.Id }, tx);
+                                await conn.ExecuteAsync(@"
+                                    INSERT INTO program_coaches (id, program_id, coach_id, role)
+                                    VALUES (gen_random_uuid(), @ProgramId, @CoachId, 'YARDIMCI')",
+                                    new { ProgramId = validInvite.RelatedId, CoachId = user.Id }, tx);
+                            }
+
+                            var inviteClaimed = await conn.ExecuteAsync("UPDATE invite_tokens SET is_used = 1 WHERE id = @Id AND is_used = 0", new { Id = validInvite.Id }, tx);
                             if (inviteClaimed == 0) { tx.Rollback(); return Results.Conflict(new { error = "Davet zaten kullanıldı." }); }
                         }
                         else
@@ -382,6 +420,22 @@ var token = jwt.GenerateAccessToken(user);
                 await conn.ExecuteAsync("UPDATE password_reset_tokens SET is_used = TRUE WHERE token = @Token", new { Token = req.Token });
 
                 return Results.Ok(new { message = "Şifreniz güncellendi. Giriş yapabilirsiniz." });
+            });
+
+            // --- Kimlik ucu (tüm roller) — koç profili vb. (Aşama 5) ---
+            var meGroup = app.MapGroup("/api/v1/me").RequireAuthorization();
+            meGroup.MapGet("/", async ([FromServices] DbConnectionFactory db, HttpContext ctx) =>
+            {
+                var idStr = ctx.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(idStr, out var id)) return Results.Unauthorized();
+
+                using var conn = db.CreateConnection();
+                var meDto = await conn.QuerySingleOrDefaultAsync<UserDto>(@"
+                    SELECT id AS Id, email AS Email, role AS Role, full_name AS FullName, avatar_url AS AvatarUrl, is_admin AS IsAdmin
+                    FROM users WHERE id = @Id AND is_active = 1",
+                    new { Id = id });
+
+                return meDto == null ? Results.Unauthorized() : Results.Ok(meDto);
             });
 
         }

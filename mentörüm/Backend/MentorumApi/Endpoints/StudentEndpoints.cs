@@ -64,6 +64,53 @@ namespace MentorumApi.Endpoints
                 await repo.AddStudentNoteAsync(coachId, id, req.Content);
                 return Results.Ok(new { message = "Not başarıyla eklendi." });
             });
+
+            // --- Öğrenci kendi verisi (Aşama 1) ---
+            var self = app.MapGroup("/api/v1/student").RequireAuthorization("RequireStudentRole");
+
+            self.MapGet("/profile", async ([FromServices] StudentRepository repo, ClaimsPrincipal user) =>
+            {
+                var studentId = GetStudentId(user);
+                if (studentId == null) return Results.Unauthorized();
+                var profile = await repo.GetStudentProfileAsync(studentId.Value);
+                return profile == null ? Results.NotFound(new { error = "Profil bulunamadı." }) : Results.Ok(profile);
+            });
+
+            self.MapGet("/exams", async ([FromServices] StudentRepository repo, ClaimsPrincipal user) =>
+            {
+                var studentId = GetStudentId(user);
+                if (studentId == null) return Results.Unauthorized();
+                return Results.Ok(await repo.GetStudentExamsAsync(studentId.Value));
+            });
+
+            self.MapGet("/curriculum", async ([FromServices] CurriculumRepository repo, ClaimsPrincipal user) =>
+            {
+                var studentId = GetStudentId(user);
+                if (studentId == null) return Results.Unauthorized();
+                return Results.Ok(await repo.GetStudentCurriculumAsync(studentId.Value));
+            });
+
+            self.MapGet("/goal", async ([FromServices] StudentRepository repo, ClaimsPrincipal user) =>
+            {
+                var studentId = GetStudentId(user);
+                if (studentId == null) return Results.Unauthorized();
+                var goal = await repo.GetStudentGoalAsync(studentId.Value);
+                return goal == null ? Results.NotFound(new { error = "Hedef bulunamadı." }) : Results.Ok(goal);
+            });
+
+            self.MapPut("/goal", async ([FromBody] UpdateStudentGoalRequest req, [FromServices] StudentRepository repo, ClaimsPrincipal user) =>
+            {
+                var studentId = GetStudentId(user);
+                if (studentId == null) return Results.Unauthorized();
+                await repo.UpdateStudentGoalAsync(studentId.Value, req);
+                return Results.Ok(new { message = "Hedef güncellendi." });
+            });
+        }
+
+        private static Guid? GetStudentId(ClaimsPrincipal user)
+        {
+            var idStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            return Guid.TryParse(idStr, out var id) ? id : null;
         }
     }
 }

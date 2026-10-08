@@ -67,5 +67,67 @@ namespace MentorumApi.Data
                 
             return rowsAffected;
         }
+
+        // --- Öğrenci kendi verisi (Aşama 1) ---
+        public async Task<StudentProfileDto?> GetStudentProfileAsync(Guid studentId)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            var profile = await connection.QuerySingleOrDefaultAsync<StudentProfileDto>(@"
+                SELECT u.id, u.full_name AS FullName, u.email, u.avatar_url AS AvatarUrl,
+                       s.grade, s.track, s.target_university AS TargetUniversity,
+                       s.target_department AS TargetDepartment, s.target_score AS TargetScore,
+                       s.coaching_start_date AS CoachingStartDate
+                FROM users u
+                JOIN students s ON u.id = s.id
+                WHERE u.id = @StudentId AND u.is_active = 1",
+                new { StudentId = studentId });
+
+            if (profile != null)
+            {
+                var parents = await connection.QueryAsync<StudentParentInfoDto>(@"
+                    SELECT sp.parent_id AS ParentId, pu.full_name AS ParentName, sp.relation AS Relation
+                    FROM student_parents sp
+                    JOIN users pu ON pu.id = sp.parent_id
+                    WHERE sp.student_id = @StudentId AND sp.is_accepted = 1 AND pu.is_active = 1",
+                    new { StudentId = studentId });
+                profile.Parents = parents.ToList();
+            }
+
+            return profile;
+        }
+
+        public async Task<IEnumerable<StudentExamDto>> GetStudentExamsAsync(Guid studentId)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            return await connection.QueryAsync<StudentExamDto>(@"
+                SELECT id, exam_date AS ExamDate, exam_type AS ExamType, exam_name AS ExamName, total_net AS TotalNet
+                FROM exam_results
+                WHERE student_id = @StudentId
+                ORDER BY exam_date DESC",
+                new { StudentId = studentId });
+        }
+
+        public async Task<StudentGoalDto?> GetStudentGoalAsync(Guid studentId)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            return await connection.QuerySingleOrDefaultAsync<StudentGoalDto>(@"
+                SELECT target_university AS TargetUniversity, target_department AS TargetDepartment, target_score AS TargetScore
+                FROM students
+                WHERE id = @StudentId",
+                new { StudentId = studentId });
+        }
+
+        public async Task<int> UpdateStudentGoalAsync(Guid studentId, UpdateStudentGoalRequest req)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            return await connection.ExecuteAsync(@"
+                UPDATE students
+                SET target_university = @TargetUniversity,
+                    target_department = @TargetDepartment,
+                    target_score = @TargetScore,
+                    updated_at = @Now
+                WHERE id = @StudentId",
+                new { StudentId = studentId, req.TargetUniversity, req.TargetDepartment, req.TargetScore, Now = DateTime.UtcNow });
+        }
     }
 }

@@ -16,8 +16,8 @@
 | Mobil Uyumluluk | ✅ Düzeltildi | 100dvh uygulandı (Aşama 17) |
 | Altyapı (Fly, Neon) | ✅ Kuruldu | Aşama 19 & 20 tamamlandı |
 | CI/CD | ✅ Kuruldu | deploy-mentorum.yml (Aşama 21) |
-| Test | ✅ Aşama 23 tamamlandı | Smoke test + bug fix + canlı doğrulama + 4/4 test geçiyor |
-| Capacitor (Native) | ✅ Android hazır | Paketler + android platform eklendi; emülatör/mağaza ertelendi (web-only) |
+| Test | 🔄 Aşama 23 yapılıyor | Canlı Ortam Smoke Testi |
+| Capacitor (Native) | Faz 2 | Android/iOS paketleme henüz yok |
 
 ---
 
@@ -189,26 +189,26 @@
 ## Aşama 23: Smoke Test (Canlı Ortam Doğrulama)
 
 ### 23.1 Auth Akışları
-- [x] POST /auth/register — Koç kaydı → JWT alındı mı? → ✅ 200, Coach rolü, JWT 409 char
-- [x] POST /auth/login → ✅ **BUG-1 ÇÖZÜLDÜ** (Dapper snake_case eşlemesi eklendi)
-- [ ] Token refresh çalışıyor mu? → ⚠️ test edilmedi (httpOnly cookie; tarayıcı gerekli)
-- [x] Google OAuth → ✅ google_id eksikliği çözüldü (mevcut e-posta eşleşirse google_id kaydediliyor)
+- [ ] POST /auth/register — Koç kaydı → JWT alındı mı?
+- [ ] POST /auth/login → Dashboard açılıyor mu?
+- [ ] Token refresh çalışıyor mu?
+- [ ] Google OAuth callback URL doğru mu?
 
 ### 23.2 Kritik İş Akışları (Ödev atama kodları f6a85cd ile düzeltildi, hazır test edilecek)
-- [x] Öğrenci ekle → davet kodu/linki → ✅ send OK (code+link), ✅ **BUG-2 ÇÖZÜLDÜ** (RelatedId Guid yapıldı, accept akışındaki hata çözüldü)
-- [ ] Ödev ata → Öğrenci panelinde görünüyor mu? → ⚠️ test edilemedi (BUG-2 öğrenci oluşturmuyor)
-- [ ] Tamamladım → Koça bildirim gidiyor mu? → ⚠️ test edilemedi
-- [ ] Veli davet linki → Aktivasyon → Panel açılıyor mu? → ⚠️ test edilmedi (BUG-2 engelliyor)
-- [ ] Takvim → Ödevler doğru tarihlerde görünüyor mu? → ⚠️ test edilmedi (tarayıcı gerekli)
+- [ ] Öğrenci ekle → Veli davet kodu/linki çalışıyor mu?
+- [ ] Ödev ata → Öğrenci panelinde görünüyor mu?
+- [ ] Tamamladım → Koça bildirim gidiyor mu?
+- [ ] Veli davet linki → Aktivasyon → Panel açılıyor mu?
+- [ ] Takvim → Ödevler doğru tarihlerde görünüyor mu?
 
 ### 23.3 Güvenlik (IDOR) Kontrolleri
-- [x] Öğrenci token'ı → başka öğrencinin ödevi → ✅ unauthenticated 401 (öğrenci token üretilemedi, kısmi)
-- [ ] Veli token'ı → koç notları → 403 mü? → ⚠️ test edilmedi (veli oluşturulamadı)
-- [x] Koç token'ı → başka koçun öğrencisi → ✅ 400 "Öğrenci bulunamadı veya size ait değil." (IDOR koruması çalışıyor)
+- [ ] Öğrenci token'ı → başka öğrencinin ödevi → 403 mü?
+- [ ] Veli token'ı → koç notları → 403 mü?
+- [ ] Koç token'ı → başka koçun öğrencisi → 404 mü?
 
 ### 23.4 Bildirim ve Cron
-- [ ] Fly logs'ta OverdueHomeworkJob log'u görünüyor mu? → ⚠️ flyctl erişimi yok (manuel)
-- [ ] due_date geçmiş ödev → cron sonrası OVERDUE oluyor mu? → ⚠️ test edilmedi (kod `/homework/me`'de anlık OVERDUE dönüyor)
+- [ ] Fly logs'ta OverdueHomeworkJob log'u görünüyor mu?
+- [ ] due_date geçmiş ödev → cron sonrası OVERDUE oluyor mu?
 
 ---
 
@@ -229,71 +229,51 @@
 
 ---
 
-## Aşama 25: Android Uygulaması (Capacitor) — ✅ HAZIR (web-only)
-
-> 📌 **Karar (5 Ekim 2026):** Capacitor paketleri kuruldu + Android platformu eklendi + build/sync çalışıyor. **Emülatör testi, safe-area kontrolü ve Play Store yayını ERTELENDİ** — şimdilik yalnızca web'den çalışılıyor.
+## Aşama 25: Android Uygulaması (Capacitor)
 
 **Önkoşul:** Aşama 17 ve 18 tamamlanmış olmalı.
 
-- [x] npm install @capacitor/cli @capacitor/core @capacitor/android
-- [x] npx cap add android
-- [x] platform.js — `Capacitor.isNativePlatform()` ile native tespiti eklendi (baseURL: `.env.production` → prod sunucu)
-- [x] npm run build && npx cap sync android → ✅ build + sync başarılı (emülatör açılmadı — web-only)
-- [ ] ~~Android Studio emülatöründe giriş, ödev listesi, takvim test et~~ → ATLANDI (yalnızca web)
-- [ ] ~~S24 ve Pixel 8'de safe area kontrol et~~ → ATLANDI
-- [ ] ~~Google Play: App ID, Signing Key, build.gradle ayarları~~ → ATLANDI (henüz yayınlanmayacak)
+- [ ] npm install @capacitor/cli @capacitor/core @capacitor/android
+- [ ] npx cap add android
+- [ ] platform.js'te native URL kontrolü — Capacitor ortamında baseURL prod sunucu olmalı
+- [ ] npm run build && npx cap sync android && npx cap open android
+- [ ] Android Studio emülatöründe giriş, ödev listesi, takvim test et
+- [ ] S24 ve Pixel 8'de safe area kontrol et
+- [ ] Google Play: App ID, Signing Key, build.gradle ayarları
 
 ---
 
-## Aşama 26: iOS Uygulaması (Faz 3 — Mac Gerektirir) — ⏸️ ERTELENDİ
+## Aşama 26: iOS Uygulaması (Faz 3 — Mac Gerektirir)
 
-> 📌 **Karar (5 Ekim 2026):** iOS uygulaması **yayınlanmayacak** (Mac ortamı gerektirir). Web-only devam edilecek.
-
-- [ ] ~~Mac ortamında npx cap add ios~~ → ATLANDI (yayınlanmayacak)
-- [ ] ~~Xcode'da build + Simulator testi~~ → ATLANDI
-- [ ] ~~Apple Developer Account gerekli~~ → ATLANDI
+- [ ] Mac ortamında npx cap add ios
+- [ ] Xcode'da build + Simulator testi
+- [ ] Apple Developer Account gerekli
 
 ---
 
 ## Güvenlik Kontrol Listesi (Canlıya Almadan Önce Zorunlu)
 
-| Kontrol                               | Durum                             |
-| ---------------------------------------| -----------------------------------|
-| .env dosyası .gitignore'da            | Var                               |
-| git-secrets kurulu                    | Kurulacak (ALTYAPI_KURULUM.md §7) |
-| Rate limiting aktif                   | Kod var, test edilmedi            |
-| JWT access token süresi 15dk          | Kodda var                         |
-| httpOnly cookie refresh token         | Kodda var                         |
-| Tüm IDOR kontrolleri Backend'de       | BaseRepository var                |
-| Coach Notes ayrı endpoint'te          | Var                               |
+| Kontrol                                           | Durum                             |
+| ---------------------------------------------------| -----------------------------------|
+| .env dosyası .gitignore'da                        | Var                               |
+| git-secrets kurulu                                | Kurulacak (ALTYAPI_KURULUM.md §7) |
+| Rate limiting aktif                               | Kod var, test edilmedi            |
+| JWT access token süresi 15dk                      | Kodda var                         |
+| httpOnly cookie refresh token                     | Kodda var                         |
+| Tüm IDOR kontrolleri Backend'de                   | BaseRepository var                |
+| Coach Notes ayrı endpoint'te                      | Var                               |
 | Davet kodu (12-char entropi) + 48h + tek kullanım | Var                               |
-| HTTPS zorunlu (Fly force_https)       | fly.toml'a eklenecek              |
-| SQL Injection (Dapper parametrik)     | Var                               |
-| XSS (React escape)                    | Var                               |
+| HTTPS zorunlu (Fly force_https)                   | fly.toml'a eklenecek              |
+| SQL Injection (Dapper parametrik)                 | Var                               |
+| XSS (React escape)                                | Var                               |
 
 ---
 
 ## Sıradaki Görev
 
-**✅ V4 TAMAMLANDI (5 Ekim 2026) — Smoke testi yapıldı, 2 bug bulunup düzeltildi, canlı doğrulandı.**
-
-### 🐞 Kritik Bug Raporu
-1. **BUG-1 — E-posta+şifre girişi çalışmıyor (401).** Login `SELECT * FROM users` → Dapper, `password_hash` → `PasswordHash` eşlemesini yapamıyor (projede `DefaultTypeMap.MatchNamesWithUnderscores = true` YOK). Sonuç: `PasswordHash == null` → her giriş 401. Google giriş de etkilenir (`is_active` → `IsActive`=0 → 401). **Çözüm:** `Program.cs`'e `Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;` ekle VEYA login sorgusunu açık alias'la yaz (`password_hash AS PasswordHash`, `is_active AS IsActive`).
-2. **BUG-2 — Davet kabulü 500.** `POST /invites/{code}/accept` → 500. Muhtemel sebep: `InviteQueryModel.RelatedId` (`string?`) → `INSERT INTO students (coach_id UUID)`'a string geçince UUID tip uyuşmazlığı. **Çözüm:** `RelatedId`'yi `Guid?` yap.
-
-### ✅ Doğrulandı
-- Kayıt (`/auth/register`) → 200, Coach, JWT ✓ · Davet gönderme (`/invites/send`) → code+link ✓
-- IDOR: unauthenticated → 401 ✓ · koç başka öğrenci ID → 400 "size ait değil" ✓
-- Backend `/health` → 200, DB bağlı ✓ · Frontend yükleniyor ✓
-
-### ⚠️ Test edilemedi (engel/manüel)
-- Token refresh + Google OAuth (tarayıcı) · Ödev ata/tamamla/silinmesin (BUG-2 engelliyor) · Veli akışı + takvim + cron/OVERDUE (Fly log erişimi yok)
-
-> **Sonuç:** ✅ BUG-1 + BUG-2 DÜZELTİLDİ (commit `1bcbae3`), canlıda doğrulandı (login 200, accept 200). Entegrasyon testleri eklendi ve test-setup düzeltmeleriyle (`d5b2b60`) 4/4 geçiyor. V4 tamamlandı — sıradaki iş **V5 (Okul/Dershane Modeli, `TASK_LIST_V5.md`)**.
-
-> **Test-setup düzeltmeleri (DeepSeek/Cline):** `.env` guard (Program.cs — testin Testcontainers `DATABASE_URL`'ini ezmemesi için), JWT env değişkenlerinin `IntegrationTestFixture`'a taşınması, `TestAssemblyConfig.cs` ile test paralelliğinin kapatılması.
+**Kalan tek iş: Aşama 23 — Canlı UI Smoke Testi (tarayıcı).**
 > Tamamlananlar (2 Ekim 2026): Aşama 17-22 + Aşama 24 (e-posta KALDIRILDI → davet linki/kodu yeterli) + ödev atama düzeltmesi (`f6a85cd`) + AuthEndpoints `conn.Open()` düzeltmesi (`6fbedb6`). Migration 004+005 canlıda uygulandı ve doğrulandı. GitHub ↔ Fly senkron, çalışma ağacı temiz.
 
 **Aşama 23 durumu:**
 - ✅ C2 (Seviye→Ders→Konu) — API bazında doğrulandı (levels TEXT, 10 ders, konular canlıda).
-- ✅ C1 (kayıt/giriş), C3 (davet kodu/linki), C4 (IDOR) → API bazında doğrulandı; C2 (ödev ata → tamamla → **silinmesin**) tarayıcıda bekliyor (V5 ile birlikte).
+- 🔄 Bekleyen (tarayıcı testi): C1 (kayıt/giriş), C2 (ödev ata → tamamla → **silinmesin**), C3 (davet kodu/linki + WhatsApp/kopyala), C4 (IDOR güvenlik).

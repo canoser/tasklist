@@ -1,4 +1,5 @@
 using MentorumApi.Data;
+using MentorumApi.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -21,7 +22,7 @@ namespace MentorumApi.Endpoints
             {
                 var coachId = GetCoachId(user);
                 if (coachId == null) return Results.Unauthorized();
-                var t = await repo.GetTeacherAsync(programId, teacherId, coachId.Value);
+                var t = await repo.GetTeacherDetailAsync(programId, teacherId, coachId.Value);
                 return t == null ? Results.NotFound(new { error = "Öğretmen bulunamadı." }) : Results.Ok(t);
             });
 
@@ -76,6 +77,41 @@ namespace MentorumApi.Endpoints
                 if (!access.CanViewExams) return Results.Forbid();
                 return Results.Ok(await repo.GetTeacherCourseExamsAsync(courseId));
             });
+
+            // --- Öğretmen kendi profili + oluşturma yetkileri (Aşama 3 & 5) ---
+            me.MapGet("/me", async ([FromServices] TeacherRepository repo, ClaimsPrincipal user) =>
+            {
+                var teacherId = GetCoachId(user);
+                if (teacherId == null) return Results.Unauthorized();
+                var profile = await repo.GetTeacherProfileAsync(teacherId.Value);
+                return profile == null ? Results.NotFound(new { error = "Profil bulunamadı." }) : Results.Ok(profile);
+            });
+
+            me.MapPost("/courses/{courseId:guid}/homework", async (Guid courseId, [FromBody] TeacherCreateHomeworkRequest req, [FromServices] SchoolAccessRepository repo, ClaimsPrincipal user) =>
+            {
+                var teacherId = GetCoachId(user);
+                if (teacherId == null) return Results.Unauthorized();
+                try
+                {
+                    var id = await repo.CreateTeacherHomeworkAsync(courseId, teacherId.Value, req);
+                    return Results.Ok(new { id });
+                }
+                catch (UnauthorizedAccessException) { return Results.NotFound(new { error = "Ders bulunamadı veya öğrenci bu derste değil." }); }
+                catch (InvalidOperationException) { return Results.Forbid(); }
+            }).AddEndpointFilter<MentorumApi.Filters.IdempotencyFilter>();
+
+            me.MapPost("/courses/{courseId:guid}/exams", async (Guid courseId, [FromBody] TeacherCreateExamRequest req, [FromServices] SchoolAccessRepository repo, ClaimsPrincipal user) =>
+            {
+                var teacherId = GetCoachId(user);
+                if (teacherId == null) return Results.Unauthorized();
+                try
+                {
+                    var id = await repo.CreateTeacherExamAsync(courseId, teacherId.Value, req);
+                    return Results.Ok(new { id });
+                }
+                catch (UnauthorizedAccessException) { return Results.NotFound(new { error = "Ders bulunamadı veya öğrenci bu derste değil." }); }
+                catch (InvalidOperationException) { return Results.Forbid(); }
+            }).AddEndpointFilter<MentorumApi.Filters.IdempotencyFilter>();
         }
 
         private static Guid? GetCoachId(ClaimsPrincipal user)

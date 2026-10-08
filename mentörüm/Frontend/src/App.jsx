@@ -33,6 +33,9 @@ import ParentSchedulePage from './features/parent/schedule/ParentSchedulePage';
 import TeacherCoursesPage from './features/teacher/courses/TeacherCoursesPage';
 import TeacherSchedulePage from './features/teacher/schedule/TeacherSchedulePage';
 import TeacherProfilePage from './features/teacher/profile/TeacherProfilePage';
+import StudentProfilePage from './features/student/profile/StudentProfilePage';
+import CoachTeacherDetailPage from './features/coach/teachers/CoachTeacherDetailPage';
+import CoachProfilePage from './features/coach/profile/CoachProfilePage';
 
 // Korumalı Route Bileşeni
 const PrivateRoute = ({ children, allowedRoles, requireAdmin }) => {
@@ -111,8 +114,10 @@ function App() {
           <Route path="students/:id" element={<CoachStudentDetail />} />
           <Route path="calendar" element={<CalendarPage />} />
           <Route path="reports" element={<CoachReports />} />
+          <Route path="profile" element={<CoachProfilePage />} />
           <Route path="programs" element={<CoachProgramsPage />} />
           <Route path="programs/:programId/teachers" element={<CoachTeachersPage />} />
+          <Route path="programs/:programId/teachers/:teacherId" element={<CoachTeacherDetailPage />} />
           <Route path="programs/:programId/courses" element={<CoachCoursesPage />} />
           <Route path="programs/:programId/courses/:courseId" element={<CoachCourseDetailPage />} />
           <Route path="programs/:programId/groups" element={<CoachGroupsPage />} />
@@ -134,7 +139,7 @@ function App() {
           <Route path="calendar" element={<ComingSoon title="Ders Takvimi" icon="📅" />} />
           <Route path="schedule" element={<StudentSchedulePage />} />
           <Route path="courses" element={<StudentCoursesPage />} />
-          <Route path="profile" element={<ComingSoon title="Kullanıcı Profili" icon="👤" />} />
+          <Route path="profile" element={<StudentProfilePage />} />
         </Route>
 
         {/* Veli Rotaları */}

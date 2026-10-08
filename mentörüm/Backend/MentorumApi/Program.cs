@@ -127,7 +127,8 @@ try
             Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "006_SchoolModel.sql"),
             Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "007_AdminAndPrograms.sql"),
             Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "008_ContractCoachId.sql"),
-            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "009_AdminAndApproval.sql")
+            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "009_AdminAndApproval.sql"),
+            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "010_ExamCourseId.sql")
         };
         foreach(var path in scriptPaths)
         {

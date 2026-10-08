@@ -30,6 +30,17 @@ export const useDeactivateTeacher = () => {
   });
 };
 
+export const useTeacherDetail = (programId, teacherId) => useQuery({
+  queryKey: ['coach', 'program', programId, 'teacher', teacherId],
+  queryFn: async () => (await apiClient.get(`/programs/${programId}/teachers/${teacherId}`)) || null,
+  enabled: !!programId && !!teacherId,
+});
+
+export const useMe = () => useQuery({
+  queryKey: ['me'],
+  queryFn: async () => (await apiClient.get('/me')) || null,
+});
+
 // --- Dersler ---
 export const useCourses = (programId) => useQuery({
   queryKey: ['coach', 'program', programId, 'courses'],

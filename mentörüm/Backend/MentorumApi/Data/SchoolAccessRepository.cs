@@ -191,5 +191,68 @@ namespace MentorumApi.Data
                 ORDER BY c.name",
                 new { StudentId = studentId });
         }
+
+        // --- Öğretmen oluşturma yetkileri (Aşama 3) ---
+        public async Task<Guid> CreateTeacherHomeworkAsync(Guid courseId, Guid teacherId, TeacherCreateHomeworkRequest req)
+        {
+            var access = await GetCourseAccessAsync(courseId, teacherId);
+            if (access == null) throw new UnauthorizedAccessException("NOT_FOUND");
+            if (!access.CanManageHomework) throw new InvalidOperationException("FORBIDDEN");
+
+            var studentIds = await GetCourseStudentIdsAsync(courseId);
+            if (!studentIds.Contains(req.StudentId)) throw new UnauthorizedAccessException("STUDENT_NOT_IN_COURSE");
+
+            using var conn = _connectionFactory.CreateConnection();
+            var id = Guid.NewGuid();
+            await conn.ExecuteAsync(@"
+                INSERT INTO homework_assignments (id, subject_id, curriculum_topic_id, snapshot_title, snapshot_desc, snapshot_source, student_id, program_id, course_id, created_by, due_date, status, created_at, updated_at)
+                VALUES (@Id, @SubjectId, @CurriculumTopicId, @Title, @Description, @Source, @StudentId, @ProgramId, @CourseId, @CreatedBy, @DueDate, 'PENDING', @Now, @Now)",
+                new
+                {
+                    Id = id,
+                    req.SubjectId,
+                    req.CurriculumTopicId,
+                    req.Title,
+                    req.Description,
+                    Source = req.FreeTopic,
+                    req.StudentId,
+                    ProgramId = access.ProgramId,
+                    CourseId = courseId,
+                    CreatedBy = teacherId,
+                    req.DueDate,
+                    Now = DateTime.UtcNow
+                });
+            return id;
+        }
+
+        public async Task<Guid> CreateTeacherExamAsync(Guid courseId, Guid teacherId, TeacherCreateExamRequest req)
+        {
+            var access = await GetCourseAccessAsync(courseId, teacherId);
+            if (access == null) throw new UnauthorizedAccessException("NOT_FOUND");
+            if (!access.CanManageExams) throw new InvalidOperationException("FORBIDDEN");
+
+            var studentIds = await GetCourseStudentIdsAsync(courseId);
+            if (!studentIds.Contains(req.StudentId)) throw new UnauthorizedAccessException("STUDENT_NOT_IN_COURSE");
+
+            using var conn = _connectionFactory.CreateConnection();
+            var id = Guid.NewGuid();
+            await conn.ExecuteAsync(@"
+                INSERT INTO exam_results (id, student_id, program_id, course_id, created_by, exam_date, exam_type, exam_name, total_net, created_at)
+                VALUES (@Id, @StudentId, @ProgramId, @CourseId, @CreatedBy, @ExamDate, @ExamType, @ExamName, @TotalNet, @Now)",
+                new
+                {
+                    Id = id,
+                    req.StudentId,
+                    ProgramId = access.ProgramId,
+                    CourseId = courseId,
+                    CreatedBy = teacherId,
+                    req.ExamDate,
+                    req.ExamType,
+                    req.ExamName,
+                    req.TotalNet,
+                    Now = DateTime.UtcNow
+                });
+            return id;
+        }
     }
 }

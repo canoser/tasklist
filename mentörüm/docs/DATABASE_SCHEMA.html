@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentörüm App - Mimari ve Veritabanı Şeması</title>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ 
+            startOnLoad: true, 
+            theme: 'dark',
+            securityLevel: 'loose',
+            fontFamily: 'Inter, sans-serif'
+        });
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f111a;
+            --card-bg: #1a1d2d;
+            --accent: #3b82f6;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+        }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            margin: 0; 
+            padding: 40px 20px; 
+            line-height: 1.6;
+        }
+        .container { 
+            max-width: 1200px; 
+            margin: auto; 
+        }
+        h1 { 
+            color: #fff; 
+            font-size: 2.5rem; 
+            margin-bottom: 30px; 
+            text-align: center;
+            font-weight: 800;
+        }
+        h2 { 
+            color: var(--accent); 
+            font-size: 1.5rem; 
+            margin-bottom: 15px; 
+            border-bottom: 1px solid #334155;
+            padding-bottom: 10px;
+        }
+        .explanation { 
+            background: var(--card-bg); 
+            padding: 30px; 
+            border-radius: 12px; 
+            margin-bottom: 40px; 
+            border-left: 5px solid var(--accent);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .explanation p {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+        .explanation ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .explanation li {
+            background: #23273b;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+        .explanation li strong {
+            color: #60a5fa;
+            display: inline-block;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+        .mermaid-container { 
+            background: #ffffff; /* Mermaid dark tema için bazen beyaz/gri background kontrastı bozar, ama dark mode config ile ayarladık. Koyu gri yapalım. */
+            background: #1e2136;
+            padding: 30px; 
+            border-radius: 12px; 
+            overflow-x: auto;
+            text-align: center;
+            border: 1px solid #334155;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mentörüm - Mimari ve Veritabanı Şeması</h1>
+        
+        <div class="explanation">
+            <h2>Uygulama Nasıl Çalışır? (Sistem Mantığı)</h2>
+            <p><strong>Mentörüm</strong>, eğitim koçları, öğretmenler, öğrenciler ve velileri tek bir ekosistemde buluşturan çok-kiracılı (Multi-tenant) bir B2B2C eğitim planlama ve takip sistemidir.</p>
+            <ul>
+                <li><strong>🏢 Hiyerarşi ve Multi-Tenancy (Programlar):</strong> Sistemin en üst hiyerarşisi <code>coaching_programs</code> (Koçluk Kurumları/Programları) tablolarıdır. Uygulamadaki her öğrenci, öğretmen, ders ve ödev bir kuruma (program_id) bağlıdır. Bu sayede farklı kurumların verileri (IDOR güvenliğiyle) tamamen birbirinden izole edilir.</li>
+                <li><strong>👑 Koçlar (Yöneticiler):</strong> Kurumun sahipleridir. Sistemi yönetir, öğretmenleri davet eder (`program_teachers`), öğrencileri ekler, sınıflar/gruplar (`student_groups`) oluşturur ve haftalık takvimleri (`schedule_slots`) ayarlar.</li>
+                <li><strong>👨‍🏫 Öğretmenler:</strong> Yöneticinin kendilerini atadığı dersler (`courses`) üzerinden işlem yaparlar. Bu derslerdeki öğrencilere ödev (`homework_assignments`) verir, deneme/sınav (`exam_results`) notlarını girer ve yolladıkları ödevleri "Bekliyor/Tamamlandı" statüsünde kontrol ederler.</li>
+                <li><strong>👨‍🎓 Öğrenciler:</strong> Kendilerine atanan bireysel dersleri, üye oldukları grupların derslerini, ödevleri (teslim tarihleriyle) ve sınav sonuçlarını kendi panolarından şeffafça takip ederler. İlerlemelerini ve hedeflerini (`target_university`) görürler.</li>
+                <li><strong>👪 Veliler:</strong> Öğrencilerin veliye yolladığı güvenli davet linki (`invite_token`) ile sisteme katılırlar. Onay işlemi (`is_accepted=1`) bittiğinde sadece kendi çocuklarının gelişimini salt-okunur (read-only) şekilde izlerler.</li>
+            </ul>
+        </div>
+
+        <h2>Veritabanı ER (Entity-Relationship) Diyagramı</h2>
+        <div class="mermaid-container">
+            <div class="mermaid">
+                erDiagram
+                    users {
+                        uuid id PK
+                        string email
+                        string role
+                        string full_name
+                        boolean is_active
+                    }
+                    coaching_programs {
+                        uuid id PK
+                        string name
+                        uuid created_by FK
+                    }
+                    program_coaches {
+                        uuid program_id FK
+                        uuid coach_id FK
+                        string role
+                    }
+                    program_teachers {
+                        uuid program_id FK
+                        uuid teacher_id FK
+                    }
+                    students {
+                        uuid id PK
+                        uuid program_id FK
+                        int grade
+                        string target_university
+                    }
+                    parents {
+                        uuid id PK
+                    }
+                    student_parents {
+                        uuid student_id FK
+                        uuid parent_id FK
+                        boolean is_accepted
+                    }
+                    courses {
+                        uuid id PK
+                        uuid program_id FK
+                        uuid teacher_id FK
+                        string name
+                        string type
+                    }
+                    student_groups {
+                        uuid id PK
+                        uuid program_id FK
+                        string name
+                    }
+                    course_students {
+                        uuid course_id FK
+                        uuid student_id FK
+                    }
+                    course_groups {
+                        uuid course_id FK
+                        uuid group_id FK
+                    }
+                    student_group_members {
+                        uuid group_id FK
+                        uuid student_id FK
+                    }
+                    homework_assignments {
+                        uuid id PK
+                        uuid program_id FK
+                        uuid course_id FK
+                        uuid student_id FK
+                        string status
+                        date due_date
+                    }
+                    exam_results {
+                        uuid id PK
+                        uuid program_id FK
+                        uuid course_id FK
+                        uuid student_id FK
+                        float total_net
+                    }
+                    schedule_slots {
+                        uuid id PK
+                        uuid program_id FK
+                        time start_time
+                        time end_time
+                    }
+
+                    users ||--o| students : "extends"
+                    users ||--o| parents : "extends"
+                    
+                    coaching_programs ||--o{ program_coaches : "manages"
+                    coaching_programs ||--o{ program_teachers : "employs"
+                    coaching_programs ||--o{ students : "enrolls"
+                    coaching_programs ||--o{ courses : "offers"
+                    coaching_programs ||--o{ student_groups : "has"
+                    
+                    program_teachers ||--o{ courses : "teaches"
+                    
+                    courses ||--o{ course_students : "individual enrollment"
+                    students ||--o{ course_students : "attends"
+                    
+                    student_groups ||--o{ student_group_members : "contains"
+                    students ||--o{ student_group_members : "member of"
+                    
+                    courses ||--o{ course_groups : "group enrollment"
+                    student_groups ||--o{ course_groups : "attends"
+                    
+                    students ||--o{ homework_assignments : "has"
+                    courses ||--o{ homework_assignments : "generates"
+                    
+                    students ||--o{ exam_results : "takes"
+                    courses ||--o{ exam_results : "generates"
+                    
+                    parents ||--o{ student_parents : "guardian of"
+                    students ||--o{ student_parents : "child of"
+            </div>
+        </div>
+
+        <div class="footer">
+            Mentörüm App Veritabanı Mimarisi - Tüm modüller Multi-Tenant (Program ID) kısıtlamasına tabidir.
+        </div>
+    </div>
+</body>
+</html>

@@ -25,6 +25,7 @@ const CoachLayout = () => {
     { path: '/coach/students', label: 'Öğrenciler', icon: '👨‍🎓' },
     { path: '/coach/calendar', label: 'Takvim', icon: '📅' },
     { path: '/coach/reports', label: 'Raporlar', icon: '📈' },
+    { path: '/coach/profile', label: 'Profil', icon: '👤' },
     ...(user?.isAdmin ? [{ path: '/admin', label: 'Yönetim (Onaylar)', icon: '🛡️' }] : []),
   ];
 

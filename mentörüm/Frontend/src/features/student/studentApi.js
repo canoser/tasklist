@@ -56,3 +56,34 @@ export const useCompleteHomework = () => {
     },
   });
 };
+
+export const useStudentProfile = () => useQuery({
+  queryKey: ['student', 'profile'],
+  queryFn: async () => (await apiClient.get('/student/profile')) || null,
+});
+
+export const useStudentExams = () => useQuery({
+  queryKey: ['student', 'exams'],
+  queryFn: async () => (await apiClient.get('/student/exams')) || [],
+});
+
+export const useStudentCurriculum = () => useQuery({
+  queryKey: ['student', 'curriculum'],
+  queryFn: async () => (await apiClient.get('/student/curriculum')) || [],
+});
+
+export const useStudentGoal = () => useQuery({
+  queryKey: ['student', 'goal'],
+  queryFn: async () => (await apiClient.get('/student/goal')) || null,
+});
+
+export const useUpdateStudentGoal = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => apiClient.put('/student/goal', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student', 'goal'] });
+      queryClient.invalidateQueries({ queryKey: ['student', 'profile'] });
+    },
+  });
+};

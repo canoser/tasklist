@@ -9,3 +9,7 @@
 .tabs { display: flex; gap: var(--spacing-xs); margin: var(--spacing-sm) 0; flex-wrap: wrap; }
 .tab { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border-color, #e2e8f0); background: none; cursor: pointer; font-size: 0.8rem; }
 .tabActive { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+.actionsBar { margin: var(--spacing-sm) 0; }
+.form { display: flex; flex-direction: column; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm); }
+.select { padding: 8px; border: 1px solid var(--border-color, #e2e8f0); border-radius: 8px; font-size: 0.9rem; background: #fff; }
+.formActions { display: flex; gap: var(--spacing-xs); }

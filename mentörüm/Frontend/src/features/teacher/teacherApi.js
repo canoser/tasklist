@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/apiClient';
 
 export const useTeacherCourses = () => {
@@ -51,5 +51,31 @@ export const useTeacherSchedule = () => {
       const response = await apiClient.get('/teacher/schedule');
       return response || [];
     },
+  });
+};
+
+export const useTeacherProfile = () => {
+  return useQuery({
+    queryKey: ['teacher', 'me'],
+    queryFn: async () => {
+      const response = await apiClient.get('/teacher/me');
+      return response || null;
+    },
+  });
+};
+
+export const useCreateTeacherHomework = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ courseId, data }) => apiClient.post(`/teacher/courses/${courseId}/homework`, data),
+    onSuccess: (_, v) => queryClient.invalidateQueries({ queryKey: ['teacher', 'course', v.courseId] }),
+  });
+};
+
+export const useCreateTeacherExam = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ courseId, data }) => apiClient.post(`/teacher/courses/${courseId}/exams`, data),
+    onSuccess: (_, v) => queryClient.invalidateQueries({ queryKey: ['teacher', 'course', v.courseId] }),
   });
 };

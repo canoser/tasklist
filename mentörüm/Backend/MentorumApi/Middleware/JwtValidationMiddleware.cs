@@ -25,14 +25,28 @@ namespace MentorumApi.Middleware
                     // Cache mekanizması eklenebilir, şimdilik direkt db
                     using var connection = dbFactory.CreateConnection();
                     
-                    // Sadece active olanları kontrol et
-                    var isActive = await connection.QuerySingleOrDefaultAsync<int?>(
-                        "SELECT is_active FROM users WHERE id = @Id", new { Id = userId });
+                    // Aktiflik + onay durumunu tek sorguda kontrol et
+                    var status = await connection.QuerySingleOrDefaultAsync<UserAuthStatus>(
+                        "SELECT is_active AS IsActive, approval_status AS ApprovalStatus FROM users WHERE id = @Id", new { Id = userId });
 
-                    if (isActive == null || isActive == 0)
+                    if (status == null || status.IsActive == 0)
                     {
                         context.Response.StatusCode = 401;
                         await context.Response.WriteAsJsonAsync(new { error = "Hesabınız pasif veya silinmiş." });
+                        return; // Pipe'ı kes
+                    }
+
+                    // Onay kontrolü (tüm roller için zorunlu)
+                    if (status.ApprovalStatus == "PENDING")
+                    {
+                        context.Response.StatusCode = 403;
+                        await context.Response.WriteAsJsonAsync(new { error = "Onay bekleniyor.", code = "PENDING_APPROVAL" });
+                        return; // Pipe'ı kes
+                    }
+                    if (status.ApprovalStatus == "REJECTED")
+                    {
+                        context.Response.StatusCode = 403;
+                        await context.Response.WriteAsJsonAsync(new { error = "Başvurunuz reddedildi.", code = "COACH_REJECTED" });
                         return; // Pipe'ı kes
                     }
                 }
@@ -40,6 +54,13 @@ namespace MentorumApi.Middleware
 
             await _next(context);
         }
+    }
+
+    /// <summary>Kullanıcının aktiflik + onay durumu (per-request kontrol için).</summary>
+    public class UserAuthStatus
+    {
+        public int IsActive { get; set; }
+        public string ApprovalStatus { get; set; } = "";
     }
 
     public static class JwtValidationMiddlewareExtensions
