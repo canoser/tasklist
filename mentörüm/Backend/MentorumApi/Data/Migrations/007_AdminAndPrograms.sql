@@ -111,12 +111,25 @@ BEGIN
     END LOOP;
 END $$;
 
--- 9. program_id backfill (kocun YONETICI programi uzerinden) -- idempotent (WHERE program_id IS NULL)
-UPDATE students s SET program_id = pc.program_id FROM program_coaches pc WHERE pc.coach_id = s.coach_id AND pc.role = 'YONETICI' AND s.program_id IS NULL;
-UPDATE coach_notes cn SET program_id = pc.program_id FROM program_coaches pc WHERE pc.coach_id = cn.coach_id AND pc.role = 'YONETICI' AND cn.program_id IS NULL;
-UPDATE exam_results er SET program_id = pc.program_id FROM program_coaches pc WHERE pc.coach_id = er.coach_id AND pc.role = 'YONETICI' AND er.program_id IS NULL;
-UPDATE student_subjects ss SET program_id = pc.program_id FROM program_coaches pc WHERE pc.coach_id = ss.coach_id AND pc.role = 'YONETICI' AND ss.program_id IS NULL;
-UPDATE homework_assignments ha SET program_id = pc.program_id FROM program_coaches pc WHERE pc.coach_id = ha.coach_id AND pc.role = 'YONETICI' AND ha.program_id IS NULL;
+-- 9. program_id backfill (kocun YONETICI programi uzerinden) -- idempotent (WHERE program_id IS NULL ve coach_id varsa)
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'students' AND column_name = 'coach_id') THEN
+        EXECUTE 'UPDATE students s SET program_id = pc.program_id FROM program_coaches pc WHERE pc.coach_id = s.coach_id AND pc.role = ''YONETICI'' AND s.program_id IS NULL';
+    END IF;
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'coach_notes' AND column_name = 'coach_id') THEN
+        EXECUTE 'UPDATE coach_notes cn SET program_id = pc.program_id FROM program_coaches pc WHERE pc.coach_id = cn.coach_id AND pc.role = ''YONETICI'' AND cn.program_id IS NULL';
+    END IF;
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'exam_results' AND column_name = 'coach_id') THEN
+        EXECUTE 'UPDATE exam_results er SET program_id = pc.program_id FROM program_coaches pc WHERE pc.coach_id = er.coach_id AND pc.role = ''YONETICI'' AND er.program_id IS NULL';
+    END IF;
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'student_subjects' AND column_name = 'coach_id') THEN
+        EXECUTE 'UPDATE student_subjects ss SET program_id = pc.program_id FROM program_coaches pc WHERE pc.coach_id = ss.coach_id AND pc.role = ''YONETICI'' AND ss.program_id IS NULL';
+    END IF;
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'homework_assignments' AND column_name = 'coach_id') THEN
+        EXECUTE 'UPDATE homework_assignments ha SET program_id = pc.program_id FROM program_coaches pc WHERE pc.coach_id = ha.coach_id AND pc.role = ''YONETICI'' AND ha.program_id IS NULL';
+    END IF;
+END $$;
 
 -- 10. Mevcut (V4) koçları APPROVED yap (backfill) — idempotent (programı olan PENDING koçlar APPROVED)
 UPDATE coaches c

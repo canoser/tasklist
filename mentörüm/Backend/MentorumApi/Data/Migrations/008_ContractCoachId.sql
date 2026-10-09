@@ -6,10 +6,21 @@
 ALTER TABLE coach_notes ADD COLUMN IF NOT EXISTS created_by UUID REFERENCES users(id) ON DELETE SET NULL;
 ALTER TABLE student_subjects ADD COLUMN IF NOT EXISTS created_by UUID REFERENCES users(id) ON DELETE SET NULL;
 
-UPDATE coach_notes SET created_by = coach_id WHERE created_by IS NULL AND coach_id IS NOT NULL;
-UPDATE student_subjects SET created_by = coach_id WHERE created_by IS NULL AND coach_id IS NOT NULL;
-UPDATE homework_assignments SET created_by = coach_id WHERE created_by IS NULL AND coach_id IS NOT NULL;
-UPDATE exam_results SET created_by = coach_id WHERE created_by IS NULL AND coach_id IS NOT NULL;
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'coach_notes' AND column_name = 'coach_id') THEN
+        EXECUTE 'UPDATE coach_notes SET created_by = coach_id WHERE created_by IS NULL AND coach_id IS NOT NULL';
+    END IF;
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'student_subjects' AND column_name = 'coach_id') THEN
+        EXECUTE 'UPDATE student_subjects SET created_by = coach_id WHERE created_by IS NULL AND coach_id IS NOT NULL';
+    END IF;
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'homework_assignments' AND column_name = 'coach_id') THEN
+        EXECUTE 'UPDATE homework_assignments SET created_by = coach_id WHERE created_by IS NULL AND coach_id IS NOT NULL';
+    END IF;
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'exam_results' AND column_name = 'coach_id') THEN
+        EXECUTE 'UPDATE exam_results SET created_by = coach_id WHERE created_by IS NULL AND coach_id IS NOT NULL';
+    END IF;
+END $$;
 
 -- 0.5 Ön kontrol: program_id NULL kalan satır varsa net hata ver (fail-fast)
 DO $$
