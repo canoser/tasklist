@@ -123,7 +123,7 @@ BEGIN
         ALTER TABLE users DROP CONSTRAINT users_role_check;
     END IF;
 END $$;
-ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('Coach','Student','Parent','Teacher'));
+ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('Coach','Student','Parent','Teacher','Admin'));
 
 -- 3. invite_tokens.role CHECK'e 'Teacher' ekle (idempotent)
 DO $$
