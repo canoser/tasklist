@@ -227,7 +227,7 @@ var token = jwt.GenerateAccessToken(user);
                     using var conn = db.CreateConnection();
                     await conn.ExecuteAsync("UPDATE refresh_tokens SET is_revoked = 1 WHERE token = @Token", new { Token = inputToken });
                 }
-                ctx.Response.Cookies.Delete("refresh_token");
+                ctx.Response.Cookies.Delete("refresh_token", new CookieOptions { HttpOnly = true, Secure = true, SameSite = SameSiteMode.Strict, Path = "/" });
                 return Results.Ok(new { message = "Çıkış yapıldı" });
             });
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useStudents, useCalendarEvents } from '../coachApi';
 import Calendar from '../../../components/common/Calendar/Calendar';
 import Card from '../../../components/common/Card/Card';
@@ -7,6 +8,7 @@ import { format, startOfMonth, endOfMonth } from 'date-fns';
 import styles from './CoachDashboard.module.css';
 
 const CoachDashboard = () => {
+  const navigate = useNavigate();
   // Takvim aralığı durumu
   const [dateRange, setDateRange] = useState({
     start: startOfMonth(new Date()),
@@ -52,7 +54,7 @@ const CoachDashboard = () => {
         <section className={styles.studentsSection}>
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>Öğrencilerim</h2>
-            <Button size="sm" variant="outline" onClick={() => alert('Öğrenci ekle modali yakında eklenecek')}>
+            <Button size="sm" variant="outline" onClick={() => navigate('/coach/students')}>
               + Yeni Ekle
             </Button>
           </div>
@@ -71,7 +73,7 @@ const CoachDashboard = () => {
                       <span className={styles.studentName}>{student.fullName}</span>
                       <span className={styles.studentDetail}>{student.grade}. Sınıf • {student.track || '-'}</span>
                     </div>
-                    <Button size="sm" variant="secondary" onClick={() => alert(`${student.fullName} profili açılacak`)}>
+                    <Button size="sm" variant="secondary" onClick={() => navigate(`/coach/students/${student.id}`)}>
                       İncele
                     </Button>
                   </li>

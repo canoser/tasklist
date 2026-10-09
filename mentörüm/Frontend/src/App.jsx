@@ -63,13 +63,10 @@ function App() {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        // App ilk açıldığında cookie'den refresh token ile oturum açmayı dene
-        if (!user) {
-          const response = await apiClient.post('/auth/refresh', {});
-          // apiClient.js response interceptor'ı içindeki veriyi döndürüyor
-          const data = response.data || response; // API yanıt formatına göre
-          setAuth(data.user, data.accessToken);
-        }
+        // App ilk açıldığında cookie'den refresh token ile oturum açmayı dene (yalnızca bir kez)
+        const response = await apiClient.post('/auth/refresh', {});
+        const data = response.data || response; // API yanıt formatına göre
+        setAuth(data.user, data.accessToken);
       } catch {
         // Oturum yok veya süresi dolmuş
         clearAuth();
@@ -79,7 +76,8 @@ function App() {
     };
 
     initAuth();
-  }, [user, setAuth, clearAuth]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (isInitializing) {
     return <div style={{ padding: '2rem', textAlign: 'center' }}>Yükleniyor...</div>;

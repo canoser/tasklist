@@ -3,28 +3,40 @@ import { useNavigate } from 'react-router-dom';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
+import { useStudents, useSendInvite } from '../coachApi';
+import { usePrograms } from '../coachSchoolApi';
 import styles from './CoachStudents.module.css';
-
-// Mock data (API bağlanana kadar)
-const MOCK_STUDENTS = [
-  { id: 1, fullName: 'Ayşe Yılmaz', grade: '12. Sınıf', area: 'Sayısal', active: true, hwCompletion: 85, lastActive: '2 saat önce' },
-  { id: 2, fullName: 'Mehmet Demir', grade: '11. Sınıf', area: 'Eşit Ağırlık', active: true, hwCompletion: 60, lastActive: '1 gün önce' },
-  { id: 3, fullName: 'Zeynep Kaya', grade: '8. Sınıf', area: 'LGS', active: true, hwCompletion: 95, lastActive: '15 dk önce' },
-  { id: 4, fullName: 'Can Yıldız', grade: '12. Sınıf', area: 'Sözel', active: false, hwCompletion: 10, lastActive: '2 hafta önce' }
-];
 
 const CoachStudents = () => {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterGrade, setFilterGrade] = useState('all');
-  const [filterActive, setFilterActive] = useState('active');
+  const { data: students, isLoading } = useStudents();
+  const { data: programs } = usePrograms();
+  const sendInvite = useSendInvite();
 
-  const filteredStudents = MOCK_STUDENTS.filter(s => {
-    const matchSearch = s.fullName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchGrade = filterGrade === 'all' || s.grade.includes(filterGrade);
-    const matchActive = filterActive === 'all' || (filterActive === 'active' ? s.active : !s.active);
-    return matchSearch && matchGrade && matchActive;
-  });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showInvite, setShowInvite] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteProgramId, setInviteProgramId] = useState('');
+  const [inviteMsg, setInviteMsg] = useState('');
+
+  const handleInvite = async (e) => {
+    e.preventDefault();
+    if (!inviteEmail.trim() || !inviteProgramId) { setInviteMsg('E-posta ve program zorunludur.'); return; }
+    setInviteMsg('');
+    try {
+      const res = await sendInvite.mutateAsync({ email: inviteEmail.trim(), role: 'Student', relatedId: inviteProgramId });
+      setInviteMsg(`Davet oluşturuldu. Kod: ${res.code}`);
+      setInviteEmail('');
+    } catch (err) {
+      setInviteMsg(err?.response?.data?.error || 'Davet gönderilemedi.');
+    }
+  };
+
+  const filtered = (students || []).filter((s) =>
+    (s.fullName || '').toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (isLoading) return <div className={styles.pageContainer}>Yükleniyor...</div>;
 
   return (
     <div className={styles.pageContainer}>
@@ -33,88 +45,56 @@ const CoachStudents = () => {
           <h1 className={styles.title}>Öğrenciler</h1>
           <p className={styles.subtitle}>Tüm öğrencilerinizin performansını ve durumunu yönetin.</p>
         </div>
-        <Button variant="primary" icon="➕">Yeni Öğrenci Ekle</Button>
+        <Button variant="primary" onClick={() => setShowInvite(!showInvite)}>+ Yeni Öğrenci Ekle</Button>
       </header>
 
-      {/* Filtreler */}
+      {showInvite && (
+        <Card className={styles.filterCard}>
+          <form onSubmit={handleInvite} className={styles.filterGrid}>
+            <Input label="Öğrenci E-postası" type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="ogrenci@ornek.com" />
+            <select className={styles.select} value={inviteProgramId} onChange={(e) => setInviteProgramId(e.target.value)}>
+              <option value="">Program seç</option>
+              {programs?.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+            <Button type="submit" isLoading={sendInvite.isPending}>Davet Gönder</Button>
+          </form>
+          {inviteMsg && <p style={{ margin: '10px 0 0', fontSize: '0.85rem', color: inviteMsg.startsWith('Davet') ? '#16a34a' : '#dc2626' }}>{inviteMsg}</p>}
+        </Card>
+      )}
+
       <Card className={styles.filterCard}>
-        <div className={styles.filterGrid}>
-          <Input 
-            placeholder="Öğrenci ara..." 
-            value={searchTerm} 
-            onChange={(e) => setSearchTerm(e.target.value)} 
-          />
-          <select 
-            className={styles.select}
-            value={filterGrade} 
-            onChange={(e) => setFilterGrade(e.target.value)}
-          >
-            <option value="all">Tüm Sınıflar</option>
-            <option value="8">8. Sınıf (LGS)</option>
-            <option value="11">11. Sınıf</option>
-            <option value="12">12. Sınıf (YKS)</option>
-          </select>
-          <select 
-            className={styles.select}
-            value={filterActive} 
-            onChange={(e) => setFilterActive(e.target.value)}
-          >
-            <option value="active">Sadece Aktifler</option>
-            <option value="inactive">Pasifler</option>
-            <option value="all">Tümü</option>
-          </select>
-        </div>
+        <Input placeholder="Öğrenci ara..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
       </Card>
 
-      {/* Öğrenci Listesi (Grid) */}
       <div className={styles.studentsGrid}>
-        {filteredStudents.map(student => (
-          <Card key={student.id} interactive className={styles.studentCard}>
+        {filtered.map((student) => (
+          <Card key={student.id} interactive className={styles.studentCard} onClick={() => navigate(`/coach/students/${student.id}`)}>
             <div className={styles.cardHeader}>
-              <div className={styles.avatar}>
-                {student.fullName.charAt(0)}
-              </div>
+              <div className={styles.avatar}>{student.fullName?.charAt(0) || '?'}</div>
               <div className={styles.studentMeta}>
                 <h3 className={styles.studentName}>{student.fullName}</h3>
-                <span className={styles.studentDetail}>{student.grade} • {student.area}</span>
+                <span className={styles.studentDetail}>
+                  {student.grade != null ? `${student.grade}. Sınıf` : ''}
+                  {student.track ? ` • ${student.track}` : ''}
+                </span>
               </div>
-              <div className={`${styles.statusBadge} ${student.active ? styles.active : styles.inactive}`}>
-                {student.active ? 'Aktif' : 'Pasif'}
-              </div>
-            </div>
-
-            <div className={styles.cardBody}>
-              <div className={styles.statRow}>
-                <span>Ödev Tamamlama</span>
-                <span className={styles.statValue}>%{student.hwCompletion}</span>
-              </div>
-              <div className={styles.progressBar}>
-                <div 
-                  className={styles.progressFill} 
-                  style={{ 
-                    width: `${student.hwCompletion}%`,
-                    backgroundColor: student.hwCompletion > 80 ? '#22c55e' : student.hwCompletion > 50 ? '#f59e0b' : '#ef4444' 
-                  }}
-                />
-              </div>
-              <div className={styles.statRow}>
-                <span className={styles.lastActive}>Son giriş: {student.lastActive}</span>
+              <div className={`${styles.statusBadge} ${student.isActive ? styles.active : styles.inactive}`}>
+                {student.isActive ? 'Aktif' : 'Pasif'}
               </div>
             </div>
-
             <div className={styles.cardFooter}>
-              <Button variant="ghost" size="sm" onClick={() => navigate(`/coach/students/${student.id}`)}>Profili Gör</Button>
-              <Button variant="secondary" size="sm">Ödev Ata</Button>
+              <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/coach/students/${student.id}`); }}>Profili Gör</Button>
+              <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/coach/students/${student.id}`); }}>Ödev Ata</Button>
             </div>
           </Card>
         ))}
       </div>
-      
-      {filteredStudents.length === 0 && (
+
+      {filtered.length === 0 && (
         <div className={styles.emptyState}>
           <div className={styles.emptyIcon}>🔍</div>
           <h3>Öğrenci Bulunamadı</h3>
-          <p>Arama kriterlerinize uyan bir öğrenci yok.</p>
+          <p>Henüz öğrenci eklemediniz. "Yeni Öğrenci Ekle" ile davet gönderin.</p>
         </div>
       )}
     </div>

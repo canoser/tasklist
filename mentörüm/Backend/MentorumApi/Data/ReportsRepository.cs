@@ -7,7 +7,7 @@ namespace MentorumApi.Data
     {
         public ReportsRepository(DbConnectionFactory connectionFactory) : base(connectionFactory) { }
 
-        public async Task<dynamic> GetOverviewReportAsync(Guid coachId)
+        public async Task<ReportsOverviewDto> GetOverviewReportAsync(Guid coachId)
         {
             var sql = @"
                 SELECT 
@@ -27,7 +27,7 @@ namespace MentorumApi.Data
             ";
             
             using var conn = _connectionFactory.CreateConnection();
-            return await conn.QueryFirstOrDefaultAsync<dynamic>(sql, new { CoachId = coachId });
+            return await conn.QueryFirstOrDefaultAsync<ReportsOverviewDto>(sql, new { CoachId = coachId }) ?? new ReportsOverviewDto();
         }
 
         public async Task<dynamic> GetStudentReportAsync(Guid coachId, Guid studentId)

@@ -9,6 +9,8 @@ const CoachReports = () => {
   if (isLoading) return <div className={styles.pageContainer}>Raporlar Yükleniyor...</div>;
   if (isError) return <div className={styles.pageContainer}>Raporlar alınırken bir hata oluştu.</div>;
 
+  const hasStudents = (report?.totalStudents || 0) > 0;
+
   return (
     <div className={styles.pageContainer}>
       <header className={styles.header}>
@@ -18,77 +20,54 @@ const CoachReports = () => {
         </div>
       </header>
 
-      <div className={styles.grid}>
-        
-        {/* Haftalık Özet Kartı */}
-        <Card title="Bu Hafta Genel Durum">
-          <div className={styles.summaryStats}>
-            <div className={styles.statBox}>
-              <span className={styles.statLabel}>Bu Hafta Verilen</span>
-              <span className={styles.statNumber}>{report?.assignedThisWeek || 0}</span>
-            </div>
-            <div className={styles.statBox}>
-              <span className={styles.statLabel}>Bugün Biten</span>
-              <span className={styles.statNumber} style={{color: '#22c55e'}}>{report?.completedToday || 0}</span>
-            </div>
-            <div className={styles.statBox}>
-              <span className={styles.statLabel}>Toplam Gecikmiş</span>
-              <span className={styles.statNumber} style={{color: '#ef4444'}}>{report?.totalOverdue || 0}</span>
-            </div>
+      {!hasStudents ? (
+        <Card className={styles.emptyCard}>
+          <div style={{ textAlign: 'center', padding: '24px' }}>
+            <div style={{ fontSize: '2rem' }}>📊</div>
+            <h3 style={{ margin: '8px 0' }}>Henüz rapor verisi yok</h3>
+            <p style={{ color: '#64748b', margin: 0 }}>Raporlar, öğrencilerinize ödev atadıktan sonra oluşur.</p>
           </div>
         </Card>
-
-        {/* Pasta Grafik Simülasyonu (Tamamlama Oranı) */}
-        <Card title="Genel Başarı Oranı">
-          <div className={styles.pieChartContainer}>
-            <div className={styles.pieChart}>
-              <span className={styles.pieCenter}>%{report?.successRate ? Math.round(report.successRate) : 0}</span>
-            </div>
-            <div className={styles.pieLegend}>
-              <div className={styles.legendItem}>
-                <span className={styles.dot} style={{backgroundColor: '#6366f1'}}></span> Başarı Oranı
+      ) : (
+        <div className={styles.grid}>
+          <Card title="Bu Hafta Genel Durum">
+            <div className={styles.summaryStats}>
+              <div className={styles.statBox}>
+                <span className={styles.statLabel}>Toplam Öğrenci</span>
+                <span className={styles.statNumber}>{report?.totalStudents || 0}</span>
               </div>
-              <div className={styles.legendItem}>
-                <span className={styles.dot} style={{backgroundColor: '#e2e8f0'}}></span> Toplam Öğrenci: {report?.totalStudents || 0}
+              <div className={styles.statBox}>
+                <span className={styles.statLabel}>Bu Hafta Verilen</span>
+                <span className={styles.statNumber}>{report?.assignedThisWeek || 0}</span>
+              </div>
+              <div className={styles.statBox}>
+                <span className={styles.statLabel}>Bugün Biten</span>
+                <span className={styles.statNumber} style={{ color: '#22c55e' }}>{report?.completedToday || 0}</span>
+              </div>
+              <div className={styles.statBox}>
+                <span className={styles.statLabel}>Toplam Gecikmiş</span>
+                <span className={styles.statNumber} style={{ color: '#ef4444' }}>{report?.totalOverdue || 0}</span>
               </div>
             </div>
-          </div>
-        </Card>
+          </Card>
 
-        {/* Bar Chart Simülasyonu (Trend) */}
-        <Card className={styles.fullWidth} title="Son 4 Hafta Gecikme Eğilimi">
-          <div className={styles.barChart}>
-            
-            <div className={styles.barGroup}>
-              <div className={styles.barValue}>18</div>
-              <div className={styles.bar} style={{height: '60%'}}></div>
-              <div className={styles.barLabel}>Hafta 1</div>
+          <Card title="Genel Başarı Oranı">
+            <div className={styles.pieChartContainer}>
+              <div className={styles.pieChart}>
+                <span className={styles.pieCenter}>%{Math.round(report?.successRate || 0)}</span>
+              </div>
+              <div className={styles.pieLegend}>
+                <div className={styles.legendItem}>
+                  <span className={styles.dot} style={{ backgroundColor: '#6366f1' }}></span> Başarı Oranı
+                </div>
+              </div>
             </div>
-
-            <div className={styles.barGroup}>
-              <div className={styles.barValue}>14</div>
-              <div className={styles.bar} style={{height: '45%'}}></div>
-              <div className={styles.barLabel}>Hafta 2</div>
-            </div>
-
-            <div className={styles.barGroup}>
-              <div className={styles.barValue}>22</div>
-              <div className={styles.bar} style={{height: '75%', backgroundColor: '#ef4444'}}></div>
-              <div className={styles.barLabel}>Hafta 3</div>
-            </div>
-
-            <div className={styles.barGroup}>
-              <div className={styles.barValue}>12</div>
-              <div className={styles.bar} style={{height: '40%'}}></div>
-              <div className={styles.barLabel}>Hafta 4</div>
-            </div>
-
-          </div>
-        </Card>
-
-      </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
 
 export default CoachReports;
+

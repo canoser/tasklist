@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../../features/auth/authStore';
+import { apiClient } from '../../../api/apiClient';
 import { useUIStore } from '../../../store/uiStore';
 import { useNotifications } from '../../../hooks/useNotifications';
 import styles from './CoachLayout.module.css';
@@ -15,7 +16,7 @@ const CoachLayout = () => {
 
   const handleLogout = async () => {
     try {
-      await import('../../../api/apiClient').then(m => m.apiClient.post('/auth/logout'));
+      await apiClient.post('/auth/logout');
     } catch (e) {}
     clearAuth();
     navigate('/login');

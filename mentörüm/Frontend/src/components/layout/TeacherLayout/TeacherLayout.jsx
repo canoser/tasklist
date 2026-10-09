@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../../features/auth/authStore';
+import { apiClient } from '../../../api/apiClient';
 import { useNotifications } from '../../../hooks/useNotifications';
 import styles from './TeacherLayout.module.css';
 
@@ -12,7 +13,7 @@ const TeacherLayout = () => {
 
   const handleLogout = async () => {
     try {
-      await import('../../../api/apiClient').then(m => m.apiClient.post('/auth/logout'));
+      await apiClient.post('/auth/logout');
     } catch (e) {}
     clearAuth();
     navigate('/login');
