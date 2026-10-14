@@ -55,21 +55,32 @@ namespace MentorumApi.Endpoints
                 {
                     if (req.Role == "Student" && existingUser.Role == "Student")
                     {
-                        var alreadyInProgram = await conn.ExecuteScalarAsync<int>(
-                            "SELECT COUNT(1) FROM students WHERE id = @StudentId AND program_id = @ProgramId",
-                            new { StudentId = existingUser.Id, ProgramId = req.RelatedId });
+                        var existingProgramId = await conn.QuerySingleOrDefaultAsync<Guid?>(
+                            "SELECT program_id FROM students WHERE id = @StudentId",
+                            new { StudentId = existingUser.Id });
 
-                        if (alreadyInProgram > 0)
-                            return Results.Conflict(new { error = "Bu öğrenci zaten bu programınızda kayıtlı." });
+                        if (existingProgramId != null)
+                        {
+                            if (existingProgramId.Value == req.RelatedId)
+                            {
+                                return Results.Conflict(new { error = "Bu öğrenci zaten bu programınızda kayıtlı." });
+                            }
+                            else
+                            {
+                                return Results.Conflict(new { 
+                                    error = "Bu öğrenci şu anda aktif başka bir koçluk veya okul programına kayıtlıdır. Transfer işlemi için sistem yöneticisine başvurunuz." 
+                                });
+                            }
+                        }
 
+                        // Yalnızca sisteme önceden kaydolmuş ama henüz hiçbir programa bağlanmamış öğrenci eklenebilir
                         await conn.ExecuteAsync(@"
                             INSERT INTO students (id, program_id, is_active)
-                            VALUES (@Id, @ProgramId, 1)
-                            ON CONFLICT (id) DO UPDATE SET program_id = @ProgramId, is_active = 1",
+                            VALUES (@Id, @ProgramId, 1)",
                             new { Id = existingUser.Id, ProgramId = req.RelatedId });
 
                         return Results.Ok(new { 
-                            message = $"'{existingUser.FullName}' adlı kayıtlı öğrenci programa başarıyla eklendi.", 
+                            message = $"'{existingUser.FullName}' adlı öğrenci programa başarıyla eklendi.", 
                             directAdded = true 
                         });
                     }
@@ -101,7 +112,7 @@ namespace MentorumApi.Endpoints
             }).RequireAuthorization("RequireCoachRole")
                 .AddEndpointFilter<MentorumApi.Filters.IdempotencyFilter>(); // Sadece koç davet atabilir; idempotency
 
-            // Koçun programlarına ait bekleyen davetleri listele
+            // Koçun programlarına ait bekleyen davetleri listele (Öğrenci + Veli davetleri)
             group.MapGet("/pending", async (
                 [FromServices] DbConnectionFactory db,
                 ClaimsPrincipal user) =>
@@ -112,10 +123,17 @@ namespace MentorumApi.Endpoints
                 using var conn = db.CreateConnection();
                 var pending = await conn.QueryAsync(@"
                     SELECT it.id, it.email, it.code, it.role, it.created_at AS CreatedAt, it.expires_at AS ExpiresAt,
-                           cp.name AS ProgramName, it.related_id AS ProgramId
+                           COALESCE(cp.name, cp_parent.name, 'Genel') AS ProgramName,
+                           COALESCE(it.related_id, s.program_id) AS ProgramId
                     FROM invite_tokens it
-                    JOIN coaching_programs cp ON cp.id = it.related_id
-                    WHERE it.related_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)
+                    LEFT JOIN coaching_programs cp ON cp.id = it.related_id AND it.role != 'Parent'
+                    LEFT JOIN students s ON s.id = it.related_id AND it.role = 'Parent'
+                    LEFT JOIN coaching_programs cp_parent ON cp_parent.id = s.program_id
+                    WHERE (
+                        (it.role != 'Parent' AND it.related_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId))
+                        OR
+                        (it.role = 'Parent' AND s.program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId))
+                    )
                       AND it.is_used = 0
                       AND it.expires_at > NOW()
                     ORDER BY it.created_at DESC",

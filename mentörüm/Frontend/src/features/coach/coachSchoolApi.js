@@ -146,11 +146,25 @@ export const usePendingApprovals = () => useQuery({
   queryFn: async () => (await apiClient.get('/admin/pending-approvals')) || [],
 });
 
+export const useAdminUsers = (role, search) => useQuery({
+  queryKey: ['admin', 'users', role, search],
+  queryFn: async () => {
+    const params = new URLSearchParams();
+    if (role) params.append('role', role);
+    if (search) params.append('search', search);
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    return (await apiClient.get(`/admin/users${qs}`)) || [];
+  },
+});
+
 export const useApproveUser = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ userId, role, maxPrograms }) => apiClient.post(`/admin/users/${userId}/approve`, { role, maxPrograms }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'pending-approvals'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'pending-approvals'] });
+      qc.invalidateQueries({ queryKey: ['admin', 'users'] });
+    },
   });
 };
 
@@ -158,13 +172,20 @@ export const useRejectUser = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ userId }) => apiClient.post(`/admin/users/${userId}/reject`, {}),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'pending-approvals'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'pending-approvals'] });
+      qc.invalidateQueries({ queryKey: ['admin', 'users'] });
+    },
   });
 };
 
 export const useAddUser = () => {
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ email, fullName, role }) => apiClient.post('/admin/users', { email, fullName, role }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'users'] });
+    },
   });
 };
 

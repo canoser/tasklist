@@ -119,6 +119,12 @@ namespace MentorumApi.Endpoints
             // --- Süper yönetici ---
             var admin = app.MapGroup("/api/v1/admin").RequireAuthorization("RequireAdminRole");
 
+            admin.MapGet("/users", async (
+                [FromServices] ProgramRepository repo, 
+                [FromQuery] string? role, 
+                [FromQuery] string? search) =>
+                Results.Ok(await repo.GetAllUsersForAdminAsync(role, search)));
+
             admin.MapGet("/pending-approvals", async ([FromServices] ProgramRepository repo) =>
                 Results.Ok(await repo.GetPendingApprovalsAsync()));
 

@@ -1,3 +1,4 @@
+using System.Data;
 using Dapper;
 using MentorumApi.DTOs;
 
@@ -285,27 +286,7 @@ namespace MentorumApi.Data
                 }
                 else if (role == "Student")
                 {
-                    var existingProgramId = await conn.QuerySingleOrDefaultAsync<Guid?>(
-                        "SELECT program_id FROM students WHERE id = @Id", new { Id = userId }, tx);
-
-                    if (existingProgramId == null)
-                    {
-                        var personalProgramId = Guid.NewGuid();
-                        await conn.ExecuteAsync(@"
-                            INSERT INTO coaching_programs (id, name, description, color, created_by, is_active)
-                            VALUES (@Id, 'Bireysel Çalışma Programım', 'Koçsuz bağımsız öğrenci çalışma alanı', '#10B981', @UserId, 1)",
-                            new { Id = personalProgramId, UserId = userId }, tx);
-
-                        await conn.ExecuteAsync(@"
-                            INSERT INTO students (id, program_id, is_active)
-                            VALUES (@Id, @ProgramId, 1)
-                            ON CONFLICT (id) DO UPDATE SET is_active = 1",
-                            new { Id = userId, ProgramId = personalProgramId }, tx);
-                    }
-                    else
-                    {
-                        await conn.ExecuteAsync("UPDATE students SET is_active = 1 WHERE id = @Id", new { Id = userId }, tx);
-                    }
+                    await EnsureStudentPersonalProgramAsync(conn, tx, userId);
                 }
 
                 tx.Commit();
@@ -343,23 +324,66 @@ namespace MentorumApi.Data
                 if (role == "Coach")
                     await conn.ExecuteAsync("INSERT INTO coaches (id, plan_type, approval_status) VALUES (@Id, 'free', 'APPROVED')", new { Id = userId }, tx);
                 else if (role == "Student")
-                {
-                    var personalProgramId = Guid.NewGuid();
-                    await conn.ExecuteAsync(@"
-                        INSERT INTO coaching_programs (id, name, description, color, created_by, is_active)
-                        VALUES (@Id, 'Bireysel Çalışma Programım', 'Koçsuz bağımsız öğrenci çalışma alanı', '#10B981', @UserId, 1)",
-                        new { Id = personalProgramId, UserId = userId }, tx);
-
-                    await conn.ExecuteAsync(@"
-                        INSERT INTO students (id, program_id, is_active)
-                        VALUES (@Id, @ProgramId, 1)",
-                        new { Id = userId, ProgramId = personalProgramId }, tx);
-                }
+                    await EnsureStudentPersonalProgramAsync(conn, tx, userId);
 
                 tx.Commit();
                 return "OK";
             }
             catch { tx.Rollback(); throw; }
+        }
+
+        public async Task<IEnumerable<dynamic>> GetAllUsersForAdminAsync(string? role = null, string? search = null)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            var sql = @"
+                SELECT u.id, u.full_name AS FullName, u.email AS Email, u.role AS Role, 
+                       u.approval_status AS ApprovalStatus, u.is_active AS IsActive, u.created_at AS CreatedAt,
+                       s.program_id AS StudentProgramId,
+                       cp.name AS ProgramName
+                FROM users u
+                LEFT JOIN students s ON s.id = u.id
+                LEFT JOIN coaching_programs cp ON cp.id = s.program_id
+                WHERE 1=1 ";
+
+            var dp = new DynamicParameters();
+            if (!string.IsNullOrEmpty(role))
+            {
+                sql += " AND u.role = @Role ";
+                dp.Add("Role", role);
+            }
+            if (!string.IsNullOrEmpty(search))
+            {
+                sql += " AND (u.full_name ILIKE @Search OR u.email ILIKE @Search) ";
+                dp.Add("Search", $"%{search}%");
+            }
+            sql += " ORDER BY u.created_at DESC";
+
+            return await conn.QueryAsync(sql, dp);
+        }
+
+        private async Task EnsureStudentPersonalProgramAsync(IDbConnection conn, IDbTransaction tx, Guid userId)
+        {
+            var existingProgramId = await conn.QuerySingleOrDefaultAsync<Guid?>(
+                "SELECT program_id FROM students WHERE id = @Id", new { Id = userId }, tx);
+
+            if (existingProgramId == null)
+            {
+                var personalProgramId = Guid.NewGuid();
+                await conn.ExecuteAsync(@"
+                    INSERT INTO coaching_programs (id, name, description, color, created_by, is_active)
+                    VALUES (@Id, 'Bireysel Çalışma Programım', 'INDIVIDUAL_STUDENT: Koçsuz bağımsız öğrenci çalışma alanı', '#10B981', @UserId, 1)",
+                    new { Id = personalProgramId, UserId = userId }, tx);
+
+                await conn.ExecuteAsync(@"
+                    INSERT INTO students (id, program_id, is_active)
+                    VALUES (@Id, @ProgramId, 1)
+                    ON CONFLICT (id) DO UPDATE SET is_active = 1",
+                    new { Id = userId, ProgramId = personalProgramId }, tx);
+            }
+            else
+            {
+                await conn.ExecuteAsync("UPDATE students SET is_active = 1 WHERE id = @Id", new { Id = userId }, tx);
+            }
         }
     }
 }
