@@ -55,9 +55,106 @@
   background-size: 1em;
 }
 
+.selectLabel {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-color-main);
+  margin-bottom: 6px;
+}
+
 .select:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Pending Invites Card */
+.pendingCard {
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  padding: var(--spacing-lg) !important;
+}
+
+.pendingHeader {
+  margin-bottom: 14px;
+}
+
+.pendingTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #92400E;
+  margin-bottom: 4px;
+}
+
+.pendingSubtitle {
+  font-size: 0.8rem;
+  color: #B45309;
+}
+
+.pendingList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pendingItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #FFFFFF;
+  border: 1px solid #FDE68A;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pendingInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.pendingEmail {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #1E293B;
+}
+
+.pendingMeta {
+  font-size: 0.8rem;
+  color: #64748B;
+}
+
+.codeBadge {
+  background: #FEF3C7;
+  color: #92400E;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-family: monospace;
+}
+
+.pendingActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pendingBadge {
+  background-color: #FEF3C7;
+  color: #D97706;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid #FDE68A;
+}
+
+.studentEmail {
+  font-size: 0.8rem;
+  color: var(--text-color-muted);
+  margin-bottom: 3px;
 }
 
 /* Students Grid */

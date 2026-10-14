@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Security.Claims;
 using Dapper;
 using MentorumApi.Data;
 using MentorumApi.DTOs;
@@ -45,9 +46,38 @@ namespace MentorumApi.Endpoints
                     if (isAdmin == null) return Results.BadRequest(new { error = "Program bulunamadı veya yönetici değilsiniz." });
                 }
 
-                var exists = await conn.ExecuteScalarAsync<int>("SELECT COUNT(1) FROM users WHERE email = @Email", new { req.Email });
-                if (exists > 0)
-                    return Results.Conflict(new { error = "Bu e-posta sistemde zaten kayıtlı." });
+                var emailLower = req.Email.ToLowerInvariant();
+                var existingUser = await conn.QuerySingleOrDefaultAsync<User>(
+                    "SELECT id AS Id, email AS Email, role AS Role, full_name AS FullName FROM users WHERE email = @Email",
+                    new { Email = emailLower });
+
+                if (existingUser != null)
+                {
+                    if (req.Role == "Student" && existingUser.Role == "Student")
+                    {
+                        var alreadyInProgram = await conn.ExecuteScalarAsync<int>(
+                            "SELECT COUNT(1) FROM students WHERE id = @StudentId AND program_id = @ProgramId",
+                            new { StudentId = existingUser.Id, ProgramId = req.RelatedId });
+
+                        if (alreadyInProgram > 0)
+                            return Results.Conflict(new { error = "Bu öğrenci zaten bu programınızda kayıtlı." });
+
+                        await conn.ExecuteAsync(@"
+                            INSERT INTO students (id, program_id, is_active)
+                            VALUES (@Id, @ProgramId, 1)
+                            ON CONFLICT (id) DO UPDATE SET program_id = @ProgramId, is_active = 1",
+                            new { Id = existingUser.Id, ProgramId = req.RelatedId });
+
+                        return Results.Ok(new { 
+                            message = $"'{existingUser.FullName}' adlı kayıtlı öğrenci programa başarıyla eklendi.", 
+                            directAdded = true 
+                        });
+                    }
+                    else
+                    {
+                        return Results.Conflict(new { error = $"Bu e-posta sistemde farklı bir rol ({existingUser.Role}) ile zaten kayıtlı." });
+                    }
+                }
 
                 var token = Guid.NewGuid();
                 var code = InviteCode.Generate();
@@ -61,7 +91,7 @@ namespace MentorumApi.Endpoints
                         Id = Guid.NewGuid(), 
                         Token = token, 
                         Code = code,
-                        Email = req.Email.ToLower(), 
+                        Email = emailLower, 
                         Role = req.Role, 
                         RelatedId = req.RelatedId,
                         ExpiresAt = expiresAt 
@@ -70,6 +100,29 @@ namespace MentorumApi.Endpoints
                 return Results.Ok(new { message = "Davet başarıyla oluşturuldu.", code, link = inviteLink, expiresAt });
             }).RequireAuthorization("RequireCoachRole")
                 .AddEndpointFilter<MentorumApi.Filters.IdempotencyFilter>(); // Sadece koç davet atabilir; idempotency
+
+            // Koçun programlarına ait bekleyen davetleri listele
+            group.MapGet("/pending", async (
+                [FromServices] DbConnectionFactory db,
+                ClaimsPrincipal user) =>
+            {
+                var coachIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(coachIdStr, out var coachId)) return Results.Unauthorized();
+
+                using var conn = db.CreateConnection();
+                var pending = await conn.QueryAsync(@"
+                    SELECT it.id, it.email, it.code, it.role, it.created_at AS CreatedAt, it.expires_at AS ExpiresAt,
+                           cp.name AS ProgramName, it.related_id AS ProgramId
+                    FROM invite_tokens it
+                    JOIN coaching_programs cp ON cp.id = it.related_id
+                    WHERE it.related_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)
+                      AND it.is_used = 0
+                      AND it.expires_at > NOW()
+                    ORDER BY it.created_at DESC",
+                    new { CoachId = coachId });
+
+                return Results.Ok(pending);
+            }).RequireAuthorization("RequireCoachRole");
 
             // Davet detayını görüntüle (token validasyonu)
             group.MapGet("/{token}", async (

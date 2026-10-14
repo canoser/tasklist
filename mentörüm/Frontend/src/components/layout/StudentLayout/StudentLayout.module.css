@@ -1,75 +1,237 @@
 .layout {
   display: flex;
-  flex-direction: column;
-  height: 100dvh; /* 100vh iOS Safari'de URL çubuğunu sayar — kırılır */
+  height: 100dvh;
   width: 100dvw;
   overflow: hidden;
-  background-color: var(--bg-color-main);
+  background-color: var(--bg-color-main, #F8FAFC);
 }
 
-/* --- Topbar --- */
-.topbar {
-  height: 70px;
-  background-color: var(--bg-color-surface);
+/* ===============================
+   DESKTOP / TABLET SIDEBAR (≥ 768px)
+   =============================== */
+.sidebar {
+  display: none;
+  width: 250px;
+  background-color: var(--bg-color-sidebar, #1E293B);
+  color: #F8FAFC;
+  flex-direction: column;
+  z-index: 30;
+  box-shadow: 4px 0 15px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+}
+
+.sidebarHeader {
+  padding: var(--spacing-lg, 20px);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--spacing-lg);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-  z-index: 10;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.userInfo {
+.logo {
+  font-size: 1.35rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #10B981, #6EE7B7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.roleBadge {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #34D399;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.sidebarUser {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: rgba(0, 0, 0, 0.12);
+}
+
+.sidebarUserDetails {
+  overflow: hidden;
+}
+
+.sidebarUserName {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #F8FAFC;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebarUserEmail {
+  font-size: 0.75rem;
+  color: #94A3B8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebarNav {
+  flex: 1;
+  padding: 16px 12px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sidebarLink {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  color: #CBD5E1;
+  font-weight: 500;
+  font-size: 0.9rem;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+}
+
+.sidebarLink:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: #FFFFFF;
+}
+
+.sidebarLinkActive {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #FFFFFF;
+  font-weight: 600;
+  border-left-color: #10B981;
+}
+
+.sidebarIcon {
+  font-size: 1.25rem;
+  margin-right: 12px;
+}
+
+.sidebarLabel {
+  flex: 1;
+}
+
+.sidebarFooter {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebarLogoutBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #FCA5A5;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sidebarLogoutBtn:hover {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #FFFFFF;
+}
+
+/* ===============================
+   CONTENT WRAPPER & TOPBAR
+   =============================== */
+.contentWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+  position: relative;
+}
+
+.topbar {
+  height: 65px;
+  background-color: var(--bg-color-surface, #FFFFFF);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--spacing-lg, 20px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  z-index: 20;
+  flex-shrink: 0;
+}
+
+.mobileUserInfo {
   display: flex;
   align-items: center;
 }
 
+.desktopTopbarTitle {
+  display: none;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-color-main, #0F172A);
+}
+
 .avatar {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-success), #10B981);
+  background: linear-gradient(135deg, #10B981, #059669);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   color: #fff;
-  margin-right: 12px;
-  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+  margin-right: 10px;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+  flex-shrink: 0;
 }
 
 .greeting {
-  font-size: 0.75rem;
-  color: var(--text-color-muted);
+  font-size: 0.72rem;
+  color: var(--text-color-muted, #64748B);
 }
 
 .userName {
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 700;
-  color: var(--text-color-main);
+  color: var(--text-color-main, #0F172A);
 }
 
 .topbarActions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
-.notificationBtn, .logoutBtn {
+.notificationBtn,
+.mobileLogoutBtn {
   position: relative;
-  font-size: 1.25rem;
-  color: var(--text-color-muted);
+  font-size: 1.15rem;
+  color: var(--text-color-muted, #64748B);
   padding: 8px;
   border-radius: 50%;
   background-color: #F1F5F9;
+  border: none;
+  cursor: pointer;
   transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.notificationBtn:active, .logoutBtn:active {
+.notificationBtn:active,
+.mobileLogoutBtn:active {
   transform: scale(0.95);
 }
 
@@ -77,40 +239,44 @@
   position: absolute;
   top: -2px;
   right: -2px;
-  background-color: var(--color-danger);
+  background-color: var(--color-danger, #EF4444);
   color: white;
   font-size: 0.65rem;
   font-weight: bold;
-  width: 18px;
-  height: 18px;
+  width: 17px;
+  height: 17px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  border: 2px solid var(--bg-color-surface);
+  border: 2px solid #FFFFFF;
 }
 
-/* --- Main Content --- */
+/* ===============================
+   MAIN CONTENT
+   =============================== */
 .main {
   flex: 1;
   overflow-y: auto;
-  padding: var(--spacing-md);
-  padding-bottom: 90px; /* Leave space for bottom nav */
+  padding: var(--spacing-md, 16px);
+  padding-bottom: 90px; /* Mobilde alt çubuk payı */
 }
 
-/* --- Bottom Navigation --- */
+/* ===============================
+   MOBILE BOTTOM NAV (< 768px)
+   =============================== */
 .bottomNav {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 70px;
-  background-color: var(--bg-color-surface);
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+  height: 68px;
+  background-color: var(--bg-color-surface, #FFFFFF);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
   display: flex;
   justify-content: space-around;
   align-items: center;
-  padding: 0 var(--spacing-sm);
+  padding: 0 var(--spacing-sm, 8px);
   padding-bottom: env(safe-area-inset-bottom);
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
@@ -124,31 +290,64 @@
   justify-content: center;
   flex: 1;
   height: 100%;
-  color: var(--text-color-muted);
+  color: var(--text-color-muted, #64748B);
   transition: all 0.2s;
   text-decoration: none;
 }
 
 .tabIcon {
-  font-size: 1.5rem;
-  margin-bottom: 4px;
+  font-size: 1.4rem;
+  margin-bottom: 3px;
   transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .tabLabel {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 500;
 }
 
 .tabActive {
-  color: var(--color-primary);
+  color: #10B981;
 }
 
 .tabActive .tabIcon {
-  transform: translateY(-4px);
-  color: var(--color-primary);
+  transform: translateY(-3px);
+  color: #10B981;
 }
 
 .tabActive .tabLabel {
   font-weight: 600;
+}
+
+/* ===============================
+   TABLET & DESKTOP MEDIA QUERIES (≥ 768px)
+   =============================== */
+@media (min-width: 768px) {
+  .sidebar {
+    display: flex;
+  }
+
+  .bottomNav {
+    display: none;
+  }
+
+  .mobileUserInfo {
+    display: none;
+  }
+
+  .mobileLogoutBtn {
+    display: none;
+  }
+
+  .desktopTopbarTitle {
+    display: block;
+  }
+
+  .main {
+    padding: 24px;
+    padding-bottom: 24px; /* Alt çubuk kalktığı için gereksiz boşluk kaldırıldı */
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+  }
 }

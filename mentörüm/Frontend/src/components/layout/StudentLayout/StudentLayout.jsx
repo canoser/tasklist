@@ -29,47 +29,96 @@ const StudentLayout = () => {
 
   return (
     <div className={styles.layout}>
-      {/* Topbar for mobile/student view */}
-      <header className={styles.topbar}>
-        <div className={styles.userInfo}>
+      {/* Tablet & Masaüstü Sol Menü (Sidebar) */}
+      <aside className={styles.sidebar}>
+        <div className={styles.sidebarHeader}>
+          <div className={styles.logo}>Mentörüm</div>
+          <span className={styles.roleBadge}>Öğrenci</span>
+        </div>
+
+        <div className={styles.sidebarUser}>
           <div className={styles.avatar}>
-            {user?.fullName?.charAt(0) || 'S'}
+            {user?.fullName?.charAt(0) || 'Ö'}
           </div>
-          <div>
-            <div className={styles.greeting}>Merhaba,</div>
-            <div className={styles.userName}>{user?.fullName?.split(' ')[0]}</div>
+          <div className={styles.sidebarUserDetails}>
+            <div className={styles.sidebarUserName}>{user?.fullName || 'Öğrenci'}</div>
+            <div className={styles.sidebarUserEmail}>{user?.email}</div>
           </div>
         </div>
-        <div className={styles.topbarActions}>
-          <button className={styles.notificationBtn}>
-            🔔 {unreadCount > 0 && <span className={styles.badge}>{unreadCount}</span>}
-          </button>
-          <button className={styles.logoutBtn} onClick={handleLogout} title="Çıkış Yap">
-            🚪
+
+        <nav className={styles.sidebarNav}>
+          {tabs.map((tab) => (
+            <NavLink
+              key={tab.path}
+              to={tab.path}
+              className={({ isActive }) => 
+                isActive ? `${styles.sidebarLink} ${styles.sidebarLinkActive}` : styles.sidebarLink
+              }
+            >
+              <span className={styles.sidebarIcon}>{tab.icon}</span>
+              <span className={styles.sidebarLabel}>{tab.label}</span>
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className={styles.sidebarFooter}>
+          <button className={styles.sidebarLogoutBtn} onClick={handleLogout} title="Çıkış Yap">
+            <span className={styles.logoutIcon}>🚪</span>
+            <span>Çıkış Yap</span>
           </button>
         </div>
-      </header>
+      </aside>
 
-      {/* Main Content Area */}
-      <main className={styles.main}>
-        <Outlet />
-      </main>
+      {/* Ana İçerik ve Mobil Üst Bar */}
+      <div className={styles.contentWrapper}>
+        <header className={styles.topbar}>
+          {/* Mobil kullanıcı selamlama */}
+          <div className={styles.mobileUserInfo}>
+            <div className={styles.avatar}>
+              {user?.fullName?.charAt(0) || 'Ö'}
+            </div>
+            <div>
+              <div className={styles.greeting}>Merhaba,</div>
+              <div className={styles.userName}>{user?.fullName?.split(' ')[0]}</div>
+            </div>
+          </div>
 
-      {/* Bottom Tab Bar */}
-      <nav className={styles.bottomNav}>
-        {tabs.map((tab) => (
-          <NavLink
-            key={tab.path}
-            to={tab.path}
-            className={({ isActive }) => 
-              isActive ? `${styles.tab} ${styles.tabActive}` : styles.tab
-            }
-          >
-            <span className={styles.tabIcon}>{tab.icon}</span>
-            <span className={styles.tabLabel}>{tab.label}</span>
-          </NavLink>
-        ))}
-      </nav>
+          {/* Masaüstü başlık */}
+          <div className={styles.desktopTopbarTitle}>
+            Öğrenci Çalışma Alanı
+          </div>
+
+          <div className={styles.topbarActions}>
+            <button className={styles.notificationBtn} title="Bildirimler">
+              🔔 {unreadCount > 0 && <span className={styles.badge}>{unreadCount}</span>}
+            </button>
+            <button className={styles.mobileLogoutBtn} onClick={handleLogout} title="Çıkış Yap">
+              🚪
+            </button>
+          </div>
+        </header>
+
+        {/* Sayfa İçeriği */}
+        <main className={styles.main}>
+          <Outlet />
+        </main>
+
+        {/* Mobil Alt Menü Barı (< 768px) */}
+        <nav className={styles.bottomNav}>
+          {tabs.map((tab) => (
+            <NavLink
+              key={tab.path}
+              to={tab.path}
+              className={({ isActive }) => 
+                isActive ? `${styles.tab} ${styles.tabActive}` : styles.tab
+              }
+            >
+              <span className={styles.tabIcon}>{tab.icon}</span>
+              <span className={styles.tabLabel}>{tab.label}</span>
+            </NavLink>
+          ))}
+        </nav>
+      </div>
     </div>
   );
 };

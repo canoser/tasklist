@@ -283,6 +283,30 @@ namespace MentorumApi.Data
                         ON CONFLICT (id) DO UPDATE SET approval_status = 'APPROVED', max_programs = COALESCE(@MaxPrograms, coaches.max_programs), approved_by = @AdminId, approved_at = NOW()",
                         new { Id = userId, MaxPrograms = maxPrograms, AdminId = adminId }, tx);
                 }
+                else if (role == "Student")
+                {
+                    var existingProgramId = await conn.QuerySingleOrDefaultAsync<Guid?>(
+                        "SELECT program_id FROM students WHERE id = @Id", new { Id = userId }, tx);
+
+                    if (existingProgramId == null)
+                    {
+                        var personalProgramId = Guid.NewGuid();
+                        await conn.ExecuteAsync(@"
+                            INSERT INTO coaching_programs (id, name, description, color, created_by, is_active)
+                            VALUES (@Id, 'Bireysel Çalışma Programım', 'Koçsuz bağımsız öğrenci çalışma alanı', '#10B981', @UserId, 1)",
+                            new { Id = personalProgramId, UserId = userId }, tx);
+
+                        await conn.ExecuteAsync(@"
+                            INSERT INTO students (id, program_id, is_active)
+                            VALUES (@Id, @ProgramId, 1)
+                            ON CONFLICT (id) DO UPDATE SET is_active = 1",
+                            new { Id = userId, ProgramId = personalProgramId }, tx);
+                    }
+                    else
+                    {
+                        await conn.ExecuteAsync("UPDATE students SET is_active = 1 WHERE id = @Id", new { Id = userId }, tx);
+                    }
+                }
 
                 tx.Commit();
                 return true;
@@ -318,6 +342,19 @@ namespace MentorumApi.Data
 
                 if (role == "Coach")
                     await conn.ExecuteAsync("INSERT INTO coaches (id, plan_type, approval_status) VALUES (@Id, 'free', 'APPROVED')", new { Id = userId }, tx);
+                else if (role == "Student")
+                {
+                    var personalProgramId = Guid.NewGuid();
+                    await conn.ExecuteAsync(@"
+                        INSERT INTO coaching_programs (id, name, description, color, created_by, is_active)
+                        VALUES (@Id, 'Bireysel Çalışma Programım', 'Koçsuz bağımsız öğrenci çalışma alanı', '#10B981', @UserId, 1)",
+                        new { Id = personalProgramId, UserId = userId }, tx);
+
+                    await conn.ExecuteAsync(@"
+                        INSERT INTO students (id, program_id, is_active)
+                        VALUES (@Id, @ProgramId, 1)",
+                        new { Id = userId, ProgramId = personalProgramId }, tx);
+                }
 
                 tx.Commit();
                 return "OK";

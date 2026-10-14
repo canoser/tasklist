@@ -12,10 +12,25 @@ export const useStudents = () => {
 };
 
 export const useSendInvite = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ email, role, relatedId }) => {
       const response = await apiClient.post('/invites/send', { email, role, relatedId });
-      return response; // { code, link, expiresAt }
+      return response; // { code, link, expiresAt, directAdded, message }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coach', 'students'] });
+      queryClient.invalidateQueries({ queryKey: ['coach', 'pending-invites'] });
+    },
+  });
+};
+
+export const usePendingInvites = () => {
+  return useQuery({
+    queryKey: ['coach', 'pending-invites'],
+    queryFn: async () => {
+      const response = await apiClient.get('/invites/pending');
+      return response || [];
     },
   });
 };
