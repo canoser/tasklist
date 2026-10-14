@@ -332,7 +332,7 @@ namespace MentorumApi.Data
             catch { tx.Rollback(); throw; }
         }
 
-        public async Task<IEnumerable<dynamic>> GetAllUsersForAdminAsync(string? role = null, string? search = null)
+        public async Task<IEnumerable<AdminUserDto>> GetAllUsersForAdminAsync(string? role = null, string? search = null)
         {
             using var conn = _connectionFactory.CreateConnection();
             var sql = @"
@@ -358,7 +358,7 @@ namespace MentorumApi.Data
             }
             sql += " ORDER BY u.created_at DESC";
 
-            return await conn.QueryAsync(sql, dp);
+            return await conn.QueryAsync<AdminUserDto>(sql, dp);
         }
 
         private async Task EnsureStudentPersonalProgramAsync(IDbConnection conn, IDbTransaction tx, Guid userId)

@@ -45,4 +45,17 @@ namespace MentorumApi.DTOs
     {
         public required Guid CoachId { get; set; }
     }
+
+    public class AdminUserDto
+    {
+        public Guid Id { get; set; }
+        public required string FullName { get; set; }
+        public required string Email { get; set; }
+        public required string Role { get; set; }
+        public string ApprovalStatus { get; set; } = "";
+        public int IsActive { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public Guid? StudentProgramId { get; set; }
+        public string? ProgramName { get; set; }
+    }
 }
