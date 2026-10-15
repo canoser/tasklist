@@ -79,21 +79,25 @@ namespace MentorumApi.Endpoints
 
                 using var db = dbFactory.CreateConnection();
                 // Harika Kurgu: Eğer status PENDING ise ve due_date geçmişse anında OVERDUE döndürür! Cron'a gerek kalmaz!
-                var homeworks = await Dapper.SqlMapper.QueryAsync<dynamic>(db, @"
+                var homeworks = await Dapper.SqlMapper.QueryAsync<HomeworkItemDto>(db, @"
                     SELECT 
-                        id as Id, 
-                        snapshot_title as SnapshotTitle, 
-                        snapshot_desc as SnapshotDesc, 
-                        due_date as DueDate, 
-                        completed_at as CompletedAt,
-                        completion_percentage as CompletionPercentage,
+                        h.id as Id, 
+                        h.snapshot_title as SnapshotTitle, 
+                        h.snapshot_desc as SnapshotDesc, 
+                        h.due_date as DueDate, 
+                        h.completed_at as CompletedAt,
+                        h.completion_percentage as CompletionPercentage,
                         CASE 
-                            WHEN status = 'PENDING' AND due_date < @Now THEN 'OVERDUE'
-                            ELSE status 
-                        END as Status
-                    FROM homework_assignments 
-                    WHERE student_id = @UserId
-                    ORDER BY due_date ASC
+                            WHEN h.status = 'PENDING' AND h.due_date < @Now THEN 'OVERDUE'
+                            ELSE h.status 
+                        END as Status,
+                        s.name as SubjectName,
+                        ct.topic_name as TopicName
+                    FROM homework_assignments h
+                    LEFT JOIN subjects s ON s.id = h.subject_id
+                    LEFT JOIN curriculum_topics ct ON ct.id = h.curriculum_topic_id
+                    WHERE h.student_id = @UserId
+                    ORDER BY h.due_date ASC
                 ", new { UserId = userId, Now = DateTime.UtcNow });
 
                 return Results.Ok(homeworks);
@@ -118,21 +122,25 @@ namespace MentorumApi.Endpoints
 
                 if (relation == 0) return Results.Forbid();
 
-                var homeworks = await Dapper.SqlMapper.QueryAsync<dynamic>(db, @"
+                var homeworks = await Dapper.SqlMapper.QueryAsync<HomeworkItemDto>(db, @"
                     SELECT 
-                        id as Id, 
-                        snapshot_title as SnapshotTitle, 
-                        snapshot_desc as SnapshotDesc, 
-                        due_date as DueDate, 
-                        completed_at as CompletedAt,
-                        completion_percentage as CompletionPercentage,
+                        h.id as Id, 
+                        h.snapshot_title as SnapshotTitle, 
+                        h.snapshot_desc as SnapshotDesc, 
+                        h.due_date as DueDate, 
+                        h.completed_at as CompletedAt,
+                        h.completion_percentage as CompletionPercentage,
                         CASE 
-                            WHEN status = 'PENDING' AND due_date < @Now THEN 'OVERDUE'
-                            ELSE status 
-                        END as Status
-                    FROM homework_assignments 
-                    WHERE student_id = @StudentId
-                    ORDER BY due_date ASC
+                            WHEN h.status = 'PENDING' AND h.due_date < @Now THEN 'OVERDUE'
+                            ELSE h.status 
+                        END as Status,
+                        s.name as SubjectName,
+                        ct.topic_name as TopicName
+                    FROM homework_assignments h
+                    LEFT JOIN subjects s ON s.id = h.subject_id
+                    LEFT JOIN curriculum_topics ct ON ct.id = h.curriculum_topic_id
+                    WHERE h.student_id = @StudentId
+                    ORDER BY h.due_date ASC
                 ", new { StudentId = studentId, Now = DateTime.UtcNow });
 
                 return Results.Ok(homeworks);

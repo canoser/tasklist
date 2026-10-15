@@ -9,7 +9,7 @@ import './i18n'; // i18next başlat
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false, // Kullanıcı sekmeye dönünce gereksiz istek atma
+      refetchOnWindowFocus: true, // Kullanıcı sekmeye dönünce taze veriyi çek
       retry: 1, // Hata durumunda sadece 1 kez tekrar dene
       staleTime: 1000 * 60 * 5, // Veriyi 5 dakika taze kabul et
     },

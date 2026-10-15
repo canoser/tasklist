@@ -38,4 +38,17 @@ namespace MentorumApi.DTOs
     {
         public int CompletionPercentage { get; set; } = 100;
     }
+
+    public class HomeworkItemDto
+    {
+        public Guid Id { get; set; }
+        public string SnapshotTitle { get; set; } = "";
+        public string? SnapshotDesc { get; set; }
+        public DateTime DueDate { get; set; }
+        public DateTime? CompletedAt { get; set; }
+        public int? CompletionPercentage { get; set; }
+        public string Status { get; set; } = "";
+        public string? SubjectName { get; set; }
+        public string? TopicName { get; set; }
+    }
 }

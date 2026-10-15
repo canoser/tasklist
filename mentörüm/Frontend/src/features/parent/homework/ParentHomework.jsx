@@ -39,7 +39,14 @@ const ParentHomework = () => {
             {pendingHomeworks.map(hw => (
               <Card key={hw.id} className={styles.homeworkCard}>
                 <div className={styles.cardHeader}>
-                  <h3 className={styles.hwTitle}>{hw.snapshotTitle}</h3>
+                  <div>
+                    {(hw.subjectName || hw.topicName) && (
+                      <span className={styles.subjectBadge}>
+                        {hw.subjectName}{hw.topicName ? ` · ${hw.topicName}` : ''}
+                      </span>
+                    )}
+                    <h3 className={styles.hwTitle}>{hw.snapshotTitle}</h3>
+                  </div>
                   <span className={`${styles.statusBadge} ${hw.status === 'OVERDUE' ? styles.overdue : ''}`}>
                     {hw.status === 'OVERDUE' ? 'Gecikmiş' : 'Bekliyor'}
                   </span>
@@ -69,7 +76,14 @@ const ParentHomework = () => {
             {completedHomeworks.map(hw => (
               <Card key={hw.id} className={styles.homeworkCardCompleted}>
                 <div className={styles.cardHeader}>
-                  <h3 className={styles.hwTitleCompleted}>{hw.snapshotTitle}</h3>
+                  <div>
+                    {(hw.subjectName || hw.topicName) && (
+                      <span className={styles.subjectBadge}>
+                        {hw.subjectName}{hw.topicName ? ` · ${hw.topicName}` : ''}
+                      </span>
+                    )}
+                    <h3 className={styles.hwTitleCompleted}>{hw.snapshotTitle}</h3>
+                  </div>
                   <span className={styles.statusBadgeDone}>
                     ✓ Tamamlandı
                   </span>
