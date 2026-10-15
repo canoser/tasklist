@@ -39,13 +39,16 @@ try
     // --- SERVICES ---
     builder.Services.AddOpenApi();
     
+    var corsOrigins = (Environment.GetEnvironmentVariable("CORS_ORIGINS") ?? "http://localhost:5173,https://mentorum.dersmatris.com")
+        .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
     builder.Services.AddCors(options =>
     {
-        options.AddPolicy("AllowAll",
+        options.AddPolicy("MentorumCors",
             policy => policy
-                .WithOrigins("http://localhost:5173", "https://mentorum.dersmatris.com")
-                .AllowAnyMethod()
-                .AllowAnyHeader()
+                .WithOrigins(corsOrigins)
+                .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE")
+                .WithHeaders("Authorization", "Content-Type", "Idempotency-Key")
                 .AllowCredentials());
     });
 
@@ -69,6 +72,7 @@ try
     builder.Services.AddScoped<GroupRepository>();
     builder.Services.AddScoped<ScheduleRepository>();
     builder.Services.AddScoped<CourseResourceRepository>();
+    builder.Services.AddScoped<ProgramAccessGuard>();
     builder.Services.AddMemoryCache();
     builder.Services.AddHostedService<MentorumApi.Services.Background.OverdueHomeworkJob>();
 
@@ -117,38 +121,51 @@ try
         using var scope = app.Services.CreateScope();
         var dbFactory = scope.ServiceProvider.GetRequiredService<DbConnectionFactory>();
         using var conn = dbFactory.CreateConnection();
-        
-        var scriptPaths = new[] 
-        { 
-            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "001_InitialSchema.sql"),
-            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "002_Phase10_11.sql"),
-            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "003_InviteCode.sql"),
-            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "004_Curriculum2026.sql"),
-            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "005_HomeworkDirect.sql"),
-            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "006_SchoolModel.sql"),
-            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "007_AdminAndPrograms.sql"),
-            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "008_ContractCoachId.sql"),
-            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "009_AdminAndApproval.sql"),
-            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "010_ExamCourseId.sql"),
-            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "011_CoachProfile.sql"),
-            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "012_PersonalEvents.sql"),
-            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "013_ProgramCategory.sql"),
-            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "014_CoachingSessions.sql"),
-            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "015_CoachingSessionPrep.sql")
-        };
-        foreach(var path in scriptPaths)
+        conn.Open();
+
+        // Uygulanan migration'ları takip eden tablo (baseline destekli).
+        conn.Execute("CREATE TABLE IF NOT EXISTS _schema_migrations (filename TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW())");
+
+        var migrationsDir = Path.Combine(AppContext.BaseDirectory, "Data", "Migrations");
+        var files = Directory.Exists(migrationsDir)
+            ? Directory.GetFiles(migrationsDir, "*.sql").OrderBy(f => f, StringComparer.OrdinalIgnoreCase).ToArray()
+            : Array.Empty<string>();
+
+        var applied = new HashSet<string>(
+            conn.Query<string>("SELECT filename FROM _schema_migrations"),
+            StringComparer.OrdinalIgnoreCase);
+
+        // Baseline: _schema_migrations henüz boşken canlı DB zaten migration'lı ise
+        // mevcut dosyaları "uygulanmış" kabul et; yalnızca yenilerini çalıştır.
+        if (applied.Count == 0)
         {
-            if (File.Exists(path))
+            var usersExists = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public' AND table_name='users'") > 0;
+            var programsExists = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public' AND table_name='coaching_programs'") > 0;
+            if (usersExists && programsExists)
             {
-                var sql = File.ReadAllText(path);
-                conn.Execute(sql);
-                Log.Information("Migration uygulandı: {Path}", path);
-            }
-            else
-            {
-                Log.Warning("Migration dosyası bulunamadı: {Path}", path);
+                Log.Information("Mevcut veritabanı tespit edildi; mevcut migration'lar baseline olarak işaretleniyor.");
+                foreach (var f in files)
+                    applied.Add(Path.GetFileName(f));
             }
         }
+
+        foreach (var path in files)
+        {
+            var fileName = Path.GetFileName(path);
+            if (applied.Contains(fileName))
+            {
+                Log.Information("Atlandı (uygulanmış): {File}", fileName);
+                continue;
+            }
+
+            var sql = File.ReadAllText(path);
+            conn.Execute(sql);
+            conn.Execute(
+                "INSERT INTO _schema_migrations (filename) VALUES (@File) ON CONFLICT (filename) DO NOTHING",
+                new { File = fileName });
+            Log.Information("Migration uygulandı: {File}", fileName);
+        }
+
         Log.Information("Migration tamamlandı. Uygulama kapatılıyor.");
         return;
     }
@@ -160,7 +177,8 @@ try
 
     app.UseSerilogRequestLogging();
     app.UseHttpsRedirection();
-    app.UseCors("AllowAll");
+    app.UseCors("MentorumCors");
+    app.UseAuthRateLimit();
 
     app.UseAuthentication();
     

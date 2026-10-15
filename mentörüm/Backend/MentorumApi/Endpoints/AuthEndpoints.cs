@@ -24,9 +24,9 @@ namespace MentorumApi.Endpoints
                     return Results.BadRequest(new { error = "Eksik bilgi" });
 
                 var email = req.Email.ToLowerInvariant();
-                var role = req.Role ?? "Coach";
-                if (role != "Coach" && role != "Student" && role != "Parent")
-                    role = "Coach";
+                // Self-registration yalnızca koç hesabı oluşturur.
+                // Öğrenci/Veli/Öğretmen rolleri davet akışı üzerinden gelir (rol yükseltme/IDOR önlemi).
+                var role = "Coach";
 
                 var isAdmin = IsSuperAdminEmail(email);
 
@@ -479,9 +479,10 @@ var token = jwt.GenerateAccessToken(user);
 
         private static bool IsSuperAdminEmail(string email)
         {
-            var list = (Environment.GetEnvironmentVariable("SUPER_ADMIN_EMAILS") ?? "canoser@gmail.com,canoser@hotmail.com")
-                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            foreach (var e in list)
+            var configured = Environment.GetEnvironmentVariable("SUPER_ADMIN_EMAILS");
+            if (string.IsNullOrWhiteSpace(configured))
+                return false;
+            foreach (var e in configured.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
                 if (e.Equals(email, StringComparison.OrdinalIgnoreCase)) return true;
             return false;
         }
