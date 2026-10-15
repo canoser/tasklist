@@ -4,6 +4,7 @@ import Button from '../../components/common/Button/Button';
 import Input from '../../components/common/Input/Input';
 import Card from '../../components/common/Card/Card';
 import styles from './AdminPanelPage.module.css';
+import { apiClient } from '../../api/apiClient';
 
 const ROLE_LABEL = { 
   Student: 'Öğrenci', 
@@ -31,6 +32,9 @@ const AdminPanelPage = () => {
   const [newRole, setNewRole] = useState('Coach');
   const [created, setCreated] = useState(null);
   const [addError, setAddError] = useState('');
+  const [curriculumBusy, setCurriculumBusy] = useState(false);
+  const [curriculumResult, setCurriculumResult] = useState(null);
+  const [curriculumError, setCurriculumError] = useState('');
 
   const handleApprove = (userId, defaultRole) => {
     const role = roles[userId] || defaultRole;
@@ -48,6 +52,47 @@ const AdminPanelPage = () => {
       setNewEmail(''); setNewFullName('');
     } catch (err) {
       setAddError(err?.response?.data?.error || 'Kullanıcı eklenemedi.');
+    }
+  };
+
+  const handleExportCurriculum = async () => {
+    setCurriculumError('');
+    setCurriculumResult(null);
+    setCurriculumBusy(true);
+    try {
+      const data = await apiClient.get('/curriculum/export');
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'mufredat_sablonu.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      setCurriculumError('Dışa aktarma başarısız: ' + (e?.response?.data?.error || e?.message || 'Bilinmeyen hata'));
+    } finally {
+      setCurriculumBusy(false);
+    }
+  };
+
+  const handleImportCurriculum = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCurriculumBusy(true);
+    setCurriculumError('');
+    setCurriculumResult(null);
+    try {
+      const text = await file.text();
+      const payload = JSON.parse(text);
+      const res = await apiClient.post('/curriculum/import', payload);
+      setCurriculumResult(res);
+    } catch (err) {
+      setCurriculumError('İçe aktarma başarısız: ' + (err?.response?.data?.error || err?.message || 'JSON biçimi geçersiz olabilir'));
+    } finally {
+      setCurriculumBusy(false);
+      e.target.value = '';
     }
   };
 
@@ -75,6 +120,12 @@ const AdminPanelPage = () => {
         >
           👥 Tüm Kullanıcılar
           {allUsers && <span className={styles.tabBadgeNeutral}>{allUsers.length}</span>}
+        </button>
+        <button 
+          className={`${styles.tabBtn} ${activeTab === 'curriculum' ? styles.tabBtnActive : ''}`}
+          onClick={() => setActiveTab('curriculum')}
+        >
+          📚 Müfredat
         </button>
       </div>
 
@@ -216,6 +267,42 @@ const AdminPanelPage = () => {
               </Card>
             ))}
           </div>
+        </div>
+      )}
+      {/* SEKME 3: MÜFREDAT YÖNETİMİ */}
+      {activeTab === 'curriculum' && (
+        <div className={styles.section}>
+          <Card padding="md">
+            <h3 className={styles.cardSectionTitle}>📚 Müfredat Yönetimi</h3>
+            <p style={{ color: '#555', marginBottom: 12 }}>
+              Müfredatı dışa aktararak JSON şablonunu indirin; bu şablonu bir yapay zekâya yapıştırıp
+              gerçek MEB müfredatıyla doldurun, ardından doldurulmuş dosyayı içe aktarın.
+            </p>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+              <Button onClick={handleExportCurriculum} disabled={curriculumBusy}>📥 Şablonu İndir (JSON)</Button>
+              <label style={{ display: 'inline-block', cursor: 'pointer' }}>
+                <input
+                  type="file"
+                  accept=".json,application/json"
+                  onChange={handleImportCurriculum}
+                  disabled={curriculumBusy}
+                  style={{ display: 'none' }}
+                />
+                <span style={{ display: 'inline-block', cursor: 'pointer', border: '1px solid #ccc', padding: '8px 14px', borderRadius: 8, background: '#f5f5f5' }}>
+                  {curriculumBusy ? 'İçe aktarılıyor…' : '📤 İçe Aktar (JSON)'}
+                </span>
+              </label>
+            </div>
+            {curriculumResult && (
+              <div style={{ marginTop: 12, padding: 10, background: '#eef7ee', borderRadius: 8 }}>
+                <strong>Sonuç:</strong> {curriculumResult.inserted} eklendi, {curriculumResult.updated} güncellendi, {curriculumResult.skipped} atlandı.
+                {curriculumResult.errors?.length > 0 && (
+                  <pre style={{ whiteSpace: 'pre-wrap', marginTop: 8, fontSize: 12 }}>{curriculumResult.errors.join('\n')}</pre>
+                )}
+              </div>
+            )}
+            {curriculumError && <p style={{ color: '#c00', marginTop: 10 }}>{curriculumError}</p>}
+          </Card>
         </div>
       )}
     </div>

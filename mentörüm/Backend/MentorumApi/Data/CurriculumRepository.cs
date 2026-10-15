@@ -76,5 +76,189 @@ namespace MentorumApi.Data
                 ORDER BY s.name, ct.sort_order",
                 new { StudentId = studentId, GradeText = gradeText });
         }
+
+        /// <summary>Müfredatı AI ile doldurulacak JSON şablonu olarak dışa aktarır.</summary>
+        public async Task<CurriculumExportDto> ExportAsync()
+        {
+            using var conn = _connectionFactory.CreateConnection();
+
+            var year = await conn.QuerySingleOrDefaultAsync<string?>(
+                "SELECT year_label FROM curriculum_years WHERE is_active = 1 ORDER BY created_at LIMIT 1");
+
+            var subjects = (await conn.QueryAsync<SubjectDto>(
+                "SELECT id, name, short_code AS ShortCode, default_color AS DefaultColor, is_system_subject AS IsSystemSubject FROM subjects ORDER BY name")).ToList();
+
+            var rows = await conn.QueryAsync<CurriculumTopicRow>(@"
+                SELECT s.name AS SubjectName, ct.grade AS Grade, ct.curriculum_type AS CurriculumType,
+                       ct.unit_number AS UnitNumber, ct.unit_name AS UnitName,
+                       ct.topic_number AS TopicNumber, ct.topic_name AS TopicName
+                FROM curriculum_topics ct
+                JOIN subjects s ON s.id = ct.subject_id
+                WHERE ct.is_active = 1
+                ORDER BY s.name, ct.sort_order");
+
+            return new CurriculumExportDto
+            {
+                FormatVersion = 1,
+                CurriculumYear = year,
+                Instructions = "Bu JSON, Mentörüm müfredatını doldurmak için şablondur. 'topics' dizisini gerçek MEB müfredatına uygun şekilde eksiksiz doldurun. Her öğe için: subject (ders adı, 'subjects' listesindeki ad), grade ('4'..'12' veya 'TYT'/'AYT'), type ('NEW' = yeni Maarif müfredatı, 'OLD' = eski müfredat), unit (ünite no), unitName (ünite adı), topic (konu no, örn. '1.1'), topicName (konu adı) alanlarını yazın. Mevcut satırlar yalnızca örnektir.",
+                Subjects = subjects.Select(s => new CurriculumSubjectRefDto { Name = s.Name, ShortCode = s.ShortCode }).ToList(),
+                Topics = rows.Select(r => new CurriculumTopicImportRow
+                {
+                    Subject = r.SubjectName,
+                    Grade = r.Grade,
+                    Type = r.CurriculumType,
+                    Unit = r.UnitNumber ?? 0,
+                    UnitName = r.UnitName,
+                    Topic = r.TopicNumber,
+                    TopicName = r.TopicName
+                }).ToList()
+            };
+        }
+
+        /// <summary>
+        /// Doldurulmuş müfredatı içe aktarır (upsert). Var olan konular güncellenir,
+        /// olmayanlar eklenir; hiçbir konu silinmez (ödev bağlantıları korunur).
+        /// </summary>
+        public async Task<CurriculumImportResultDto> ImportAsync(CurriculumExportDto payload)
+        {
+            var result = new CurriculumImportResultDto();
+            using var conn = _connectionFactory.CreateConnection();
+            conn.Open();
+            using var tx = conn.BeginTransaction();
+
+            Guid? yearId = null;
+            var yearLabel = payload.CurriculumYear?.Trim();
+            if (!string.IsNullOrWhiteSpace(yearLabel))
+            {
+                yearId = await conn.QuerySingleOrDefaultAsync<Guid?>(
+                    "SELECT id FROM curriculum_years WHERE year_label = @Label",
+                    new { Label = yearLabel }, tx);
+                if (yearId == null)
+                {
+                    yearId = Guid.NewGuid();
+                    await conn.ExecuteAsync(
+                        "INSERT INTO curriculum_years (id, year_label, is_active) VALUES (@Id, @Label, 1)",
+                        new { Id = yearId.Value, Label = yearLabel }, tx);
+                }
+            }
+            yearId ??= await conn.QuerySingleOrDefaultAsync<Guid?>(
+                "SELECT id FROM curriculum_years WHERE is_active = 1 ORDER BY created_at LIMIT 1", transaction: tx);
+            if (yearId == null)
+            {
+                yearId = Guid.NewGuid();
+                await conn.ExecuteAsync(
+                    "INSERT INTO curriculum_years (id, year_label, is_active) VALUES (@Id, '2026-2027', 1)",
+                    new { Id = yearId.Value }, tx);
+            }
+
+            var subjectRows = await conn.QueryAsync<SubjectKeyRow>(
+                "SELECT id AS Id, name AS Name, short_code AS ShortCode FROM subjects", transaction: tx);
+            var byName = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
+            foreach (var s in subjectRows)
+            {
+                if (!string.IsNullOrWhiteSpace(s.Name)) byName[s.Name.Trim()] = s.Id;
+                if (!string.IsNullOrWhiteSpace(s.ShortCode)) byName[s.ShortCode.Trim()] = s.Id;
+            }
+
+            var existingRows = await conn.QueryAsync<ExistingTopicRow>(@"
+                SELECT id AS Id, subject_id AS SubjectId, grade AS Grade,
+                       curriculum_type AS CurriculumType, unit_number AS UnitNumber, topic_number AS TopicNumber
+                FROM curriculum_topics WHERE curriculum_year_id = @YearId",
+                new { YearId = yearId.Value }, tx);
+            var existingByKey = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
+            foreach (var e in existingRows)
+                existingByKey[Key(e.SubjectId, e.Grade, e.CurriculumType, e.UnitNumber ?? 0, e.TopicNumber)] = e.Id;
+
+            var sortCounter = new Dictionary<Guid, int>();
+
+            foreach (var t in payload.Topics ?? new List<CurriculumTopicImportRow>())
+            {
+                var subjectName = (t.Subject ?? "").Trim();
+                if (subjectName.Length == 0 || !byName.TryGetValue(subjectName, out var subjectId))
+                {
+                    result.Skipped++;
+                    if (result.Errors.Count < 20) result.Errors.Add($"Bilinmeyen ders: {t.Subject}");
+                    continue;
+                }
+                if (string.IsNullOrWhiteSpace(t.TopicName))
+                {
+                    result.Skipped++;
+                    if (result.Errors.Count < 20) result.Errors.Add($"Konu adı eksik: {subjectName}");
+                    continue;
+                }
+
+                var grade = (t.Grade ?? "").Trim();
+                if (grade.Length == 0)
+                {
+                    result.Skipped++;
+                    if (result.Errors.Count < 20) result.Errors.Add($"Seviye eksik: {subjectName} - {t.TopicName}");
+                    continue;
+                }
+
+                var type = string.Equals(t.Type?.Trim(), "OLD", StringComparison.OrdinalIgnoreCase) ? "OLD" : "NEW";
+                var unit = t.Unit > 0 ? t.Unit : 1;
+                var topicNo = string.IsNullOrWhiteSpace(t.Topic) ? $"{unit}.1" : t.Topic.Trim();
+
+                sortCounter.TryGetValue(subjectId, out var seq);
+                seq += 1;
+                sortCounter[subjectId] = seq;
+
+                var key = Key(subjectId, grade, type, unit, topicNo);
+                if (existingByKey.TryGetValue(key, out var existingId))
+                {
+                    await conn.ExecuteAsync(@"
+                        UPDATE curriculum_topics
+                        SET unit_name = @UnitName, topic_name = @TopicName, is_active = 1, sort_order = @SortOrder
+                        WHERE id = @Id",
+                        new { Id = existingId, UnitName = t.UnitName, TopicName = t.TopicName, SortOrder = seq }, tx);
+                    result.Updated++;
+                }
+                else
+                {
+                    var newId = Guid.NewGuid();
+                    await conn.ExecuteAsync(@"
+                        INSERT INTO curriculum_topics (id, curriculum_year_id, subject_id, grade, curriculum_type, unit_number, unit_name, topic_number, topic_name, is_active, sort_order)
+                        VALUES (@Id, @YearId, @SubjectId, @Grade, @Type, @Unit, @UnitName, @TopicNo, @TopicName, 1, @SortOrder)",
+                        new { Id = newId, YearId = yearId.Value, SubjectId = subjectId, Grade = grade, Type = type, Unit = unit, UnitName = t.UnitName, TopicNo = topicNo, TopicName = t.TopicName, SortOrder = seq }, tx);
+                    existingByKey[key] = newId;
+                    result.Inserted++;
+                }
+            }
+
+            tx.Commit();
+            return result;
+        }
+
+        private static string Key(Guid subjectId, string grade, string type, int unit, string topic)
+            => $"{subjectId}|{grade.ToUpperInvariant()}|{type}|{unit}|{topic.ToUpperInvariant()}";
+
+        private sealed class CurriculumTopicRow
+        {
+            public string SubjectName { get; set; } = "";
+            public string Grade { get; set; } = "";
+            public string CurriculumType { get; set; } = "";
+            public int? UnitNumber { get; set; }
+            public string UnitName { get; set; } = "";
+            public string TopicNumber { get; set; } = "";
+            public string TopicName { get; set; } = "";
+        }
+
+        private sealed class SubjectKeyRow
+        {
+            public Guid Id { get; set; }
+            public string Name { get; set; } = "";
+            public string ShortCode { get; set; } = "";
+        }
+
+        private sealed class ExistingTopicRow
+        {
+            public Guid Id { get; set; }
+            public Guid SubjectId { get; set; }
+            public string Grade { get; set; } = "";
+            public string CurriculumType { get; set; } = "";
+            public int? UnitNumber { get; set; }
+            public string TopicNumber { get; set; } = "";
+        }
     }
 }

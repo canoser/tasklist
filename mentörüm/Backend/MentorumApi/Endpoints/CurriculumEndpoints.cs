@@ -44,5 +44,22 @@ public static class CurriculumEndpoints
             conn.Execute(sql);
             return Results.Ok(new { message = "Müfredat başarıyla güncellendi." });
         }).RequireAuthorization("RequireCoachRole");
+
+        // Müfredatı dışa aktar: AI ile doldurulacak JSON şablonu üretir (mevcut konular örnek olarak eklenir).
+        group.MapGet("/export", async ([FromServices] CurriculumRepository repo) =>
+        {
+            var payload = await repo.ExportAsync();
+            return Results.Ok(payload);
+        }).RequireAuthorization();
+
+        // Müfredatı içe aktar: doldurulmuş JSON'u alır, konuları upsert eder (silmez).
+        group.MapPost("/import", async ([FromBody] CurriculumExportDto payload, [FromServices] CurriculumRepository repo) =>
+        {
+            if (payload == null || payload.Topics == null || payload.Topics.Count == 0)
+                return Results.BadRequest(new { error = "İçe aktarılacak konu bulunamadı. JSON içinde 'topics' dizisi olmalı." });
+
+            var result = await repo.ImportAsync(payload);
+            return Results.Ok(result);
+        }).RequireAuthorization("RequireAdminRole");
     }
 }
