@@ -1,4 +1,5 @@
 using Dapper;
+using Microsoft.Extensions.Caching.Memory;
 using MentorumApi.Data;
 using MentorumApi.DTOs;
 using MentorumApi.Models;
@@ -389,10 +390,16 @@ var token = jwt.GenerateAccessToken(user);
                     User = new UserDto { Id = user.Id, Email = user.Email, Role = user.Role, FullName = user.FullName, AvatarUrl = user.AvatarUrl, IsAdmin = user.IsAdmin }
                 });
             });
-            group.MapPost("/forgot-password", async ([FromBody] ForgotPasswordRequest req, [FromServices] DbConnectionFactory db, [FromServices] IEmailService emailService) =>
+            group.MapPost("/forgot-password", async ([FromBody] ForgotPasswordRequest req, [FromServices] DbConnectionFactory db, [FromServices] IEmailService emailService, [FromServices] IMemoryCache cache) =>
             {
                 if (string.IsNullOrEmpty(req.Email)) return Results.BadRequest(new { error = "Eksik bilgi" });
                 var email = req.Email.ToLowerInvariant();
+
+                // Basit rate-limit: aynı e-posta için 5 dakikada en fazla 1 sıfırlama e-postası (kota koruması).
+                var rateKey = $"forgot_pw_{email}";
+                if (cache.TryGetValue(rateKey, out _))
+                    return Results.Ok(new { message = "Eğer e-posta kayıtlıysa şifre sıfırlama bağlantısı gönderildi." });
+                cache.Set(rateKey, true, TimeSpan.FromMinutes(5));
 
                 using var conn = db.CreateConnection();
                 var userId = await conn.QuerySingleOrDefaultAsync<Guid?>("SELECT id FROM users WHERE email = @Email AND is_active = 1", new { Email = email });
