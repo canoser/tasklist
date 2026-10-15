@@ -1,6 +1,6 @@
-# ⚡ Mentörüm — V7 Ön Rapor & Uyarlama Görev Listesi (Gemini 3.8 Flash Analizi)
+# ⚡ Mentörüm — Olası Değişiklikler Ön Rapor & Uyarlama Görev Listesi (Gemini 3.8 Flash Analizi)
 
-> **Belge Adı:** `TASK_LIST_V7_ON_RAPOR_GEMINI_FLASH_3.8.md`  
+> **Belge Adı:** `OLASI_DEGISIKLIKLER_ON_RAPOR_GEMINI_FLASH_3.8.md`  
 > **Tarih:** 12 Ekim 2026  
 > **Model / Analiz Motoru:** Gemini 3.8 Flash (High Fidelity)  
 > **Referans Kaynaklar:**  

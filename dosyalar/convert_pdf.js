@@ -222,7 +222,7 @@ function convertFile(filename) {
 
     const inputPath = path.resolve(__dirname, '..', 'mentörüm', 'docs', mdName);
     const outputPath = path.resolve(__dirname, '..', 'mentörüm', 'docs', pdfName);
-    const copyPath = path.resolve(__dirname, pdfName);
+    const copyPath = path.resolve(__dirname, path.basename(pdfName));
     const tempHtmlPath = path.resolve(__dirname, `temp_${path.parse(mdName).name}.html`);
 
     if (!fs.existsSync(inputPath)) {
@@ -264,9 +264,10 @@ function convertFile(filename) {
 }
 
 const targetFiles = [
-    'TASK_LIST_V7_ON_RAPOR_DEEPSEEK.md',
-    'TASK_LIST_V7_ON_RAPOR_GEMINI_FLASH_3.8.md',
-    'TASK_LIST_V7_ON_RAPOR_GEMINI.md'
+    'Eklemeler_Fikirler/OLASI_DEGISIKLIKLER_ON_RAPOR_DEEPSEEK.md',
+    'Eklemeler_Fikirler/OLASI_DEGISIKLIKLER_ON_RAPOR_GEMINI_FLASH_3.8.md',
+    'Eklemeler_Fikirler/OLASI_DEGISIKLIKLER_ON_RAPOR_GEMINI.md',
+    'Eklemeler_Fikirler/OLASI_DEGISIKLIKLER_ON_RAPOR_OPUS_SENTEZ.md'
 ];
 
 targetFiles.forEach(convertFile);

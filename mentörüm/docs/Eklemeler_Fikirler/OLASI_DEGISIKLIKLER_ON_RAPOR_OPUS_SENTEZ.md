@@ -1,13 +1,13 @@
-# 🏛️ Mentörüm — V7 Ön Rapor OPUS SENTEZİ
+# 🏛️ Mentörüm — Olası Değişiklikler Ön Rapor OPUS SENTEZİ
 # Z Koçluk Rekabet Analizi, Uyarlama Stratejisi ve Birleşik Yol Haritası
 
-> **Belge Adı:** `TASK_LIST_V7_ON_RAPOR_OPUS_SENTEZ.md`  
+> **Belge Adı:** `OLASI_DEGISIKLIKLER_ON_RAPOR_OPUS_SENTEZ.md`  
 > **Tarih:** 12 Ekim 2026  
 > **Hazırlayan:** Opus Sentez Ajanı (Google DeepMind — Antigravity)  
 > **Sentez Kaynakları:**  
-> 1. `TASK_LIST_V7_ON_RAPOR_DEEPSEEK.md` — DeepSeek analizi (21 özellik, 6 fazlı yol haritası)  
-> 2. `TASK_LIST_V7_ON_RAPOR_GEMINI.md` — Gemini analizi (13 modül, Mermaid diagram yol haritası)  
-> 3. `TASK_LIST_V7_ON_RAPOR_GEMINI_FLASH_3.8.md` — Gemini Flash 3.8 analizi (19 özellik, Sequence diagram, 3 fazlı haftalık plan)  
+> 1. `OLASI_DEGISIKLIKLER_ON_RAPOR_DEEPSEEK.md` — DeepSeek analizi (21 özellik, 6 fazlı yol haritası)  
+> 2. `OLASI_DEGISIKLIKLER_ON_RAPOR_GEMINI.md` — Gemini analizi (13 modül, Mermaid diagram yol haritası)  
+> 3. `OLASI_DEGISIKLIKLER_ON_RAPOR_GEMINI_FLASH_3.8.md` — Gemini Flash 3.8 analizi (19 özellik, Sequence diagram, 3 fazlı haftalık plan)  
 > 4. `EKRAN_ANALIZLERI_VE_TASVIRLER.md` — 35 ekran görüntüsünün piksel düzeyinde tasviri  
 > 5. `sayfa kaynağı.html` — Z Koçluk gateway HTML/JS + Flutter bootstrap kaynak kodu  
 > 6. Canlı site: `https://zkocluk.com/`  
@@ -354,7 +354,7 @@ GROUP BY s.id, u.full_name
 
 ```mermaid
 gantt
-    title Mentörüm V7 — Z Koçluk Uyarlama Yol Haritası
+    title Mentörüm Olası Değişiklikler — Z Koçluk Uyarlama Yol Haritası
     dateFormat  YYYY-MM-DD
     axisFormat  %d/%m
 

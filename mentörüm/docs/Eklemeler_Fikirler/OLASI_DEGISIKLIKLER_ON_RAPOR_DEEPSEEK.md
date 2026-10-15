@@ -1,4 +1,4 @@
-# 🧭 TASK_LIST_V7_ON_RAPOR — Z Koçluk (zkocluk.com) Uyarlama Analizi & Görev Listesi
+# 🧭 OLASI_DEGISIKLIKLER_ON_RAPOR — Z Koçluk (zkocluk.com) Uyarlama Analizi & Görev Listesi
 
 > **Tarih:** 12 Ekim 2026
 > **Amaç:** `docs/zkocluk.com/` (35 ekran tasviri + HTML kaynak) ve canlı site (`https://zkocluk.com/`) incelenerek, Z Koçluk'tan **Mentörüm'e uyarlanabilir** işlevlerin (ödeme dahil) adım adım analizi + zorluk sınıflandırması.

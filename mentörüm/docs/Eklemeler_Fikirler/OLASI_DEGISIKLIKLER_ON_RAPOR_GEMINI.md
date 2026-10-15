@@ -1,6 +1,6 @@
-# 🚀 Mentörüm — V7 Ön Rapor & Görev Analiz Listesi (Z Koçluk İncelemesi & Enjeksiyon Planı)
+# 🚀 Mentörüm — Olası Değişiklikler Ön Rapor & Görev Analiz Listesi (Z Koçluk İncelemesi & Enjeksiyon Planı)
 
-> **Belge Adı:** `TASK_LIST_V7_ON_RAPOR_GEMINI.md`  
+> **Belge Adı:** `OLASI_DEGISIKLIKLER_ON_RAPOR_GEMINI.md`  
 > **Tarih:** 12 Ekim 2026  
 > **Hazırlayan:** Gemini (Google DeepMind - Antigravity Agent)  
 > **Referans Kaynaklar:**  
