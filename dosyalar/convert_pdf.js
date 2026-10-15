@@ -263,12 +263,14 @@ function convertFile(filename) {
     }
 }
 
-const targetFiles = [
+const cliArgs = process.argv.slice(2);
+const defaultFiles = [
     'Eklemeler_Fikirler/OLASI_DEGISIKLIKLER_ON_RAPOR_DEEPSEEK.md',
     'Eklemeler_Fikirler/OLASI_DEGISIKLIKLER_ON_RAPOR_GEMINI_FLASH_3.8.md',
     'Eklemeler_Fikirler/OLASI_DEGISIKLIKLER_ON_RAPOR_GEMINI.md',
     'Eklemeler_Fikirler/OLASI_DEGISIKLIKLER_ON_RAPOR_OPUS_SENTEZ.md'
 ];
+const targetFiles = cliArgs.length > 0 ? cliArgs : defaultFiles;
 
 targetFiles.forEach(convertFile);
 console.log('\n🎉 Tüm PDF dönüştürmeleri tamamlandı!');
