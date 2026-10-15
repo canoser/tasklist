@@ -33,6 +33,15 @@
   gap: var(--spacing-md);
 }
 
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--text-color-muted);
+  font-size: 0.9rem;
+}
+
 .legend {
   display: flex;
   gap: var(--spacing-lg);

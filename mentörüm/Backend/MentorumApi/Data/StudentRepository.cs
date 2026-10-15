@@ -11,9 +11,11 @@ namespace MentorumApi.Data
         {
             var sql = @"
                 SELECT u.id, u.full_name AS FullName, u.email, u.avatar_url AS AvatarUrl, 
-                       s.grade, s.track, s.target_university AS TargetUniversity, s.is_active AS IsActive
+                       s.grade, s.track, s.target_university AS TargetUniversity, s.is_active AS IsActive,
+                       s.program_id AS ProgramId, cp.name AS ProgramName
                 FROM users u 
                 JOIN students s ON u.id = s.id 
+                LEFT JOIN coaching_programs cp ON cp.id = s.program_id
                 /**where**/ 
                 ORDER BY u.full_name";
             

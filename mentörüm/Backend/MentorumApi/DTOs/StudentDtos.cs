@@ -12,6 +12,8 @@ namespace MentorumApi.DTOs
         public string? Track { get; set; }
         public string? TargetUniversity { get; set; }
         public int IsActive { get; set; }
+        public Guid? ProgramId { get; set; }
+        public string? ProgramName { get; set; }
     }
 
     public class StudentDetailDto : StudentListDto

@@ -68,6 +68,12 @@ namespace MentorumApi.Data
                     Now = DateTime.UtcNow
                 }, tx);
 
+                // Öğrenciye "yeni ödev" bildirimi gönder — öğrenci sayfasını yenilediğinde ödevi de görür.
+                await conn.ExecuteAsync(@"
+                    INSERT INTO notifications (id, user_id, type, title, body, created_at)
+                    VALUES (@NotifId, @StudentId, 'HOMEWORK_ASSIGNED', 'Yeni Ödev Atandı', @NotifBody, @Now)",
+                    new { NotifId = Guid.NewGuid(), req.StudentId, NotifBody = $"{req.Title} ödevi atandı.", Now = DateTime.UtcNow }, tx);
+
                 tx.Commit();
                 return assignId;
             }
