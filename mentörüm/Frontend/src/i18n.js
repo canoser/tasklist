@@ -1,7 +1,8 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
-// Gelecekte dil dosyaları ayrı klasörden (locales/tr/translation.json) yüklenebilir.
+// i18n altyapısı: şimdilik yalnızca Türkçe. Diğer diller (en, es, fr, de, ro) ve
+// üslup varyantları (formal, semi, buddy) için yapı hazır; yalnızca resource eklemek yeterli.
 const resources = {
   tr: {
     translation: {
@@ -15,7 +16,12 @@ const resources = {
         login: "Giriş Yap",
         email: "E-posta",
         password: "Şifre",
-      }
+      },
+      tones: {
+        formal: { greeting: "Hoş geldiniz" },
+        semi: { greeting: "Hoş geldin" },
+        buddy: { greeting: "Selam!" },
+      },
     }
   }
 };

@@ -52,6 +52,20 @@
   margin-bottom: var(--spacing-sm);
 }
 
+.itemDesc {
+  font-size: 0.85rem;
+  color: var(--text-color-main);
+  margin-bottom: 4px;
+}
+
+.colorDot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;

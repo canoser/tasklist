@@ -42,6 +42,38 @@
   font-size: 0.9rem;
 }
 
+.filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: var(--spacing-md);
+}
+
+.select {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: #fff;
+  color: var(--text-color-main);
+  font-size: 0.85rem;
+}
+
+.addBtn {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.addBtn:hover {
+  opacity: 0.9;
+}
+
+
 .legend {
   display: flex;
   gap: var(--spacing-lg);
@@ -57,6 +89,17 @@
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--text-color-main);
+}
+
+button.legendItem {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
 }
 
 .dot {

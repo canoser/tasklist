@@ -11,6 +11,7 @@ import ParentLayout from './components/layout/ParentLayout/ParentLayout';
 import TeacherLayout from './components/layout/TeacherLayout/TeacherLayout';
 import CoachDashboard from './features/coach/dashboard/CoachDashboard';
 import StudentHomework from './features/student/homework/StudentHomework';
+import StudentCalendarPage from './features/student/calendar/StudentCalendarPage';
 import StudentHome from './features/student/home/StudentHome';
 import CoachStudents from './features/coach/students/CoachStudents';
 import CoachStudentDetail from './features/coach/student-detail/CoachStudentDetail';
@@ -18,7 +19,7 @@ import CalendarPage from './features/coach/calendar/CalendarPage';
 import CoachReports from './features/coach/reports/CoachReports';
 import ParentSummary from './features/parent/summary/ParentSummary';
 import ParentHomework from './features/parent/homework/ParentHomework';
-import ComingSoon from './components/common/Card/ComingSoon';
+import ParentCalendarPage from './features/parent/calendar/ParentCalendarPage';
 import CoachProgramsPage from './features/coach/programs/CoachProgramsPage';
 import CoachTeachersPage from './features/coach/teachers/CoachTeachersPage';
 import CoachCoursesPage from './features/coach/courses/CoachCoursesPage';
@@ -135,7 +136,7 @@ function App() {
         >
           <Route path="home" element={<StudentHome />} />
           <Route path="homework" element={<StudentHomework />} />
-          <Route path="calendar" element={<ComingSoon title="Ders Takvimi" icon="📅" />} />
+          <Route path="calendar" element={<StudentCalendarPage />} />
           <Route path="schedule" element={<StudentSchedulePage />} />
           <Route path="courses" element={<StudentCoursesPage />} />
           <Route path="profile" element={<StudentProfilePage />} />
@@ -152,7 +153,7 @@ function App() {
         >
           <Route path="summary" element={<ParentSummary />} />
           <Route path="homework" element={<ParentHomework />} />
-          <Route path="calendar" element={<ComingSoon title="Takvim" icon="📅" />} />
+          <Route path="calendar" element={<ParentCalendarPage />} />
           <Route path="schedule" element={<ParentSchedulePage />} />
         </Route>
 

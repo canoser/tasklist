@@ -223,3 +223,89 @@ export const useAddExamResult = () => {
     }
   });
 };
+
+export const useCoachStudentHomework = (studentId) => {
+  return useQuery({
+    queryKey: ['coach', 'student', studentId, 'homework'],
+    queryFn: async () => {
+      if (!studentId) return [];
+      return (await apiClient.get(`/homework/student/${studentId}`)) || [];
+    },
+    enabled: !!studentId,
+  });
+};
+
+export const useCoachStudentCurriculum = (studentId) => {
+  return useQuery({
+    queryKey: ['coach', 'student', studentId, 'curriculum'],
+    queryFn: async () => {
+      if (!studentId) return [];
+      return (await apiClient.get(`/students/${studentId}/curriculum`)) || [];
+    },
+    enabled: !!studentId,
+  });
+};
+
+export const useUpdateCoachProfile = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data) => {
+      return await apiClient.patch('/me/profile', data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['me'] });
+    },
+  });
+};
+
+export const useStudentReport = (studentId) => {
+  return useQuery({
+    queryKey: ['coach', 'reports', 'student', studentId],
+    queryFn: async () => {
+      if (!studentId) return null;
+      return (await apiClient.get(`/reports/students/${studentId}`)) || null;
+    },
+    enabled: !!studentId,
+  });
+};
+
+export const useReportsDetail = () => {
+  return useQuery({
+    queryKey: ['coach', 'reports', 'detail'],
+    queryFn: async () => (await apiClient.get('/reports/detail')) || null,
+  });
+};
+
+export const useCoachStudentEvents = (studentId) => {
+  return useQuery({
+    queryKey: ['coach', 'student', studentId, 'events'],
+    queryFn: async () => {
+      if (!studentId) return [];
+      return (await apiClient.get(`/students/${studentId}/events`)) || [];
+    },
+    enabled: !!studentId,
+  });
+};
+
+export const useCoachStudentSessions = (studentId) => {
+  return useQuery({
+    queryKey: ['coach', 'student', studentId, 'sessions'],
+    queryFn: async () => {
+      if (!studentId) return [];
+      return (await apiClient.get(`/students/${studentId}/sessions`)) || [];
+    },
+    enabled: !!studentId,
+  });
+};
+
+export const useCreateCoachingSession = (studentId) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data) => {
+      return await apiClient.post(`/students/${studentId}/sessions`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coach', 'student', studentId, 'sessions'] });
+    },
+  });
+};

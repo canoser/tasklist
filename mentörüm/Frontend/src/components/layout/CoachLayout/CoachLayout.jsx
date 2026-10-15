@@ -3,7 +3,7 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../../features/auth/authStore';
 import { apiClient } from '../../../api/apiClient';
 import { useUIStore } from '../../../store/uiStore';
-import { useNotifications } from '../../../hooks/useNotifications';
+import NotificationDropdown from '../../common/NotificationDropdown/NotificationDropdown';
 import styles from './CoachLayout.module.css';
 
 const CoachLayout = () => {
@@ -11,9 +11,6 @@ const CoachLayout = () => {
   const { sidebarOpen, toggleSidebar, closeSidebar } = useUIStore();
   const navigate = useNavigate();
   
-  const { data: notifications } = useNotifications();
-  const unreadCount = notifications?.filter(n => !n.isRead)?.length || 0;
-
   const handleLogout = async () => {
     try {
       await apiClient.post('/auth/logout');
@@ -91,9 +88,7 @@ const CoachLayout = () => {
             ☰
           </button>
           <div className={styles.topbarRight}>
-            <button className={styles.notificationBtn}>
-              🔔 {unreadCount > 0 && <span className={styles.badge}>{unreadCount}</span>}
-            </button>
+            <NotificationDropdown />
           </div>
         </header>
 

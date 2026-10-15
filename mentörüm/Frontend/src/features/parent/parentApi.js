@@ -32,3 +32,15 @@ export const useParentChildHomework = (studentId) => {
     enabled: !!studentId,
   });
 };
+
+export const useParentChildCalendar = (studentId, startDate, endDate) => {
+  return useQuery({
+    queryKey: ['parent', 'child', studentId, 'calendar', startDate, endDate],
+    queryFn: async () => {
+      if (!studentId || !startDate || !endDate) return [];
+      const params = new URLSearchParams({ from: startDate, to: endDate });
+      return (await apiClient.get(`/me/children/${studentId}/calendar?${params.toString()}`)) || [];
+    },
+    enabled: !!studentId && !!startDate && !!endDate,
+  });
+};

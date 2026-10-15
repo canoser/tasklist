@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParentChildren, useParentChildHomework } from '../parentApi';
 import Card from '../../../components/common/Card/Card';
 import { formatDate } from '../../../utils/dateUtils';
@@ -6,9 +6,9 @@ import styles from './ParentSummary.module.css';
 
 const ParentSummary = () => {
   const { data: children, isLoading: isChildrenLoading } = useParentChildren();
-  
-  // Şimdilik sadece ilk çocuğun verilerini gösteriyoruz. İleride dropdown eklenebilir.
-  const student = children?.[0];
+  const [selectedChildId, setSelectedChildId] = useState(null);
+
+  const student = children?.find((c) => c.studentId === selectedChildId) || children?.[0];
   
   const { data: homeworks, isLoading: isHwLoading } = useParentChildHomework(student?.studentId);
 
@@ -26,6 +26,17 @@ const ParentSummary = () => {
       <header className={styles.header}>
         <h1 className={styles.title}>Haftalık Özet</h1>
         <p className={styles.subtitle}>{student.fullName} adlı öğrencinin genel durumu</p>
+        {children.length > 1 && (
+          <select
+            value={student.studentId}
+            onChange={(e) => setSelectedChildId(e.target.value)}
+            style={{ marginTop: 8, padding: '6px 10px', borderRadius: 8, border: '1px solid #e2e8f0' }}
+          >
+            {children.map((c) => (
+              <option key={c.studentId} value={c.studentId}>{c.fullName}</option>
+            ))}
+          </select>
+        )}
       </header>
 
       <div className={styles.statsGrid}>

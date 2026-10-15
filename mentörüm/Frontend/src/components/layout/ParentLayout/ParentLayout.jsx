@@ -2,15 +2,12 @@ import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../../features/auth/authStore';
 import { apiClient } from '../../../api/apiClient';
-import { useNotifications } from '../../../hooks/useNotifications';
+import NotificationDropdown from '../../common/NotificationDropdown/NotificationDropdown';
 import styles from './ParentLayout.module.css';
 
 const ParentLayout = () => {
   const { user, clearAuth } = useAuthStore();
   const navigate = useNavigate();
-  const { data: notifications } = useNotifications();
-  const unreadCount = notifications?.filter(n => !n.isRead)?.length || 0;
-
   const handleLogout = async () => {
     try {
       await apiClient.post('/auth/logout');
@@ -39,9 +36,7 @@ const ParentLayout = () => {
           </div>
         </div>
         <div className={styles.topbarActions}>
-          <button className={styles.notificationBtn}>
-            🔔 {unreadCount > 0 && <span className={styles.badge}>{unreadCount}</span>}
-          </button>
+          <NotificationDropdown />
           <button className={styles.logoutBtn} onClick={handleLogout} title="Çıkış Yap">
             🚪
           </button>

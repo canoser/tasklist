@@ -87,3 +87,34 @@ export const useUpdateStudentGoal = () => {
     },
   });
 };
+
+export const useStudentCalendar = (startDate, endDate) => {
+  return useQuery({
+    queryKey: ['student', 'calendar', startDate, endDate],
+    queryFn: async () => {
+      if (!startDate || !endDate) return [];
+      const params = new URLSearchParams({ from: startDate, to: endDate });
+      return (await apiClient.get(`/me/calendar?${params.toString()}`)) || [];
+    },
+    enabled: !!startDate && !!endDate,
+  });
+};
+
+export const useStudentSessions = () => {
+  return useQuery({
+    queryKey: ['student', 'sessions'],
+    queryFn: async () => (await apiClient.get('/student/sessions')) || [],
+  });
+};
+
+export const useUpdateSessionPrep = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ sessionId, prepNotes }) => {
+      return await apiClient.patch(`/student/sessions/${sessionId}/prep`, { prepNotes });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student', 'sessions'] });
+    },
+  });
+};

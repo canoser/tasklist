@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useStudents, useCalendarEvents } from '../coachApi';
+import { useStudents, useCalendarEvents, useReportsOverview } from '../coachApi';
 import Calendar from '../../../components/common/Calendar/Calendar';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
@@ -16,7 +16,8 @@ const CoachDashboard = () => {
   });
 
   const { data: students, isLoading: isStudentsLoading } = useStudents();
-  
+  const { data: report } = useReportsOverview();
+
   const { data: events } = useCalendarEvents(
     format(dateRange.start, 'yyyy-MM-dd'),
     format(dateRange.end, 'yyyy-MM-dd')
@@ -24,30 +25,62 @@ const CoachDashboard = () => {
 
   const handleRangeChange = (range) => {
     if (Array.isArray(range)) {
-      // Haftalık / Günlük görünüm
       if (range.length > 0) {
         setDateRange({ start: range[0], end: range[range.length - 1] });
       }
-    } else {
-      // Aylık görünüm
+    } else if (range?.start && range?.end) {
       setDateRange({ start: range.start, end: range.end });
     }
   };
 
-  // Backend'den gelen etkinlikleri react-big-calendar formatına çevir (eğer backend DTO'su farklıysa)
   const formattedEvents = (events || []).map(ev => ({
     ...ev,
-    start: new Date(ev.start || ev.date), // DTO'ya göre ayarlanmalı
+    start: new Date(ev.start || ev.date),
     end: new Date(ev.end || ev.date),
-    title: ev.title || 'Etkinlik'
+    title: ev.studentName ? `${ev.title} — ${ev.studentName}` : ev.title
   }));
+
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const todaysHomeworks = formattedEvents.filter(
+    ev => ev.type === 'HOMEWORK' && format(ev.start, 'yyyy-MM-dd') === todayStr
+  );
+  const atRiskStudents = (students || []).filter((s) => s.overdueHomeworkCount > 0);
+
+  const kpis = [
+    { label: 'Toplam Öğrenci', value: report?.totalStudents ?? 0, color: '#6366f1' },
+    { label: 'Bu Hafta Verilen', value: report?.assignedThisWeek ?? 0, color: '#0ea5e9' },
+    { label: 'Bugün Biten', value: report?.completedToday ?? 0, color: '#22c55e' },
+    { label: 'Gecikmiş', value: report?.totalOverdue ?? 0, color: '#ef4444' }
+  ];
 
   return (
     <div className={styles.dashboardContainer}>
       <header className={styles.header}>
         <h1 className={styles.pageTitle}>Dashboard</h1>
-        <p className={styles.pageSubtitle}>Öğrencilerinizin genel durumu ve takviminiz.</p>
+        <p className={styles.pageSubtitle}>Öğrencilerinizin genel durumu ve bugünkü öncelikleriniz.</p>
       </header>
+
+      <div className={styles.kpiRow}>
+        {kpis.map((k) => (
+          <Card key={k.label} padding="md" className={styles.kpiCard}>
+            <span className={styles.kpiValue} style={{ color: k.color }}>{k.value}</span>
+            <span className={styles.kpiLabel}>{k.label}</span>
+          </Card>
+        ))}
+      </div>
+
+      {atRiskStudents.length > 0 && (
+        <Card padding="md" className={styles.atRiskCard}>
+          <h3 className={styles.atRiskTitle}>⚠️ Takip Gerektirenler</h3>
+          <ul className={styles.atRiskList}>
+            {atRiskStudents.map((s) => (
+              <li key={s.id} className={styles.atRiskItem}>
+                {s.fullName} — {s.overdueHomeworkCount} gecikmiş ödev
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
 
       <div className={styles.grid}>
         {/* Sol Kolon: Öğrenci Listesi */}
@@ -71,7 +104,10 @@ const CoachDashboard = () => {
                     </div>
                     <div className={styles.studentInfo}>
                       <span className={styles.studentName}>{student.fullName}</span>
-                      <span className={styles.studentDetail}>{student.grade}. Sınıf • {student.track || '-'}</span>
+                      <span className={styles.studentDetail}>
+                        {student.grade != null ? `${student.grade}. Sınıf` : 'Sınıf Belirtilmemiş'}
+                        {student.track ? ` • ${student.track}` : ''}
+                      </span>
                     </div>
                     <Button size="sm" variant="secondary" onClick={() => navigate(`/coach/students/${student.id}`)}>
                       İncele
@@ -85,17 +121,29 @@ const CoachDashboard = () => {
           </Card>
         </section>
 
-        {/* Sağ Kolon: Takvim */}
+        {/* Sağ Kolon: Bugünün Ajandası */}
         <section className={styles.calendarSection}>
           <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Genel Takvim</h2>
+            <h2 className={styles.sectionTitle}>Bugünün Ajandası</h2>
           </div>
-          
+
+          {todaysHomeworks.length > 0 && (
+            <Card padding="md" className={styles.todayCard}>
+              <h3 className={styles.todayTitle}>Bugün teslim edilecek ödevler</h3>
+              <ul className={styles.todayList}>
+                {todaysHomeworks.map(ev => (
+                  <li key={ev.id} className={styles.todayItem}>📝 {ev.title}</li>
+                ))}
+              </ul>
+            </Card>
+          )}
+
           <Calendar
             events={formattedEvents}
+            defaultView="agenda"
             onRangeChange={handleRangeChange}
             onSelectEvent={(ev) => alert(`Etkinlik: ${ev.title}`)}
-            style={{ height: 600 }}
+            style={{ height: 400 }}
           />
         </section>
       </div>
@@ -104,3 +152,4 @@ const CoachDashboard = () => {
 };
 
 export default CoachDashboard;
+

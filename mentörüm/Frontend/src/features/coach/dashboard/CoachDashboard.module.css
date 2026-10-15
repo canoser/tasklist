@@ -112,3 +112,91 @@
     grid-template-columns: 1fr;
   }
 }
+
+.kpiRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-md);
+}
+
+.kpiCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  text-align: center;
+}
+
+.kpiValue {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-color-main);
+}
+
+.kpiLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-color-muted);
+}
+
+.todayCard {
+  margin-bottom: var(--spacing-md);
+}
+
+.todayTitle {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-color-main);
+  margin-bottom: 8px;
+}
+
+.todayList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.todayItem {
+  font-size: 0.85rem;
+  color: var(--text-color-main);
+  padding: 6px 10px;
+  background: #eef2ff;
+  border-radius: 6px;
+}
+
+.atRiskCard {
+  border-left: 4px solid #ef4444;
+}
+
+.atRiskTitle {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #b91c1c;
+  margin-bottom: 8px;
+}
+
+.atRiskList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.atRiskItem {
+  font-size: 0.85rem;
+  color: var(--text-color-main);
+}
+
+@media (max-width: 768px) {
+  .kpiRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+

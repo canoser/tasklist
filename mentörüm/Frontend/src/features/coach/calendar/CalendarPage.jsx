@@ -8,7 +8,8 @@ import { startOfMonth, endOfMonth } from 'date-fns';
 import tr from 'date-fns/locale/tr';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import Card from '../../../components/common/Card/Card';
-import { useCalendarEvents } from '../coachApi';
+import PersonalEventModal from '../../../components/common/PersonalEventModal/PersonalEventModal';
+import { useCalendarEvents, useStudents } from '../coachApi';
 import styles from './CalendarPage.module.css';
 
 const locales = {
@@ -28,9 +29,15 @@ const CalendarPage = () => {
   const [date, setDate] = useState(new Date());
   const [range, setRange] = useState({ start: startOfMonth(new Date()), end: endOfMonth(new Date()) });
 
+  const [studentFilter, setStudentFilter] = useState('');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
+  const { data: students } = useStudents();
+
   const { data: events, isLoading } = useCalendarEvents(
     format(range.start, 'yyyy-MM-dd'),
-    format(range.end, 'yyyy-MM-dd')
+    format(range.end, 'yyyy-MM-dd'),
+    studentFilter || null
   );
 
   // Backend CalendarEventDto → react-big-calendar formatı
@@ -43,6 +50,10 @@ const CalendarPage = () => {
     color: ev.color,
     studentName: ev.studentName
   }));
+
+  const filteredEvents = typeFilter === 'all'
+    ? formattedEvents
+    : formattedEvents.filter((ev) => ev.type === typeFilter);
 
   const handleRangeChange = (r) => {
     if (Array.isArray(r)) {
@@ -81,16 +92,32 @@ const CalendarPage = () => {
           <h1 className={styles.title}>Takvim</h1>
           <p className={styles.subtitle}>Öğrencilerinizin ödevleri, ders programları ve sınavları.</p>
         </div>
+        <button className={styles.addBtn} onClick={() => setIsEventModalOpen(true)}>+ Yeni Etkinlik</button>
       </header>
 
       <div className={styles.calendarWrapper}>
         <Card className={styles.calendarCard}>
           <div className={styles.legend}>
-            <span className={styles.legendItem}><span className={styles.dot} style={{backgroundColor: '#3B82F6'}}></span> Ödev</span>
+            <button type="button" className={styles.legendItem} onClick={() => setTypeFilter(typeFilter === 'HOMEWORK' ? 'all' : 'HOMEWORK')}><span className={styles.dot} style={{backgroundColor: '#3B82F6'}}></span> Ödev</button>
             <span className={styles.legendItem}><span className={styles.dot} style={{backgroundColor: '#22C55E'}}></span> Tamamlanan Ödev</span>
             <span className={styles.legendItem}><span className={styles.dot} style={{backgroundColor: '#EF4444'}}></span> Gecikmiş Ödev</span>
-            <span className={styles.legendItem}><span className={styles.dot} style={{backgroundColor: '#F59E0B'}}></span> Sınav / Deneme</span>
-            <span className={styles.legendItem}><span className={styles.dot} style={{backgroundColor: '#8B5CF6'}}></span> Ders Programı</span>
+            <button type="button" className={styles.legendItem} onClick={() => setTypeFilter(typeFilter === 'EXAM' ? 'all' : 'EXAM')}><span className={styles.dot} style={{backgroundColor: '#F59E0B'}}></span> Sınav / Deneme</button>
+            <button type="button" className={styles.legendItem} onClick={() => setTypeFilter(typeFilter === 'SCHEDULE' ? 'all' : 'SCHEDULE')}><span className={styles.dot} style={{backgroundColor: '#8B5CF6'}}></span> Ders Programı</button>
+          </div>
+
+          <div className={styles.filters}>
+            <select value={studentFilter} onChange={(e) => setStudentFilter(e.target.value)} className={styles.select}>
+              <option value="">Tüm Öğrenciler</option>
+              {students?.map((s) => (
+                <option key={s.id} value={s.id}>{s.fullName}</option>
+              ))}
+            </select>
+            <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className={styles.select}>
+              <option value="all">Tüm Etkinlikler</option>
+              <option value="HOMEWORK">Ödev</option>
+              <option value="EXAM">Sınav</option>
+              <option value="SCHEDULE">Ders Programı</option>
+            </select>
           </div>
 
           <div className={styles.rbcContainer}>
@@ -99,7 +126,7 @@ const CalendarPage = () => {
             ) : (
               <Calendar
                 localizer={localizer}
-                events={formattedEvents}
+                events={filteredEvents}
                 startAccessor="start"
                 endAccessor="end"
                 style={{ height: '70vh' }}
@@ -125,6 +152,8 @@ const CalendarPage = () => {
           </div>
         </Card>
       </div>
+
+      <PersonalEventModal isOpen={isEventModalOpen} onClose={() => setIsEventModalOpen(false)} />
     </div>
   );
 };

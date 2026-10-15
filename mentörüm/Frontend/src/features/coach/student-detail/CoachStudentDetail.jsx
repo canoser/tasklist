@@ -5,7 +5,8 @@ import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
 import AssignHomeworkModal from '../homework/AssignHomeworkModal';
 import styles from './CoachStudentDetail.module.css';
-import { useStudent, useStudentNotes, useUpdateCoachNotes, useAddExamResult, useSendInvite } from '../coachApi';
+import { useStudent, useStudentNotes, useUpdateCoachNotes, useAddExamResult, useSendInvite, useCoachStudentHomework, useCoachStudentCurriculum, useCoachStudentEvents, useCoachStudentSessions, useCreateCoachingSession } from '../coachApi';
+import { apiClient } from '../../../api/apiClient';
 import InviteSharePanel from '../../../components/common/InviteSharePanel/InviteSharePanel';
 
 const CoachStudentDetail = () => {
@@ -14,9 +15,18 @@ const CoachStudentDetail = () => {
   const [activeTab, setActiveTab] = useState('info');
   const [isHomeworkModalOpen, setIsHomeworkModalOpen] = useState(false);
   const [localNotes, setLocalNotes] = useState('');
+  const [sessionTitle, setSessionTitle] = useState('');
+  const [sessionDate, setSessionDate] = useState('');
+  const [sessionNotes, setSessionNotes] = useState('');
+  const [sessionActions, setSessionActions] = useState('');
 
   const { data: student, isLoading, isError } = useStudent(id);
   const { data: notesList, isLoading: isNotesLoading } = useStudentNotes(id);
+  const { data: studentHomeworks } = useCoachStudentHomework(id);
+  const { data: curriculum } = useCoachStudentCurriculum(id);
+  const { data: studentEvents } = useCoachStudentEvents(id);
+  const { data: sessions } = useCoachStudentSessions(id);
+  const createSession = useCreateCoachingSession(id);
   const updateNotesMutation = useUpdateCoachNotes();
   const addExamMutation = useAddExamResult();
   const sendInviteMutation = useSendInvite();
@@ -33,6 +43,36 @@ const CoachStudentDetail = () => {
         setLocalNotes('');
       }
     });
+  };
+
+  const handleCreateSession = () => {
+    if (!sessionTitle.trim()) { alert('Görüşme başlığı gereklidir.'); return; }
+    createSession.mutate({
+      title: sessionTitle.trim(),
+      sessionDate: sessionDate ? new Date(sessionDate).toISOString() : null,
+      notes: sessionNotes || null,
+      actionItems: sessionActions || null,
+    }, {
+      onSuccess: () => {
+        setSessionTitle(''); setSessionDate(''); setSessionNotes(''); setSessionActions('');
+      },
+    });
+  };
+
+  const handleDownloadReport = async () => {
+    try {
+      const blob = await apiClient.get(`/students/${id}/report.pdf`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `veli-rapor-${student?.fullName?.split(' ')[0] || 'ogrenci'}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch {
+      alert('Rapor indirilemedi.');
+    }
   };
 
   return (
@@ -55,6 +95,7 @@ const CoachStudentDetail = () => {
           </div>
         </div>
         <div className={styles.actions}>
+          <Button variant="ghost" icon="📄" onClick={handleDownloadReport}>PDF Rapor</Button>
           <Button variant="secondary" icon="✏️">Düzenle</Button>
           <Button variant="primary" icon="📝" onClick={() => setIsHomeworkModalOpen(true)}>Ödev Ata</Button>
         </div>
@@ -86,6 +127,30 @@ const CoachStudentDetail = () => {
         >
           Sınav Geçmişi
         </button>
+        <button 
+          className={`${styles.tab} ${activeTab === 'homework' ? styles.activeTab : ''}`}
+          onClick={() => setActiveTab('homework')}
+        >
+          Ödevler
+        </button>
+        <button 
+          className={`${styles.tab} ${activeTab === 'topics' ? styles.activeTab : ''}`}
+          onClick={() => setActiveTab('topics')}
+        >
+          Konular
+        </button>
+        <button 
+          className={`${styles.tab} ${activeTab === 'events' ? styles.activeTab : ''}`}
+          onClick={() => setActiveTab('events')}
+        >
+          Takvim
+        </button>
+        <button 
+          className={`${styles.tab} ${activeTab === 'sessions' ? styles.activeTab : ''}`}
+          onClick={() => setActiveTab('sessions')}
+        >
+          Görüşmeler
+        </button>
       </div>
 
       {/* Sekme İçerikleri */}
@@ -108,7 +173,14 @@ const CoachStudentDetail = () => {
             <Card title="Akademik Hedef">
               <div className={styles.targetBanner}>
                 🎓 {student.targetUniversity || student.target || 'Hedef girilmemiş'}
+                {student.targetDepartment ? ` · ${student.targetDepartment}` : ''}
               </div>
+              {student.targetScore != null && (
+                <div className={styles.infoRow}>
+                  <span className={styles.infoLabel}>Hedef Net:</span>
+                  <span className={styles.infoValue}>{student.targetScore}</span>
+                </div>
+              )}
             </Card>
           </div>
         )}
@@ -274,6 +346,102 @@ const CoachStudentDetail = () => {
               >
                 {addExamMutation.isPending ? 'Ekleniyor...' : 'Ekle'}
               </Button>
+            </div>
+          </Card>
+        )}
+        {/* Ödevler Sekmesi */}
+        {activeTab === 'homework' && (
+          <Card title="Ödev Geçmişi" className={styles.notesCard}>
+            {studentHomeworks && studentHomeworks.length > 0 ? (
+              studentHomeworks.map((hw) => (
+                <div key={hw.id} style={{ padding: '8px 0', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+                  <div>
+                    <strong>{hw.snapshotTitle}</strong>
+                    {hw.subjectName && <span style={{ marginLeft: 8, fontSize: '0.8rem', color: '#64748b' }}>{hw.subjectName}</span>}
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{hw.dueDate ? new Date(hw.dueDate).toLocaleDateString('tr-TR') : '-'}</div>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 600, color: hw.status === 'OVERDUE' ? '#ef4444' : hw.status === 'DONE' ? '#22c55e' : '#64748b' }}>
+                      {hw.status === 'OVERDUE' ? 'Gecikmiş' : hw.status === 'DONE' ? 'Tamamlandı' : 'Bekliyor'}
+                      {hw.completionPercentage != null ? ` · %${hw.completionPercentage}` : ''}
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p>Henüz ödev atanmamış.</p>
+            )}
+          </Card>
+        )}
+
+        {/* Konular Sekmesi */}
+        {activeTab === 'topics' && (
+          <Card title="Konu Takibi" className={styles.notesCard}>
+            {curriculum && curriculum.length > 0 ? (
+              curriculum.map((t) => (
+                <div key={t.id} style={{ padding: '6px 0', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>{t.isCompleted ? '✅' : '⬜'} {t.topicName}</span>
+                  <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{t.subjectName}</span>
+                </div>
+              ))
+            ) : (
+              <p>Müfredat bulunamadı.</p>
+            )}
+          </Card>
+        )}
+        {/* Takvim Sekmesi (öğrencinin kişisel etkinlikleri — Koç Görünürlüğü) */}
+        {activeTab === 'events' && (
+          <Card title="Öğrencinin Kişisel Takvimi" className={styles.notesCard}>
+            {studentEvents && studentEvents.length > 0 ? (
+              studentEvents.map((ev) => (
+                <div key={ev.id} style={{ padding: '6px 0', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+                  <span>{ev.title}</span>
+                  <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                    {ev.startAt ? new Date(ev.startAt).toLocaleString('tr-TR') : '-'} · {ev.eventType}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p>Öğrenci henüz kişisel etkinlik eklememiş.</p>
+            )}
+          </Card>
+        )}
+
+        {/* Görüşmeler Sekmesi (Koçluk görüşme döngüsü) */}
+        {activeTab === 'sessions' && (
+          <Card title="Koçluk Görüşmeleri" className={styles.notesCard}>
+            {sessions && sessions.length > 0 ? (
+              sessions.map((s) => (
+                <div key={s.id} style={{ padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <strong>{s.title}</strong>
+                    <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{s.sessionDate ? new Date(s.sessionDate).toLocaleDateString('tr-TR') : '-'}</span>
+                  </div>
+                  {s.notes && <p style={{ fontSize: '0.85rem', color: '#475569', margin: '4px 0' }}>{s.notes}</p>}
+                  {s.actionItems && <p style={{ fontSize: '0.8rem', color: '#b45309', margin: 0 }}>📌 {s.actionItems}</p>}
+                </div>
+              ))
+            ) : (
+              <p>Henüz görüşme kaydı yok.</p>
+            )}
+
+            <div style={{ marginTop: 16, borderTop: '1px solid #e2e8f0', paddingTop: 16 }}>
+              <h4 style={{ margin: '0 0 12px' }}>Yeni Görüşme Ekle</h4>
+              <Input label="Başlık" value={sessionTitle} onChange={(e) => setSessionTitle(e.target.value)} placeholder="örn. Hedef gözden geçirme" />
+              <Input label="Tarih" type="datetime-local" value={sessionDate} onChange={(e) => setSessionDate(e.target.value)} />
+              <div style={{ marginTop: 12 }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#475569', display: 'block', marginBottom: 6 }}>Görüşme Notları</label>
+                <textarea value={sessionNotes} onChange={(e) => setSessionNotes(e.target.value)} rows={3} style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0' }} />
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#475569', display: 'block', marginBottom: 6 }}>Aksiyon Öğeleri</label>
+                <textarea value={sessionActions} onChange={(e) => setSessionActions(e.target.value)} rows={2} placeholder="örn. Bu hafta 3 deneme çözecek" style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0' }} />
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <Button variant="primary" size="sm" onClick={handleCreateSession} disabled={createSession.isPending}>
+                  {createSession.isPending ? 'Ekleniyor...' : 'Görüşmeyi Kaydet'}
+                </Button>
+              </div>
             </div>
           </Card>
         )}

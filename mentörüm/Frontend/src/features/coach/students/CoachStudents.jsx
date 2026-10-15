@@ -15,6 +15,8 @@ const CoachStudents = () => {
   const sendInvite = useSendInvite();
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [programFilter, setProgramFilter] = useState('');
+  const [gradeFilter, setGradeFilter] = useState('');
   const [showInvite, setShowInvite] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteProgramId, setInviteProgramId] = useState('');
@@ -53,10 +55,13 @@ const CoachStudents = () => {
     setTimeout(() => setCopiedCode(null), 2500);
   };
 
-  const filtered = (students || []).filter((s) =>
-    (s.fullName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (s.email || '').toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filtered = (students || []).filter((s) => {
+    const matchName = (s.fullName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (s.email || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const matchProgram = !programFilter || s.programId === programFilter;
+    const matchGrade = !gradeFilter || String(s.grade) === gradeFilter;
+    return matchName && matchProgram && matchGrade;
+  });
 
   if (isLoading) return <div className={styles.pageContainer}>Yükleniyor...</div>;
 
@@ -138,6 +143,18 @@ const CoachStudents = () => {
 
       <Card className={styles.filterCard}>
         <Input placeholder="Öğrenci ara (isim veya e-posta)..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+        <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+          <select value={programFilter} onChange={(e) => setProgramFilter(e.target.value)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+            <option value="">Tüm Programlar</option>
+            {programs?.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>
+          <select value={gradeFilter} onChange={(e) => setGradeFilter(e.target.value)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+            <option value="">Tüm Sınıflar</option>
+            {[...new Set((students || []).map((s) => s.grade).filter((g) => g != null))].map((g) => (
+              <option key={g} value={g}>{g}. Sınıf</option>
+            ))}
+          </select>
+        </div>
       </Card>
 
       <div className={styles.studentsGrid}>
@@ -151,7 +168,13 @@ const CoachStudents = () => {
                 <span className={styles.studentDetail}>
                   {student.grade != null ? `${student.grade}. Sınıf` : ''}
                   {student.track ? ` • ${student.track}` : ''}
+                  {student.programName ? ` • 🏫 ${student.programName}` : ''}
                 </span>
+                <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '0.72rem', padding: '2px 8px', borderRadius: 999, background: '#eef2ff', color: '#4f46e5' }}>📚 {student.activeHomeworkCount}</span>
+                  <span style={{ fontSize: '0.72rem', padding: '2px 8px', borderRadius: 999, background: '#f0fdf4', color: '#16a34a' }}>✅ {student.completedHomeworkCount}</span>
+                  <span style={{ fontSize: '0.72rem', padding: '2px 8px', borderRadius: 999, background: student.overdueHomeworkCount > 0 ? '#fef2f2' : '#f8fafc', color: student.overdueHomeworkCount > 0 ? '#dc2626' : '#94a3b8' }}>🔴 {student.overdueHomeworkCount}</span>
+                </div>
               </div>
               <div className={`${styles.statusBadge} ${student.isActive ? styles.active : styles.inactive}`}>
                 {student.isActive ? 'Kayıtlı / Aktif' : 'Pasif'}
