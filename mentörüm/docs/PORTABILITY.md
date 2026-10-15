@@ -2,6 +2,15 @@
 
 Bu doküman, V5 frontend'inin **Capacitor (Android/iOS)** native'e taşınırken değişmesi gereken noktaları listeler. Kod içinde `// [MOBILE_PORT_TODO]:` etiketiyle işaretlenmiştir.
 
+## Yapılanlar (Durum Özeti)
+
+- `capacitor.config.json` oluşturuldu (appId: `com.dersmatris.mentorum`, webDir: `dist`, androidScheme: `https`).
+- `@capacitor/core` + `@capacitor/cli` + `@capacitor/android` kuruldu; `npx cap add android` ile `android/` platformu eklendi (Aşama 25, 5 Ekim 2026).
+- `utils/platform.js` → `Capacitor.isNativePlatform()` ile native tespiti; `npm run build` + `npx cap sync android` başarılı.
+- iOS ATLANDI (`@capacitor/ios` kurulmadı — iOS yayınlanmayacak).
+- ⏳ Storage: `localStorage` hâlâ kullanımda — native yayınına geçilince `@capacitor/preferences` ile değiştirilecek.
+
+
 ## [MOBILE_PORT_TODO] Noktaları
 
 ### 1. Google Girişi (`features/auth/LoginPage.jsx`)
