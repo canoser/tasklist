@@ -32,19 +32,6 @@ public static class CurriculumEndpoints
             return Results.Ok(topics);
         });
 
-        // Müfredatı yenile (seed'i tekrar çalıştır — idempotent). "Otomatik güncelle" butonu için.
-        group.MapPost("/seed", async ([FromServices] DbConnectionFactory db) =>
-        {
-            using var conn = db.CreateConnection();
-            var seedPath = Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "004_Curriculum2026.sql");
-            if (!File.Exists(seedPath))
-                return Results.NotFound(new { error = "Müfredat seed dosyası bulunamadı." });
-
-            var sql = File.ReadAllText(seedPath);
-            conn.Execute(sql);
-            return Results.Ok(new { message = "Müfredat başarıyla güncellendi." });
-        }).RequireAuthorization("RequireCoachRole");
-
         // Müfredatı dışa aktar: AI ile doldurulacak JSON şablonu üretir (mevcut konular örnek olarak eklenir).
         group.MapGet("/export", async ([FromServices] CurriculumRepository repo) =>
         {

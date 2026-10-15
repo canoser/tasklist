@@ -123,7 +123,8 @@ try
         using var conn = dbFactory.CreateConnection();
         conn.Open();
 
-        // Uygulanan migration'ları takip eden tablo (baseline destekli).
+        // Uygulanan migration'ları takip eden tablo. Migration dosyaları idempotenttir;
+        // bu yüzden ilk çalıştırmada tek `001_schema.sql` tüm şemayı kurar.
         conn.Execute("CREATE TABLE IF NOT EXISTS _schema_migrations (filename TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW())");
 
         var migrationsDir = Path.Combine(AppContext.BaseDirectory, "Data", "Migrations");
@@ -134,20 +135,6 @@ try
         var applied = new HashSet<string>(
             conn.Query<string>("SELECT filename FROM _schema_migrations"),
             StringComparer.OrdinalIgnoreCase);
-
-        // Baseline: _schema_migrations henüz boşken canlı DB zaten migration'lı ise
-        // mevcut dosyaları "uygulanmış" kabul et; yalnızca yenilerini çalıştır.
-        if (applied.Count == 0)
-        {
-            var usersExists = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public' AND table_name='users'") > 0;
-            var programsExists = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public' AND table_name='coaching_programs'") > 0;
-            if (usersExists && programsExists)
-            {
-                Log.Information("Mevcut veritabanı tespit edildi; mevcut migration'lar baseline olarak işaretleniyor.");
-                foreach (var f in files)
-                    applied.Add(Path.GetFileName(f));
-            }
-        }
 
         foreach (var path in files)
         {

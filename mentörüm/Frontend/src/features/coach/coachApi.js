@@ -69,15 +69,6 @@ export const useTopics = (subjectId, grade) => {
   });
 };
 
-export const useSeedCurriculum = () => {
-  return useMutation({
-    mutationFn: async () => {
-      const response = await apiClient.post('/curriculum/seed');
-      return response;
-    },
-  });
-};
-
 export const useReportsOverview = () => {
   return useQuery({
     queryKey: ['coach', 'reports', 'overview'],

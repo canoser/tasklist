@@ -3,7 +3,7 @@ import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
 import styles from './AssignHomeworkModal.module.css';
-import { useAssignHomework, useLevels, useSubjects, useTopics, useSeedCurriculum } from '../coachApi';
+import { useAssignHomework, useLevels, useSubjects, useTopics } from '../coachApi';
 
 const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
   const [level, setLevel] = useState('');
@@ -14,19 +14,11 @@ const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
   const [dueDate, setDueDate] = useState('');
 
   const assignHomeworkMutation = useAssignHomework();
-  const seedMutation = useSeedCurriculum();
   const { data: levels = [] } = useLevels();
   const { data: subjects = [] } = useSubjects(level || undefined);
   const { data: topics = [] } = useTopics(subject || undefined, level || undefined);
 
   if (!isOpen) return null;
-
-  const handleSeed = () => {
-    seedMutation.mutate(undefined, {
-      onSuccess: () => alert('Müfredat güncellendi.'),
-      onError: () => alert('Müfredat güncellenemedi.')
-    });
-  };
 
   const handleAssign = () => {
     if (!title || !dueDate) {
@@ -143,10 +135,6 @@ const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
             onChange={e => setDueDate(e.target.value)}
             disabled={assignHomeworkMutation.isPending}
           />
-
-          <Button variant="ghost" size="sm" onClick={handleSeed} disabled={seedMutation.isPending}>
-            {seedMutation.isPending ? 'Güncelleniyor...' : '🔄 Müfredatı Güncelle'}
-          </Button>
 
         </div>
 
