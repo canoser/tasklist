@@ -16,6 +16,7 @@ namespace MentorumApi.Data
                     type AS Type, 
                     title AS Title, 
                     body AS Body, 
+                    payload AS Payload,
                     is_read AS IsRead, 
                     created_at AS CreatedAt
                 FROM notifications

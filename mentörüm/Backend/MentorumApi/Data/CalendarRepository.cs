@@ -150,6 +150,35 @@ namespace MentorumApi.Data
                 ");
             }
 
+            // Kişisel etkinlikler (koç görüşmesi / müsaitlik bloğu / öğrenci çalışma bloğu)
+            sqlBuilder.Append(" UNION ALL ");
+            sqlBuilder.Append(@"
+                SELECT
+                    pe.id AS Id,
+                    pe.title AS Title,
+                    pe.start_at AS Start,
+                    COALESCE(pe.end_at, pe.start_at) AS End,
+                    pe.event_type AS Type,
+                    CASE pe.event_type
+                        WHEN 'COACHING_SESSION' THEN '#10B981'
+                        WHEN 'PARENT_MEETING' THEN '#EC4899'
+                        WHEN 'STUDENT_EVENT' THEN '#14B8A6'
+                        ELSE '#64748B'
+                    END AS Color,
+                    NULL::uuid AS StudentId,
+                    NULL::text AS StudentName
+                FROM personal_events pe
+                WHERE 1=1
+            ");
+            if (role == "Coach" || role == "Student")
+            {
+                sqlBuilder.Append(" AND pe.user_id = @UserId");
+            }
+            else
+            {
+                sqlBuilder.Append(" AND 1=0"); // Veli kişisel etkinlik görmüyor (şimdilik)
+            }
+
             using var conn = _connectionFactory.CreateConnection();
             return await conn.QueryAsync<CalendarEventDto>(sqlBuilder.ToString(), new {
                 UserId = userId,
@@ -157,6 +186,45 @@ namespace MentorumApi.Data
                 To = toDate.Date,
                 StudentId = studentId
             });
+        }
+
+        public async Task<IEnumerable<PersonalEventDto>> GetPersonalEventsAsync(Guid userId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            return await conn.QueryAsync<PersonalEventDto>(@"
+                SELECT id AS Id, user_id AS UserId, title AS Title, event_type AS EventType, start_at AS StartAt, end_at AS EndAt
+                FROM personal_events
+                WHERE user_id = @UserId
+                ORDER BY start_at DESC",
+                new { UserId = userId });
+        }
+
+        public async Task<Guid> CreatePersonalEventAsync(Guid userId, CreatePersonalEventRequest req)
+        {
+            var id = Guid.NewGuid();
+            var type = new[] { "COACHING_SESSION", "PARENT_MEETING", "PERSONAL_BLOCK", "STUDENT_EVENT" }.Contains(req.EventType)
+                ? req.EventType
+                : "PERSONAL_BLOCK";
+
+            using var conn = _connectionFactory.CreateConnection();
+            await conn.ExecuteAsync(@"
+                INSERT INTO personal_events (id, user_id, title, event_type, start_at, end_at)
+                VALUES (@Id, @UserId, @Title, @Type, @StartAt, @EndAt)",
+                new { Id = id, UserId = userId, Title = req.Title ?? "Etkinlik", Type = type, req.StartAt, req.EndAt });
+
+            return id;
+        }
+
+        public async Task<IEnumerable<PersonalEventDto>> GetStudentPersonalEventsForCoachAsync(Guid coachId, Guid studentId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            return await conn.QueryAsync<PersonalEventDto>(@"
+                SELECT pe.id AS Id, pe.user_id AS UserId, pe.title AS Title, pe.event_type AS EventType, pe.start_at AS StartAt, pe.end_at AS EndAt
+                FROM personal_events pe
+                WHERE pe.user_id = @StudentId
+                  AND EXISTS (SELECT 1 FROM students s WHERE s.id = @StudentId AND s.program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId))
+                ORDER BY pe.start_at DESC",
+                new { CoachId = coachId, StudentId = studentId });
         }
     }
 }

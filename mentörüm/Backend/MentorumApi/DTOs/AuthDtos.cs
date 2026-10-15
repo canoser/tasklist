@@ -63,5 +63,13 @@ namespace MentorumApi.DTOs
         public required string FullName { get; set; }
         public string? AvatarUrl { get; set; }
         public bool IsAdmin { get; set; }
+        public string? Bio { get; set; }
+        public string? Specialty { get; set; }
+    }
+
+    public class UpdateCoachProfileRequest
+    {
+        public string? Bio { get; set; }
+        public string? Specialty { get; set; }
     }
 }

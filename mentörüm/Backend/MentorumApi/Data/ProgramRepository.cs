@@ -13,9 +13,12 @@ namespace MentorumApi.Data
         {
             using var conn = _connectionFactory.CreateConnection();
             return await conn.QueryAsync<ProgramDto>(@"
-                SELECT cp.id, cp.name, cp.description, cp.color, cp.is_active, cp.created_by, cp.created_at,
+                SELECT cp.id, cp.name, cp.description, cp.color, cp.category, cp.is_active, cp.created_by, cp.created_at,
                        pc.role,
-                       (SELECT COUNT(1) FROM students s WHERE s.program_id = cp.id) AS student_count
+                       (SELECT COUNT(1) FROM students s WHERE s.program_id = cp.id) AS student_count,
+                       (SELECT COUNT(1) FROM teachers t WHERE t.program_id = cp.id) AS teacher_count,
+                       (SELECT COUNT(1) FROM courses c WHERE c.program_id = cp.id) AS course_count,
+                       (SELECT COUNT(1) FROM homework_assignments ha WHERE ha.program_id = cp.id AND ha.status = 'OVERDUE') AS overdue_count
                 FROM coaching_programs cp
                 JOIN program_coaches pc ON pc.program_id = cp.id AND pc.coach_id = @CoachId
                 WHERE cp.is_active = 1
@@ -71,9 +74,9 @@ namespace MentorumApi.Data
 
                 var programId = Guid.NewGuid();
                 await conn.ExecuteAsync(@"
-                    INSERT INTO coaching_programs (id, name, description, color, created_by)
-                    VALUES (@Id, @Name, @Description, @Color, @CreatedBy)",
-                    new { Id = programId, req.Name, req.Description, req.Color, CreatedBy = coachId }, tx);
+                    INSERT INTO coaching_programs (id, name, description, color, category, created_by)
+                    VALUES (@Id, @Name, @Description, @Color, @Category, @CreatedBy)",
+                    new { Id = programId, req.Name, req.Description, req.Color, req.Category, CreatedBy = coachId }, tx);
 
                 await conn.ExecuteAsync(@"
                     INSERT INTO program_coaches (id, program_id, coach_id, role, added_by)

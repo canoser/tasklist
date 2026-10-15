@@ -34,6 +34,16 @@ namespace MentorumApi.Endpoints
 
                 return Results.Ok(report);
             });
+
+            group.MapGet("/detail", async (
+                [FromServices] ReportsRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var userIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(userIdStr, out var userId)) return Results.Unauthorized();
+
+                return Results.Ok(await repo.GetDetailReportAsync(userId));
+            });
         }
     }
 }

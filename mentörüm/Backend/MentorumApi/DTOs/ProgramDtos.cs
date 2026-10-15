@@ -6,11 +6,15 @@ namespace MentorumApi.DTOs
         public required string Name { get; set; }
         public string? Description { get; set; }
         public string? Color { get; set; }
+        public string? Category { get; set; }
         public int IsActive { get; set; }
         public Guid? CreatedBy { get; set; }
         public DateTime CreatedAt { get; set; }
         public string? Role { get; set; }          // koçun bu programdaki rolü (YONETICI/YARDIMCI)
         public int StudentCount { get; set; }
+        public int TeacherCount { get; set; }
+        public int CourseCount { get; set; }
+        public int OverdueCount { get; set; }
     }
 
     public class CreateProgramRequest
@@ -18,6 +22,7 @@ namespace MentorumApi.DTOs
         public required string Name { get; set; }
         public string? Description { get; set; }
         public string? Color { get; set; }
+        public string? Category { get; set; }
     }
 
     public class UpdateProgramRequest

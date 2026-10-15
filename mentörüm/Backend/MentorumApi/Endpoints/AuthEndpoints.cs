@@ -450,11 +450,29 @@ var token = jwt.GenerateAccessToken(user);
 
                 using var conn = db.CreateConnection();
                 var meDto = await conn.QuerySingleOrDefaultAsync<UserDto>(@"
-                    SELECT id AS Id, email AS Email, role AS Role, full_name AS FullName, avatar_url AS AvatarUrl, is_admin AS IsAdmin
-                    FROM users WHERE id = @Id AND is_active = 1",
+                    SELECT u.id AS Id, u.email AS Email, u.role AS Role, u.full_name AS FullName, u.avatar_url AS AvatarUrl, u.is_admin AS IsAdmin,
+                           c.bio AS Bio, c.specialty AS Specialty
+                    FROM users u
+                    LEFT JOIN coaches c ON c.id = u.id
+                    WHERE u.id = @Id AND u.is_active = 1",
                     new { Id = id });
 
                 return meDto == null ? Results.Unauthorized() : Results.Ok(meDto);
+            });
+
+            // Koç profilini (biyografi + uzmanlık) güncelle
+            meGroup.MapPatch("/profile", async ([FromBody] UpdateCoachProfileRequest req, [FromServices] DbConnectionFactory db, HttpContext ctx) =>
+            {
+                var idStr = ctx.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(idStr, out var id)) return Results.Unauthorized();
+
+                using var conn = db.CreateConnection();
+                var rows = await conn.ExecuteAsync(@"
+                    UPDATE coaches SET bio = @Bio, specialty = @Specialty WHERE id = @Id",
+                    new { Id = id, req.Bio, req.Specialty });
+
+                if (rows == 0) return Results.NotFound(new { error = "Koç profili bulunamadı." });
+                return Results.Ok(new { message = "Profil güncellendi." });
             });
 
         }

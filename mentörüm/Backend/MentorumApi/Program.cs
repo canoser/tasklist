@@ -27,6 +27,7 @@ Log.Logger = new LoggerConfiguration()
 
 try
 {
+    QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
     var builder = WebApplication.CreateBuilder(args);
 
     builder.Host.UseSerilog((context, services, configuration) => configuration
@@ -128,7 +129,12 @@ try
             Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "007_AdminAndPrograms.sql"),
             Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "008_ContractCoachId.sql"),
             Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "009_AdminAndApproval.sql"),
-            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "010_ExamCourseId.sql")
+            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "010_ExamCourseId.sql"),
+            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "011_CoachProfile.sql"),
+            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "012_PersonalEvents.sql"),
+            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "013_ProgramCategory.sql"),
+            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "014_CoachingSessions.sql"),
+            Path.Combine(AppContext.BaseDirectory, "Data", "Migrations", "015_CoachingSessionPrep.sql")
         };
         foreach(var path in scriptPaths)
         {

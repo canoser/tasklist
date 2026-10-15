@@ -170,5 +170,50 @@ namespace MentorumApi.Tests
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
             Assert.Contains("Öğrenci bulunamadı", result);
         }
+
+        [Fact]
+        public async Task GetStudentCurriculum_WhenWrongCoach_ReturnsNotFound()
+        {
+            var studentId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+            var client = CreateAuthClient();
+            var response = await client.GetAsync($"/api/v1/students/{studentId}/curriculum");
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task GetStudentEvents_WhenWrongCoach_ReturnsNotFound()
+        {
+            var studentId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+            var client = CreateAuthClient();
+            var response = await client.GetAsync($"/api/v1/students/{studentId}/events");
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task GetStudentSessions_WhenWrongCoach_ReturnsNotFound()
+        {
+            var studentId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+            var client = CreateAuthClient();
+            var response = await client.GetAsync($"/api/v1/students/{studentId}/sessions");
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        private HttpClient CreateAuthClient()
+        {
+            var client = _factory.WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureServices(services =>
+                {
+                    services.AddAuthentication(options =>
+                    {
+                        options.DefaultAuthenticateScheme = TestAuthHandler.DefaultScheme;
+                        options.DefaultChallengeScheme = TestAuthHandler.DefaultScheme;
+                    })
+                    .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.DefaultScheme, options => { });
+                });
+            }).CreateClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(TestAuthHandler.DefaultScheme);
+            return client;
+        }
     }
 }

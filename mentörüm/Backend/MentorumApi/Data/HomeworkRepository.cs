@@ -70,9 +70,9 @@ namespace MentorumApi.Data
 
                 // Öğrenciye "yeni ödev" bildirimi gönder — öğrenci sayfasını yenilediğinde ödevi de görür.
                 await conn.ExecuteAsync(@"
-                    INSERT INTO notifications (id, user_id, type, title, body, created_at)
-                    VALUES (@NotifId, @StudentId, 'HOMEWORK_ASSIGNED', 'Yeni Ödev Atandı', @NotifBody, @Now)",
-                    new { NotifId = Guid.NewGuid(), req.StudentId, NotifBody = $"{req.Title} ödevi atandı.", Now = DateTime.UtcNow }, tx);
+                    INSERT INTO notifications (id, user_id, type, title, body, payload, created_at)
+                    VALUES (@NotifId, @StudentId, 'HOMEWORK_ASSIGNED', 'Yeni Ödev Atandı', @NotifBody, @Payload, @Now)",
+                    new { NotifId = Guid.NewGuid(), req.StudentId, NotifBody = $"{req.Title} ödevi atandı.", Payload = assignId.ToString(), Now = DateTime.UtcNow }, tx);
 
                 tx.Commit();
                 return assignId;
@@ -82,6 +82,33 @@ namespace MentorumApi.Data
                 tx.Rollback();
                 throw;
             }
+        }
+
+        public async Task<IEnumerable<HomeworkItemDto>> GetStudentHomeworksAsync(Guid coachId, Guid studentId)
+        {
+            var sql = @"
+                SELECT 
+                    h.id as Id, 
+                    h.snapshot_title as SnapshotTitle, 
+                    h.snapshot_desc as SnapshotDesc, 
+                    h.due_date as DueDate, 
+                    h.completed_at as CompletedAt,
+                    h.completion_percentage as CompletionPercentage,
+                    CASE 
+                        WHEN h.status = 'PENDING' AND h.due_date < @Now THEN 'OVERDUE'
+                        ELSE h.status 
+                    END as Status,
+                    s.name as SubjectName,
+                    ct.topic_name as TopicName
+                FROM homework_assignments h
+                LEFT JOIN subjects s ON s.id = h.subject_id
+                LEFT JOIN curriculum_topics ct ON ct.id = h.curriculum_topic_id
+                WHERE h.student_id = @StudentId
+                  AND h.program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)
+                ORDER BY h.due_date DESC";
+
+            using var conn = _connectionFactory.CreateConnection();
+            return await conn.QueryAsync<HomeworkItemDto>(sql, new { CoachId = coachId, StudentId = studentId, Now = DateTime.UtcNow });
         }
     }
 }

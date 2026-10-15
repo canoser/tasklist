@@ -1,4 +1,5 @@
 using MentorumApi.Data;
+using MentorumApi.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -57,6 +58,25 @@ namespace MentorumApi.Endpoints
                 if ((to - from).TotalDays > 62) return Results.BadRequest(new { error = "Tarih aralığı en fazla 62 gün olabilir." });
                 var events = await repo.GetCalendarEventsAsync(userId, "Parent", from, to, id);
                 return Results.Ok(events);
+            });
+
+            // Kişisel etkinlikler (koç görüşmesi / müsaitlik / öğrenci çalışma bloğu)
+            var meEventsGroup = app.MapGroup("/api/v1/me/events").RequireAuthorization();
+            meEventsGroup.MapGet("/", async ([FromServices] CalendarRepository repo, ClaimsPrincipal user) =>
+            {
+                var userIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(userIdStr, out var userId)) return Results.Unauthorized();
+
+                return Results.Ok(await repo.GetPersonalEventsAsync(userId));
+            });
+            meEventsGroup.MapPost("/", async ([FromBody] CreatePersonalEventRequest req, [FromServices] CalendarRepository repo, ClaimsPrincipal user) =>
+            {
+                var userIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(userIdStr, out var userId)) return Results.Unauthorized();
+
+                if (string.IsNullOrWhiteSpace(req.Title)) return Results.BadRequest(new { error = "Başlık gerekli." });
+                var id = await repo.CreatePersonalEventAsync(userId, req);
+                return Results.Ok(new { id });
             });
         }
     }

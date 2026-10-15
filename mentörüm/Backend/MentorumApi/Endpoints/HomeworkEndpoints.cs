@@ -37,6 +37,19 @@ namespace MentorumApi.Endpoints
                 return Results.Ok(new { assignmentId });
             });
 
+            // Koç, bir öğrencinin tüm ödevlerini listeler (IDOR: program_coaches üyeliği)
+            group.MapGet("/student/{studentId:guid}", async (
+                Guid studentId,
+                [FromServices] HomeworkRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var coachIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(coachIdStr, out var coachId)) return Results.Unauthorized();
+
+                var homeworks = await repo.GetStudentHomeworksAsync(coachId, studentId);
+                return Results.Ok(homeworks);
+            });
+
             // Idempotency (Mükerrer İstek Önleme) destekli ödev tamamlama endpoint'i
             var completionGroup = app.MapGroup("/api/v1/homework").RequireAuthorization();
             completionGroup.MapPost("/assignments/{assignmentId:guid}/complete", async (

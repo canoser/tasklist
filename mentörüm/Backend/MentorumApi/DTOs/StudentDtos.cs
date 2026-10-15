@@ -14,6 +14,9 @@ namespace MentorumApi.DTOs
         public int IsActive { get; set; }
         public Guid? ProgramId { get; set; }
         public string? ProgramName { get; set; }
+        public int ActiveHomeworkCount { get; set; }
+        public int CompletedHomeworkCount { get; set; }
+        public int OverdueHomeworkCount { get; set; }
     }
 
     public class StudentDetailDto : StudentListDto

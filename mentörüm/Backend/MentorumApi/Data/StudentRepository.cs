@@ -12,7 +12,10 @@ namespace MentorumApi.Data
             var sql = @"
                 SELECT u.id, u.full_name AS FullName, u.email, u.avatar_url AS AvatarUrl, 
                        s.grade, s.track, s.target_university AS TargetUniversity, s.is_active AS IsActive,
-                       s.program_id AS ProgramId, cp.name AS ProgramName
+                       s.program_id AS ProgramId, cp.name AS ProgramName,
+                       (SELECT COUNT(1) FROM homework_assignments ha WHERE ha.student_id = u.id AND ha.status IN ('PENDING','OVERDUE')) AS active_homework_count,
+                       (SELECT COUNT(1) FROM homework_assignments ha WHERE ha.student_id = u.id AND ha.status IN ('DONE','LATE_DONE')) AS completed_homework_count,
+                       (SELECT COUNT(1) FROM homework_assignments ha WHERE ha.student_id = u.id AND ha.status = 'OVERDUE') AS overdue_homework_count
                 FROM users u 
                 JOIN students s ON u.id = s.id 
                 LEFT JOIN coaching_programs cp ON cp.id = s.program_id
@@ -130,6 +133,51 @@ namespace MentorumApi.Data
                     updated_at = @Now
                 WHERE id = @StudentId",
                 new { StudentId = studentId, req.TargetUniversity, req.TargetDepartment, req.TargetScore, Now = DateTime.UtcNow });
+        }
+
+        public async Task<IEnumerable<CoachingSessionDto>> GetCoachingSessionsAsync(Guid coachId, Guid studentId)
+        {
+            var check = await GetStudentDetailAsync(coachId, studentId);
+            if (check == null) return Array.Empty<CoachingSessionDto>();
+
+            using var conn = _connectionFactory.CreateConnection();
+            return await conn.QueryAsync<CoachingSessionDto>(@"
+                SELECT id AS Id, coach_id AS CoachId, student_id AS StudentId, session_date AS SessionDate, title AS Title, notes AS Notes, action_items AS ActionItems, prep_notes AS PrepNotes, created_at AS CreatedAt
+                FROM coaching_sessions
+                WHERE student_id = @StudentId
+                ORDER BY session_date DESC NULLS LAST",
+                new { StudentId = studentId });
+        }
+
+        public async Task<IEnumerable<CoachingSessionDto>> GetStudentSessionsAsync(Guid studentId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            return await conn.QueryAsync<CoachingSessionDto>(@"
+                SELECT id AS Id, coach_id AS CoachId, student_id AS StudentId, session_date AS SessionDate, title AS Title, notes AS Notes, action_items AS ActionItems, prep_notes AS PrepNotes, created_at AS CreatedAt
+                FROM coaching_sessions
+                WHERE student_id = @StudentId
+                ORDER BY session_date DESC NULLS LAST",
+                new { StudentId = studentId });
+        }
+
+        public async Task<bool> UpdateSessionPrepAsync(Guid studentId, Guid sessionId, string prepNotes)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            var rows = await conn.ExecuteAsync(@"
+                UPDATE coaching_sessions SET prep_notes = @PrepNotes WHERE id = @SessionId AND student_id = @StudentId",
+                new { PrepNotes = prepNotes, SessionId = sessionId, StudentId = studentId });
+            return rows > 0;
+        }
+
+        public async Task<Guid> CreateCoachingSessionAsync(Guid coachId, Guid studentId, CreateCoachingSessionRequest req)
+        {
+            var id = Guid.NewGuid();
+            using var conn = _connectionFactory.CreateConnection();
+            await conn.ExecuteAsync(@"
+                INSERT INTO coaching_sessions (id, coach_id, student_id, session_date, title, notes, action_items)
+                VALUES (@Id, @CoachId, @StudentId, @SessionDate, @Title, @Notes, @ActionItems)",
+                new { Id = id, CoachId = coachId, StudentId = studentId, req.SessionDate, Title = req.Title ?? "Koçluk Görüşmesi", req.Notes, req.ActionItems });
+            return id;
         }
     }
 }
