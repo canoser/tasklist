@@ -189,6 +189,16 @@ export const useAddUser = () => {
   });
 };
 
+export const useChangeUserPassword = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, newPassword }) => apiClient.post(`/admin/users/${userId}/password`, { newPassword }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'users'] });
+    },
+  });
+};
+
 // --- Ders detayı ---
 export const useCourseStudents = (programId, courseId) => useQuery({
   queryKey: ['coach', 'program', programId, 'course', courseId, 'students'],

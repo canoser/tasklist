@@ -1,3 +1,4 @@
+using Dapper;
 using MentorumApi.Data;
 using MentorumApi.DTOs;
 using MentorumApi.Services;
@@ -163,6 +164,40 @@ namespace MentorumApi.Endpoints
 
                 return Results.Ok(new { message = "Kullanıcı eklendi.", email, password });
             });
+
+            // Süper yönetici herhangi bir kullanıcının şifresini değiştirir (eski oturumlar kapatılır).
+            admin.MapPost("/users/{userId:guid}/password", async (
+                Guid userId,
+                [FromBody] AdminChangePasswordRequest req,
+                [FromServices] DbConnectionFactory db) =>
+            {
+                var newPassword = req.NewPassword?.Trim() ?? "";
+                if (newPassword.Length < 6)
+                    return Results.BadRequest(new { error = "Yeni şifre en az 6 karakter olmalı." });
+
+                using var conn = db.CreateConnection();
+                conn.Open();
+                var exists = await conn.ExecuteScalarAsync<int>("SELECT 1 FROM users WHERE id = @Id", new { Id = userId });
+                if (exists == 0)
+                    return Results.NotFound(new { error = "Kullanıcı bulunamadı." });
+
+                var hash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+                using var tx = conn.BeginTransaction();
+                try
+                {
+                    await conn.ExecuteAsync(
+                        "UPDATE users SET password_hash = @Hash WHERE id = @Id",
+                        new { Hash = hash, Id = userId }, tx);
+                    // Güvenlik: kullanıcının mevcut oturumlarını/refresh token'larını iptal et.
+                    await conn.ExecuteAsync(
+                        "UPDATE refresh_tokens SET is_revoked = 1 WHERE user_id = @Id AND is_revoked = 0",
+                        new { Id = userId }, tx);
+                    tx.Commit();
+                }
+                catch { tx.Rollback(); throw; }
+
+                return Results.Ok(new { message = "Şifre güncellendi. Kullanıcının eski oturumları kapatıldı." });
+            });
         }
 
         private static Guid? GetCoachId(ClaimsPrincipal user)
@@ -199,6 +234,11 @@ namespace MentorumApi.Endpoints
         public string? Email { get; set; }
         public string? FullName { get; set; }
         public string? Role { get; set; }
+    }
+
+    public class AdminChangePasswordRequest
+    {
+        public string? NewPassword { get; set; }
     }
 }
 

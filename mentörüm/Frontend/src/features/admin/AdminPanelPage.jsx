@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { usePendingApprovals, useAdminUsers, useApproveUser, useRejectUser, useAddUser } from '../coach/coachSchoolApi';
+import { usePendingApprovals, useAdminUsers, useApproveUser, useRejectUser, useAddUser, useChangeUserPassword } from '../coach/coachSchoolApi';
 import Button from '../../components/common/Button/Button';
 import Input from '../../components/common/Input/Input';
 import Card from '../../components/common/Card/Card';
@@ -25,6 +25,23 @@ const AdminPanelPage = () => {
   const approve = useApproveUser();
   const reject = useRejectUser();
   const addUser = useAddUser();
+  const changePassword = useChangeUserPassword();
+
+  const handleChangePassword = async (userId) => {
+    if (pwValue.trim().length < 6) {
+      setPwMsg('Şifre en az 6 karakter olmalı.');
+      return;
+    }
+    setPwMsg('');
+    try {
+      await changePassword.mutateAsync({ userId, newPassword: pwValue.trim() });
+      setPwMsg('Şifre güncellendi.');
+      setPwUser(null);
+      setPwValue('');
+    } catch (e) {
+      setPwMsg(e?.response?.data?.error || 'Şifre güncellenemedi.');
+    }
+  };
 
   const [roles, setRoles] = useState({});
   const [newFullName, setNewFullName] = useState('');
@@ -35,6 +52,9 @@ const AdminPanelPage = () => {
   const [curriculumBusy, setCurriculumBusy] = useState(false);
   const [curriculumResult, setCurriculumResult] = useState(null);
   const [curriculumError, setCurriculumError] = useState('');
+  const [pwUser, setPwUser] = useState(null);
+  const [pwValue, setPwValue] = useState('');
+  const [pwMsg, setPwMsg] = useState('');
 
   const handleApprove = (userId, defaultRole) => {
     const role = roles[userId] || defaultRole;
@@ -261,6 +281,25 @@ const AdminPanelPage = () => {
                       <span className={styles.createdDate}>
                         Kayıt: {u.createdAt ? new Date(u.createdAt).toLocaleDateString('tr-TR') : '-'}
                       </span>
+                    </div>
+                    <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <Button size="sm" variant="outline" onClick={() => { setPwUser(pwUser === u.id ? null : u.id); setPwValue(''); setPwMsg(''); }}>
+                        {pwUser === u.id ? 'Vazgeç' : '🔑 Şifre Değiştir'}
+                      </Button>
+                      {pwUser === u.id && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                          <input
+                            type="password"
+                            placeholder="Yeni şifre (en az 6)"
+                            value={pwValue}
+                            onChange={(e) => setPwValue(e.target.value)}
+                            autoFocus
+                            style={{ padding: '7px 10px', borderRadius: 6, border: '1px solid #ccc', minWidth: 180 }}
+                          />
+                          <Button size="sm" onClick={() => handleChangePassword(u.id)} isLoading={changePassword.isPending && pwUser === u.id}>Kaydet</Button>
+                          {pwMsg && <span style={{ fontSize: 12, color: '#666' }}>{pwMsg}</span>}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
