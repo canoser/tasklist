@@ -1,6 +1,6 @@
 # 🏫 Mentörüm — Okul Modeli (OKUL_MODELI.md) vs. Canlı Sistem Yetenekleri Karşılaştırma Raporları
 
-Bu belge; `OKUL_MODELI.md` mimari tasarımı ile canlı sistem (`MentorumApi` & `Frontend`) arasındaki uyumluluğu, güvenlik açıklarını ve kullanıcı deneyimini değerlendiren iki bağımsız yapay zekâ modelinin (**Antigravity** ve **DeepSeek**) analiz raporlarını ve sentezini bir arada sunmaktadır.
+Bu belge; `OKUL_MODELI.md` mimari tasarımı ile canlı sistem (`MentorumApi` & `Frontend`) arasındaki uyumluluğu, güvenlik açıklarını ve kullanıcı deneyimini değerlendiren iki bağımsız yapay zekâ modelinin (**Antigravity** ve **Cline**) analiz raporlarını ve sentezini bir arada sunmaktadır.
 
 ---
 
@@ -157,8 +157,8 @@ Ders tablosundaki (`courses`) 10 izin bayrağına göre `SchoolAccessRepository.
 
 ---
 
-# BÖLÜM 2: DEEPSEEK ANALİZ RAPORU
-> **Analist:** DeepSeek  
+# BÖLÜM 2: CLINE ANALİZ RAPORU
+> **Analist:** Cline  
 > **Tarih:** 16 Ekim 2026  
 > **Kapsam:** Koç–Öğretmen–Öğrenci–Veli ilişkileri, yetki matrisi, veri erişimi, güvenlik ve kullanıcı deneyimi.  
 > **Yöntem:** `docs/OKUL_MODELI.md` (hedef tasarım) ↔ `Backend/MentorumApi` (gerçek yetenek) ↔ `Frontend/src/features` (gerçek arayüz).
@@ -337,10 +337,28 @@ Her iki yapay zekâ modelinin bağımsız analizleri karşılaştırıldığınd
 3. **Çok Çocuklu Veli Takvim Karışması (P1 UX / Veri):**  
    `ScheduleRepository.GetParentSlotsAsync` ve `ParentSchedulePage` sorgularında çocuk ayrımı yapılmadığı için, iki çocuğu olan velinin çocuklarının haftalık programı tek ekranda çorba gibi birleşmektedir.
 
-### 3. DeepSeek Raporunun Yakaladığı Özgün Kritik Açıklar:
+### 3. Cline Raporunun Yakaladığı Özgün Kritik Açıklar:
 1. **Veli Yetkisiz Profil Okuma Açığı (P1 Güvenlik):**  
    `ParentEndpoints.cs` içindeki `GET /parents/children/{studentId}` sorgusunda `student_parents` ilişkisi aranırken `AND is_accepted = 1` koşulu **unutulmuştur**. Daveti henüz kabul etmemiş veya ilişkisi silinmiş bir veli çocuğun profilini okuyabilmektedir.
 2. **Ölü İzin Bayrakları (Dead Flags):**  
    `teacher_can_manage_schedule`, `teacher_can_view_schedule`, `teacher_can_view_notes`, `teacher_can_add_notes` bayrakları veri tabanında yer almasına rağmen bunları kullanan hiçbir backend endpoint'i yazılmamıştır.
 3. **Tek Program Kısıtı (`LIMIT 1`):**  
    `SchoolAccessRepository.GetTeacherProgramIdAsync` metodunda `LIMIT 1` kullanılarak öğretmenin tek bir programı varmış gibi varsayılmıştır.
+
+---
+
+### 4. Ortak Eylem Listesi (Öncelik Sırasıyla)
+
+| Öncelik | Kategori | Eylem | Kaynak |
+|---|---|---|---|
+| 🔴 P0 | Güvenlik | `GetTeacherCourseHomeworkAsync` + `GetTeacherCourseExamsAsync` sorgularına `AND h.course_id = @CourseId` / `AND e.course_id = @CourseId` ekle — öğretmen yalnızca kendi dersinin ödev/sınavını görsün. | Antigravity |
+| 🔴 P0 | Güvenlik | `ParentEndpoints` `GET /parents/children/{studentId}` → `AND is_accepted = 1` ekle. | Cline |
+| 🔴 P1 | Mimari | `DeactivateTeacherAsync` içindeki global `UPDATE teachers SET is_active = 0` kaldır; yalnızca `program_teachers` (ilgili program) kapatılsın. Öğretmen tüm programlardan düştüğünde `teachers.is_active` kapatılabilir. | Antigravity |
+| 🟠 P1 | UX/Veri | `GetParentSlotsAsync`'e `studentId` parametresi ekle + veli arayüzüne çocuk seçici koy (çok çocuklu velinin programı karışmasın). | Antigravity |
+| 🟠 P1 | UX | Derse öğrenci/grup eklerken elle UUID girişini arama destekli dropdown/modal'a çevir. | Ortak |
+| 🟡 P2 | UI | Koça öğretmen atama + 10 izin düzenleme arayüzü (ders oluşturma + ders detayı). | Ortak |
+| 🟡 P2 | Fonksiyon | Veliye sınav sonuçları ucu + sekmesi (`GET /parents/children/{id}/exams`). | Antigravity |
+| 🟡 P2 | Fonksiyon | Öğretmenin derse/gruba toplu ödev ataması (yalnız tek tek öğrenci değil). | Ortak |
+| 🟡 P2 | Temizlik | Ölü izin bayraklarını (schedule/notes) uç + UI ile hayata geçir ya da modelden çıkar. | Cline |
+| 🟡 P2 | Temizlik | `GetTeacherProgramIdAsync`'de `LIMIT 1` yerine program listesi döndür. | Cline |
+| 🟢 P3 | Altyapı | Merkezi `ProgramAccessGuard`'ı diğer endpoint'lere yay (şu an yalnız ExamEndpoints). | Cline |
