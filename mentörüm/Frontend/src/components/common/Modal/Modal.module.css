@@ -4,25 +4,26 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(15, 23, 42, 0.6);
+  background-color: rgba(15, 23, 42, 0.65);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn 0.2s ease-out;
-  padding: var(--spacing-lg);
+  animation: fadeIn 0.15s ease-out;
+  padding: var(--spacing-md);
 }
 
 .modal {
   background-color: var(--bg-color-surface);
-  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
   width: 100%;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  animation: centerPopup 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
 }
 
@@ -30,12 +31,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
   border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-color-surface);
 }
 
 .title {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: 600;
   color: var(--text-color-main);
   margin: 0;
@@ -43,9 +45,9 @@
 
 .closeBtn {
   color: var(--text-color-muted);
-  padding: 4px;
-  border-radius: var(--radius-sm);
-  transition: all 0.2s;
+  padding: 6px;
+  border-radius: var(--radius-btn);
+  transition: all 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -59,22 +61,7 @@
 .content {
   padding: var(--spacing-lg);
   overflow-y: auto;
-  /* Scrollbar styling */
   scrollbar-width: thin;
-  scrollbar-color: #CBD5E1 transparent;
-}
-
-.content::-webkit-scrollbar {
-  width: 6px;
-}
-
-.content::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.content::-webkit-scrollbar-thumb {
-  background-color: #CBD5E1;
-  border-radius: 10px;
 }
 
 @keyframes fadeIn {
@@ -82,36 +69,14 @@
   to { opacity: 1; }
 }
 
-@keyframes slideUp {
+/* Aşağıdan yukarı kayma yerine ekranın ortasında zarif beliren pop-up */
+@keyframes centerPopup {
   from {
     opacity: 0;
-    transform: translateY(20px) scale(0.98);
+    transform: scale(0.95);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@media (max-width: 640px) {
-  .overlay {
-    padding: var(--spacing-md);
-    align-items: flex-end; /* Mobilde aşağıdan çıksın */
-  }
-  
-  .modal {
-    max-height: 95vh;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    animation: slideUpMobile 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-}
-
-@keyframes slideUpMobile {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
+    transform: scale(1);
   }
 }

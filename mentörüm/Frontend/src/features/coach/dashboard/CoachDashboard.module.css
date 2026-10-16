@@ -1,202 +1,814 @@
 .dashboardContainer {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xl);
-  height: 100%;
+  gap: 20px;
+  max-width: 1560px;
+  margin: 0 auto;
+  width: 100%;
 }
 
-.header {
-  margin-bottom: var(--spacing-sm);
-}
-
-.pageTitle {
-  font-size: 1.875rem;
-  font-weight: 700;
-  color: var(--text-color-main);
-  margin-bottom: 4px;
-}
-
-.pageSubtitle {
-  color: var(--text-color-muted);
-  font-size: 1rem;
-}
-
-.grid {
+/* ── 1. ÜST ÖZET (KPI) KARTLARI (4 SÜTUN) ─────────────────────── */
+.kpiGrid {
   display: grid;
-  grid-template-columns: 350px 1fr;
-  gap: var(--spacing-lg);
-  align-items: start;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
 }
 
-.sectionHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--spacing-md);
-}
-
-.sectionTitle {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-color-main);
-}
-
-/* Öğrenci Listesi */
-.studentsCard {
-  overflow: hidden;
-}
-
-.studentList {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  max-height: 600px;
-  overflow-y: auto;
-}
-
-.studentItem {
-  display: flex;
-  align-items: center;
-  padding: var(--spacing-md);
-  border-bottom: 1px solid var(--border-color);
-  transition: background-color 0.2s;
-}
-
-.studentItem:last-child {
-  border-bottom: none;
-}
-
-.studentItem:hover {
-  background-color: #F8FAFC;
-}
-
-.studentAvatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-success), #10B981);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  margin-right: var(--spacing-md);
-}
-
-.studentInfo {
-  flex: 1;
+.kpiCard {
+  background-color: var(--bg-color-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  user-select: none;
   display: flex;
   flex-direction: column;
 }
 
-.studentName {
+.kpiCard:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.kpiActive {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2), var(--shadow-sm);
+  background-color: var(--bg-color-surface);
+}
+
+.kpiAlertBorder {
+  border-color: rgba(244, 63, 94, 0.45);
+}
+
+.kpiHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.kpiLabel {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  color: var(--text-color-muted);
+  text-transform: uppercase;
+}
+
+.kpiIconWrap {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-btn);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.iconIndigo {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.iconSky {
+  background-color: var(--color-accent-light);
+  color: var(--color-accent);
+}
+
+.iconEmerald {
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.iconRose {
+  background-color: var(--color-danger-light);
+  color: var(--color-danger);
+}
+
+.kpiValue {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--text-color-main);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.valAlert {
+  color: var(--color-danger);
+}
+
+.kpiSubtext {
+  font-size: 0.75rem;
+  color: var(--text-color-muted);
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.subtextDot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary);
+  display: inline-block;
+}
+
+.highlightText {
+  color: var(--text-color-main);
   font-weight: 600;
+}
+
+.dangerNotice {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+.kpiProgressBox {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.miniProgressBar {
+  height: 5px;
+  border-radius: var(--radius-full);
+  background-color: var(--border-color);
+  overflow: hidden;
+  width: 100%;
+}
+
+.miniProgressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-primary));
+  border-radius: var(--radius-full);
+  transition: width 0.4s ease;
+}
+
+.progressPercentText {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+/* ── 2. ASİMETRİK BENTO GRID (12 SÜTUN) ───────────────────────── */
+.bentoGrid {
+  display: grid;
+  grid-template-columns: 5fr 7fr;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.leftColumn,
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.panelCard {
+  background-color: var(--bg-color-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  padding: 18px;
+  box-shadow: var(--shadow-card);
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.titleGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panelTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-color-main);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.countPill {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.addStudentBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  border-radius: var(--radius-btn);
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.addStudentBtn:hover {
+  background-color: var(--color-primary);
+  color: #FFFFFF;
+}
+
+.clearFilterBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  padding: 4px 10px;
+  border-radius: var(--radius-btn);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.clearFilterBadge:hover {
+  background-color: var(--color-primary);
+  color: #FFFFFF;
+}
+
+/* Sol Kolon: Arama & Öğrenci Listesi */
+.studentSearchBox {
+  position: relative;
+  margin-bottom: 14px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  color: var(--text-color-muted);
+  pointer-events: none;
+}
+
+.studentSearchInput {
+  width: 100%;
+  height: 36px;
+  padding: 0 32px 0 34px;
+  background-color: var(--bg-color-main);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-btn);
+  font-size: 0.8125rem;
+  color: var(--text-color-main);
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.studentSearchInput:focus {
+  border-color: var(--color-primary);
+  background-color: var(--bg-color-surface);
+}
+
+.clearSearchBtn {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  color: var(--text-color-muted);
+  padding: 2px;
+}
+
+.studentList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 480px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.studentCard {
+  background-color: var(--bg-color-main);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-btn);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.studentCard:hover {
+  border-color: var(--color-primary-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.studentTopRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.studentAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.studentMainInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.studentName {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-color-main);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.studentName:hover {
+  color: var(--color-primary);
+}
+
+.badgeRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gradeBadge {
+  background-color: var(--bg-color-surface-elevated);
+  color: var(--text-color-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-color);
+}
+
+.noGradeBadge {
+  background-color: var(--color-warning-light);
+  color: var(--color-warning);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: var(--radius-xs);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.studentActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.actionBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--border-color);
+  background: var(--bg-color-surface);
+  color: var(--text-color-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.actionBtn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+}
+
+.studentProgressRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.studentProgressBar {
+  flex: 1;
+  height: 5px;
+  border-radius: var(--radius-full);
+  background-color: var(--border-color);
+  overflow: hidden;
+}
+
+.studentProgressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-primary));
+  border-radius: var(--radius-full);
+}
+
+.progressLabelText {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-color-muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Sol Kolon: Boşluk Yönetimi (Son Aktiviteler / Sistem Durumu) */
+.secondaryCard {
+  background-color: var(--bg-color-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-card);
+}
+
+.secondaryHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.secondaryTitleWrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.secondaryTitle {
+  font-size: 0.8125rem;
+  font-weight: 700;
   color: var(--text-color-main);
 }
 
-.studentDetail {
+.sparkleIcon {
+  color: var(--color-accent);
+}
+
+.summaryStatsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 4px 0;
+}
+
+.summaryStatItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.summaryNum {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-color-main);
+  font-variant-numeric: tabular-nums;
+}
+
+.summaryLabel {
+  font-size: 0.6875rem;
+  color: var(--text-color-muted);
+}
+
+.summaryDivider {
+  width: 1px;
+  height: 24px;
+  background-color: var(--border-color);
+}
+
+/* Sağ Kolon: Görev Şeridi & Takvim */
+.taskList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.taskRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background-color: var(--bg-color-main);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-btn);
+  gap: 12px;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.taskRow:hover {
+  border-color: var(--color-primary-border);
+  background-color: var(--bg-color-surface-elevated);
+}
+
+.taskLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.taskIconCircle {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.taskInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
+}
+
+.taskTitle {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-color-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.studentTag {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--color-primary);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.studentTag:hover {
+  text-decoration: underline;
+}
+
+.taskRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.statusBadge {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+}
+
+.statusDone {
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.statusPending {
+  background-color: var(--color-accent-light);
+  color: var(--color-accent);
+  border: 1px solid rgba(14, 165, 233, 0.2);
+}
+
+.statusOverdue {
+  background-color: var(--color-danger-light);
+  color: var(--color-danger);
+  border: 1px solid rgba(244, 63, 94, 0.2);
+}
+
+.taskActionBtns {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.inlineCheckBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-success);
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.inlineCheckBtn:hover {
+  background-color: var(--color-success);
+  color: #FFFFFF;
+}
+
+.inlineDetailBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-color-surface);
+  color: var(--text-color-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.inlineDetailBtn:hover {
+  color: var(--text-color-main);
+  border-color: var(--text-color-muted);
+}
+
+.calendarWrapCard {
+  background-color: var(--bg-color-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  padding: 18px;
+  box-shadow: var(--shadow-card);
+}
+
+.calendarHeader {
+  margin-bottom: 12px;
+}
+
+.calendarTitle {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--text-color-main);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.emptyNotice {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-color-muted);
+  font-size: 0.8125rem;
+}
+
+/* ── ETKİNLİK DETAY MODALI (ORTADA BELİREN) ─────────────────── */
+.eventModalBody {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.eventModalHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modalIconBox {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-btn);
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.modalEventDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.modalEventTitle {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--text-color-main);
+  margin: 0;
+}
+
+.modalEventDate {
   font-size: 0.75rem;
   color: var(--text-color-muted);
 }
 
-.emptyState, .loading {
-  padding: var(--spacing-xl);
-  text-align: center;
-  color: var(--text-color-muted);
-  font-size: 0.875rem;
+.modalMetaRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: var(--bg-color-main);
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--border-color);
+  font-size: 0.8125rem;
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
-  .grid {
+.metaKey {
+  font-weight: 600;
+  color: var(--text-color-muted);
+}
+
+.metaVal {
+  color: var(--text-color-main);
+  font-weight: 600;
+}
+
+.modalDescBox {
+  padding: 10px 12px;
+  background-color: var(--bg-color-main);
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--border-color);
+}
+
+.descText {
+  font-size: 0.8125rem;
+  color: var(--text-color-main);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.modalFooterActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.modalStudentBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background-color: var(--color-primary);
+  color: #FFFFFF;
+  border-radius: var(--radius-btn);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.modalStudentBtn:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.modalCloseBtn {
+  padding: 8px 14px;
+  background-color: var(--bg-color-surface-elevated);
+  color: var(--text-color-main);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-btn);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.modalCloseBtn:hover {
+  background-color: var(--border-color);
+}
+
+/* ── RESPONSIVE GRID ────────────────────────────────────────── */
+@media (max-width: 1200px) {
+  .kpiGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .bentoGrid {
     grid-template-columns: 1fr;
   }
 }
 
-.kpiRow {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--spacing-md);
-}
-
-.kpiCard {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  align-items: center;
-  text-align: center;
-}
-
-.kpiValue {
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: var(--text-color-main);
-}
-
-.kpiLabel {
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--text-color-muted);
-}
-
-.todayCard {
-  margin-bottom: var(--spacing-md);
-}
-
-.todayTitle {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--text-color-main);
-  margin-bottom: 8px;
-}
-
-.todayList {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.todayItem {
-  font-size: 0.85rem;
-  color: var(--text-color-main);
-  padding: 6px 10px;
-  background: #eef2ff;
-  border-radius: 6px;
-}
-
-.atRiskCard {
-  border-left: 4px solid #ef4444;
-}
-
-.atRiskTitle {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #b91c1c;
-  margin-bottom: 8px;
-}
-
-.atRiskList {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.atRiskItem {
-  font-size: 0.85rem;
-  color: var(--text-color-main);
-}
-
-@media (max-width: 768px) {
-  .kpiRow {
-    grid-template-columns: repeat(2, 1fr);
+@media (max-width: 640px) {
+  .kpiGrid {
+    grid-template-columns: 1fr;
   }
 }
-

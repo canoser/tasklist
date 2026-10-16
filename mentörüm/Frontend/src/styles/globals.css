@@ -1,30 +1,58 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
 :root {
-  /* Renk Paleti (Harmonious & Modern) */
-  --color-primary: #6366F1;
-  --color-primary-hover: #4F46E5;
-  --color-primary-light: #E0E7FF;
+  /* Renk Paleti (Indigo & Sky) */
+  --color-primary: #4F46E5;
+  --color-primary-hover: #4338CA;
+  --color-primary-light: #EEF2FF;
+  --color-primary-border: rgba(79, 70, 229, 0.2);
   
-  --color-success: #22C55E;
-  --color-success-hover: #16A34A;
+  --color-accent: #0EA5E9;
+  --color-accent-hover: #0284C7;
+  --color-accent-light: #F0F9FF;
+  
+  --color-success: #10B981;
+  --color-success-hover: #059669;
+  --color-success-light: #ECFDF5;
   
   --color-warning: #F59E0B;
-  --color-danger: #EF4444;
-  --color-danger-hover: #DC2626;
-  --color-late: #F97316;
+  --color-warning-light: #FFFBEB;
+  
+  --color-danger: #F43F5E;
+  --color-danger-hover: #E11D48;
+  --color-danger-light: #FFF1F2;
 
-  /* Arka Plan & Yüzey Renkleri */
+  /* Açık Tema (Light: Slate-50) */
   --bg-color-main: #F8FAFC;
   --bg-color-surface: #FFFFFF;
-  --bg-color-sidebar: #1E293B;
+  --bg-color-surface-elevated: #F1F5F9;
+  --bg-color-sidebar: #0F172A;
+  --bg-color-sidebar-border: #1E293B;
 
   /* Metin Renkleri */
   --text-color-main: #0F172A;
   --text-color-muted: #64748B;
   --text-color-inverse: #F8FAFC;
+  --text-color-on-sidebar: #CBD5E1;
 
   /* Kenarlık (Borders) */
   --border-color: #E2E8F0;
+  --border-color-subtle: #F1F5F9;
   
+  /* Gölgeler (Subtle SaaS Shadows) */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
+
+  /* Yarıçap (Border Radius) */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-btn: 8px;     /* rounded-lg */
+  --radius-card: 12px;   /* rounded-xl */
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
   /* Boşluklar (Spacing) */
   --spacing-xs: 4px;
   --spacing-sm: 8px;
@@ -32,41 +60,59 @@
   --spacing-lg: 24px;
   --spacing-xl: 32px;
 
-  /* Yarıçap (Border Radius) */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-full: 9999px;
-
   /* Tipografi */
-  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-/* Koyu Tema (Dark Mode) İçin Geleceğe Hazırlık */
+/* Koyu / Slate Tema (Dark: Slate-900) */
 [data-theme='dark'] {
   --bg-color-main: #0F172A;
   --bg-color-surface: #1E293B;
+  --bg-color-surface-elevated: #334155;
+  --bg-color-sidebar: #0F172A;
+  --bg-color-sidebar-border: rgba(255, 255, 255, 0.08);
+
   --text-color-main: #F8FAFC;
   --text-color-muted: #94A3B8;
-  --border-color: #334155;
+  --text-color-inverse: #0F172A;
+
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-color-subtle: rgba(255, 255, 255, 0.04);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+
+  --color-primary-light: rgba(79, 70, 229, 0.15);
+  --color-accent-light: rgba(14, 165, 233, 0.15);
+  --color-success-light: rgba(16, 185, 129, 0.15);
+  --color-warning-light: rgba(245, 158, 11, 0.15);
+  --color-danger-light: rgba(244, 63, 94, 0.15);
 }
 
-/* KURAL: Layout'larda 100vh/100vw YASAK — iOS Safari URL çubuğunu sayar, kırılır.
-   Her zaman 100dvh / 100dvw kullanın (Dynamic Viewport) */
-
-/* CSS Reset & Genel Ayarlar */
+/* CSS Reset & Temel Ayarlar */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-body {
-  font-family: var(--font-body);
+html, body {
+  height: 100dvh;
+  width: 100%;
+  overflow-x: hidden;
+  font-family: var(--font-family);
   background-color: var(--bg-color-main);
   color: var(--text-color-main);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+/* Rakamlarda hizalamanın bozulmaması için tabular-nums */
+body, button, input, select, textarea, .tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
 a {
@@ -79,4 +125,28 @@ button {
   border: none;
   background: none;
   cursor: pointer;
+  touch-action: manipulation;
+}
+
+input, textarea, select {
+  font-family: inherit;
+}
+
+/* Custom Scrollbar (Ince ve Sade) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-color-muted);
 }

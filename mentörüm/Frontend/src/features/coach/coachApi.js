@@ -300,3 +300,17 @@ export const useCreateCoachingSession = (studentId) => {
     },
   });
 };
+
+export const useCompleteHomework = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ assignmentId, studentNotes = 'Koç tarafından onaylandı.' }) => {
+      return await apiClient.post(`/homework/assignments/${assignmentId}/complete`, { studentNotes });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coach', 'calendar'] });
+      queryClient.invalidateQueries({ queryKey: ['coach', 'reports'] });
+    },
+  });
+};
+

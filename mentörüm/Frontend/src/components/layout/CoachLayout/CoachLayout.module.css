@@ -1,206 +1,433 @@
 .layout {
   display: flex;
-  height: 100dvh; /* 100vh iOS Safari'de URL çubuğunu sayar — kırılır */
+  height: 100dvh;
   width: 100dvw;
   overflow: hidden;
   background-color: var(--bg-color-main);
 }
 
-/* --- Sidebar --- */
+/* ── SOL NAVİGASYON (SIDEBAR - 260px) ───────────────────────── */
 .sidebar {
   width: 260px;
-  background-color: var(--bg-color-sidebar);
+  min-width: 260px;
+  background-color: #0F172A; /* Slate-900 */
+  border-right: 1px solid #1E293B; /* Slate-800 */
   color: #F8FAFC;
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s ease;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 50;
-  box-shadow: 4px 0 15px rgba(0,0,0,0.05);
+  height: 100%;
 }
 
 .sidebarHeader {
-  padding: var(--spacing-lg);
+  height: 64px;
+  padding: 0 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid #1E293B;
 }
 
-.logo {
-  font-size: 1.5rem;
+.logoWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.logoIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-btn);
+  background: linear-gradient(135deg, #4F46E5, #0EA5E9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.35);
+}
+
+.logoTextGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.logoText {
+  font-size: 1.0625rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #818CF8, #C7D2FE);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.02em;
+  color: #FFFFFF;
+  line-height: 1.2;
+}
+
+.proBadge {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #818CF8;
+  text-transform: uppercase;
 }
 
 .closeBtn {
   display: none;
   color: #94A3B8;
-  font-size: 1.25rem;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s ease;
 }
 
+.closeBtn:hover {
+  color: #FFFFFF;
+}
+
+/* Navigasyon Grupları */
 .nav {
   flex: 1;
-  padding: var(--spacing-md) 0;
+  padding: 16px 10px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.navGroup {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
+.navGroupTitle {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #64748B;
+  text-transform: uppercase;
+  padding: 0 12px 6px;
+}
+
+.navGroupItems {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .navItem {
   display: flex;
   align-items: center;
-  padding: 12px 24px;
-  color: #CBD5E1;
+  padding: 9px 12px;
+  color: #94A3B8;
+  font-size: 0.875rem;
   font-weight: 500;
-  transition: all 0.2s;
+  border-radius: var(--radius-btn);
+  transition: all 0.15s ease;
+  position: relative;
   border-left: 3px solid transparent;
 }
 
 .navItem:hover {
-  background-color: rgba(255,255,255,0.05);
+  background-color: rgba(255, 255, 255, 0.05);
   color: #F8FAFC;
 }
 
 .navItemActive {
   background-color: rgba(99, 102, 241, 0.15);
-  color: #fff;
-  border-left-color: var(--color-primary);
+  color: #FFFFFF;
+  font-weight: 600;
+  border-left: 3px solid #6366F1;
 }
 
 .navIcon {
-  margin-right: 12px;
-  font-size: 1.25rem;
-}
-
-.sidebarFooter {
-  padding: var(--spacing-lg);
-  border-top: 1px solid rgba(255,255,255,0.1);
-}
-
-.userInfo {
-  display: flex;
-  align-items: center;
-  margin-bottom: var(--spacing-md);
-}
-
-.avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+  margin-right: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  color: #fff;
-  margin-right: 12px;
+  color: inherit;
+}
+
+.navLabel {
+  flex: 1;
+}
+
+.counterBadge {
+  background-color: #F43F5E;
+  color: #FFFFFF;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: var(--radius-full);
+}
+
+/* Alt Kullanıcı Kartı */
+.sidebarFooter {
+  padding: 12px;
+  border-top: 1px solid #1E293B;
+  background-color: #0B1120;
+}
+
+.userCard {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: var(--radius-card);
+  background-color: #1E293B;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  gap: 10px;
+}
+
+.userAvatar {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, #4F46E5, #6366F1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  color: #FFFFFF;
+  flex-shrink: 0;
 }
 
 .userDetails {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
 }
 
 .userName {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 600;
+  color: #F8FAFC;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .userRole {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   color: #94A3B8;
 }
 
-.logoutBtn {
-  width: 100%;
-  padding: 8px;
+.userActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.actionIconBtn {
+  width: 28px;
+  height: 28px;
   border-radius: var(--radius-sm);
-  background-color: rgba(255,255,255,0.05);
-  color: #CBD5E1;
-  font-size: 0.875rem;
-  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94A3B8;
+  background: transparent;
+  transition: all 0.15s ease;
 }
 
-.logoutBtn:hover {
-  background-color: rgba(239, 68, 68, 0.15);
-  color: #FCA5A5;
+.actionIconBtn:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #F8FAFC;
 }
 
-/* --- Main Content --- */
-.main {
+.logoutActionBtn:hover {
+  color: #F43F5E;
+}
+
+/* ── ANA İÇERİK & ÜST BAR (TOPBAR - 64px) ──────────────────── */
+.mainWrapper {
   flex: 1;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  min-width: 0;
   overflow: hidden;
 }
 
 .topbar {
   height: 64px;
+  min-height: 64px;
   background-color: var(--bg-color-surface);
   border-bottom: 1px solid var(--border-color);
+  padding: 0 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--spacing-lg);
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.topbarLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .menuBtn {
-  font-size: 1.5rem;
-  color: var(--text-color-muted);
   display: none;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--border-color);
+  color: var(--text-color-main);
+  align-items: center;
+  justify-content: center;
 }
 
+.breadcrumbBox {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.crumbRoot {
+  color: var(--text-color-muted);
+}
+
+.crumbSlash {
+  color: var(--border-color);
+  font-weight: 400;
+}
+
+.crumbCurrent {
+  color: var(--text-color-main);
+}
+
+.todayDate {
+  font-size: 0.6875rem;
+  color: var(--text-color-muted);
+}
+
+/* Arama Çubuğu */
+.searchBox {
+  flex: 1;
+  max-width: 440px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-color-muted);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  height: 38px;
+  padding: 0 44px 0 38px;
+  background-color: var(--bg-color-main);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-btn);
+  color: var(--text-color-main);
+  font-size: 0.8125rem;
+  transition: all 0.15s ease;
+  outline: none;
+}
+
+.searchInput:focus {
+  border-color: var(--color-primary);
+  background-color: var(--bg-color-surface);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.searchShortcut {
+  position: absolute;
+  right: 10px;
+  padding: 2px 6px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-color-muted);
+  background-color: var(--bg-color-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xs);
+  pointer-events: none;
+}
+
+/* Üst Bar Sağ Taraf */
 .topbarRight {
   display: flex;
   align-items: center;
+  gap: 10px;
 }
 
-.notificationBtn {
-  position: relative;
-  font-size: 1.25rem;
-  color: var(--text-color-muted);
-  padding: 8px;
-  border-radius: 50%;
-  transition: background-color 0.2s;
+.quickActionBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 14px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+  color: #FFFFFF;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: var(--radius-btn);
+  box-shadow: 0 1px 2px rgba(79, 70, 229, 0.2);
+  transition: all 0.15s ease;
 }
 
-.notificationBtn:hover {
-  background-color: #F1F5F9;
+.quickActionBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(79, 70, 229, 0.25);
 }
 
-.badge {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  background-color: var(--color-danger);
-  color: white;
-  font-size: 0.65rem;
-  font-weight: bold;
-  width: 16px;
-  height: 16px;
+.themeToggleBtn {
+  width: 36px;
+  height: 38px;
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--border-color);
+  color: var(--text-color-main);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  border: 2px solid var(--bg-color-surface);
+  background-color: transparent;
+  transition: all 0.15s ease;
 }
 
-.content {
+.themeToggleBtn:hover {
+  background-color: var(--bg-color-surface-elevated);
+  border-color: var(--color-primary);
+}
+
+/* Sayfa İçerik Taşıyıcısı */
+.pageContent {
   flex: 1;
-  padding: var(--spacing-lg);
   overflow-y: auto;
+  background-color: var(--bg-color-main);
+  padding: 24px;
 }
 
-/* --- Mobile Responsive --- */
+/* Mobil Overlay & Responsive */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(2px);
+  z-index: 45;
+}
+
 @media (max-width: 1024px) {
   .sidebar {
     position: fixed;
     top: 0;
-    left: 0;
     bottom: 0;
+    left: 0;
     transform: translateX(-100%);
   }
 
@@ -209,21 +436,26 @@
   }
 
   .closeBtn {
-    display: block;
+    display: flex;
   }
 
   .menuBtn {
-    display: block;
+    display: flex;
   }
 
-  .overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(15, 23, 42, 0.4);
-    backdrop-filter: blur(2px);
-    z-index: 40;
+  .searchBox {
+    display: none; /* Mobilde gizle veya kompakt ikona dönüştür */
+  }
+
+  .topbar {
+    padding: 0 16px;
+  }
+
+  .pageContent {
+    padding: 16px;
+  }
+
+  .quickActionBtn span {
+    display: none; /* Mobilde sadece + ikonu */
   }
 }

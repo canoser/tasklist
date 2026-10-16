@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../../features/auth/authStore';
 import { useNotifications, useMarkNotificationAsRead, useMarkAllNotificationsAsRead } from '../../../hooks/useNotifications';
+import { Bell, FileText, Shield, GraduationCap, BookOpen, Calendar, Layers } from 'lucide-react';
 import styles from './NotificationDropdown.module.css';
 
 const timeAgo = (dateStr) => {
@@ -17,13 +18,13 @@ const timeAgo = (dateStr) => {
 };
 
 const typeIcon = (type) => {
-  if (type?.startsWith('HOMEWORK')) return '📝';
-  if (type?.includes('COACH')) return '🛡️';
-  if (type?.includes('TEACHER')) return '👨‍🏫';
-  if (type?.includes('RESOURCE')) return '📚';
-  if (type?.includes('SCHEDULE')) return '📅';
-  if (type?.includes('PROGRAM')) return '🏫';
-  return '🔔';
+  if (type?.startsWith('HOMEWORK')) return <FileText size={16} strokeWidth={1.75} />;
+  if (type?.includes('COACH')) return <Shield size={16} strokeWidth={1.75} />;
+  if (type?.includes('TEACHER')) return <GraduationCap size={16} strokeWidth={1.75} />;
+  if (type?.includes('RESOURCE')) return <BookOpen size={16} strokeWidth={1.75} />;
+  if (type?.includes('SCHEDULE')) return <Calendar size={16} strokeWidth={1.75} />;
+  if (type?.includes('PROGRAM')) return <Layers size={16} strokeWidth={1.75} />;
+  return <Bell size={16} strokeWidth={1.75} />;
 };
 
 const NotificationDropdown = () => {
@@ -63,8 +64,15 @@ const NotificationDropdown = () => {
 
   return (
     <div className={styles.wrap} ref={ref}>
-      <button type="button" className={styles.bell} onClick={() => setOpen((o) => !o)} title="Bildirimler">
-        🔔 {unreadCount > 0 && <span className={styles.badge}>{unreadCount}</span>}
+      <button 
+        type="button" 
+        className={styles.bell} 
+        onClick={() => setOpen((o) => !o)} 
+        title="Bildirimler"
+        aria-label="Bildirimler"
+      >
+        <Bell size={18} strokeWidth={1.75} />
+        {unreadCount > 0 && <span className={styles.badge}>{unreadCount > 9 ? '9+' : unreadCount}</span>}
       </button>
       {open && (
         <div className={styles.panel}>
