@@ -15,6 +15,7 @@ error.txt
 # Local AI / Antigravity Agent configurations (not committed to GitHub)
 .agents/
 AGENTS.md
+GEMINI.md
 
 # Web/Node ignored files
 node_modules/
