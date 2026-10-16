@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   useCourses, useCourseStudents, useCourseGroups, useCourseResources,
   useAddCourseStudent, useRemoveCourseStudent, useAddCourseGroup, useRemoveCourseGroup, useCreateResource,
+  useUpdateCourse,
 } from '../coachSchoolApi';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
@@ -14,6 +15,7 @@ const PERMS = [
   ['teacherCanViewContact', 'İletişimi Gör'],
   ['teacherCanViewHomework', 'Ödevi Gör'],
   ['teacherCanManageHomework', 'Ödev Yönet'],
+  ['teacherCanProcessHomework', 'Ödevi İşle (Onay/Not)'],
   ['teacherCanViewExams', 'Sınavı Gör'],
   ['teacherCanManageExams', 'Sınav Yönet'],
   ['teacherCanViewNotes', 'Notu Gör'],
@@ -42,6 +44,23 @@ const CoachCourseDetailPage = () => {
   const addGroup = useAddCourseGroup();
   const removeGroup = useRemoveCourseGroup();
   const createResource = useCreateResource();
+  const updateCourse = useUpdateCourse();
+  const [permValues, setPermValues] = useState({});
+
+  const openPermissions = () => {
+    if (course) {
+      const vals = {};
+      PERMS.forEach(([key]) => { vals[key] = !!course[key]; });
+      setPermValues(vals);
+    }
+    setTab('permissions');
+  };
+
+  const togglePerm = (key) => setPermValues((p) => ({ ...p, [key]: !p[key] }));
+
+  const savePermissions = async () => {
+    await updateCourse.mutateAsync({ programId, courseId, data: permValues });
+  };
 
   return (
     <div className={styles.container}>
@@ -52,7 +71,7 @@ const CoachCourseDetailPage = () => {
 
       <div className={styles.tabs}>
         {['students', 'groups', 'resources', 'permissions'].map((t) => (
-          <button key={t} className={tab === t ? `${styles.tab} ${styles.tabActive}` : styles.tab} onClick={() => setTab(t)}>
+          <button key={t} className={tab === t ? `${styles.tab} ${styles.tabActive}` : styles.tab} onClick={() => (t === 'permissions' ? openPermissions() : setTab(t))}>
             {{ students: 'Öğrenciler', groups: 'Gruplar', resources: 'Kaynaklar', permissions: 'İzinler' }[t]}
           </button>
         ))}
@@ -114,11 +133,12 @@ const CoachCourseDetailPage = () => {
       {tab === 'permissions' && course && (
         <Card className={styles.card} padding="md">
           {PERMS.map(([key, label]) => (
-            <div key={key} className={styles.permRow}>
+            <div key={key} className={styles.permRow} onClick={() => togglePerm(key)} style={{ cursor: 'pointer' }}>
               <span>{label}</span>
-              <span className={course[key] ? styles.on : styles.off}>{course[key] ? 'Açık' : 'Kapalı'}</span>
+              <span className={permValues[key] ? styles.on : styles.off}>{permValues[key] ? 'Açık' : 'Kapalı'}</span>
             </div>
           ))}
+          <Button size="sm" onClick={savePermissions} isLoading={updateCourse.isPending}>İzinleri Kaydet</Button>
         </Card>
       )}
     </div>

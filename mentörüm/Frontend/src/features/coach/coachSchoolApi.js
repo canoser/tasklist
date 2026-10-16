@@ -56,6 +56,14 @@ export const useCreateCourse = () => {
   });
 };
 
+export const useUpdateCourse = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ programId, courseId, data }) => apiClient.put(`/programs/${programId}/courses/${courseId}`, data),
+    onSuccess: (_, v) => qc.invalidateQueries({ queryKey: ['coach', 'program', v.programId, 'courses'] }),
+  });
+};
+
 // --- Gruplar ---
 export const useGroups = (programId) => useQuery({
   queryKey: ['coach', 'program', programId, 'groups'],

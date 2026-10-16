@@ -24,7 +24,8 @@ namespace MentorumApi.Data
                        (COALESCE(teacher_can_view_notes, 0) = 1) AS CanViewNotes,
                        (COALESCE(teacher_can_add_notes, 0) = 1) AS CanAddNotes,
                        (COALESCE(teacher_can_view_schedule, 0) = 1) AS CanViewSchedule,
-                       (COALESCE(teacher_can_manage_schedule, 0) = 1) AS CanManageSchedule
+                       (COALESCE(teacher_can_manage_schedule, 0) = 1) AS CanManageSchedule,
+                       (COALESCE(teacher_can_process_homework, 0) = 1) AS CanProcessHomework
                 FROM courses
                 WHERE id = @CourseId AND teacher_id = @TeacherId AND is_active = 1",
                 new { CourseId = courseId, TeacherId = teacherId });
@@ -114,7 +115,8 @@ namespace MentorumApi.Data
                        (COALESCE(teacher_can_view_notes, 0) = 1) AS CanViewNotes,
                        (COALESCE(teacher_can_add_notes, 0) = 1) AS CanAddNotes,
                        (COALESCE(teacher_can_view_schedule, 0) = 1) AS CanViewSchedule,
-                       (COALESCE(teacher_can_manage_schedule, 0) = 1) AS CanManageSchedule
+                       (COALESCE(teacher_can_manage_schedule, 0) = 1) AS CanManageSchedule,
+                       (COALESCE(teacher_can_process_homework, 0) = 1) AS CanProcessHomework
                 FROM courses
                 WHERE teacher_id = @TeacherId AND is_active = 1
                 ORDER BY name",
@@ -144,7 +146,7 @@ namespace MentorumApi.Data
         {
             using var conn = _connectionFactory.CreateConnection();
             return await conn.QueryAsync(@"
-                SELECT h.id, h.student_id AS StudentId, u.full_name AS StudentName, h.snapshot_title AS Title, h.due_date AS DueDate, h.status AS Status
+                SELECT h.id, h.student_id AS StudentId, u.full_name AS StudentName, h.snapshot_title AS Title, h.due_date AS DueDate, h.status AS Status, h.feedback AS Feedback
                 FROM homework_assignments h
                 JOIN users u ON u.id = h.student_id
                 WHERE h.program_id = (SELECT program_id FROM courses WHERE id = @CourseId)
@@ -253,6 +255,51 @@ namespace MentorumApi.Data
                     Now = DateTime.UtcNow
                 });
             return id;
+        }
+
+        /// <summary>
+        /// Öğretmenin kendi dersindeki öğrencinin ödevini işlemesi (onay/geri bildirim/tamamlama).
+        /// Yalnızca `teacher_can_process_homework = 1` olan derslerde çalışır.
+        /// Ödev mutlaka öğretmenin kendi dersine (course_id) ait olmalıdır (cross-course koruması).
+        /// </summary>
+        public async Task<Guid> ReviewTeacherHomeworkAsync(Guid courseId, Guid teacherId, Guid assignmentId, TeacherReviewHomeworkRequest req)
+        {
+            var access = await GetCourseAccessAsync(courseId, teacherId);
+            if (access == null) throw new UnauthorizedAccessException("NOT_FOUND");
+            if (!access.CanProcessHomework) throw new InvalidOperationException("FORBIDDEN");
+
+            var studentIds = await GetCourseStudentIdsAsync(courseId);
+
+            using var conn = _connectionFactory.CreateConnection();
+            var target = await conn.QuerySingleOrDefaultAsync<HomeworkReviewTarget>(@"
+                SELECT id, student_id AS StudentId
+                FROM homework_assignments
+                WHERE id = @AssignmentId AND course_id = @CourseId",
+                new { AssignmentId = assignmentId, CourseId = courseId });
+
+            if (target == null || !studentIds.Contains(target.StudentId))
+                throw new UnauthorizedAccessException("STUDENT_NOT_IN_COURSE");
+
+            var status = req.Status == "DONE" ? "DONE" : "PENDING";
+            var now = DateTime.UtcNow;
+            var rows = await conn.ExecuteAsync(@"
+                UPDATE homework_assignments
+                SET status = @Status,
+                    feedback = @Feedback,
+                    completed_at = CASE WHEN @Status = 'DONE' THEN @Now ELSE completed_at END,
+                    completed_by = CASE WHEN @Status = 'DONE' THEN 'Teacher' ELSE completed_by END,
+                    updated_at = @Now
+                WHERE id = @AssignmentId AND course_id = @CourseId",
+                new { Status = status, Feedback = req.Feedback ?? "", Now = now, AssignmentId = assignmentId, CourseId = courseId });
+
+            if (rows == 0) throw new UnauthorizedAccessException("NOT_FOUND");
+            return assignmentId;
+        }
+
+        private sealed class HomeworkReviewTarget
+        {
+            public Guid Id { get; set; }
+            public Guid StudentId { get; set; }
         }
     }
 }

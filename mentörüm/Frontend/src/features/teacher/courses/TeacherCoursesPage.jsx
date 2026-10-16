@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTeacherCourses, useTeacherCourseStudents, useTeacherCourseHomework, useTeacherCourseExams, useCreateTeacherHomework, useCreateTeacherExam } from '../teacherApi';
+import { useTeacherCourses, useTeacherCourseStudents, useTeacherCourseHomework, useTeacherCourseExams, useCreateTeacherHomework, useCreateTeacherExam, useReviewTeacherHomework } from '../teacherApi';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
@@ -18,6 +18,15 @@ const TeacherCoursesPage = () => {
   const { data: exams } = useTeacherCourseExams(selected);
   const createHomework = useCreateTeacherHomework();
   const createExam = useCreateTeacherExam();
+  const reviewHomework = useReviewTeacherHomework();
+  const [reviewTarget, setReviewTarget] = useState(null);
+  const [reviewFeedback, setReviewFeedback] = useState('');
+
+  const submitReview = async (h) => {
+    await reviewHomework.mutateAsync({ courseId: selected, assignmentId: h.id, data: { status: 'DONE', feedback: reviewFeedback.trim() } });
+    setReviewTarget(null);
+    setReviewFeedback('');
+  };
 
   const [showHomeworkForm, setShowHomeworkForm] = useState(false);
   const [hwStudentId, setHwStudentId] = useState('');
@@ -115,6 +124,20 @@ const TeacherCoursesPage = () => {
                 <Card key={h.id} className={styles.card} padding="md">
                   <strong>{h.title}</strong>
                   <span className={styles.meta}>{h.studentName} · {fmt(h.dueDate)} · {h.status}</span>
+                  {h.feedback && <span className={styles.meta}>Geri Bildirim: {h.feedback}</span>}
+                  {course?.canProcessHomework && h.status !== 'DONE' && (
+                    reviewTarget === h.id ? (
+                      <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        <Input label="Geri Bildirim" value={reviewFeedback} onChange={(e) => setReviewFeedback(e.target.value)} placeholder="Onay notu (opsiyonel)" />
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <Button size="sm" onClick={() => submitReview(h)} isLoading={reviewHomework.isPending}>Onayla (Tamamlandı)</Button>
+                          <Button size="sm" variant="ghost" onClick={() => { setReviewTarget(null); setReviewFeedback(''); }}>Vazgeç</Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <Button size="sm" variant="outline" onClick={() => { setReviewTarget(h.id); setReviewFeedback(''); }}>Onayla / Geri Bildir</Button>
+                    )
+                  )}
                 </Card>
               ))}
               {homework?.length === 0 && <p className={styles.empty}>Ödev yok.</p>}

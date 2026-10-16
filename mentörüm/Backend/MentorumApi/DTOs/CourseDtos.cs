@@ -22,6 +22,7 @@ namespace MentorumApi.DTOs
         public bool CanAddNotes { get; set; }
         public bool CanViewSchedule { get; set; }
         public bool CanManageSchedule { get; set; }
+        public bool CanProcessHomework { get; set; }
     }
 
     /// <summary>

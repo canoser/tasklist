@@ -20,6 +20,7 @@ namespace MentorumApi.DTOs
         public bool TeacherCanAddNotes { get; set; }
         public bool TeacherCanViewSchedule { get; set; }
         public bool TeacherCanManageSchedule { get; set; }
+        public bool TeacherCanProcessHomework { get; set; }
         public int StudentCount { get; set; }
     }
 
@@ -40,6 +41,7 @@ namespace MentorumApi.DTOs
         public bool? TeacherCanAddNotes { get; set; }
         public bool? TeacherCanViewSchedule { get; set; }
         public bool? TeacherCanManageSchedule { get; set; }
+        public bool? TeacherCanProcessHomework { get; set; }
     }
 
     public class UpdateCourseRequest
@@ -59,6 +61,7 @@ namespace MentorumApi.DTOs
         public bool? TeacherCanAddNotes { get; set; }
         public bool? TeacherCanViewSchedule { get; set; }
         public bool? TeacherCanManageSchedule { get; set; }
+        public bool? TeacherCanProcessHomework { get; set; }
     }
 
     public class AddCourseStudentRequest { public required Guid StudentId { get; set; } }

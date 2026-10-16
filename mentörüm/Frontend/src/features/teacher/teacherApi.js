@@ -79,3 +79,11 @@ export const useCreateTeacherExam = () => {
     onSuccess: (_, v) => queryClient.invalidateQueries({ queryKey: ['teacher', 'course', v.courseId] }),
   });
 };
+
+export const useReviewTeacherHomework = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ courseId, assignmentId, data }) => apiClient.post(`/teacher/courses/${courseId}/homework/${assignmentId}/review`, data),
+    onSuccess: (_, v) => queryClient.invalidateQueries({ queryKey: ['teacher', 'course', v.courseId] }),
+  });
+};

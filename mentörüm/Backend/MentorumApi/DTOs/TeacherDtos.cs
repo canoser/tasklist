@@ -65,4 +65,12 @@ namespace MentorumApi.DTOs
         public string? ExamType { get; set; }
         public float TotalNet { get; set; }
     }
+
+    public class TeacherReviewHomeworkRequest
+    {
+        [Required]
+        public required string Status { get; set; } // 'DONE' | 'PENDING'
+
+        public string? Feedback { get; set; }
+    }
 }

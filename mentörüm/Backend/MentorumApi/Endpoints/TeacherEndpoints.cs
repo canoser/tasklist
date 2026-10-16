@@ -112,6 +112,25 @@ namespace MentorumApi.Endpoints
                 catch (UnauthorizedAccessException) { return Results.NotFound(new { error = "Ders bulunamadı veya öğrenci bu derste değil." }); }
                 catch (InvalidOperationException) { return Results.Forbid(); }
             }).AddEndpointFilter<MentorumApi.Filters.IdempotencyFilter>();
+
+            // Öğretmenin kendi dersindeki ödevi işlemesi (onay/geri bildirim/tamamlama) — koç açtıysa.
+            me.MapPost("/courses/{courseId:guid}/homework/{assignmentId:guid}/review", async (
+                Guid courseId,
+                Guid assignmentId,
+                [FromBody] TeacherReviewHomeworkRequest req,
+                [FromServices] SchoolAccessRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var teacherId = GetCoachId(user);
+                if (teacherId == null) return Results.Unauthorized();
+                try
+                {
+                    var id = await repo.ReviewTeacherHomeworkAsync(courseId, teacherId.Value, assignmentId, req);
+                    return Results.Ok(new { id });
+                }
+                catch (UnauthorizedAccessException) { return Results.NotFound(new { error = "Ödev bulunamadı veya öğrenci bu derste değil." }); }
+                catch (InvalidOperationException) { return Results.Forbid(); }
+            }).AddEndpointFilter<MentorumApi.Filters.IdempotencyFilter>();
         }
 
         private static Guid? GetCoachId(ClaimsPrincipal user)
