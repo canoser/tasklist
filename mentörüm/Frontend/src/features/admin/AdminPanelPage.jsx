@@ -26,6 +26,9 @@ const AdminPanelPage = () => {
   const reject = useRejectUser();
   const addUser = useAddUser();
   const changePassword = useChangeUserPassword();
+  const [pwUser, setPwUser] = useState(null);
+  const [pwValue, setPwValue] = useState('');
+  const [pwMsg, setPwMsg] = useState('');
 
   const handleChangePassword = async (userId) => {
     if (pwValue.trim().length < 6) {
@@ -52,9 +55,6 @@ const AdminPanelPage = () => {
   const [curriculumBusy, setCurriculumBusy] = useState(false);
   const [curriculumResult, setCurriculumResult] = useState(null);
   const [curriculumError, setCurriculumError] = useState('');
-  const [pwUser, setPwUser] = useState(null);
-  const [pwValue, setPwValue] = useState('');
-  const [pwMsg, setPwMsg] = useState('');
 
   const handleApprove = (userId, defaultRole) => {
     const role = roles[userId] || defaultRole;
@@ -293,7 +293,7 @@ const AdminPanelPage = () => {
                             placeholder="Yeni şifre (en az 6)"
                             value={pwValue}
                             onChange={(e) => setPwValue(e.target.value)}
-                            autoFocus
+                            autoComplete="new-password"
                             style={{ padding: '7px 10px', borderRadius: 6, border: '1px solid #ccc', minWidth: 180 }}
                           />
                           <Button size="sm" onClick={() => handleChangePassword(u.id)} isLoading={changePassword.isPending && pwUser === u.id}>Kaydet</Button>
