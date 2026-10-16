@@ -29,6 +29,21 @@ import React from 'react';
             50% { transform: rotate(-0.8deg); }
             100% { transform: rotate(0.4deg); }
           }
+          @keyframes natureSwayMid1 {
+            0% { transform: rotate(-0.5deg); }
+            50% { transform: rotate(1.4deg); }
+            100% { transform: rotate(-0.5deg); }
+          }
+          @keyframes natureSwayMid2 {
+            0% { transform: scaleX(-1) rotate(0.8deg); }
+            50% { transform: scaleX(-1) rotate(-1.1deg); }
+            100% { transform: scaleX(-1) rotate(0.8deg); }
+          }
+          @keyframes natureSwayMid3 {
+            0% { transform: rotate(0.2deg); }
+            50% { transform: rotate(-1.3deg); }
+            100% { transform: rotate(0.2deg); }
+          }
         `}
       </style>
 
@@ -79,6 +94,65 @@ import React from 'react';
         </defs>
       </svg>
 
+      {/* ── ORTA BÖLGE DALLARI (Kutuların arkasından süzülür) ── */}
+      {/* 1. Orta-Sol Dal */}
+      <svg
+        style={{
+          position: 'absolute',
+          top: '-30px',
+          left: '40%',
+          height: '100%',
+          width: '105px',
+          transformOrigin: 'top center',
+          animation: 'natureSwayMid1 21s ease-in-out infinite',
+          opacity: 0.22,
+        }}
+        viewBox="0 0 140 852"
+        fill="none"
+        preserveAspectRatio="none"
+      >
+        <use href="#natureBotanicalBranch" />
+      </svg>
+
+      {/* 2. Orta Dal (Aynalanmış) */}
+      <svg
+        style={{
+          position: 'absolute',
+          top: '-60px',
+          left: '56%',
+          height: '100%',
+          width: '115px',
+          transformOrigin: 'top center',
+          animation: 'natureSwayMid2 25s ease-in-out infinite',
+          opacity: 0.26,
+        }}
+        viewBox="0 0 140 852"
+        fill="none"
+        preserveAspectRatio="none"
+      >
+        <use href="#natureBotanicalBranch" />
+      </svg>
+
+      {/* 3. Orta-Sağ Dal */}
+      <svg
+        style={{
+          position: 'absolute',
+          top: '-20px',
+          left: '72%',
+          height: '100%',
+          width: '120px',
+          transformOrigin: 'top center',
+          animation: 'natureSwayMid3 17s ease-in-out infinite',
+          opacity: 0.28,
+        }}
+        viewBox="0 0 140 852"
+        fill="none"
+        preserveAspectRatio="none"
+      >
+        <use href="#natureBotanicalBranch" />
+      </svg>
+
+      {/* ── SAĞ BÖLGE DALLARI ── */}
       {/* Arka Plan Dalı (Daha saydam, hafif kaydırılmış, 20s yavaş salınım) */}
       <svg
         style={{
