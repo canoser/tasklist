@@ -145,6 +145,7 @@ namespace MentorumApi.Data
 
         public async Task<IEnumerable<dynamic>> GetTeacherCourseHomeworkAsync(Guid courseId)
         {
+            // Not: Koçun AssignHomeworkAsync ile attığı course_id=NULL ödevler bu filtreyle öğretmene görünmez (kabul edilen davranış).
             using var conn = _connectionFactory.CreateConnection();
             return await conn.QueryAsync(@"
                 SELECT h.id, h.student_id AS StudentId, u.full_name AS StudentName, h.snapshot_title AS Title, h.due_date AS DueDate, h.status AS Status, h.feedback AS Feedback
