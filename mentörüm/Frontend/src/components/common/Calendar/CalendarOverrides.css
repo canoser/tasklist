@@ -71,9 +71,18 @@
 .rbc-month-view,
 .rbc-time-view,
 .rbc-agenda-view {
+  background-color: var(--bg-color-surface) !important;
   border: 1px solid var(--border-color) !important;
   border-radius: var(--radius-btn);
   overflow: hidden;
+}
+
+.rbc-month-row {
+  background-color: transparent !important;
+}
+
+.rbc-day-bg {
+  background-color: transparent !important;
 }
 
 .rbc-month-row + .rbc-month-row,
@@ -89,8 +98,8 @@
   padding: 10px 0;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--text-color-muted);
-  background-color: var(--bg-color-main);
+  color: var(--text-color-main);
+  background-color: var(--bg-color-surface-elevated) !important;
   border-bottom: 1px solid var(--border-color) !important;
   border-left: none !important;
 }

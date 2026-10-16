@@ -10,12 +10,12 @@
 .sidebar {
   width: 260px;
   min-width: 260px;
-  background-color: #0F172A; /* Slate-900 */
-  border-right: 1px solid #1E293B; /* Slate-800 */
+  background-color: var(--bg-color-sidebar);
+  border-right: 1px solid var(--bg-color-sidebar-border);
   color: #F8FAFC;
   display: flex;
   flex-direction: column;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.35s ease, border-color 0.35s ease;
   z-index: 50;
   height: 100%;
 }
@@ -26,7 +26,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #1E293B;
+  border-bottom: 1px solid var(--bg-color-sidebar-border);
+  transition: border-color 0.35s ease;
 }
 
 .logoWrap {
@@ -41,12 +42,13 @@
   width: 32px;
   height: 32px;
   border-radius: var(--radius-btn);
-  background: linear-gradient(135deg, #4F46E5, #0EA5E9);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
   display: flex;
   align-items: center;
   justify-content: center;
   color: #FFFFFF;
-  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.35);
+  box-shadow: 0 2px 8px var(--color-primary-light);
+  transition: all 0.35s ease;
 }
 
 .logoTextGroup {
@@ -132,10 +134,10 @@
 }
 
 .navItemActive {
-  background-color: rgba(99, 102, 241, 0.15);
+  background-color: var(--color-primary-light);
   color: #FFFFFF;
   font-weight: 600;
-  border-left: 3px solid #6366F1;
+  border-left: 3px solid var(--color-primary);
 }
 
 .navIcon {
@@ -162,8 +164,9 @@
 /* Alt Kullanıcı Kartı */
 .sidebarFooter {
   padding: 12px;
-  border-top: 1px solid #1E293B;
-  background-color: #0B1120;
+  border-top: 1px solid var(--bg-color-sidebar-border);
+  background-color: rgba(0, 0, 0, 0.22);
+  transition: border-color 0.35s ease;
 }
 
 .userCard {
@@ -171,16 +174,17 @@
   align-items: center;
   padding: 8px 10px;
   border-radius: var(--radius-card);
-  background-color: #1E293B;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--bg-color-sidebar-border);
   gap: 10px;
+  transition: border-color 0.35s ease;
 }
 
 .userAvatar {
   width: 34px;
   height: 34px;
   border-radius: var(--radius-full);
-  background: linear-gradient(135deg, #4F46E5, #6366F1);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -188,6 +192,7 @@
   font-size: 0.8125rem;
   color: #FFFFFF;
   flex-shrink: 0;
+  transition: background 0.35s ease;
 }
 
 .userDetails {
@@ -409,8 +414,10 @@
 .pageContent {
   flex: 1;
   overflow-y: auto;
-  background-color: var(--bg-color-main);
+  background-color: transparent;
   padding: 24px;
+  position: relative;
+  z-index: 1;
 }
 
 /* Mobil Overlay & Responsive */

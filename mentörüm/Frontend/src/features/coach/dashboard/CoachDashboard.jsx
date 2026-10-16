@@ -10,6 +10,7 @@ import Calendar from '../../../components/common/Calendar/Calendar';
 import AssignHomeworkModal from '../homework/AssignHomeworkModal';
 import Modal from '../../../components/common/Modal/Modal';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { tr } from 'date-fns/locale';
 import { 
   Users, 
   ClipboardList, 

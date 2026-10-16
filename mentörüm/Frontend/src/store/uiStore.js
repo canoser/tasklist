@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 
-const getInitialTheme = () => {
+const getInitialThemeMode = () => {
   if (typeof window !== 'undefined') {
-    const saved = localStorage.getItem('mentorum_theme');
+    const saved = localStorage.getItem('mentorum_theme_mode') || localStorage.getItem('mentorum_theme');
     if (saved === 'dark' || saved === 'light') return saved;
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
       return 'dark';
@@ -11,15 +11,33 @@ const getInitialTheme = () => {
   return 'light';
 };
 
-const initialTheme = getInitialTheme();
-if (typeof document !== 'undefined') {
-  document.documentElement.setAttribute('data-theme', initialTheme);
-}
+const getInitialThemeStyle = () => {
+  if (typeof window !== 'undefined') {
+    const saved = localStorage.getItem('mentorum_theme_style');
+    if (saved === 'classic' || saved === 'nature' || saved === 'ocean') return saved;
+  }
+  return 'classic';
+};
+
+const applyThemeToDom = (style, mode) => {
+  if (typeof document !== 'undefined') {
+    const root = document.documentElement;
+    root.setAttribute('data-theme', mode); // Geriye dönük uyumluluk
+    root.setAttribute('data-theme-mode', mode);
+    root.setAttribute('data-theme-style', style);
+  }
+};
+
+const initialMode = getInitialThemeMode();
+const initialStyle = getInitialThemeStyle();
+applyThemeToDom(initialStyle, initialMode);
 
 export const useUIStore = create((set) => ({
   sidebarOpen: false,
   activeModal: null, // string (örn: 'createHomeworkModal') veya null
-  theme: initialTheme,
+  theme: initialMode, // Geriye dönük uyumluluk: 'light' | 'dark'
+  themeMode: initialMode,
+  themeStyle: initialStyle,
 
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
   openSidebar: () => set({ sidebarOpen: true }),
@@ -29,19 +47,39 @@ export const useUIStore = create((set) => ({
   closeModal: () => set({ activeModal: null }),
 
   toggleTheme: () => set((state) => {
-    const nextTheme = state.theme === 'light' ? 'dark' : 'light';
-    if (typeof document !== 'undefined') {
-      document.documentElement.setAttribute('data-theme', nextTheme);
-      localStorage.setItem('mentorum_theme', nextTheme);
+    const nextMode = state.themeMode === 'light' ? 'dark' : 'light';
+    applyThemeToDom(state.themeStyle, nextMode);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('mentorum_theme_mode', nextMode);
+      localStorage.setItem('mentorum_theme', nextMode);
     }
-    return { theme: nextTheme };
+    return { theme: nextMode, themeMode: nextMode };
   }),
 
-  setTheme: (theme) => {
-    if (typeof document !== 'undefined') {
-      document.documentElement.setAttribute('data-theme', theme);
+  setThemeMode: (mode) => set((state) => {
+    applyThemeToDom(state.themeStyle, mode);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('mentorum_theme_mode', mode);
+      localStorage.setItem('mentorum_theme', mode);
+    }
+    return { theme: mode, themeMode: mode };
+  }),
+
+  setThemeStyle: (style) => set((state) => {
+    applyThemeToDom(style, state.themeMode);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('mentorum_theme_style', style);
+    }
+    return { themeStyle: style };
+  }),
+
+  setTheme: (theme) => set((state) => {
+    applyThemeToDom(state.themeStyle, theme);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('mentorum_theme_mode', theme);
       localStorage.setItem('mentorum_theme', theme);
     }
-    set({ theme });
-  },
+    return { theme, themeMode: theme };
+  }),
 }));
+

@@ -7,6 +7,7 @@ import getDay from 'date-fns/getDay';
 import { startOfMonth, endOfMonth } from 'date-fns';
 import tr from 'date-fns/locale/tr';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import '../../../components/common/Calendar/CalendarOverrides.css';
 import Card from '../../../components/common/Card/Card';
 import PersonalEventModal from '../../../components/common/PersonalEventModal/PersonalEventModal';
 import { useCalendarEvents, useStudents } from '../coachApi';

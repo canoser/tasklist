@@ -53,9 +53,10 @@
   padding: 6px 10px;
   border-radius: 8px;
   border: 1px solid var(--border-color);
-  background: #fff;
+  background: var(--bg-color-surface);
   color: var(--text-color-main);
   font-size: 0.85rem;
+  outline: none;
 }
 
 .addBtn {

@@ -144,11 +144,35 @@ const CoachStudents = () => {
       <Card className={styles.filterCard}>
         <Input placeholder="Öğrenci ara (isim veya e-posta)..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
         <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
-          <select value={programFilter} onChange={(e) => setProgramFilter(e.target.value)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+          <select 
+            value={programFilter} 
+            onChange={(e) => setProgramFilter(e.target.value)} 
+            style={{ 
+              padding: '6px 10px', 
+              borderRadius: 8, 
+              border: '1px solid var(--border-color)',
+              backgroundColor: 'var(--bg-color-surface)',
+              color: 'var(--text-color-main)',
+              outline: 'none',
+              fontSize: '0.875rem'
+            }}
+          >
             <option value="">Tüm Programlar</option>
             {programs?.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
-          <select value={gradeFilter} onChange={(e) => setGradeFilter(e.target.value)} style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+          <select 
+            value={gradeFilter} 
+            onChange={(e) => setGradeFilter(e.target.value)} 
+            style={{ 
+              padding: '6px 10px', 
+              borderRadius: 8, 
+              border: '1px solid var(--border-color)',
+              backgroundColor: 'var(--bg-color-surface)',
+              color: 'var(--text-color-main)',
+              outline: 'none',
+              fontSize: '0.875rem'
+            }}
+          >
             <option value="">Tüm Sınıflar</option>
             {[...new Set((students || []).map((s) => s.grade).filter((g) => g != null))].map((g) => (
               <option key={g} value={g}>{g}. Sınıf</option>

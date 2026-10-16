@@ -5,6 +5,8 @@ import { apiClient } from '../../api/apiClient';
 import Button from '../../components/common/Button/Button';
 import Input from '../../components/common/Input/Input';
 import Card from '../../components/common/Card/Card';
+import ThemeDecorContainer from '../../components/common/ThemeDecor/ThemeDecorContainer';
+import ThemeSelector from '../../components/common/ThemeSelector/ThemeSelector';
 import styles from './LoginPage.module.css';
 
 const LoginPage = () => {
@@ -123,6 +125,13 @@ const LoginPage = () => {
 
   return (
     <div className={styles.pageContainer}>
+      <ThemeDecorContainer />
+
+      {/* Sağ Üst Tema Seçici */}
+      <div style={{ position: 'fixed', top: '18px', right: '18px', zIndex: 100 }}>
+        <ThemeSelector />
+      </div>
+
       {/* Dekoratif Arka Plan Elementleri */}
       <div className={styles.bgCircle1}></div>
       <div className={styles.bgCircle2}></div>

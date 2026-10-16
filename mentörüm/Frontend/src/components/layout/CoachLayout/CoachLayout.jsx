@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
+import ThemeDecorContainer from '../../common/ThemeDecor/ThemeDecorContainer';
+import ThemeSelector from '../../common/ThemeSelector/ThemeSelector';
 import styles from './CoachLayout.module.css';
 
 const CoachLayout = () => {
@@ -112,6 +114,9 @@ const CoachLayout = () => {
 
   return (
     <div className={styles.layout}>
+      {/* Hareketli Arka Plan Ortam Dekoru (Doğa / Okyanus) */}
+      <ThemeDecorContainer />
+
       {/* Mobil Sidebar Overlay */}
       {sidebarOpen && (
         <div className={styles.overlay} onClick={closeSidebar}></div>
@@ -255,15 +260,7 @@ const CoachLayout = () => {
               <span>+ Ödev / Program Ata</span>
             </button>
 
-            <button
-              type="button"
-              className={styles.themeToggleBtn}
-              onClick={toggleTheme}
-              title={theme === 'dark' ? 'Açık Mod' : 'Koyu Mod'}
-              aria-label="Tema"
-            >
-              {theme === 'dark' ? <Sun size={18} strokeWidth={1.75} /> : <Moon size={18} strokeWidth={1.75} />}
-            </button>
+            <ThemeSelector />
 
             <NotificationDropdown />
           </div>

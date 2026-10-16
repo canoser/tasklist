@@ -24,8 +24,8 @@
 
   /* Açık Tema (Light: Slate-50) */
   --bg-color-main: #F8FAFC;
-  --bg-color-surface: #FFFFFF;
-  --bg-color-surface-elevated: #F1F5F9;
+  --bg-color-surface: rgba(255, 255, 255, 0.85);
+  --bg-color-surface-elevated: rgba(241, 245, 249, 0.88);
   --bg-color-sidebar: #0F172A;
   --bg-color-sidebar-border: #1E293B;
 
@@ -64,11 +64,12 @@
   --font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-/* Koyu / Slate Tema (Dark: Slate-900) */
-[data-theme='dark'] {
+/* Koyu / Slate Tema (Dark: Slate-900 / Classic) */
+[data-theme='dark'],
+[data-theme-mode='dark'] {
   --bg-color-main: #0F172A;
-  --bg-color-surface: #1E293B;
-  --bg-color-surface-elevated: #334155;
+  --bg-color-surface: rgba(30, 41, 59, 0.85);
+  --bg-color-surface-elevated: rgba(51, 65, 85, 0.88);
   --bg-color-sidebar: #0F172A;
   --bg-color-sidebar-border: rgba(255, 255, 255, 0.08);
 
@@ -91,6 +92,92 @@
   --color-danger-light: rgba(244, 63, 94, 0.15);
 }
 
+/* ════════════════ DOĞA TEMASI (NATURE) ════════════════ */
+[data-theme-style='nature'] {
+  --color-primary: #16A34A;
+  --color-primary-hover: #15803D;
+  --color-primary-light: #ECFDF5;
+  --color-primary-border: rgba(22, 163, 74, 0.2);
+  --color-accent: #059669;
+  --color-accent-hover: #047857;
+  --color-accent-light: #F0FDF4;
+
+  --bg-color-main: #F2F9F4;
+  --bg-color-surface: rgba(255, 255, 255, 0.85);
+  --bg-color-surface-elevated: rgba(229, 244, 234, 0.88);
+  --bg-color-sidebar: #0D1C14;
+  --bg-color-sidebar-border: #162E21;
+
+  --text-color-main: #0F291E;
+  --text-color-muted: #4D6D5E;
+  --border-color: #D3E8DC;
+  --border-color-subtle: #E7F3EC;
+}
+
+[data-theme-style='nature'][data-theme-mode='dark'] {
+  --color-primary: #4ADE80;
+  --color-primary-hover: #22C55E;
+  --color-primary-light: rgba(74, 222, 128, 0.15);
+  --color-primary-border: rgba(74, 222, 128, 0.25);
+  --color-accent: #34D399;
+  --color-accent-hover: #10B981;
+  --color-accent-light: rgba(52, 211, 153, 0.15);
+
+  --bg-color-main: #0A1510;
+  --bg-color-surface: rgba(17, 29, 22, 0.85);
+  --bg-color-surface-elevated: rgba(24, 41, 31, 0.88);
+  --bg-color-sidebar: #070E0B;
+  --bg-color-sidebar-border: rgba(74, 222, 128, 0.12);
+
+  --text-color-main: #ECFDF5;
+  --text-color-muted: #86A795;
+  --border-color: rgba(74, 222, 128, 0.12);
+  --border-color-subtle: rgba(74, 222, 128, 0.06);
+}
+
+/* ════════════════ OKYANUS TEMASI (OCEAN) ════════════════ */
+[data-theme-style='ocean'] {
+  --color-primary: #0284C7;
+  --color-primary-hover: #0369A1;
+  --color-primary-light: #F0F9FF;
+  --color-primary-border: rgba(2, 132, 199, 0.2);
+  --color-accent: #06B6D4;
+  --color-accent-hover: #0891B2;
+  --color-accent-light: #ECFEFF;
+
+  --bg-color-main: #F0F7FD;
+  --bg-color-surface: rgba(255, 255, 255, 0.85);
+  --bg-color-surface-elevated: rgba(224, 239, 252, 0.88);
+  --bg-color-sidebar: #0B192C;
+  --bg-color-sidebar-border: #152A47;
+
+  --text-color-main: #0A2540;
+  --text-color-muted: #4E6B89;
+  --border-color: #CFE2F4;
+  --border-color-subtle: #E2EDF9;
+}
+
+[data-theme-style='ocean'][data-theme-mode='dark'] {
+  --color-primary: #38BDF8;
+  --color-primary-hover: #0EA5E9;
+  --color-primary-light: rgba(56, 189, 248, 0.15);
+  --color-primary-border: rgba(56, 189, 248, 0.25);
+  --color-accent: #22D3EE;
+  --color-accent-hover: #06B6D4;
+  --color-accent-light: rgba(34, 211, 238, 0.15);
+
+  --bg-color-main: #08101E;
+  --bg-color-surface: rgba(15, 29, 51, 0.85);
+  --bg-color-surface-elevated: rgba(23, 42, 71, 0.88);
+  --bg-color-sidebar: #060B14;
+  --bg-color-sidebar-border: rgba(56, 189, 248, 0.12);
+
+  --text-color-main: #F0F9FF;
+  --text-color-muted: #7E9CB9;
+  --border-color: rgba(56, 189, 248, 0.12);
+  --border-color-subtle: rgba(56, 189, 248, 0.06);
+}
+
 /* CSS Reset & Temel Ayarlar */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -108,6 +195,7 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.5;
+  transition: background-color 0.35s ease, color 0.35s ease;
 }
 
 /* Rakamlarda hizalamanın bozulmaması için tabular-nums */
