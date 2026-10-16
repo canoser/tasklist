@@ -27,6 +27,18 @@
 
 ---
 
+## ✅ Tamamlanan (Son Uygulama — 16 Ekim 2026) (DeepSeek)
+
+- [x] **Koç öğretmen yetki paneli:** `CoachCourseDetailPage` "İzinler" sekmesi artık düzenlenebilir — 11 izin için tıkla-aç/kapat + "İzinleri Kaydet" (`useUpdateCourse` → `PUT /courses/{id}`). (DeepSeek)
+- [x] **Yeni bayrak:** `courses.teacher_can_process_homework` (migration `002_teacher_process_homework.sql`) + `homework_assignments.feedback` kolonu + `completed_by` CHECK'e `'Teacher'`. (DeepSeek)
+- [x] **Öğretmen ödevi işleme ucu:** `POST /teacher/courses/{id}/homework/{assignmentId}/review` — `CanProcessHomework` + ödev `course_id` eşleşmesi zorunlu (cross-course korumalı). (DeepSeek)
+- [x] **Öğretmen ödev onay arayüzü:** `TeacherCoursesPage` ödev kartında "Onayla / Geri Bildir" (geri bildirim + DONE). (DeepSeek)
+- [x] **Sınav yönet toggle'ı:** `teacher_can_manage_exams` artık koçun izin panelinden açılıp kapatılabiliyor. (DeepSeek)
+- [x] `useUpdateCourse` (coachSchoolApi) + `useReviewTeacherHomework` (teacherApi) hook'ları eklendi. (DeepSeek)
+- [x] Doğrulama: backend build 0 hata, `dotnet test` 43/43, frontend build ✓. (DeepSeek)
+
+---
+
 ## Aşama 1: P0 — Kritik Güvenlik Düzeltmeleri
 
 ### 1.1 Öğretmenler arası ödev/sınav veri sızıntısı (course_id filtresi) (DeepSeek)
@@ -84,7 +96,7 @@
 - [ ] `Frontend/src/features/coach/courses/CoachCoursesPage.jsx` → ders oluşturma formuna öğretmen `<select>` (programın öğretmenleri) + ders tipi + renk + 10 izin toggle'ı ekle. Backend `CreateCourseRequest.TeacherId` + `teacher_can_*` alanları hazır. (DeepSeek)
 - [ ] **Ders Oluşturma Formunu Şişirmeme / Akordeon UX (3.8 flash gemini):** Ders oluşturma anında 10 izin toggle'ını doğrudan ekrana yığmak koç için kafa karıştırıcıdır. Ders oluştururken sadece "Öğretmen Seçimi (Opsiyonel)" ve "Varsayılan İzinleri Kullan" seçeneği sunulmalı; 10 izin ayarı ise "Gelişmiş İzinler" başlığı altında daraltılabilir (akordeon) bir alanda tutulmalıdır.
 - [ ] **Backend Tenant Doğrulaması (Kritik Güvenlik) (3.8 flash gemini):** `CourseRepository.CreateCourseAsync` ve `UpdateCourseAsync` içinde gönderilen `TeacherId`'nin gerçekten o programa ait bir öğretmen olduğu (`SELECT 1 FROM program_teachers WHERE teacher_id = @TeacherId AND program_id = @ProgramId AND is_active = 1`) mutlaka doğrulanmalıdır. Aksi halde yabancı öğretmen GUID'iyle ders açılmasına izin verilmiş olur.
-- [ ] `CoachCourseDetailPage.jsx` → "İzinler" sekmesini salt okunurdan **düzenlenebilir** hale getir (switch + Kaydet → `PUT /programs/{id}/courses/{courseId}`). (DeepSeek)
+- [x] `CoachCourseDetailPage.jsx` → "İzinler" sekmesini salt okunurdan **düzenlenebilir** hale getir (switch + Kaydet → `PUT /programs/{id}/courses/{courseId}`). (DeepSeek)
 - [ ] **Toggle Tema Uyumu (3.8 flash gemini):** Ders detayındaki izin switch'leri özel CSS modules ile yapılmalı, Cyber ve Nature temalarında parlayan yeşil/mavi tema değişkenlerini (`var(--color-primary)`, `var(--color-success)`) kullanmalıdır.
 - [ ] Ders detayına öğretmen değiştirme dropdown'ı ekle. (DeepSeek)
 
