@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Sun, Moon, Palette, Trees, Waves, Sparkles, Check } from 'lucide-react';
+import { Sun, Moon, Palette, Trees, Waves, Sparkles, Terminal, Briefcase, Check } from 'lucide-react';
 import { useUIStore } from '../../../store/uiStore';
 import styles from './ThemeSelector.module.css';
 
@@ -27,6 +27,8 @@ export default function ThemeSelector() {
     { id: 'classic', label: 'Klasik SaaS', icon: Sparkles, colorClass: styles.colorClassic },
     { id: 'nature', label: 'Doğa & Orman', icon: Trees, colorClass: styles.colorNature },
     { id: 'ocean', label: 'Okyanus Esintisi', icon: Waves, colorClass: styles.colorOcean },
+    { id: 'cyber', label: 'Cyber (Matrix)', icon: Terminal, colorClass: styles.colorCyber },
+    { id: 'formal', label: 'Klasik Formal', icon: Briefcase, colorClass: styles.colorFormal },
   ];
 
   return (

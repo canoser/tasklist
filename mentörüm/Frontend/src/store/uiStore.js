@@ -14,7 +14,7 @@ const getInitialThemeMode = () => {
 const getInitialThemeStyle = () => {
   if (typeof window !== 'undefined') {
     const saved = localStorage.getItem('mentorum_theme_style');
-    if (saved === 'classic' || saved === 'nature' || saved === 'ocean') return saved;
+    if (['classic', 'nature', 'ocean', 'cyber', 'formal'].includes(saved)) return saved;
   }
   return 'classic';
 };

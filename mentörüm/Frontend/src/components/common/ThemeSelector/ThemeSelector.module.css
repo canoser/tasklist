@@ -166,3 +166,14 @@
   background: #0284C7;
   box-shadow: 0 0 6px rgba(2, 132, 199, 0.4);
 }
+
+.colorCyber {
+  background: #00FF66;
+  box-shadow: 0 0 6px rgba(0, 255, 102, 0.5);
+}
+
+.colorFormal {
+  background: #1E3A8A;
+  box-shadow: 0 0 6px rgba(30, 58, 138, 0.4);
+}
+

@@ -134,10 +134,29 @@
 }
 
 .navItemActive {
-  background-color: var(--color-primary-light);
+  background-color: var(--color-primary);
   color: #FFFFFF;
   font-weight: 600;
-  border-left: 3px solid var(--color-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.navItemActive:hover {
+  background-color: var(--color-primary);
+  color: #FFFFFF;
+  filter: brightness(1.06);
+}
+
+:global([data-theme-style='cyber']) .navItemActive {
+  background-color: rgba(0, 255, 102, 0.20);
+  border-left: 3px solid #00FF66;
+  color: #FFFFFF !important;
+  font-weight: 600;
+  box-shadow: 0 0 12px rgba(0, 255, 102, 0.15);
+}
+
+:global([data-theme-style='cyber']) .navItemActive:hover {
+  background-color: rgba(0, 255, 102, 0.28);
+  color: #FFFFFF !important;
 }
 
 .navIcon {

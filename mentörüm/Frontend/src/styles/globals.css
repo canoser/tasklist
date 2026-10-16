@@ -178,6 +178,92 @@
   --border-color-subtle: rgba(56, 189, 248, 0.06);
 }
 
+/* ════════════════ CYBER / MATRIX TEMASI ════════════════ */
+[data-theme-style='cyber'] {
+  --color-primary: #059669;
+  --color-primary-hover: #047857;
+  --color-primary-light: #ECFDF5;
+  --color-primary-border: rgba(5, 150, 105, 0.25);
+  --color-accent: #00FF66;
+  --color-accent-hover: #00DD55;
+  --color-accent-light: #F0FDF4;
+
+  --bg-color-main: #F0FDF4;
+  --bg-color-surface: rgba(255, 255, 255, 0.85);
+  --bg-color-surface-elevated: rgba(236, 253, 245, 0.88);
+  --bg-color-sidebar: #041A0E;
+  --bg-color-sidebar-border: rgba(5, 150, 105, 0.25);
+
+  --text-color-main: #022C22;
+  --text-color-muted: #3B6B56;
+  --border-color: #A7F3D0;
+  --border-color-subtle: #D1FAE5;
+}
+
+[data-theme-style='cyber'][data-theme-mode='dark'] {
+  --color-primary: #00FF66;
+  --color-primary-hover: #10B981;
+  --color-primary-light: rgba(0, 255, 102, 0.12);
+  --color-primary-border: rgba(0, 255, 102, 0.35);
+  --color-accent: #00F0FF;
+  --color-accent-hover: #00D2E0;
+  --color-accent-light: rgba(0, 240, 255, 0.12);
+
+  --bg-color-main: #050807;
+  --bg-color-surface: rgba(10, 22, 14, 0.85);
+  --bg-color-surface-elevated: rgba(14, 32, 20, 0.88);
+  --bg-color-sidebar: #030504;
+  --bg-color-sidebar-border: rgba(0, 255, 102, 0.20);
+
+  --text-color-main: #E6FFF0;
+  --text-color-muted: #68997A;
+  --border-color: rgba(0, 255, 102, 0.20);
+  --border-color-subtle: rgba(0, 255, 102, 0.08);
+}
+
+/* ════════════════ KLASİK FORMAL (PLAZA / BEYAZ YAKA) ════════════════ */
+[data-theme-style='formal'] {
+  --color-primary: #1E3A8A;
+  --color-primary-hover: #172554;
+  --color-primary-light: #EFF6FF;
+  --color-primary-border: rgba(30, 58, 138, 0.2);
+  --color-accent: #B45309;
+  --color-accent-hover: #92400E;
+  --color-accent-light: #FFFBEB;
+
+  --bg-color-main: #F8FAFC;
+  --bg-color-surface: rgba(255, 255, 255, 0.85);
+  --bg-color-surface-elevated: rgba(241, 245, 249, 0.88);
+  --bg-color-sidebar: #0F172A;
+  --bg-color-sidebar-border: #1E293B;
+
+  --text-color-main: #0F172A;
+  --text-color-muted: #475569;
+  --border-color: #CBD5E1;
+  --border-color-subtle: #E2E8F0;
+}
+
+[data-theme-style='formal'][data-theme-mode='dark'] {
+  --color-primary: #3B82F6;
+  --color-primary-hover: #2563EB;
+  --color-primary-light: rgba(59, 130, 246, 0.15);
+  --color-primary-border: rgba(59, 130, 246, 0.25);
+  --color-accent: #F59E0B;
+  --color-accent-hover: #D97706;
+  --color-accent-light: rgba(245, 158, 11, 0.15);
+
+  --bg-color-main: #0B1120;
+  --bg-color-surface: rgba(17, 24, 39, 0.85);
+  --bg-color-surface-elevated: rgba(31, 41, 55, 0.88);
+  --bg-color-sidebar: #080D1A;
+  --bg-color-sidebar-border: rgba(59, 130, 246, 0.15);
+
+  --text-color-main: #F1F5F9;
+  --text-color-muted: #94A3B8;
+  --border-color: rgba(255, 255, 255, 0.10);
+  --border-color-subtle: rgba(255, 255, 255, 0.05);
+}
+
 /* CSS Reset & Temel Ayarlar */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -196,28 +282,25 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.5;
   transition: background-color 0.35s ease, color 0.35s ease;
+
+  /* Mobil Uygulama Hissi (Metin seçimi, imleç ve dokunma vurgusu kapalı) */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  cursor: default;
 }
 
-/* Rakamlarda hizalamanın bozulmaması için tabular-nums */
-body, button, input, select, textarea, .tabular-nums {
-  font-variant-numeric: tabular-nums;
+/* Girdi alanlarında metin seçimi ve yazma imleci serbest */
+input, textarea, [contenteditable="true"] {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  cursor: text !important;
 }
 
-a {
-  text-decoration: none;
-  color: inherit;
-}
-
-button {
-  font-family: inherit;
-  border: none;
-  background: none;
+/* Tıklanabilir buton ve linklerde pointer imleci korunur */
+button, a, [role="button"], select, .clickable {
   cursor: pointer;
-  touch-action: manipulation;
-}
-
-input, textarea, select {
-  font-family: inherit;
 }
 
 /* Custom Scrollbar (Ince ve Sade) */

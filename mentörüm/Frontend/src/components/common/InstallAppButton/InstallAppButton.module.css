@@ -1,0 +1,200 @@
+.installBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: var(--radius-btn);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  animation: pulseGlow 4s infinite ease-in-out;
+}
+
+.installBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  filter: brightness(1.08);
+}
+
+.installBtn:active {
+  transform: translateY(0);
+}
+
+.downloadIcon {
+  animation: bounceDown 2s infinite ease-in-out;
+}
+
+@keyframes bounceDown {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(2px); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); }
+  50% { box-shadow: 0 2px 14px var(--color-primary-border); }
+}
+
+@media (max-width: 640px) {
+  .btnText {
+    display: none;
+  }
+  .installBtn {
+    padding: 0 10px;
+    width: 38px;
+    justify-content: center;
+  }
+}
+
+/* Modal Stilleri */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+.modalContent {
+  width: 100%;
+  max-width: 440px;
+  background-color: var(--bg-color-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: modalZoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalZoomIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modalTitleWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modalTitleWrap h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-color-main);
+}
+
+.phoneIcon {
+  color: var(--color-primary);
+}
+
+.closeBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-color-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+}
+
+.closeBtn:hover {
+  background-color: var(--bg-color-surface-elevated);
+  color: var(--text-color-main);
+}
+
+.modalDesc {
+  font-size: 0.9rem;
+  color: var(--text-color-muted);
+  line-height: 1.45;
+}
+
+.stepsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--bg-color-surface-elevated);
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+}
+
+.stepItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.stepNum {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.stepText {
+  font-size: 0.85rem;
+  color: var(--text-color-main);
+  line-height: 1.4;
+}
+
+.stepText strong {
+  color: var(--color-primary);
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.doneBtn {
+  background: var(--color-primary);
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 8px 20px;
+  border-radius: var(--radius-btn);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+}
+
+.doneBtn:hover {
+  filter: brightness(1.1);
+}

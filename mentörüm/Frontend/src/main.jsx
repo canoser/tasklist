@@ -24,9 +24,19 @@ createRoot(document.getElementById('root')).render(
   </StrictMode>
 );
 
+// Mobil uygulama hissi: Form alanları hariç sağ tık menüsünü engelle
+window.addEventListener('contextmenu', (e) => {
+  const tagName = e.target?.tagName?.toLowerCase();
+  if (tagName === 'input' || tagName === 'textarea' || e.target?.isContentEditable) {
+    return; // Form alanlarında kopyala/yapıştır için açık
+  }
+  e.preventDefault();
+});
+
 // PWA service worker kaydı (yalnızca production'da; /api/ yanıtları cache'lenmez)
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {});
   });
 }
+

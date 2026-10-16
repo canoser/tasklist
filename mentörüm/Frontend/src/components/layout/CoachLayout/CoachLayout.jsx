@@ -26,6 +26,7 @@ import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import ThemeDecorContainer from '../../common/ThemeDecor/ThemeDecorContainer';
 import ThemeSelector from '../../common/ThemeSelector/ThemeSelector';
+import InstallAppButton from '../../common/InstallAppButton/InstallAppButton';
 import styles from './CoachLayout.module.css';
 
 const CoachLayout = () => {
@@ -250,6 +251,8 @@ const CoachLayout = () => {
 
           {/* Sağ Aksiyonlar */}
           <div className={styles.topbarRight}>
+            <InstallAppButton />
+
             <button
               type="button"
               className={styles.quickActionBtn}
