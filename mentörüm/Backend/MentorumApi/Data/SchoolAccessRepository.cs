@@ -53,12 +53,13 @@ namespace MentorumApi.Data
                 new { TeacherId = teacherId, ProgramId = programId });
             return found != null;
         }
-        public async Task<Guid?> GetTeacherProgramIdAsync(Guid teacherId)
+        public async Task<List<Guid>> GetTeacherProgramIdsAsync(Guid teacherId)
         {
             using var conn = _connectionFactory.CreateConnection();
-            return await conn.QuerySingleOrDefaultAsync<Guid?>(@"
-                SELECT program_id FROM program_teachers WHERE teacher_id = @TeacherId AND is_active = 1 LIMIT 1",
+            var ids = await conn.QueryAsync<Guid>(
+                "SELECT program_id FROM program_teachers WHERE teacher_id = @TeacherId AND is_active = 1",
                 new { TeacherId = teacherId });
+            return ids.ToList();
         }
 
         public async Task<Guid?> GetStudentProgramIdAsync(Guid studentId)
@@ -150,6 +151,7 @@ namespace MentorumApi.Data
                 FROM homework_assignments h
                 JOIN users u ON u.id = h.student_id
                 WHERE h.program_id = (SELECT program_id FROM courses WHERE id = @CourseId)
+                  AND h.course_id = @CourseId
                   AND h.student_id IN (
                     SELECT cs.student_id FROM course_students cs WHERE cs.course_id = @CourseId AND cs.is_active = 1
                     UNION
@@ -167,6 +169,7 @@ namespace MentorumApi.Data
                 FROM exam_results e
                 JOIN users u ON u.id = e.student_id
                 WHERE e.program_id = (SELECT program_id FROM courses WHERE id = @CourseId)
+                  AND e.course_id = @CourseId
                   AND e.student_id IN (
                     SELECT cs.student_id FROM course_students cs WHERE cs.course_id = @CourseId AND cs.is_active = 1
                     UNION
@@ -195,36 +198,57 @@ namespace MentorumApi.Data
         }
 
         // --- Öğretmen oluşturma yetkileri (Aşama 3) ---
-        public async Task<Guid> CreateTeacherHomeworkAsync(Guid courseId, Guid teacherId, TeacherCreateHomeworkRequest req)
+        public async Task<List<Guid>> CreateTeacherHomeworkAsync(Guid courseId, Guid teacherId, TeacherCreateHomeworkRequest req)
         {
             var access = await GetCourseAccessAsync(courseId, teacherId);
             if (access == null) throw new UnauthorizedAccessException("NOT_FOUND");
             if (!access.CanManageHomework) throw new InvalidOperationException("FORBIDDEN");
 
-            var studentIds = await GetCourseStudentIdsAsync(courseId);
-            if (!studentIds.Contains(req.StudentId)) throw new UnauthorizedAccessException("STUDENT_NOT_IN_COURSE");
+            var courseStudentIds = await GetCourseStudentIdsAsync(courseId);
+
+            // Hedef: tek öğrenci veya dersin tümü (toplu atama).
+            var targets = req.StudentId.HasValue
+                ? (courseStudentIds.Contains(req.StudentId.Value)
+                    ? new List<Guid> { req.StudentId.Value }
+                    : throw new UnauthorizedAccessException("STUDENT_NOT_IN_COURSE"))
+                : courseStudentIds.ToList();
+
+            if (targets.Count == 0) throw new UnauthorizedAccessException("STUDENT_NOT_IN_COURSE");
 
             using var conn = _connectionFactory.CreateConnection();
-            var id = Guid.NewGuid();
-            await conn.ExecuteAsync(@"
-                INSERT INTO homework_assignments (id, subject_id, curriculum_topic_id, snapshot_title, snapshot_desc, snapshot_source, student_id, program_id, course_id, created_by, due_date, status, created_at, updated_at)
-                VALUES (@Id, @SubjectId, @CurriculumTopicId, @Title, @Description, @Source, @StudentId, @ProgramId, @CourseId, @CreatedBy, @DueDate, 'PENDING', @Now, @Now)",
-                new
+            conn.Open();
+            using var tx = conn.BeginTransaction();
+            var created = new List<Guid>();
+            try
+            {
+                foreach (var studentId in targets)
                 {
-                    Id = id,
-                    req.SubjectId,
-                    req.CurriculumTopicId,
-                    req.Title,
-                    req.Description,
-                    Source = req.FreeTopic,
-                    req.StudentId,
-                    ProgramId = access.ProgramId,
-                    CourseId = courseId,
-                    CreatedBy = teacherId,
-                    req.DueDate,
-                    Now = DateTime.UtcNow
-                });
-            return id;
+                    var id = Guid.NewGuid();
+                    await conn.ExecuteAsync(@"
+                        INSERT INTO homework_assignments (id, subject_id, curriculum_topic_id, snapshot_title, snapshot_desc, snapshot_source, student_id, program_id, course_id, created_by, due_date, status, created_at, updated_at)
+                        VALUES (@Id, @SubjectId, @CurriculumTopicId, @Title, @Description, @Source, @StudentId, @ProgramId, @CourseId, @CreatedBy, @DueDate, 'PENDING', @Now, @Now)",
+                        new
+                        {
+                            Id = id,
+                            req.SubjectId,
+                            req.CurriculumTopicId,
+                            req.Title,
+                            req.Description,
+                            Source = req.FreeTopic,
+                            StudentId = studentId,
+                            ProgramId = access.ProgramId,
+                            CourseId = courseId,
+                            CreatedBy = teacherId,
+                            req.DueDate,
+                            Now = DateTime.UtcNow
+                        }, tx);
+                    created.Add(id);
+                }
+                tx.Commit();
+            }
+            catch { tx.Rollback(); throw; }
+
+            return created;
         }
 
         public async Task<Guid> CreateTeacherExamAsync(Guid courseId, Guid teacherId, TeacherCreateExamRequest req)
@@ -294,6 +318,44 @@ namespace MentorumApi.Data
 
             if (rows == 0) throw new UnauthorizedAccessException("NOT_FOUND");
             return assignmentId;
+        }
+
+        /// <summary>Öğretmenin dersteki öğrenciye ders içi performans notu bırakması (CanAddNotes).</summary>
+        public async Task<Guid> AddTeacherNoteAsync(Guid courseId, Guid teacherId, Guid studentId, TeacherAddNoteRequest req)
+        {
+            var access = await GetCourseAccessAsync(courseId, teacherId);
+            if (access == null) throw new UnauthorizedAccessException("NOT_FOUND");
+            if (!access.CanAddNotes) throw new InvalidOperationException("FORBIDDEN");
+
+            var studentIds = await GetCourseStudentIdsAsync(courseId);
+            if (!studentIds.Contains(studentId)) throw new UnauthorizedAccessException("STUDENT_NOT_IN_COURSE");
+
+            using var conn = _connectionFactory.CreateConnection();
+            var id = Guid.NewGuid();
+            await conn.ExecuteAsync(@"
+                INSERT INTO teacher_notes (id, program_id, course_id, student_id, teacher_id, note, created_at)
+                VALUES (@Id, @ProgramId, @CourseId, @StudentId, @TeacherId, @Note, @Now)",
+                new { Id = id, ProgramId = access.ProgramId, CourseId = courseId, StudentId = studentId, TeacherId = teacherId, Note = req.Note, Now = DateTime.UtcNow });
+            return id;
+        }
+
+        /// <summary>Öğretmenin dersteki öğrenci notlarını okuması (CanViewNotes).</summary>
+        public async Task<IEnumerable<dynamic>> GetTeacherNotesAsync(Guid courseId, Guid teacherId, Guid studentId)
+        {
+            var access = await GetCourseAccessAsync(courseId, teacherId);
+            if (access == null) throw new UnauthorizedAccessException("NOT_FOUND");
+            if (!access.CanViewNotes) throw new InvalidOperationException("FORBIDDEN");
+
+            var studentIds = await GetCourseStudentIdsAsync(courseId);
+            if (!studentIds.Contains(studentId)) throw new UnauthorizedAccessException("STUDENT_NOT_IN_COURSE");
+
+            using var conn = _connectionFactory.CreateConnection();
+            return await conn.QueryAsync(@"
+                SELECT id, note AS Note, created_at AS CreatedAt
+                FROM teacher_notes
+                WHERE course_id = @CourseId AND student_id = @StudentId
+                ORDER BY created_at DESC",
+                new { CourseId = courseId, StudentId = studentId });
         }
 
         private sealed class HomeworkReviewTarget

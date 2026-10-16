@@ -40,7 +40,7 @@ public static class ParentEndpoints
 
             // Yetki kontrolü (Bu çocuk gerçekten bu veliye mi ait?)
             var relation = await conn.ExecuteScalarAsync<int>(
-                "SELECT 1 FROM student_parents WHERE parent_id = @ParentId AND student_id = @StudentId",
+                "SELECT 1 FROM student_parents WHERE parent_id = @ParentId AND student_id = @StudentId AND is_accepted = 1",
                 new { ParentId = Guid.Parse(parentId), StudentId = studentId });
 
             if (relation == 0) return Results.Forbid();
@@ -61,13 +61,35 @@ public static class ParentEndpoints
                     'GİZLİ' as Phone  /* Mahremiyet kuralı */
                 FROM student_parents sp
                 JOIN users u ON sp.parent_id = u.id
-                WHERE sp.student_id = @StudentId AND sp.parent_id != @ParentId
+                WHERE sp.student_id = @StudentId AND sp.parent_id != @ParentId AND sp.is_accepted = 1
             ", new { StudentId = studentId, ParentId = Guid.Parse(parentId) });
 
             return Results.Ok(new {
                 Student = student,
                 OtherParents = otherParents // Email ve Phone alanları masked/gizli.
             });
+        });
+
+        // Veli — çocuğun sınav sonuçları (salt okunur)
+        group.MapGet("/children/{studentId}/exams", async (Guid studentId, DbConnectionFactory db, HttpContext ctx) =>
+        {
+            var parentId = ctx.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(parentId)) return Results.Unauthorized();
+
+            using var conn = db.CreateConnection();
+            var relation = await conn.ExecuteScalarAsync<int>(
+                "SELECT 1 FROM student_parents WHERE parent_id = @ParentId AND student_id = @StudentId AND is_accepted = 1",
+                new { ParentId = Guid.Parse(parentId), StudentId = studentId });
+            if (relation == 0) return Results.Forbid();
+
+            var exams = await conn.QueryAsync<dynamic>(@"
+                SELECT e.id, e.exam_date AS ExamDate, COALESCE(e.exam_name, e.exam_type) AS Name, e.exam_type AS ExamType, e.total_net AS TotalNet
+                FROM exam_results e
+                WHERE e.student_id = @StudentId
+                ORDER BY e.exam_date DESC",
+                new { StudentId = studentId });
+
+            return Results.Ok(exams);
         });
     }
 }

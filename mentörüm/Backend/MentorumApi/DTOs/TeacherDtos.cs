@@ -37,8 +37,8 @@ namespace MentorumApi.DTOs
 
     public class TeacherCreateHomeworkRequest
     {
-        [Required]
-        public Guid StudentId { get; set; }
+        // Boş bırakılırsa dersin TÜM öğrencilerine toplu atanır.
+        public Guid? StudentId { get; set; }
 
         public Guid? SubjectId { get; set; }
         public Guid? CurriculumTopicId { get; set; }
@@ -72,5 +72,11 @@ namespace MentorumApi.DTOs
         public required string Status { get; set; } // 'DONE' | 'PENDING'
 
         public string? Feedback { get; set; }
+    }
+
+    public class TeacherAddNoteRequest
+    {
+        [Required]
+        public required string Note { get; set; }
     }
 }

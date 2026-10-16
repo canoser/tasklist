@@ -93,8 +93,8 @@ namespace MentorumApi.Endpoints
                 if (teacherId == null) return Results.Unauthorized();
                 try
                 {
-                    var id = await repo.CreateTeacherHomeworkAsync(courseId, teacherId.Value, req);
-                    return Results.Ok(new { id });
+                    var ids = await repo.CreateTeacherHomeworkAsync(courseId, teacherId.Value, req);
+                    return Results.Ok(new { ids, count = ids.Count });
                 }
                 catch (UnauthorizedAccessException) { return Results.NotFound(new { error = "Ders bulunamadı veya öğrenci bu derste değil." }); }
                 catch (InvalidOperationException) { return Results.Forbid(); }
@@ -131,6 +131,41 @@ namespace MentorumApi.Endpoints
                 catch (UnauthorizedAccessException) { return Results.NotFound(new { error = "Ödev bulunamadı veya öğrenci bu derste değil." }); }
                 catch (InvalidOperationException) { return Results.Forbid(); }
             }).AddEndpointFilter<MentorumApi.Filters.IdempotencyFilter>();
+
+            // Öğretmenin ders içi performans notu (koç açtıysa: CanAddNotes / CanViewNotes)
+            me.MapPost("/courses/{courseId:guid}/students/{studentId:guid}/notes", async (
+                Guid courseId,
+                Guid studentId,
+                [FromBody] TeacherAddNoteRequest req,
+                [FromServices] SchoolAccessRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var teacherId = GetCoachId(user);
+                if (teacherId == null) return Results.Unauthorized();
+                try
+                {
+                    var id = await repo.AddTeacherNoteAsync(courseId, teacherId.Value, studentId, req);
+                    return Results.Ok(new { id });
+                }
+                catch (UnauthorizedAccessException) { return Results.NotFound(new { error = "Ders veya öğrenci bulunamadı." }); }
+                catch (InvalidOperationException) { return Results.Forbid(); }
+            }).AddEndpointFilter<MentorumApi.Filters.IdempotencyFilter>();
+
+            me.MapGet("/courses/{courseId:guid}/students/{studentId:guid}/notes", async (
+                Guid courseId,
+                Guid studentId,
+                [FromServices] SchoolAccessRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var teacherId = GetCoachId(user);
+                if (teacherId == null) return Results.Unauthorized();
+                try
+                {
+                    return Results.Ok(await repo.GetTeacherNotesAsync(courseId, teacherId.Value, studentId));
+                }
+                catch (UnauthorizedAccessException) { return Results.NotFound(new { error = "Ders veya öğrenci bulunamadı." }); }
+                catch (InvalidOperationException) { return Results.Forbid(); }
+            });
         }
 
         private static Guid? GetCoachId(ClaimsPrincipal user)

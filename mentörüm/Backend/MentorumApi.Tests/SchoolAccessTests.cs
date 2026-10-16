@@ -62,9 +62,10 @@ namespace MentorumApi.Tests
         }
 
         [Fact]
-        public async Task GetTeacherProgramId_ReturnsProgramA()
+        public async Task GetTeacherProgramIds_ReturnsProgramA()
         {
-            Assert.Equal(ProgramA, await _repo.GetTeacherProgramIdAsync(TeacherA));
+            var ids = await _repo.GetTeacherProgramIdsAsync(TeacherA);
+            Assert.Contains(ProgramA, ids);
         }
 
         [Fact]

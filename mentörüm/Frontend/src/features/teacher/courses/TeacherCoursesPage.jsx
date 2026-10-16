@@ -29,6 +29,7 @@ const TeacherCoursesPage = () => {
   };
 
   const [showHomeworkForm, setShowHomeworkForm] = useState(false);
+  const [hwAllStudents, setHwAllStudents] = useState(false);
   const [hwStudentId, setHwStudentId] = useState('');
   const [hwTitle, setHwTitle] = useState('');
   const [hwDesc, setHwDesc] = useState('');
@@ -40,13 +41,13 @@ const TeacherCoursesPage = () => {
   const [exDate, setExDate] = useState('');
   const [exNet, setExNet] = useState('');
 
-  const resetHomework = () => { setHwStudentId(''); setHwTitle(''); setHwDesc(''); setHwDue(''); setShowHomeworkForm(false); };
+  const resetHomework = () => { setHwStudentId(''); setHwAllStudents(false); setHwTitle(''); setHwDesc(''); setHwDue(''); setShowHomeworkForm(false); };
   const resetExam = () => { setExStudentId(''); setExName(''); setExDate(''); setExNet(''); setShowExamForm(false); };
 
   const submitHomework = async (e) => {
     e.preventDefault();
-    if (!hwStudentId || !hwTitle || !hwDue) return;
-    await createHomework.mutateAsync({ courseId: selected, data: { studentId: hwStudentId, title: hwTitle, description: hwDesc || null, dueDate: hwDue } });
+    if ((!hwAllStudents && !hwStudentId) || !hwTitle || !hwDue) return;
+    await createHomework.mutateAsync({ courseId: selected, data: { ...(hwAllStudents ? {} : { studentId: hwStudentId }), title: hwTitle, description: hwDesc || null, dueDate: hwDue } });
     resetHomework();
   };
 
@@ -104,10 +105,16 @@ const TeacherCoursesPage = () => {
                   {!showHomeworkForm && <Button size="sm" onClick={() => setShowHomeworkForm(true)}>+ Ödev Ata</Button>}
                   {showHomeworkForm && (
                     <form onSubmit={submitHomework} className={styles.form}>
-                      <select className={styles.select} value={hwStudentId} onChange={(e) => setHwStudentId(e.target.value)} required>
-                        <option value="">Öğrenci seç</option>
-                        {students?.map((s) => <option key={s.id} value={s.id}>{s.fullName}</option>)}
-                      </select>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
+                        <input type="checkbox" checked={hwAllStudents} onChange={(e) => setHwAllStudents(e.target.checked)} />
+                        Tüm sınıfa ata
+                      </label>
+                      {!hwAllStudents && (
+                        <select className={styles.select} value={hwStudentId} onChange={(e) => setHwStudentId(e.target.value)} required>
+                          <option value="">Öğrenci seç</option>
+                          {students?.map((s) => <option key={s.id} value={s.id}>{s.fullName}</option>)}
+                        </select>
+                      )}
                       <Input label="Başlık" value={hwTitle} onChange={(e) => setHwTitle(e.target.value)} placeholder="Ödev başlığı" />
                       <Input label="Açıklama" value={hwDesc} onChange={(e) => setHwDesc(e.target.value)} placeholder="Açıklama (opsiyonel)" />
                       <Input label="Son Tarih" type="date" value={hwDue} onChange={(e) => setHwDue(e.target.value)} />

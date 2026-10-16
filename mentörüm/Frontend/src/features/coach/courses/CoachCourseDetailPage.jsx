@@ -3,8 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   useCourses, useCourseStudents, useCourseGroups, useCourseResources,
   useAddCourseStudent, useRemoveCourseStudent, useAddCourseGroup, useRemoveCourseGroup, useCreateResource,
-  useUpdateCourse,
+  useUpdateCourse, useGroups, useTeachers,
 } from '../coachSchoolApi';
+import { useStudents } from '../coachApi';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
 import Card from '../../../components/common/Card/Card';
@@ -32,12 +33,16 @@ const CoachCourseDetailPage = () => {
   const [groupId, setGroupId] = useState('');
   const [resTitle, setResTitle] = useState('');
   const [resType, setResType] = useState('BOOK');
+  const [teacherId, setTeacherId] = useState('');
 
   const { data: courses } = useCourses(programId);
   const course = courses?.find((c) => c.id === courseId);
 
   const { data: students } = useCourseStudents(programId, courseId);
   const { data: groups } = useCourseGroups(programId, courseId);
+  const { data: allStudents = [] } = useStudents();
+  const { data: allGroups = [] } = useGroups(programId);
+  const { data: allTeachers = [] } = useTeachers(programId);
   const { data: resources } = useCourseResources(programId, courseId);
   const addStudent = useAddCourseStudent();
   const removeStudent = useRemoveCourseStudent();
@@ -52,6 +57,7 @@ const CoachCourseDetailPage = () => {
       const vals = {};
       PERMS.forEach(([key]) => { vals[key] = !!course[key]; });
       setPermValues(vals);
+      setTeacherId(course.teacherId || '');
     }
     setTab('permissions');
   };
@@ -81,7 +87,10 @@ const CoachCourseDetailPage = () => {
         <div>
           <Card className={styles.card} padding="md">
             <div className={styles.formRow}>
-              <Input label="Öğrenci ID" value={studentId} onChange={(e) => setStudentId(e.target.value)} placeholder="UUID" />
+              <select value={studentId} onChange={(e) => setStudentId(e.target.value)} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-color-surface)', color: 'var(--text-color-main)', flex: 1 }}>
+                <option value="">Öğrenci seç</option>
+                {allStudents.map((s) => <option key={s.id} value={s.id}>{s.fullName}</option>)}
+              </select>
               <Button size="sm" onClick={() => addStudent.mutateAsync({ programId, courseId, studentId })}>Ekle</Button>
             </div>
           </Card>
@@ -99,7 +108,10 @@ const CoachCourseDetailPage = () => {
         <div>
           <Card className={styles.card} padding="md">
             <div className={styles.formRow}>
-              <Input label="Grup ID" value={groupId} onChange={(e) => setGroupId(e.target.value)} placeholder="UUID" />
+              <select value={groupId} onChange={(e) => setGroupId(e.target.value)} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-color-surface)', color: 'var(--text-color-main)', flex: 1 }}>
+                <option value="">Grup seç</option>
+                {allGroups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+              </select>
               <Button size="sm" onClick={() => addGroup.mutateAsync({ programId, courseId, groupId })}>Ekle</Button>
             </div>
           </Card>
@@ -131,7 +143,17 @@ const CoachCourseDetailPage = () => {
       )}
 
       {tab === 'permissions' && course && (
-        <Card className={styles.card} padding="md">
+        <div>
+          <Card className={styles.card} padding="md">
+            <div className={styles.formRow}>
+              <select value={teacherId} onChange={(e) => setTeacherId(e.target.value)} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-color-surface)', color: 'var(--text-color-main)', flex: 1 }}>
+                <option value="">Öğretmen seç (boş = değiştirme)</option>
+                {allTeachers.map((t) => <option key={t.id} value={t.id}>{t.fullName}</option>)}
+              </select>
+              <Button size="sm" onClick={() => updateCourse.mutateAsync({ programId, courseId, data: teacherId ? { teacherId } : {} })}>Öğretmeni Değiştir</Button>
+            </div>
+          </Card>
+          <Card className={styles.card} padding="md">
           {PERMS.map(([key, label]) => (
             <div key={key} className={styles.permRow} onClick={() => togglePerm(key)} style={{ cursor: 'pointer' }}>
               <span>{label}</span>
@@ -140,6 +162,7 @@ const CoachCourseDetailPage = () => {
           ))}
           <Button size="sm" onClick={savePermissions} isLoading={updateCourse.isPending}>İzinleri Kaydet</Button>
         </Card>
+        </div>
       )}
     </div>
   );

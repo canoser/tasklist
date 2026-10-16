@@ -31,6 +31,10 @@ namespace MentorumApi.Endpoints
                 {
                     return Results.NotFound(new { error = "Program bulunamadı veya yetkiniz yok." });
                 }
+                catch (InvalidOperationException)
+                {
+                    return Results.BadRequest(new { error = "Öğretmen bu programda bulunamadı." });
+                }
             }).AddEndpointFilter<MentorumApi.Filters.IdempotencyFilter>();
 
             group.MapGet("/{courseId:guid}", async (Guid programId, Guid courseId, [FromServices] CourseRepository repo, ClaimsPrincipal user) =>
@@ -45,8 +49,15 @@ namespace MentorumApi.Endpoints
             {
                 var coachId = GetCoachId(user);
                 if (coachId == null) return Results.Unauthorized();
-                var ok = await repo.UpdateCourseAsync(programId, courseId, coachId.Value, req);
-                return ok ? Results.Ok(new { message = "Güncellendi." }) : Results.NotFound(new { error = "Ders bulunamadı." });
+                try
+                {
+                    var ok = await repo.UpdateCourseAsync(programId, courseId, coachId.Value, req);
+                    return ok ? Results.Ok(new { message = "Güncellendi." }) : Results.NotFound(new { error = "Ders bulunamadı." });
+                }
+                catch (InvalidOperationException)
+                {
+                    return Results.BadRequest(new { error = "Öğretmen bu programda bulunamadı." });
+                }
             });
 
             group.MapDelete("/{courseId:guid}", async (Guid programId, Guid courseId, [FromServices] CourseRepository repo, ClaimsPrincipal user) =>

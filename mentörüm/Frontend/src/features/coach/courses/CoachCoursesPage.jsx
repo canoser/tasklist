@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useCourses, useCreateCourse } from '../coachSchoolApi';
+import { useCourses, useCreateCourse, useTeachers } from '../coachSchoolApi';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
 import Card from '../../../components/common/Card/Card';
@@ -11,14 +11,17 @@ const CoachCoursesPage = () => {
   const navigate = useNavigate();
   const { data: courses, isLoading } = useCourses(programId);
   const createCourse = useCreateCourse();
+  const { data: teachers = [] } = useTeachers(programId);
   const [name, setName] = useState('');
   const [type, setType] = useState('DERS');
+  const [teacherId, setTeacherId] = useState('');
 
   const handleCreate = async (e) => {
     e.preventDefault();
     if (!name.trim()) return;
-    await createCourse.mutateAsync({ programId, data: { name: name.trim(), type } });
+    await createCourse.mutateAsync({ programId, data: { name: name.trim(), type, ...(teacherId ? { teacherId } : {}) } });
     setName('');
+    setTeacherId('');
   };
 
   return (
@@ -29,6 +32,10 @@ const CoachCoursesPage = () => {
         <form onSubmit={handleCreate} className={styles.form}>
           <Input label="Ders Adı" value={name} onChange={(e) => setName(e.target.value)} placeholder="Örn: Matematik" />
           <Input label="Tür" value={type} onChange={(e) => setType(e.target.value)} placeholder="DERS" />
+          <select value={teacherId} onChange={(e) => setTeacherId(e.target.value)} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-color-surface)', color: 'var(--text-color-main)' }}>
+            <option value="">Öğretmen (opsiyonel)</option>
+            {teachers.map((t) => <option key={t.id} value={t.id}>{t.fullName}</option>)}
+          </select>
           <Button type="submit" isLoading={createCourse.isPending}>Ders Oluştur</Button>
         </form>
       </Card>

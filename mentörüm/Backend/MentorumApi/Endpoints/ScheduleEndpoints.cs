@@ -1,3 +1,4 @@
+using Dapper;
 using MentorumApi.Data;
 using MentorumApi.DTOs;
 using Microsoft.AspNetCore.Mvc;
@@ -91,6 +92,19 @@ namespace MentorumApi.Endpoints
                 var parentId = GetUserId(user);
                 if (parentId == null) return Results.Unauthorized();
                 return Results.Ok(await repo.GetParentSlotsAsync(parentId.Value));
+            });
+
+            // Veli — belirli çocuğun programı (çocuk seçici; çok çocuklu velide karışmayı önler)
+            parent.MapGet("/children/{studentId:guid}/schedule", async (Guid studentId, [FromServices] ScheduleRepository repo, [FromServices] DbConnectionFactory db, ClaimsPrincipal user) =>
+            {
+                var parentId = GetUserId(user);
+                if (parentId == null) return Results.Unauthorized();
+                using var conn = db.CreateConnection();
+                var rel = await conn.ExecuteScalarAsync<int>(
+                    "SELECT 1 FROM student_parents WHERE parent_id = @ParentId AND student_id = @StudentId AND is_accepted = 1",
+                    new { ParentId = parentId.Value, StudentId = studentId });
+                if (rel == 0) return Results.Forbid();
+                return Results.Ok(await repo.GetStudentSlotsAsync(studentId));
             });
         }
 

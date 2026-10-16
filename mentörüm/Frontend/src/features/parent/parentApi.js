@@ -33,6 +33,17 @@ export const useParentChildHomework = (studentId) => {
   });
 };
 
+export const useParentChildExams = (studentId) => {
+  return useQuery({
+    queryKey: ['parent', 'child', studentId, 'exams'],
+    queryFn: async () => {
+      const response = await apiClient.get(`/parents/children/${studentId}/exams`);
+      return response || [];
+    },
+    enabled: !!studentId,
+  });
+};
+
 export const useParentChildCalendar = (studentId, startDate, endDate) => {
   return useQuery({
     queryKey: ['parent', 'child', studentId, 'calendar', startDate, endDate],

@@ -60,6 +60,17 @@ namespace MentorumApi.Data
             if (!await IsMemberAsync(programId, coachId)) throw new UnauthorizedAccessException("FORBIDDEN");
             var id = Guid.NewGuid();
             using var conn = _connectionFactory.CreateConnection();
+
+            // Tenant doğrulaması (IDOR önlemi): öğretmen gerçekten bu programda mı?
+            if (req.TeacherId.HasValue)
+            {
+                var teacherInProgram = await conn.ExecuteScalarAsync<int?>(
+                    "SELECT 1 FROM program_teachers WHERE teacher_id = @TeacherId AND program_id = @ProgramId AND is_active = 1",
+                    new { TeacherId = req.TeacherId.Value, ProgramId = programId });
+                if (teacherInProgram == null)
+                    throw new InvalidOperationException("TEACHER_NOT_IN_PROGRAM");
+            }
+
             await conn.ExecuteAsync(@"
                 INSERT INTO courses (id, program_id, subject_id, teacher_id, name, type, color,
                     teacher_can_view_profile, teacher_can_view_contact, teacher_can_view_homework, teacher_can_manage_homework,
@@ -88,12 +99,23 @@ namespace MentorumApi.Data
         {
             if (!await IsMemberAsync(programId, coachId)) return false;
             using var conn = _connectionFactory.CreateConnection();
+
+            // Tenant doğrulaması (IDOR önlemi): öğretmen gerçekten bu programda mı?
+            if (req.TeacherId.HasValue)
+            {
+                var teacherInProgram = await conn.ExecuteScalarAsync<int?>(
+                    "SELECT 1 FROM program_teachers WHERE teacher_id = @TeacherId AND program_id = @ProgramId AND is_active = 1",
+                    new { TeacherId = req.TeacherId.Value, ProgramId = programId });
+                if (teacherInProgram == null)
+                    throw new InvalidOperationException("TEACHER_NOT_IN_PROGRAM");
+            }
+
             var rows = await conn.ExecuteAsync(@"
                 UPDATE courses SET
                     name = COALESCE(@Name, name),
                     type = COALESCE(@Type, type),
                     subject_id = @SubjectId,
-                    teacher_id = @TeacherId,
+                    teacher_id = COALESCE(@TeacherId, teacher_id),
                     color = COALESCE(@Color, color),
                     teacher_can_view_profile = COALESCE(@ViewProfile, teacher_can_view_profile),
                     teacher_can_view_contact = COALESCE(@ViewContact, teacher_can_view_contact),

@@ -49,9 +49,14 @@ namespace MentorumApi.Data
                     new { ProgramId = programId, TeacherId = teacherId, CoachId = coachId }, tx);
                 if (owned == null) return "NOT_FOUND";
 
-                await conn.ExecuteAsync("UPDATE teachers SET is_active = 0 WHERE id = @TeacherId", new { TeacherId = teacherId }, tx);
                 await conn.ExecuteAsync("UPDATE program_teachers SET is_active = 0 WHERE teacher_id = @TeacherId AND program_id = @ProgramId", new { TeacherId = teacherId, ProgramId = programId }, tx);
                 await conn.ExecuteAsync("UPDATE courses SET teacher_id = NULL WHERE teacher_id = @TeacherId AND program_id = @ProgramId", new { TeacherId = teacherId, ProgramId = programId }, tx);
+                // Öğretmenin başka aktif programı kalmadıysa global pasife al (diğer programlardaki üyeliği korunur).
+                var activePrograms = await conn.ExecuteScalarAsync<int>(
+                    "SELECT COUNT(1) FROM program_teachers WHERE teacher_id = @TeacherId AND is_active = 1",
+                    new { TeacherId = teacherId }, tx);
+                if (activePrograms == 0)
+                    await conn.ExecuteAsync("UPDATE teachers SET is_active = 0 WHERE id = @TeacherId", new { TeacherId = teacherId }, tx);
 
                 tx.Commit();
                 return "OK";
