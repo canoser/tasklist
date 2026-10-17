@@ -47,7 +47,7 @@
 - [x] **3.4 (kısmi):** `teacher_notes` tablosu (`003_teacher_notes.sql`) + `AddTeacherNoteAsync`/`GetTeacherNotesAsync` + add/view endpoint'leri (CanAddNotes/CanViewNotes). `teacher_can_manage_schedule` (onaylı talep akışı) ertelendi. (Cline)
 - [x] **3.5:** `GetTeacherProgramIdsAsync` (LIMIT 1 kaldırıldı) + test güncellendi. (Cline)
 
-**Kalan (ertelenen):** 1.1c/1.2c IDOR entegrasyon testleri, 3.2 "Sınavlar" sekmesi UI'si (hook hazır), 3.4 `view_schedule` flag gate + `manage_schedule` onaylı talep, 4.1 `ProgramAccessGuard` yaygınlaştırma (P3).
+**Kalan (ertelenen):** 3.4 `manage_schedule` onaylı talep akışı (V9'a bırakıldı), 4.1 `ProgramAccessGuard` yaygınlaştırma (P3 refactor — endpoint'lerdeki inline sahiplik kontrolleri zaten güvenliği sağlıyor).
 
 ---
 
@@ -60,15 +60,15 @@
 - [x] **Karar notu:** Koçun `AssignHomeworkAsync` ile atadığı `course_id = NULL` ödevler bu filtreyle öğretmene görünmeyecek. Bu en güvenli davranıştır; kabul edilip koda yorum olarak düşülmeli. (DeepSeek)
 - [ ] **Ödev-Ders Bağlantısı Geliştirmesi (3.8 flash gemini):** Koçun atadığı `course_id = NULL` ödevlerin öğretmenden gizlenmesi veri sızıntısını önlemek için P0 aşamasında doğru karardır. Ancak pedagojik olarak koçun branşla ilgili atadığı ödevleri öğretmenin de görebilmesi istendiğinde, Aşama 3'te koçun `AssignHomeworkModal` formuna isteğe bağlı "Ders Seçimi (CourseId)" alanı eklenmelidir. Böylece koç dilerse ödevi derse bağlayıp öğretmenin takibine açabilir.
 - [x] **Güvenlik/Yazma Koruması (3.8 flash gemini):** Sadece okuma sorgularına değil, `CreateTeacherHomeworkAsync` ve `CreateTeacherExamAsync` yazma metodlarında da öğretmenin o derse atamasının anlık olarak aktif olduğu (`courses.teacher_id = @TeacherId AND courses.is_active = 1`) doğrulanmaya devam etmelidir.
-- [ ] **IDOR testi:** `Backend/MentorumApi.Tests/CrossTenantSecurityTests.cs`'e "öğretmen, kendi dersindeki öğrencinin başka derse ait ödev/sınavını göremez" senaryosu ekle. (DeepSeek)
-- [ ] **1.1 Test Tasarım Tavsiyesi (3.8 flash gemini):** Test kurgulanırken bir öğrenci iki farklı derse (ör. Matematik ve Fizik) atanmalı; Matematik öğretmeninin token'ı ile `GET /api/v1/teacher/courses/{matematikCourseId}/homework` sorgulandığında Fizik ödevinin listede dönmediği (`Assert.DoesNotContain`) doğrulanmalıdır.
+- [x] **IDOR testi:** `Backend/MentorumApi.Tests/CrossTenantSecurityTests.cs`'e "öğretmen, kendi dersindeki öğrencinin başka derse ait ödev/sınavını göremez" senaryosu ekle. (DeepSeek)
+- [x] **1.1 Test Tasarım Tavsiyesi (3.8 flash gemini):** Test kurgulanırken bir öğrenci iki farklı derse (ör. Matematik ve Fizik) atanmalı; Matematik öğretmeninin token'ı ile `GET /api/v1/teacher/courses/{matematikCourseId}/homework` sorgulandığında Fizik ödevinin listede dönmediği (`Assert.DoesNotContain`) doğrulanmalıdır.
 
 ### 1.2 Veli yetkisiz profil okuma (is_accepted eksik) (DeepSeek)
 
 - [x] `Backend/MentorumApi/Endpoints/ParentEndpoints.cs` → `GET /parents/children/{studentId}` içindeki `student_parents` sorgusuna `AND is_accepted = 1` ekle (satır 42-44; `my-children` ve ödev ucunda bu kontrol var, burada unutulmuş). (DeepSeek)
 - [x] **Diğer Veliler Alt Sorgusunda is_accepted Güvencesi (3.8 flash gemini):** `GET /parents/children/{studentId}` içerisindeki `otherParents` sorgusunda da (`sp.parent_id != @ParentId`), diğer velinin ilişkisinin de onaylı (`AND sp.is_accepted = 1`) olduğu filtrelenmelidir. İptal edilmiş/reddedilmiş bir velinin ismi dahi maskelenerek bile olsa diğer veliye sızdırılmamalıdır.
-- [ ] **IDOR testi:** kabul edilmemiş/iptal edilmiş veli ilişkisiyle çocuk profili isteği → `403 Forbid` dönmeli. (DeepSeek)
-- [ ] **1.2 Test Tasarım Tavsiyesi (3.8 flash gemini):** Test senaryosunda `student_parents` ilişkisi `is_accepted = 0` (bekleyen davet) olan veliyle yalnızca `GET /parents/children/{id}` değil, yeni açılan `/schedule` ve `/exams` uçları da sorgulanmalı ve tümünden `403 Forbid` alındığı doğrulanmalıdır.
+- [x] **IDOR testi:** kabul edilmemiş/iptal edilmiş veli ilişkisiyle çocuk profili isteği → `403 Forbid` dönmeli. (DeepSeek)
+- [x] **1.2 Test Tasarım Tavsiyesi (3.8 flash gemini):** Test senaryosunda `student_parents` ilişkisi `is_accepted = 0` (bekleyen davet) olan veliyle yalnızca `GET /parents/children/{id}` değil, yeni açılan `/schedule` ve `/exams` uçları da sorgulanmalı ve tümünden `403 Forbid` alındığı doğrulanmalıdır.
 
 ---
 
@@ -82,8 +82,8 @@
 - [x] Öğretmenin aktif `program_teachers` kaydı hiç kalmadıysa `teachers.is_active = 0` yap (tüm programlardan düşünce). (DeepSeek)
 - [x] **Global Öğretmenlik Statüsünün Korunması (3.8 flash gemini):** Öğretmenin bir programdaki aktifliği bittiğinde sistem genelindeki `users.is_active = 1` ve `users.role = 'Teacher'` kaydı silinmemeli/kapatılmamalıdır. Çünkü öğretmen başka bir kurum veya koç tarafından gelecekte davet edilebilir. Yalnızca `program_teachers.is_active = 0` yapılmalıdır.
 - [ ] **Geçmiş Ödev ve Sınav Kayıtları (3.8 flash gemini):** Öğretmen dersten veya programdan ayrıldığında, geçmişte oluşturduğu ödevlerin ve sınavların (`created_by = teacherId`) silinmediği ve ders havuzunda kalmaya devam ettiği IDOR testleriyle doğrulanmalıdır.
-- [ ] **Test:** iki programda kayıtlı öğretmen, bir programdan pasife alınınca diğer programdaki derslerine erişmeye devam etmeli. (DeepSeek)
-- [ ] **2.1 Test Tasarım Tavsiyesi (3.8 flash gemini):** Testte öğretmenin Program A'dan pasife alındıktan sonra Program B'deki `GetTeacherCoursesAsync` ders listesinin eksilmediği ve Program B derslerine ödev ekleme yetkisinin korunduğu doğrulanmalıdır.
+- [x] **Test:** iki programda kayıtlı öğretmen, bir programdan pasife alınınca diğer programdaki derslerine erişmeye devam etmeli. (DeepSeek)
+- [x] **2.1 Test Tasarım Tavsiyesi (3.8 flash gemini):** Testte öğretmenin Program A'dan pasife alındıktan sonra Program B'deki `GetTeacherCoursesAsync` ders listesinin eksilmediği ve Program B derslerine ödev ekleme yetkisinin korunduğu doğrulanmalıdır.
 
 ### 2.2 Çok çocuklu velinin programları karışıyor (DeepSeek)
 
@@ -134,11 +134,11 @@
 
 - [x] Karar: `teacher_can_view_schedule`, `teacher_can_manage_schedule`, `teacher_can_view_notes`, `teacher_can_add_notes` ya uç+UI ile hayata geçir ya da modelden çıkar. (DeepSeek)
 - [x] Seçenek A: Öğretmen schedule/notes endpoint'leri + UI. Seçenek B: bu 4 bayrağı şemadan kaldır (önerilen: A, çünkü modelde öngörülmüş). (DeepSeek)
-- [ ] **Seçenek A Kararı ve Hiyerarşi Dengesi (3.8 flash gemini):**
+- [x] **Seçenek A Kararı ve Hiyerarşi Dengesi (3.8 flash gemini):**
   - `teacher_can_view_schedule`: Kesinlikle hayata geçirilmelidir (öğretmen ders programını görmelidir).
   - `teacher_can_manage_schedule`: Koçun genel program hiyerarşisini bozmamak için öğretmene takvim düzenleme yetkisi verilmemeli veya sadece kendi ders saati için onaylı talep olarak sınırlandırılmalıdır.
   - `teacher_can_add_notes`: Öğretmenin dersteki öğrenciye ders içi performans notu bırakabilmesi çok kıymetli bir pedagojik özelliktir; Aşama 3'te `teacher_notes` ucuyla hayata geçirilmelidir.
-- [ ] **3.4 Kapsam & Yol Haritası Tavsiyesi (3.8 flash gemini):** Öğretmen notları (`teacher_notes`) ve ödev işleme (`review`) başarıyla tamamlanmıştır. Kalan `teacher_can_view_schedule` için öğretmenin kendi dersi ve öğrencileriyle sınırlı salt-okunur bir `/teacher/courses/{id}/schedule` ucu açılmalı; `teacher_can_manage_schedule` (onaylı talep) ise bildirim akışıyla birlikte V9 sürümüne bırakılmalıdır.
+- [x] **3.4 Kapsam & Yol Haritası Tavsiyesi (3.8 flash gemini):** Öğretmen notları (`teacher_notes`) ve ödev işleme (`review`) başarıyla tamamlanmıştır. `teacher_can_view_schedule` için öğretmenin kendi dersi ve öğrencileriyle sınırlı salt-okunur erişim `GetTeacherSlotsAsync`'e flag gate olarak uygulandı; `teacher_can_manage_schedule` (onaylı talep) ise bildirim akışıyla birlikte V9 sürümüne bırakıldı.
 
 ### 3.5 `GetTeacherProgramIdAsync` `LIMIT 1` kısıtı (DeepSeek)
 
