@@ -333,17 +333,19 @@ namespace MentorumApi.Data
             var studentIds = await GetCourseStudentIdsAsync(courseId);
             if (!studentIds.Contains(studentId)) throw new UnauthorizedAccessException("STUDENT_NOT_IN_COURSE");
 
+            var visibility = req.Visibility == "COACH_ONLY" ? "COACH_ONLY" : "STUDENT_VISIBLE";
+
             using var conn = _connectionFactory.CreateConnection();
             var id = Guid.NewGuid();
             await conn.ExecuteAsync(@"
-                INSERT INTO teacher_notes (id, program_id, course_id, student_id, teacher_id, note, created_at)
-                VALUES (@Id, @ProgramId, @CourseId, @StudentId, @TeacherId, @Note, @Now)",
-                new { Id = id, ProgramId = access.ProgramId, CourseId = courseId, StudentId = studentId, TeacherId = teacherId, Note = req.Note, Now = DateTime.UtcNow });
+                INSERT INTO teacher_notes (id, program_id, course_id, student_id, teacher_id, note, summary, visibility, created_at)
+                VALUES (@Id, @ProgramId, @CourseId, @StudentId, @TeacherId, @Note, @Summary, @Visibility, @Now)",
+                new { Id = id, ProgramId = access.ProgramId, CourseId = courseId, StudentId = studentId, TeacherId = teacherId, Note = req.Note, Summary = req.Summary, Visibility = visibility, Now = DateTime.UtcNow });
             return id;
         }
 
-        /// <summary>Öğretmenin dersteki öğrenci notlarını okuması (CanViewNotes).</summary>
-        public async Task<IEnumerable<dynamic>> GetTeacherNotesAsync(Guid courseId, Guid teacherId, Guid studentId)
+        /// <summary>Öğretmenin dersteki öğrenci notlarını okuması (CanViewNotes) — tam not + özet + görünürlük döner.</summary>
+        public async Task<IEnumerable<TeacherNoteDto>> GetTeacherNotesAsync(Guid courseId, Guid teacherId, Guid studentId)
         {
             var access = await GetCourseAccessAsync(courseId, teacherId);
             if (access == null) throw new UnauthorizedAccessException("NOT_FOUND");
@@ -353,12 +355,47 @@ namespace MentorumApi.Data
             if (!studentIds.Contains(studentId)) throw new UnauthorizedAccessException("STUDENT_NOT_IN_COURSE");
 
             using var conn = _connectionFactory.CreateConnection();
-            return await conn.QueryAsync(@"
-                SELECT id, note AS Note, created_at AS CreatedAt
+            return await conn.QueryAsync<TeacherNoteDto>(@"
+                SELECT id, note AS Note, summary AS Summary, visibility AS Visibility, created_at AS CreatedAt
                 FROM teacher_notes
                 WHERE course_id = @CourseId AND student_id = @StudentId
                 ORDER BY created_at DESC",
                 new { CourseId = courseId, StudentId = studentId });
+        }
+
+        /// <summary>Öğrenci veya veli için: yalnızca STUDENT_VISIBLE olanların summary + createdAt alanları.</summary>
+        public async Task<IEnumerable<PublicTeacherNoteDto>> GetStudentVisibleTeacherNotesAsync(Guid studentId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            return await conn.QueryAsync<PublicTeacherNoteDto>(@"
+                SELECT id, summary AS Summary, created_at AS CreatedAt
+                FROM teacher_notes
+                WHERE student_id = @StudentId AND visibility = 'STUDENT_VISIBLE'
+                ORDER BY created_at DESC",
+                new { StudentId = studentId });
+        }
+
+        /// <summary>T30: Koç için öğrencinin tüm öğretmen notları (tam not + özet + görünürlük + öğretmen adı).</summary>
+        public async Task<IEnumerable<dynamic>> GetStudentTeacherNotesForCoachAsync(Guid studentId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            return await conn.QueryAsync(@"
+                SELECT 
+                    tn.id, 
+                    tn.course_id AS CourseId, 
+                    c.name AS CourseName, 
+                    tn.teacher_id AS TeacherId, 
+                    u.full_name AS TeacherName, 
+                    tn.note AS Note, 
+                    tn.summary AS Summary, 
+                    tn.visibility AS Visibility, 
+                    tn.created_at AS CreatedAt
+                FROM teacher_notes tn
+                JOIN courses c ON c.id = tn.course_id
+                JOIN users u ON u.id = tn.teacher_id
+                WHERE tn.student_id = @StudentId
+                ORDER BY tn.created_at DESC",
+                new { StudentId = studentId });
         }
 
         private sealed class HomeworkReviewTarget

@@ -21,18 +21,25 @@ namespace MentorumApi.Endpoints
                 var coachIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (!Guid.TryParse(coachIdStr, out var coachId)) return Results.Unauthorized();
 
-                // Merkezi IDOR kontrolü: koç yalnızca kendi programındaki öğrenciye sınav girebilir.
-                try
+                if (!req.StudentId.HasValue && !req.GroupId.HasValue)
                 {
-                    await guard.EnsureCoachOwnsStudentAsync(coachId, req.StudentId);
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    return Results.NotFound(new { error = "Öğrenci bulunamadı veya yetkiniz yok." });
+                    return Results.BadRequest(new { error = "Öğrenci veya Grup seçilmelidir." });
                 }
 
-                var examId = await repo.CreateExamResultAsync(coachId, req);
-                return Results.Ok(new { examId });
+                // Merkezi IDOR kontrolü: koç yalnızca kendi programındaki öğrenciye veya gruba sınav girebilir.
+                try
+                {
+                    if (req.StudentId.HasValue)
+                    {
+                        await guard.EnsureCoachOwnsStudentAsync(coachId, req.StudentId.Value);
+                    }
+                    var examId = await repo.CreateExamResultAsync(coachId, req);
+                    return Results.Ok(new { examId });
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    return Results.Json(new { error = ex.Message }, statusCode: 403);
+                }
             });
         }
     }

@@ -68,9 +68,45 @@ namespace MentorumApi.Services
         {
             using var conn = _dbFactory.CreateConnection();
             var found = await conn.ExecuteScalarAsync<int?>(
-                "SELECT 1 FROM courses WHERE id = @CourseId AND teacher_id = @TeacherId AND is_active = 1",
+                "SELECT 1 FROM courses WHERE id = @CourseId AND teacher_id = @TeacherId AND is_active = 1 AND assignment_status = 'ACTIVE'",
                 new { CourseId = courseId, TeacherId = teacherId });
             return found != null;
+        }
+
+        /// <summary>Koçun kursun programına yetkili olup olmadığını doğrular.</summary>
+        public async Task<bool> IsCoachOfCourseAsync(Guid coachId, Guid courseId)
+        {
+            using var conn = _dbFactory.CreateConnection();
+            var found = await conn.ExecuteScalarAsync<int?>(@"
+                SELECT 1 FROM courses c
+                JOIN program_coaches pc ON pc.program_id = c.program_id
+                WHERE c.id = @CourseId AND pc.coach_id = @CoachId",
+                new { CourseId = courseId, CoachId = coachId });
+            return found != null;
+        }
+
+        public async Task EnsureCoachOfCourseAsync(Guid coachId, Guid courseId)
+        {
+            if (!await IsCoachOfCourseAsync(coachId, courseId))
+                throw new UnauthorizedAccessException("FORBIDDEN");
+        }
+
+        /// <summary>Koçun grubun programına yetkili olup olmadığını doğrular.</summary>
+        public async Task<bool> IsCoachOfGroupAsync(Guid coachId, Guid groupId)
+        {
+            using var conn = _dbFactory.CreateConnection();
+            var found = await conn.ExecuteScalarAsync<int?>(@"
+                SELECT 1 FROM student_groups g
+                JOIN program_coaches pc ON pc.program_id = g.program_id
+                WHERE g.id = @GroupId AND pc.coach_id = @CoachId",
+                new { GroupId = groupId, CoachId = coachId });
+            return found != null;
+        }
+
+        public async Task EnsureCoachOfGroupAsync(Guid coachId, Guid groupId)
+        {
+            if (!await IsCoachOfGroupAsync(coachId, groupId))
+                throw new UnauthorizedAccessException("FORBIDDEN");
         }
     }
 }

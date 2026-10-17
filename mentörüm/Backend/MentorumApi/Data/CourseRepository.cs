@@ -161,6 +161,14 @@ namespace MentorumApi.Data
         {
             if (!await IsMemberAsync(programId, coachId)) return "FORBIDDEN";
             using var conn = _connectionFactory.CreateConnection();
+
+            // Program izolasyonu doğrulaması (öğrenci programa ait mi?)
+            var studentInProgram = await conn.ExecuteScalarAsync<int?>(
+                "SELECT 1 FROM students WHERE id = @StudentId AND program_id = @ProgramId",
+                new { StudentId = studentId, ProgramId = programId });
+            if (studentInProgram == null)
+                throw new InvalidOperationException("STUDENT_NOT_IN_PROGRAM");
+
             var rows = await conn.ExecuteAsync(@"
                 INSERT INTO course_students (id, course_id, student_id, program_id)
                 SELECT @Id, c.id, s.id, @ProgramId

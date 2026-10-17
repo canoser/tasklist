@@ -1,5 +1,6 @@
 using MentorumApi.Data;
 using MentorumApi.DTOs;
+using MentorumApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -26,10 +27,23 @@ namespace MentorumApi.Endpoints
             group.MapPost("/assignments", async (
                 [FromBody] AssignHomeworkRequest req,
                 [FromServices] HomeworkRepository repo,
+                [FromServices] ProgramAccessGuard guard,
                 ClaimsPrincipal user) =>
             {
                 var coachIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (!Guid.TryParse(coachIdStr, out var coachId)) return Results.Unauthorized();
+
+                if (req.StudentId.HasValue)
+                {
+                    try
+                    {
+                        await guard.EnsureCoachOwnsStudentAsync(coachId, req.StudentId.Value);
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        return Results.Json(new { error = "Öğrenci bulunamadı veya size ait değil." }, statusCode: 403);
+                    }
+                }
 
                 var assignmentId = await repo.AssignHomeworkAsync(coachId, req);
                 if (assignmentId == null) return Results.BadRequest(new { error = "Öğrenci bulunamadı veya size ait değil." });
@@ -41,10 +55,20 @@ namespace MentorumApi.Endpoints
             group.MapGet("/student/{studentId:guid}", async (
                 Guid studentId,
                 [FromServices] HomeworkRepository repo,
+                [FromServices] ProgramAccessGuard guard,
                 ClaimsPrincipal user) =>
             {
                 var coachIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (!Guid.TryParse(coachIdStr, out var coachId)) return Results.Unauthorized();
+
+                try
+                {
+                    await guard.EnsureCoachOwnsStudentAsync(coachId, studentId);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    return Results.Json(new { error = "Bu öğrenci bu koça ait değil." }, statusCode: 403);
+                }
 
                 var homeworks = await repo.GetStudentHomeworksAsync(coachId, studentId);
                 return Results.Ok(homeworks);

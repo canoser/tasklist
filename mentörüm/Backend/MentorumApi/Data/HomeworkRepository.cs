@@ -37,45 +37,78 @@ namespace MentorumApi.Data
 
             try
             {
-                // IDOR koruması: öğrenci bu koça ait olmalı
-                var owned = await conn.QuerySingleOrDefaultAsync<Guid?>(
-                    "SELECT program_id FROM students WHERE id = @StudentId AND program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)",
-                    new { req.StudentId, CoachId = coachId }, tx);
+                // Hedef öğrenci listesi: bireysel veya grup üyeleri
+                var targetStudentIds = new List<(Guid StudentId, Guid ProgramId)>();
 
-                if (owned == null) return null;
+                if (req.StudentId.HasValue)
+                {
+                    // IDOR koruması: öğrenci bu koça ait olmalı
+                    var owned = await conn.QuerySingleOrDefaultAsync<Guid?>(
+                        "SELECT program_id FROM students WHERE id = @StudentId AND program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)",
+                        new { req.StudentId, CoachId = coachId }, tx);
 
-                // Snapshot ile doğrudan atama (konu/ders/şablon silinse bile içerik ve istatistik korunur)
-                var assignId = Guid.NewGuid();
-                await conn.ExecuteAsync(@"
-                    INSERT INTO homework_assignments (
-                        id, subject_id, curriculum_topic_id, snapshot_title, snapshot_desc, snapshot_source,
-                        student_id, program_id, created_by, due_date, status, created_at, updated_at
-                    )
-                    VALUES (
-                        @Id, @SubjectId, @CurriculumTopicId, @Title, @Description, @Source,
-                        @StudentId, @ProgramId, @CreatedBy, @DueDate, 'PENDING', @Now, @Now
-                    )", new {
-                    Id = assignId,
-                    req.SubjectId,
-                    req.CurriculumTopicId,
-                    Title = req.Title,
-                    Description = req.Description,
-                    Source = req.FreeTopic,
-                    req.StudentId,
-                    CreatedBy = coachId,
-                    ProgramId = owned,
-                    req.DueDate,
-                    Now = DateTime.UtcNow
-                }, tx);
+                    if (owned != null)
+                        targetStudentIds.Add((req.StudentId.Value, owned.Value));
+                }
+                else if (req.GroupId.HasValue)
+                {
+                    // IDOR: Grup bu koçun programına ait olmalı
+                    var groupProgramId = await conn.QuerySingleOrDefaultAsync<Guid?>(
+                        "SELECT program_id FROM student_groups WHERE id = @GroupId AND program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)",
+                        new { req.GroupId, CoachId = coachId }, tx);
 
-                // Öğrenciye "yeni ödev" bildirimi gönder — öğrenci sayfasını yenilediğinde ödevi de görür.
-                await conn.ExecuteAsync(@"
-                    INSERT INTO notifications (id, user_id, type, title, body, payload, created_at)
-                    VALUES (@NotifId, @StudentId, 'HOMEWORK_ASSIGNED', 'Yeni Ödev Atandı', @NotifBody, @Payload, @Now)",
-                    new { NotifId = Guid.NewGuid(), req.StudentId, NotifBody = $"{req.Title} ödevi atandı.", Payload = assignId.ToString(), Now = DateTime.UtcNow }, tx);
+                    if (groupProgramId != null)
+                    {
+                        var members = await conn.QueryAsync<Guid>(
+                            "SELECT student_id FROM student_group_members WHERE group_id = @GroupId",
+                            new { req.GroupId }, tx);
+                        foreach (var m in members)
+                            targetStudentIds.Add((m, groupProgramId.Value));
+                    }
+                }
+
+                if (targetStudentIds.Count == 0) return null;
+
+                Guid firstAssignId = Guid.Empty;
+
+                foreach (var target in targetStudentIds)
+                {
+                    var assignId = Guid.NewGuid();
+                    if (firstAssignId == Guid.Empty) firstAssignId = assignId;
+
+                    // Snapshot ile doğrudan atama (konu/ders/şablon silinse bile içerik ve istatistik korunur)
+                    await conn.ExecuteAsync(@"
+                        INSERT INTO homework_assignments (
+                            id, subject_id, curriculum_topic_id, snapshot_title, snapshot_desc, snapshot_source,
+                            student_id, program_id, course_id, created_by, due_date, status, created_at, updated_at
+                        )
+                        VALUES (
+                            @Id, @SubjectId, @CurriculumTopicId, @Title, @Description, @Source,
+                            @StudentId, @ProgramId, @CourseId, @CreatedBy, @DueDate, 'PENDING', @Now, @Now
+                        )", new {
+                        Id = assignId,
+                        req.SubjectId,
+                        req.CurriculumTopicId,
+                        Title = req.Title,
+                        Description = req.Description,
+                        Source = req.FreeTopic,
+                        target.StudentId,
+                        CreatedBy = coachId,
+                        ProgramId = target.ProgramId,
+                        req.CourseId,
+                        req.DueDate,
+                        Now = DateTime.UtcNow
+                    }, tx);
+
+                    // Öğrenciye bildirim gönder
+                    await conn.ExecuteAsync(@"
+                        INSERT INTO notifications (id, user_id, type, title, body, payload, created_at)
+                        VALUES (@NotifId, @StudentId, 'HOMEWORK_ASSIGNED', 'Yeni Ödev Atandı', @NotifBody, @Payload, @Now)",
+                        new { NotifId = Guid.NewGuid(), target.StudentId, NotifBody = $"{req.Title} ödevi atandı.", Payload = assignId.ToString(), Now = DateTime.UtcNow }, tx);
+                }
 
                 tx.Commit();
-                return assignId;
+                return firstAssignId;
             }
             catch
             {

@@ -103,5 +103,18 @@ namespace MentorumApi.Data
                 new { GroupId = groupId, StudentId = studentId, ProgramId = programId });
             return rows > 0 ? "OK" : "NOT_FOUND";
         }
+
+        public async Task<IEnumerable<GroupMemberDto>> GetGroupMembersAsync(Guid programId, Guid groupId, Guid coachId)
+        {
+            if (!await IsMemberAsync(programId, coachId)) return Enumerable.Empty<GroupMemberDto>();
+            using var conn = _connectionFactory.CreateConnection();
+            return await conn.QueryAsync<GroupMemberDto>(@"
+                SELECT s.id, s.full_name AS FullName, s.email AS Email, s.grade AS Grade
+                FROM student_group_members m
+                JOIN students s ON s.id = m.student_id
+                WHERE m.group_id = @GroupId AND m.program_id = @ProgramId
+                ORDER BY s.full_name",
+                new { GroupId = groupId, ProgramId = programId });
+        }
     }
 }

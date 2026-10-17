@@ -1,5 +1,6 @@
 using MentorumApi.Data;
 using MentorumApi.DTOs;
+using MentorumApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -76,6 +77,23 @@ namespace MentorumApi.Endpoints
                 if (access == null) return Results.NotFound(new { error = "Ders bulunamadı." });
                 if (!access.CanViewExams) return Results.Forbid();
                 return Results.Ok(await repo.GetTeacherCourseExamsAsync(courseId));
+            });
+
+            // T20: Öğretmen ders kaynakları
+            me.MapGet("/courses/{courseId:guid}/resources", async (
+                Guid courseId,
+                [FromServices] CourseResourceRepository repo,
+                [FromServices] ProgramAccessGuard guard,
+                ClaimsPrincipal user) =>
+            {
+                var teacherId = GetCoachId(user);
+                if (teacherId == null) return Results.Unauthorized();
+
+                var isTeacher = await guard.IsTeacherOfCourseAsync(teacherId.Value, courseId);
+                if (!isTeacher) return Results.Json(new { error = "Bu derse erişim yetkiniz yok." }, statusCode: 403);
+
+                var resources = await repo.GetTeacherCourseResourcesAsync(courseId);
+                return Results.Ok(resources);
             });
 
             // --- Öğretmen kendi profili + oluşturma yetkileri (Aşama 3 & 5) ---

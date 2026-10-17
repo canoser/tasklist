@@ -102,16 +102,45 @@ namespace MentorumApi.Data
                 new { SlotId = slotId, ProgramId = programId });
             return rows > 0;
         }
-        // Öğretmenin derslerinin slotları (teacher_can_view_schedule=1 olan derslerle sınırlı)
+        // Öğretmenin derslerinin slotları (yetkili olduğu dersler tam, yetkili olmadığı program içi slotlar IsBusyOnly=true)
         public async Task<IEnumerable<ScheduleSlotDto>> GetTeacherSlotsAsync(Guid teacherId)
         {
             using var conn = _connectionFactory.CreateConnection();
-            return await conn.QueryAsync<ScheduleSlotDto>($@"
-                {SlotSelect}
+            var sql = @"
+                SELECT 
+                    s.id,
+                    CASE WHEN is_own.val = 1 THEN s.program_id ELSE NULL END AS ProgramId,
+                    CASE WHEN is_own.val = 1 THEN s.course_id ELSE NULL END AS CourseId,
+                    CASE WHEN is_own.val = 1 THEN s.group_id ELSE NULL END AS GroupId,
+                    CASE WHEN is_own.val = 1 THEN s.student_id ELSE NULL END AS StudentId,
+                    s.day_of_week AS DayOfWeek,
+                    s.start_time AS StartTime,
+                    s.end_time AS EndTime,
+                    CASE WHEN is_own.val = 1 THEN s.title ELSE NULL END AS Title,
+                    CASE WHEN is_own.val = 1 THEN s.type ELSE 'BUSY' END AS Type,
+                    s.valid_from AS ValidFrom,
+                    s.valid_to AS ValidTo,
+                    CASE WHEN is_own.val = 1 THEN s.color ELSE '#94A3B8' END AS Color,
+                    s.is_active AS IsActive,
+                    CASE WHEN is_own.val = 1 THEN false ELSE true END AS IsBusyOnly
                 FROM schedule_slots s
+                JOIN program_teachers pt ON pt.program_id = s.program_id AND pt.teacher_id = @TeacherId AND pt.assignment_status = 'ACTIVE'
+                CROSS JOIN LATERAL (
+                    SELECT CASE 
+                        WHEN s.course_id IN (
+                            SELECT id FROM courses 
+                            WHERE teacher_id = @TeacherId 
+                              AND is_active = 1 
+                              AND assignment_status = 'ACTIVE'
+                              AND COALESCE(teacher_can_view_schedule, 0) = 1
+                        ) THEN 1 
+                        ELSE 0 
+                    END AS val
+                ) is_own
                 WHERE s.is_active = 1
-                  AND s.course_id IN (SELECT id FROM courses WHERE teacher_id = @TeacherId AND is_active = 1 AND COALESCE(teacher_can_view_schedule, 0) = 1)
-                ORDER BY s.day_of_week, s.start_time", new { TeacherId = teacherId });
+                ORDER BY s.day_of_week, s.start_time";
+
+            return await conn.QueryAsync<ScheduleSlotDto>(sql, new { TeacherId = teacherId });
         }
 
         // Öğrencinin slotları (doğrudan + ders + grup)

@@ -1,5 +1,6 @@
 using MentorumApi.Data;
 using MentorumApi.DTOs;
+using MentorumApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -18,10 +19,11 @@ namespace MentorumApi.Endpoints
                 return Results.Ok(await repo.GetGroupsAsync(programId, coachId.Value));
             });
 
-            group.MapPost("/", async (Guid programId, [FromBody] CreateGroupRequest req, [FromServices] GroupRepository repo, ClaimsPrincipal user) =>
+            group.MapPost("/", async (Guid programId, [FromBody] CreateGroupRequest req, [FromServices] GroupRepository repo, [FromServices] ProgramAccessGuard guard, ClaimsPrincipal user) =>
             {
                 var coachId = GetCoachId(user);
                 if (coachId == null) return Results.Unauthorized();
+                if (!await guard.IsCoachInProgramAsync(coachId.Value, programId)) return Results.NotFound(new { error = "Program bulunamadı veya yetkiniz yok." });
                 try
                 {
                     var id = await repo.CreateGroupAsync(programId, coachId.Value, req);
@@ -33,10 +35,11 @@ namespace MentorumApi.Endpoints
                 }
             }).AddEndpointFilter<MentorumApi.Filters.IdempotencyFilter>();
 
-            group.MapGet("/{groupId:guid}", async (Guid programId, Guid groupId, [FromServices] GroupRepository repo, ClaimsPrincipal user) =>
+            group.MapGet("/{groupId:guid}", async (Guid programId, Guid groupId, [FromServices] GroupRepository repo, [FromServices] ProgramAccessGuard guard, ClaimsPrincipal user) =>
             {
                 var coachId = GetCoachId(user);
                 if (coachId == null) return Results.Unauthorized();
+                if (!await guard.IsCoachInProgramAsync(coachId.Value, programId)) return Results.NotFound(new { error = "Grup bulunamadı." });
                 var g = await repo.GetGroupAsync(programId, groupId, coachId.Value);
                 return g == null ? Results.NotFound(new { error = "Grup bulunamadı." }) : Results.Ok(g);
             });
@@ -68,6 +71,14 @@ namespace MentorumApi.Endpoints
                     "FORBIDDEN" => Results.NotFound(new { error = "Program bulunamadı." }),
                     _ => Results.NotFound(new { error = "Öğrenci veya grup bulunamadı." })
                 };
+            });
+
+            group.MapGet("/{groupId:guid}/members", async (Guid programId, Guid groupId, [FromServices] GroupRepository repo, ClaimsPrincipal user) =>
+            {
+                var coachId = GetCoachId(user);
+                if (coachId == null) return Results.Unauthorized();
+                var members = await repo.GetGroupMembersAsync(programId, groupId, coachId.Value);
+                return Results.Ok(members);
             });
 
             group.MapDelete("/{groupId:guid}/members/{studentId:guid}", async (Guid programId, Guid groupId, Guid studentId, [FromServices] GroupRepository repo, ClaimsPrincipal user) =>

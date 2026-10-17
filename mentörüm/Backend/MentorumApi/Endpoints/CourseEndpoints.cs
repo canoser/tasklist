@@ -1,5 +1,6 @@
 using MentorumApi.Data;
 using MentorumApi.DTOs;
+using MentorumApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -18,10 +19,11 @@ namespace MentorumApi.Endpoints
                 return Results.Ok(await repo.GetCoursesAsync(programId, coachId.Value));
             });
 
-            group.MapPost("/", async (Guid programId, [FromBody] CreateCourseRequest req, [FromServices] CourseRepository repo, ClaimsPrincipal user) =>
+            group.MapPost("/", async (Guid programId, [FromBody] CreateCourseRequest req, [FromServices] CourseRepository repo, [FromServices] ProgramAccessGuard guard, ClaimsPrincipal user) =>
             {
                 var coachId = GetCoachId(user);
                 if (coachId == null) return Results.Unauthorized();
+                if (!await guard.IsCoachInProgramAsync(coachId.Value, programId)) return Results.NotFound(new { error = "Program bulunamadı." });
                 try
                 {
                     var id = await repo.CreateCourseAsync(programId, coachId.Value, req);
@@ -37,10 +39,11 @@ namespace MentorumApi.Endpoints
                 }
             }).AddEndpointFilter<MentorumApi.Filters.IdempotencyFilter>();
 
-            group.MapGet("/{courseId:guid}", async (Guid programId, Guid courseId, [FromServices] CourseRepository repo, ClaimsPrincipal user) =>
+            group.MapGet("/{courseId:guid}", async (Guid programId, Guid courseId, [FromServices] CourseRepository repo, [FromServices] ProgramAccessGuard guard, ClaimsPrincipal user) =>
             {
                 var coachId = GetCoachId(user);
                 if (coachId == null) return Results.Unauthorized();
+                if (!await guard.IsCoachInProgramAsync(coachId.Value, programId)) return Results.NotFound(new { error = "Program bulunamadı." });
                 var c = await repo.GetCourseAsync(programId, courseId, coachId.Value);
                 return c == null ? Results.NotFound(new { error = "Ders bulunamadı." }) : Results.Ok(c);
             });
@@ -86,13 +89,20 @@ namespace MentorumApi.Endpoints
             {
                 var coachId = GetCoachId(user);
                 if (coachId == null) return Results.Unauthorized();
-                var r = await repo.AddStudentToCourseAsync(programId, courseId, req.StudentId, coachId.Value);
-                return r switch
+                try
                 {
-                    "OK" => Results.Ok(new { message = "Öğrenci eklendi." }),
-                    "FORBIDDEN" => Results.NotFound(new { error = "Program bulunamadı." }),
-                    _ => Results.NotFound(new { error = "Öğrenci veya ders bulunamadı." })
-                };
+                    var r = await repo.AddStudentToCourseAsync(programId, courseId, req.StudentId, coachId.Value);
+                    return r switch
+                    {
+                        "OK" => Results.Ok(new { message = "Öğrenci eklendi." }),
+                        "FORBIDDEN" => Results.NotFound(new { error = "Program bulunamadı." }),
+                        _ => Results.NotFound(new { error = "Öğrenci veya ders bulunamadı." })
+                    };
+                }
+                catch (InvalidOperationException ex) when (ex.Message == "STUDENT_NOT_IN_PROGRAM")
+                {
+                    return Results.NotFound(new { error = "Öğrenci bulunamadı." });
+                }
             });
 
             group.MapDelete("/{courseId:guid}/students/{studentId:guid}", async (Guid programId, Guid courseId, Guid studentId, [FromServices] CourseRepository repo, ClaimsPrincipal user) =>

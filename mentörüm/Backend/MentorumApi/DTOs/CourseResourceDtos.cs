@@ -10,6 +10,7 @@ namespace MentorumApi.DTOs
         public int SortOrder { get; set; }
         public int? Progress { get; set; }   // öğrenci görünümünde dolu
         public int? IsDone { get; set; }     // öğrenci görünümünde dolu
+        public int? CompletedCount { get; set; } // öğretmen görünümünde dolu
     }
 
     public class CreateCourseResourceRequest

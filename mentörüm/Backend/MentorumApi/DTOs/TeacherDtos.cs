@@ -78,5 +78,23 @@ namespace MentorumApi.DTOs
     {
         [Required]
         public required string Note { get; set; }
+        public string? Visibility { get; set; } = "STUDENT_VISIBLE";
+        public string? Summary { get; set; }
+    }
+
+    public class TeacherNoteDto
+    {
+        public Guid Id { get; set; }
+        public string Note { get; set; } = string.Empty;
+        public string? Summary { get; set; }
+        public string Visibility { get; set; } = "STUDENT_VISIBLE";
+        public DateTime CreatedAt { get; set; }
+    }
+
+    public class PublicTeacherNoteDto
+    {
+        public Guid Id { get; set; }
+        public string? Summary { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

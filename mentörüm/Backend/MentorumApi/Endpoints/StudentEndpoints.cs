@@ -1,5 +1,6 @@
 using MentorumApi.Data;
 using MentorumApi.DTOs;
+using MentorumApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using QuestPDF.Fluent;
@@ -196,6 +197,126 @@ namespace MentorumApi.Endpoints
                 return Results.Ok(new { message = "Not başarıyla eklendi." });
             });
 
+            // T16: Veli görünürlük bayrakları
+            group.MapGet("/{studentId:guid}/parents/{parentId:guid}/permissions", async (
+                Guid studentId,
+                Guid parentId,
+                [FromServices] ParentVisibilityRepository repo,
+                [FromServices] ProgramAccessGuard guard,
+                ClaimsPrincipal user) =>
+            {
+                var coachIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(coachIdStr, out var coachId)) return Results.Unauthorized();
+
+                try
+                {
+                    await guard.EnsureCoachOwnsStudentAsync(coachId, studentId);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    return Results.Json(new { error = "Bu öğrenci bu koça ait değil." }, statusCode: 403);
+                }
+
+                var permissions = await repo.GetParentPermissionsAsync(studentId, parentId);
+                if (permissions == null) return Results.NotFound(new { error = "Veli kaydı bulunamadı." });
+
+                return Results.Ok(permissions);
+            });
+
+            group.MapPut("/{studentId:guid}/parents/{parentId:guid}/permissions", async (
+                Guid studentId,
+                Guid parentId,
+                [FromBody] UpdateParentPermissionsRequest req,
+                [FromServices] ParentVisibilityRepository repo,
+                [FromServices] ProgramAccessGuard guard,
+                ClaimsPrincipal user) =>
+            {
+                var coachIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(coachIdStr, out var coachId)) return Results.Unauthorized();
+
+                try
+                {
+                    await guard.EnsureCoachOwnsStudentAsync(coachId, studentId);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    return Results.Json(new { error = "Bu öğrenci bu koça ait değil." }, statusCode: 403);
+                }
+
+                var ok = await repo.UpdateParentPermissionsAsync(studentId, parentId, req);
+                if (!ok) return Results.NotFound(new { error = "Veli kaydı bulunamadı veya güncellenemedi." });
+
+                return Results.Ok(new { message = "Veli yetkileri güncellendi." });
+            });
+
+            // T23: Koç — öğrenci konu istatistikleri ve haftalık zaman bütçesi
+            group.MapGet("/{id:guid}/subject-stats", async (
+                Guid id,
+                [FromServices] ReportsRepository repo,
+                [FromServices] ProgramAccessGuard guard,
+                ClaimsPrincipal user) =>
+            {
+                var coachIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(coachIdStr, out var coachId)) return Results.Unauthorized();
+
+                try
+                {
+                    await guard.EnsureCoachOwnsStudentAsync(coachId, id);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    return Results.Json(new { error = "Bu öğrenci bu koça ait değil." }, statusCode: 403);
+                }
+
+                var stats = await repo.GetStudentSubjectStatsAsync(id);
+                return Results.Ok(stats);
+            });
+
+            group.MapGet("/{id:guid}/time-budget", async (
+                Guid id,
+                [FromServices] ReportsRepository repo,
+                [FromServices] ProgramAccessGuard guard,
+                ClaimsPrincipal user) =>
+            {
+                var coachIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(coachIdStr, out var coachId)) return Results.Unauthorized();
+
+                try
+                {
+                    await guard.EnsureCoachOwnsStudentAsync(coachId, id);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    return Results.Json(new { error = "Bu öğrenci bu koça ait değil." }, statusCode: 403);
+                }
+
+                var budget = await repo.GetWeeklyTimeBudgetAsync(id);
+                return Results.Ok(budget);
+            });
+
+            // T30: Koç için öğrencinin tüm öğretmen notları
+            group.MapGet("/{id:guid}/teacher-notes", async (
+                Guid id,
+                [FromServices] SchoolAccessRepository repo,
+                [FromServices] ProgramAccessGuard guard,
+                ClaimsPrincipal user) =>
+            {
+                var coachIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(coachIdStr, out var coachId)) return Results.Unauthorized();
+
+                try
+                {
+                    await guard.EnsureCoachOwnsStudentAsync(coachId, id);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    return Results.Json(new { error = "Bu öğrenci bu koça ait değil." }, statusCode: 403);
+                }
+
+                var notes = await repo.GetStudentTeacherNotesForCoachAsync(id);
+                return Results.Ok(notes);
+            });
+
             // --- Öğrenci kendi verisi (Aşama 1) ---
             var self = app.MapGroup("/api/v1/student").RequireAuthorization("RequireStudentRole");
 
@@ -255,6 +376,73 @@ namespace MentorumApi.Endpoints
                 if (studentId == null) return Results.Unauthorized();
                 var ok = await repo.UpdateSessionPrepAsync(studentId.Value, sessionId, req.PrepNotes ?? "");
                 return ok ? Results.Ok(new { message = "Hazırlık notu kaydedildi." }) : Results.NotFound(new { error = "Görüşme bulunamadı." });
+            });
+
+            // T19: Öğrenci için öğretmen notları (yalnızca STUDENT_VISIBLE ve summary)
+            self.MapGet("/teacher-notes", async (
+                [FromServices] SchoolAccessRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var studentId = GetStudentId(user);
+                if (studentId == null) return Results.Unauthorized();
+                var notes = await repo.GetStudentVisibleTeacherNotesAsync(studentId.Value);
+                return Results.Ok(notes);
+            });
+
+            // T21: Çalışma Oturumları (kronometre / manuel / hızlı kayıt)
+            self.MapPost("/study-sessions", async (
+                [FromBody] CreateStudySessionRequest req,
+                [FromServices] StudySessionRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var studentId = GetStudentId(user);
+                if (studentId == null) return Results.Unauthorized();
+
+                try
+                {
+                    var id = await repo.CreateAsync(studentId.Value, req);
+                    return Results.Ok(new { id });
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    return Results.NotFound(new { error = "Öğrenci profili bulunamadı." });
+                }
+            });
+
+            self.MapGet("/study-sessions", async (
+                [FromQuery] DateTime? from,
+                [FromQuery] DateTime? to,
+                [FromServices] StudySessionRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var studentId = GetStudentId(user);
+                if (studentId == null) return Results.Unauthorized();
+
+                var sessions = await repo.ListAsync(studentId.Value, from, to);
+                return Results.Ok(sessions);
+            });
+
+            // T23: Öğrenci — kendi konu istatistikleri ve haftalık zaman bütçesi
+            self.MapGet("/subject-stats", async (
+                [FromServices] ReportsRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var studentId = GetStudentId(user);
+                if (studentId == null) return Results.Unauthorized();
+
+                var stats = await repo.GetStudentSubjectStatsAsync(studentId.Value);
+                return Results.Ok(stats);
+            });
+
+            self.MapGet("/time-budget", async (
+                [FromServices] ReportsRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var studentId = GetStudentId(user);
+                if (studentId == null) return Results.Unauthorized();
+
+                var budget = await repo.GetWeeklyTimeBudgetAsync(studentId.Value);
+                return Results.Ok(budget);
             });
         }
 

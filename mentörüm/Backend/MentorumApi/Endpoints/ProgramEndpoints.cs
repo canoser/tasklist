@@ -3,6 +3,7 @@ using MentorumApi.Data;
 using MentorumApi.DTOs;
 using MentorumApi.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using System.Security.Claims;
 
 namespace MentorumApi.Endpoints
@@ -197,6 +198,34 @@ namespace MentorumApi.Endpoints
                 catch { tx.Rollback(); throw; }
 
                 return Results.Ok(new { message = "Şifre güncellendi. Kullanıcının eski oturumları kapatıldı." });
+            });
+
+            // --- Güvenlik & Kota denetimi (süper yönetici) ---
+            admin.MapGet("/rate-limits", async ([FromServices] RateLimitRepository repo) =>
+                Results.Ok(new
+                {
+                    rules = await repo.GetRulesAsync(),
+                    events = await repo.GetRecentEventsAsync(100)
+                }));
+
+            admin.MapPut("/rate-limits", async (
+                [FromBody] UpdateRateLimitRequest req,
+                [FromServices] RateLimitRepository repo,
+                [FromServices] IMemoryCache cache,
+                ClaimsPrincipal user) =>
+            {
+                if (string.IsNullOrWhiteSpace(req.Path))
+                    return Results.BadRequest(new { error = "Endpoint yolu gerekli." });
+                if (req.MaxAttempts < 0 || req.MaxAttempts > 1000)
+                    return Results.BadRequest(new { error = "Limit 0-1000 arasında olmalı." });
+
+                var adminId = GetCoachId(user);
+                var ok = await repo.UpdateRuleAsync(req.Path.Trim(), req.MaxAttempts, adminId);
+                if (!ok)
+                    return Results.NotFound(new { error = "Kural bulunamadı." });
+
+                cache.Remove("rl_rule:" + req.Path.Trim());  // 30sn'lik önbelleği geçersiz kıl
+                return Results.Ok(new { message = "Kural güncellendi." });
             });
         }
 

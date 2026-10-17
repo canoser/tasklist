@@ -112,5 +112,23 @@ namespace MentorumApi.Data
                 });
             return rows > 0;
         }
+
+        public async Task<IEnumerable<CourseResourceDto>> GetTeacherCourseResourcesAsync(Guid courseId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            return await conn.QueryAsync<CourseResourceDto>(@"
+                SELECT 
+                    r.id, 
+                    r.course_id AS CourseId, 
+                    r.title AS Title, 
+                    r.type AS Type, 
+                    r.resource_ref AS ResourceRef, 
+                    r.sort_order AS SortOrder,
+                    (SELECT COUNT(1) FROM course_resource_progress p WHERE p.course_resource_id = r.id AND p.is_done = 1) AS CompletedCount
+                FROM course_resources r
+                WHERE r.course_id = @CourseId
+                ORDER BY r.sort_order, r.created_at",
+                new { CourseId = courseId });
+        }
     }
 }

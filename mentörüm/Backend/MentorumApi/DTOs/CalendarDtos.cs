@@ -20,6 +20,7 @@ namespace MentorumApi.DTOs
         public Guid UserId { get; set; }
         public string Title { get; set; } = "";
         public string EventType { get; set; } = "PERSONAL_BLOCK";
+        public string? Category { get; set; }
         public DateTime StartAt { get; set; }
         public DateTime? EndAt { get; set; }
     }
@@ -28,6 +29,7 @@ namespace MentorumApi.DTOs
     {
         public string? Title { get; set; }
         public string EventType { get; set; } = "PERSONAL_BLOCK";
+        public string? Category { get; set; }
         public DateTime StartAt { get; set; }
         public DateTime? EndAt { get; set; }
     }

@@ -1,0 +1,136 @@
+using Dapper;
+using MentorumApi.DTOs;
+using MentorumApi.Services;
+
+namespace MentorumApi.Data
+{
+    public class StudySessionRepository : BaseRepository
+    {
+        public StudySessionRepository(DbConnectionFactory connectionFactory) : base(connectionFactory) { }
+
+        public async Task<Guid> CreateAsync(Guid studentId, CreateStudySessionRequest req)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            var studentInfo = await conn.QuerySingleOrDefaultAsync<dynamic>(
+                "SELECT program_id, track FROM students WHERE id = @StudentId",
+                new { StudentId = studentId });
+
+            if (studentInfo == null) throw new UnauthorizedAccessException("Öğrenci bulunamadı.");
+
+            var id = Guid.NewGuid();
+            var sql = @"
+                INSERT INTO study_sessions (
+                    id, program_id, student_id, subject_id, curriculum_topic_id,
+                    minutes, question_count, correct, wrong, blank, source_type,
+                    started_at, ended_at, created_at
+                ) VALUES (
+                    @Id, @ProgramId, @StudentId, @SubjectId, @CurriculumTopicId,
+                    @Minutes, @QuestionCount, @Correct, @Wrong, @Blank, @SourceType,
+                    @StartedAt, @EndedAt, NOW()
+                )";
+
+            await conn.ExecuteAsync(sql, new
+            {
+                Id = id,
+                ProgramId = (Guid)studentInfo.program_id,
+                StudentId = studentId,
+                req.SubjectId,
+                req.CurriculumTopicId,
+                req.Minutes,
+                req.QuestionCount,
+                req.Correct,
+                req.Wrong,
+                req.Blank,
+                SourceType = string.IsNullOrWhiteSpace(req.SourceType) ? "MANUAL" : req.SourceType,
+                req.StartedAt,
+                req.EndedAt
+            });
+
+            return id;
+        }
+
+        public async Task<IEnumerable<StudySessionDto>> ListAsync(Guid studentId, DateTime? from = null, DateTime? to = null)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            var studentTrack = await conn.QuerySingleOrDefaultAsync<string>(
+                "SELECT track FROM students WHERE id = @StudentId",
+                new { StudentId = studentId });
+
+            var sql = @"
+                SELECT 
+                    ss.id AS Id,
+                    ss.program_id AS ProgramId,
+                    ss.student_id AS StudentId,
+                    ss.subject_id AS SubjectId,
+                    ss.curriculum_topic_id AS CurriculumTopicId,
+                    s.name AS SubjectName,
+                    ct.topic_name AS TopicName,
+                    ss.minutes AS Minutes,
+                    ss.question_count AS QuestionCount,
+                    ss.correct AS Correct,
+                    ss.wrong AS Wrong,
+                    ss.blank AS Blank,
+                    ss.source_type AS SourceType,
+                    ss.started_at AS StartedAt,
+                    ss.ended_at AS EndedAt,
+                    ss.created_at AS CreatedAt
+                FROM study_sessions ss
+                LEFT JOIN subjects s ON s.id = ss.subject_id
+                LEFT JOIN curriculum_topics ct ON ct.id = ss.curriculum_topic_id
+                WHERE ss.student_id = @StudentId";
+
+            if (from.HasValue)
+            {
+                sql += " AND (ss.started_at >= @From OR (ss.started_at IS NULL AND ss.created_at >= @From))";
+            }
+            if (to.HasValue)
+            {
+                sql += " AND (ss.started_at <= @To OR (ss.started_at IS NULL AND ss.created_at <= @To))";
+            }
+            sql += " ORDER BY COALESCE(ss.started_at, ss.created_at) DESC";
+
+            var rows = await conn.QueryAsync<dynamic>(sql, new { StudentId = studentId, From = from, To = to });
+
+            return rows.Select(r =>
+            {
+                int correct = (int)r.correct;
+                int wrong = (int)r.wrong;
+                int blank = (int)r.blank;
+                int qCount = (int)r.question_count;
+
+                return new StudySessionDto
+                {
+                    Id = (Guid)r.id,
+                    ProgramId = (Guid)r.program_id,
+                    StudentId = (Guid)r.student_id,
+                    SubjectId = (Guid?)r.subject_id,
+                    CurriculumTopicId = (Guid?)r.curriculum_topic_id,
+                    SubjectName = (string?)r.subject_name,
+                    TopicName = (string?)r.topic_name,
+                    Minutes = (int)r.minutes,
+                    QuestionCount = qCount,
+                    Correct = correct,
+                    Wrong = wrong,
+                    Blank = blank,
+                    Net = NetCalculator.ComputeNet(correct, wrong, blank, studentTrack),
+                    SuccessRate = NetCalculator.ComputeSuccessRate(correct, qCount),
+                    SourceType = (string)r.source_type,
+                    StartedAt = (DateTime?)r.started_at,
+                    EndedAt = (DateTime?)r.ended_at,
+                    CreatedAt = (DateTime)r.created_at
+                };
+            });
+        }
+
+        public async Task<bool> UpdatePrepAsync(Guid studentId, Guid sessionId, string prepNotes)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            var rows = await conn.ExecuteAsync(@"
+                UPDATE coaching_sessions 
+                SET prep_notes = @PrepNotes 
+                WHERE id = @SessionId AND student_id = @StudentId",
+                new { PrepNotes = prepNotes, SessionId = sessionId, StudentId = studentId });
+            return rows > 0;
+        }
+    }
+}

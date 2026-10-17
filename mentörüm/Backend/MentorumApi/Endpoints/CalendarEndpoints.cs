@@ -13,11 +13,15 @@ namespace MentorumApi.Endpoints
             var studentGroup = app.MapGroup("/api/v1/me/calendar").RequireAuthorization("RequireStudentRole");
             var parentGroup = app.MapGroup("/api/v1/me/children").RequireAuthorization("RequireParentRole");
 
-            // 1. Coach Endpoint (Tüm öğrenciler veya tek öğrenci)
+            // 1. Coach Endpoint (Tüm öğrenciler veya filtreli)
             coachGroup.MapGet("/", async (
                 [FromQuery] DateTime from,
                 [FromQuery] DateTime to,
                 [FromQuery] Guid? studentId,
+                [FromQuery] Guid? programId,
+                [FromQuery] Guid? courseId,
+                [FromQuery] Guid? teacherId,
+                [FromQuery] string? eventType,
                 [FromServices] CalendarRepository repo,
                 ClaimsPrincipal user) =>
             {
@@ -25,7 +29,7 @@ namespace MentorumApi.Endpoints
                 if (!Guid.TryParse(userIdStr, out var userId)) return Results.Unauthorized();
 
                 if ((to - from).TotalDays > 62) return Results.BadRequest(new { error = "Tarih aralığı en fazla 62 gün olabilir." });
-                var events = await repo.GetCalendarEventsAsync(userId, "Coach", from, to, studentId);
+                var events = await repo.GetCalendarEventsAsync(userId, "Coach", from, to, studentId, programId, courseId, teacherId, eventType);
                 return Results.Ok(events);
             });
 

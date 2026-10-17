@@ -1,5 +1,6 @@
 using Dapper;
 using MentorumApi.DTOs;
+using MentorumApi.Services;
 
 namespace MentorumApi.Data
 {
@@ -106,6 +107,117 @@ namespace MentorumApi.Data
                 ORDER BY 1",
                 new { CoachId = coachId });
             result.WeeklyTrend = weekly.ToList();
+
+            return result;
+        }
+
+        public async Task<IEnumerable<StudentSubjectStatDto>> GetStudentSubjectStatsAsync(Guid studentId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            var track = await conn.QuerySingleOrDefaultAsync<string>(
+                "SELECT track FROM students WHERE id = @StudentId",
+                new { StudentId = studentId });
+
+            var sql = @"
+                SELECT 
+                    ss.subject_id AS SubjectId,
+                    s.name AS SubjectName,
+                    ss.curriculum_topic_id AS CurriculumTopicId,
+                    ct.topic_name AS TopicName,
+                    COALESCE(SUM(ss.minutes), 0)::int AS TotalMinutes,
+                    COALESCE(SUM(ss.question_count), 0)::int AS TotalQuestions,
+                    COALESCE(SUM(ss.correct), 0)::int AS TotalCorrect,
+                    COALESCE(SUM(ss.wrong), 0)::int AS TotalWrong,
+                    COALESCE(SUM(ss.blank), 0)::int AS TotalBlank
+                FROM study_sessions ss
+                LEFT JOIN subjects s ON s.id = ss.subject_id
+                LEFT JOIN curriculum_topics ct ON ct.id = ss.curriculum_topic_id
+                WHERE ss.student_id = @StudentId
+                GROUP BY ss.subject_id, s.name, ss.curriculum_topic_id, ct.topic_name
+                ORDER BY TotalMinutes DESC";
+
+            var rows = await conn.QueryAsync<dynamic>(sql, new { StudentId = studentId });
+
+            return rows.Select(r =>
+            {
+                int correct = (int)r.totalcorrect;
+                int wrong = (int)r.totalwrong;
+                int blank = (int)r.totalblank;
+                int qCount = (int)r.totalquestions;
+
+                return new StudentSubjectStatDto
+                {
+                    SubjectId = (Guid?)r.subjectid,
+                    SubjectName = (string?)r.subjectname ?? "Genel",
+                    CurriculumTopicId = (Guid?)r.curriculumtopicid,
+                    TopicName = (string?)r.topicname,
+                    TotalMinutes = (int)r.totalminutes,
+                    TotalQuestions = qCount,
+                    TotalCorrect = correct,
+                    TotalWrong = wrong,
+                    TotalBlank = blank,
+                    TotalNet = NetCalculator.ComputeNet(correct, wrong, blank, track),
+                    SuccessRate = NetCalculator.ComputeSuccessRate(correct, qCount)
+                };
+            });
+        }
+
+        public async Task<WeeklyTimeBudgetDto> GetWeeklyTimeBudgetAsync(Guid studentId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            var studyMinutes = await conn.ExecuteScalarAsync<int?>(@"
+                SELECT COALESCE(SUM(minutes), 0)::int 
+                FROM study_sessions 
+                WHERE student_id = @StudentId 
+                  AND (started_at >= date_trunc('week', CURRENT_DATE) OR (started_at IS NULL AND created_at >= date_trunc('week', CURRENT_DATE)))",
+                new { StudentId = studentId }) ?? 0;
+
+            var personalRows = await conn.QueryAsync<dynamic>(@"
+                SELECT 
+                    COALESCE(category, 'OTHER') AS Category,
+                    COALESCE(SUM(EXTRACT(EPOCH FROM (COALESCE(end_at, start_at + interval '1 hour') - start_at)) / 60), 0)::int AS TotalMinutes
+                FROM personal_events
+                WHERE user_id = @StudentId 
+                  AND start_at >= date_trunc('week', CURRENT_DATE)
+                GROUP BY COALESCE(category, 'OTHER')",
+                new { StudentId = studentId });
+
+            var result = new WeeklyTimeBudgetDto
+            {
+                TotalStudyMinutes = studyMinutes
+            };
+
+            int totalPersonal = 0;
+            foreach (var r in personalRows)
+            {
+                int mins = (int)r.totalminutes;
+                totalPersonal += mins;
+                result.Categories.Add(new WeeklyTimeBudgetItemDto
+                {
+                    Category = (string)r.category,
+                    TotalMinutes = mins
+                });
+            }
+
+            result.TotalPersonalMinutes = totalPersonal;
+            result.TotalTrackedMinutes = studyMinutes + totalPersonal;
+
+            if (studyMinutes > 0)
+            {
+                result.Categories.Insert(0, new WeeklyTimeBudgetItemDto
+                {
+                    Category = "STUDY",
+                    TotalMinutes = studyMinutes
+                });
+            }
+
+            if (result.TotalTrackedMinutes > 0)
+            {
+                foreach (var cat in result.Categories)
+                {
+                    cat.Percentage = Math.Round((double)cat.TotalMinutes / result.TotalTrackedMinutes * 100.0, 1);
+                }
+            }
 
             return result;
         }

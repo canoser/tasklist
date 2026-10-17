@@ -72,7 +72,13 @@ try
     builder.Services.AddScoped<GroupRepository>();
     builder.Services.AddScoped<ScheduleRepository>();
     builder.Services.AddScoped<CourseResourceRepository>();
+    builder.Services.AddScoped<ParentVisibilityRepository>();
+    builder.Services.AddScoped<ApprovalRepository>();
+    builder.Services.AddScoped<StudySessionRepository>();
+    builder.Services.AddScoped<PaymentPlanService>();
+    builder.Services.AddScoped<PaymentRepository>();
     builder.Services.AddScoped<ProgramAccessGuard>();
+    builder.Services.AddScoped<RateLimitRepository>();
     builder.Services.AddMemoryCache();
     builder.Services.AddHostedService<MentorumApi.Services.Background.OverdueHomeworkJob>();
 
@@ -172,6 +178,9 @@ try
     // Aktif olmayan veya silinen kullanıcıları bloklamak için Middleware
     app.UseJwtValidation();
     
+    // T31: "Rol Gözüyle Gör" (View-As) sandbox (salt okunur mutasyon korumalı)
+    app.UseViewAs();
+
     app.UseAuthorization();
 
     // Endpoints
@@ -191,6 +200,8 @@ try
     app.MapGroupEndpoints();
     app.MapScheduleEndpoints();
     app.MapCourseResourceEndpoints();
+    app.MapApprovalEndpoints();
+    app.MapPaymentEndpoints();
 
     app.MapGet("/", () => "Mentorum API Auth/Authz Katmanı Devrede!");
 

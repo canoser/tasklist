@@ -73,7 +73,22 @@ namespace MentorumApi.Endpoints
             {
                 var teacherId = GetUserId(user);
                 if (teacherId == null) return Results.Unauthorized();
-                return Results.Ok(await repo.GetTeacherSlotsAsync(teacherId.Value));
+                var slots = await repo.GetTeacherSlotsAsync(teacherId.Value);
+                var sanitized = slots.Select(s => s.IsBusyOnly ? new ScheduleSlotDto
+                {
+                    Id = s.Id,
+                    DayOfWeek = s.DayOfWeek,
+                    StartTime = s.StartTime,
+                    EndTime = s.EndTime,
+                    IsBusyOnly = true,
+                    Title = null,
+                    CourseId = null,
+                    GroupId = null,
+                    StudentId = null,
+                    ProgramId = null,
+                    Color = "#94A3B8"
+                } : s);
+                return Results.Ok(sanitized);
             });
 
             // Öğrenci okuma

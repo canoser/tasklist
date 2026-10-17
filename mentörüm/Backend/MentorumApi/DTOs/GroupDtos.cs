@@ -25,4 +25,12 @@ namespace MentorumApi.DTOs
     }
 
     public class AddGroupMemberRequest { public required Guid StudentId { get; set; } }
+
+    public class GroupMemberDto
+    {
+        public Guid Id { get; set; }
+        public required string FullName { get; set; }
+        public string? Email { get; set; }
+        public int? Grade { get; set; }
+    }
 }

@@ -11,8 +11,8 @@ namespace MentorumApi.DTOs
 
     public class CreateExamResultRequest
     {
-        [Required]
-        public Guid StudentId { get; set; }
+        public Guid? StudentId { get; set; }
+        public Guid? GroupId { get; set; }
         
         [Required]
         public DateTime ExamDate { get; set; }

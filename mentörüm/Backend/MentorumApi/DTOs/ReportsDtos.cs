@@ -53,4 +53,34 @@ namespace MentorumApi.DTOs
         public int TotalAssigned { get; set; }
         public double SuccessRate { get; set; }
     }
+
+    public class StudentSubjectStatDto
+    {
+        public Guid? SubjectId { get; set; }
+        public string? SubjectName { get; set; }
+        public Guid? CurriculumTopicId { get; set; }
+        public string? TopicName { get; set; }
+        public int TotalMinutes { get; set; }
+        public int TotalQuestions { get; set; }
+        public int TotalCorrect { get; set; }
+        public int TotalWrong { get; set; }
+        public int TotalBlank { get; set; }
+        public decimal TotalNet { get; set; }
+        public decimal SuccessRate { get; set; }
+    }
+
+    public class WeeklyTimeBudgetItemDto
+    {
+        public string Category { get; set; } = "";
+        public int TotalMinutes { get; set; }
+        public double Percentage { get; set; }
+    }
+
+    public class WeeklyTimeBudgetDto
+    {
+        public int TotalStudyMinutes { get; set; }
+        public int TotalPersonalMinutes { get; set; }
+        public int TotalTrackedMinutes { get; set; }
+        public List<WeeklyTimeBudgetItemDto> Categories { get; set; } = new();
+    }
 }

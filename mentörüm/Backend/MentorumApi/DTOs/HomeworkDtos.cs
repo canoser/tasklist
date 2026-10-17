@@ -18,8 +18,9 @@ namespace MentorumApi.DTOs
 
     public class AssignHomeworkRequest
     {
-        [Required]
-        public Guid StudentId { get; set; }
+        public Guid? StudentId { get; set; }
+        public Guid? GroupId { get; set; }
+        public Guid? CourseId { get; set; }
 
         public Guid? SubjectId { get; set; }
         public Guid? CurriculumTopicId { get; set; }

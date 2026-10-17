@@ -98,4 +98,22 @@ namespace MentorumApi.DTOs
         public string? TopicName { get; set; }
         public bool IsCompleted { get; set; }
     }
+
+    public class ParentPermissionsDto
+    {
+        public bool CanViewExams { get; set; }
+        public bool CanViewHomework { get; set; }
+        public bool CanViewCalendar { get; set; }
+        public bool CanViewStudyStats { get; set; }
+        public bool CanViewPayments { get; set; }
+    }
+
+    public class UpdateParentPermissionsRequest
+    {
+        public bool CanViewExams { get; set; }
+        public bool CanViewHomework { get; set; }
+        public bool CanViewCalendar { get; set; }
+        public bool CanViewStudyStats { get; set; }
+        public bool CanViewPayments { get; set; }
+    }
 }
