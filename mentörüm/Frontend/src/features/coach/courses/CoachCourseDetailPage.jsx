@@ -87,7 +87,7 @@ const CoachCourseDetailPage = () => {
         <div>
           <Card className={styles.card} padding="md">
             <div className={styles.formRow}>
-              <select value={studentId} onChange={(e) => setStudentId(e.target.value)} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-color-surface)', color: 'var(--text-color-main)', flex: 1 }}>
+              <select value={studentId} onChange={(e) => setStudentId(e.target.value)} className={styles.select}>
                 <option value="">Öğrenci seç</option>
                 {allStudents.map((s) => <option key={s.id} value={s.id}>{s.fullName}</option>)}
               </select>
@@ -108,7 +108,7 @@ const CoachCourseDetailPage = () => {
         <div>
           <Card className={styles.card} padding="md">
             <div className={styles.formRow}>
-              <select value={groupId} onChange={(e) => setGroupId(e.target.value)} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-color-surface)', color: 'var(--text-color-main)', flex: 1 }}>
+              <select value={groupId} onChange={(e) => setGroupId(e.target.value)} className={styles.select}>
                 <option value="">Grup seç</option>
                 {allGroups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
               </select>
@@ -146,7 +146,7 @@ const CoachCourseDetailPage = () => {
         <div>
           <Card className={styles.card} padding="md">
             <div className={styles.formRow}>
-              <select value={teacherId} onChange={(e) => setTeacherId(e.target.value)} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-color-surface)', color: 'var(--text-color-main)', flex: 1 }}>
+              <select value={teacherId} onChange={(e) => setTeacherId(e.target.value)} className={styles.select}>
                 <option value="">Öğretmen seç (boş = değiştirme)</option>
                 {allTeachers.map((t) => <option key={t.id} value={t.id}>{t.fullName}</option>)}
               </select>

@@ -11,5 +11,21 @@
 .tabActive { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
 .actionsBar { margin: var(--spacing-sm) 0; }
 .form { display: flex; flex-direction: column; gap: var(--spacing-sm); margin-bottom: var(--spacing-sm); }
-.select { padding: 8px; border: 1px solid var(--border-color, #e2e8f0); border-radius: 8px; font-size: 0.9rem; background: #fff; }
+.select { padding: 8px; border: 1px solid var(--border-color, #e2e8f0); border-radius: 8px; font-size: 0.9rem; background: var(--bg-color-surface); color: var(--text-color-main); }
 .formActions { display: flex; gap: var(--spacing-xs); }
+.programBadge {
+  align-self: flex-start;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text-color-main);
+}

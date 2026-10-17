@@ -32,12 +32,13 @@ const CoachCoursesPage = () => {
         <form onSubmit={handleCreate} className={styles.form}>
           <Input label="Ders Adı" value={name} onChange={(e) => setName(e.target.value)} placeholder="Örn: Matematik" />
           <Input label="Tür" value={type} onChange={(e) => setType(e.target.value)} placeholder="DERS" />
-          <select value={teacherId} onChange={(e) => setTeacherId(e.target.value)} style={{ padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-color-surface)', color: 'var(--text-color-main)' }}>
+          <select value={teacherId} onChange={(e) => setTeacherId(e.target.value)} className={styles.select}>
             <option value="">Öğretmen (opsiyonel)</option>
             {teachers.map((t) => <option key={t.id} value={t.id}>{t.fullName}</option>)}
           </select>
           <Button type="submit" isLoading={createCourse.isPending}>Ders Oluştur</Button>
         </form>
+        <p className={styles.note}>Varsayılan: Temel Profil ve Ödev İzinleri Açık, İleri İzinler Kapalı. Özel yetkilendirmeler için ders detayındaki "İzinler" sekmesini kullanın.</p>
       </Card>
 
       <div className={styles.list}>

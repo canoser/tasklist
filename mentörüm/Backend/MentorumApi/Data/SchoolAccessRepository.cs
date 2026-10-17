@@ -105,8 +105,9 @@ namespace MentorumApi.Data
         {
             using var conn = _connectionFactory.CreateConnection();
             return await conn.QueryAsync<CourseAccessDto>(@"
-                SELECT id AS CourseId, teacher_id AS TeacherId, program_id AS ProgramId,
-                       name AS Name, type AS Type, color AS Color,
+                SELECT courses.id AS CourseId, courses.teacher_id AS TeacherId, courses.program_id AS ProgramId,
+                       courses.name AS Name, courses.type AS Type, courses.color AS Color,
+                       cp.name AS ProgramName,
                        (COALESCE(teacher_can_view_profile, 0) = 1) AS CanViewProfile,
                        (COALESCE(teacher_can_view_contact, 0) = 1) AS CanViewContact,
                        (COALESCE(teacher_can_view_homework, 0) = 1) AS CanViewHomework,
@@ -119,8 +120,9 @@ namespace MentorumApi.Data
                        (COALESCE(teacher_can_manage_schedule, 0) = 1) AS CanManageSchedule,
                        (COALESCE(teacher_can_process_homework, 0) = 1) AS CanProcessHomework
                 FROM courses
-                WHERE teacher_id = @TeacherId AND is_active = 1
-                ORDER BY name",
+                JOIN coaching_programs cp ON cp.id = courses.program_id
+                WHERE courses.teacher_id = @TeacherId AND courses.is_active = 1
+                ORDER BY courses.name",
                 new { TeacherId = teacherId });
         }
 

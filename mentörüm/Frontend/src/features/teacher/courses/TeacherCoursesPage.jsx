@@ -70,6 +70,7 @@ const TeacherCoursesPage = () => {
             <Card key={c.courseId} className={styles.card} padding="md" onClick={() => { setSelected(c.courseId); setTab('students'); }}>
               <strong>{c.name}</strong>
               <span className={styles.type}>{c.type}</span>
+              {c.programName && <span className={styles.programBadge}>{c.programName}</span>}
             </Card>
           ))}
           {courses?.length === 0 && <p className={styles.empty}>Henüz ders atanmadı.</p>}
@@ -105,7 +106,7 @@ const TeacherCoursesPage = () => {
                   {!showHomeworkForm && <Button size="sm" onClick={() => setShowHomeworkForm(true)}>+ Ödev Ata</Button>}
                   {showHomeworkForm && (
                     <form onSubmit={submitHomework} className={styles.form}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
+                      <label className={styles.checkboxLabel}>
                         <input type="checkbox" checked={hwAllStudents} onChange={(e) => setHwAllStudents(e.target.checked)} />
                         Tüm sınıfa ata
                       </label>

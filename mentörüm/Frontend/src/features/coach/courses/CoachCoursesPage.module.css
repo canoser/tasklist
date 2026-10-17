@@ -7,3 +7,15 @@
 .itemHeader { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
 .type { font-size: 0.75rem; color: var(--text-color-muted); }
 .meta { font-size: 0.85rem; color: var(--text-color-muted); }
+.select {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-color-surface);
+  color: var(--text-color-main);
+}
+.note {
+  font-size: 0.8rem;
+  color: var(--text-color-muted);
+  margin: var(--spacing-sm) 0 0;
+}

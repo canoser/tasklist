@@ -23,6 +23,7 @@ namespace MentorumApi.DTOs
         public bool CanViewSchedule { get; set; }
         public bool CanManageSchedule { get; set; }
         public bool CanProcessHomework { get; set; }
+        public string? ProgramName { get; set; }
     }
 
     /// <summary>

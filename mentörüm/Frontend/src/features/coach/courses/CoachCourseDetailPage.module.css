@@ -8,6 +8,15 @@
 .item { display: flex; align-items: center; gap: 12px; margin: 0 0 var(--spacing-sm) 0; }
 .meta { font-size: 0.8rem; color: var(--text-color-muted); flex: 1; }
 .formRow { display: flex; align-items: flex-end; gap: var(--spacing-sm); flex-wrap: wrap; }
+.select {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-color-surface);
+  color: var(--text-color-main);
+  flex: 1;
+  min-width: 160px;
+}
 .permRow { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color, #e2e8f0); }
 .on { color: var(--color-success); font-weight: 600; }
 .off { color: var(--text-color-muted); }
