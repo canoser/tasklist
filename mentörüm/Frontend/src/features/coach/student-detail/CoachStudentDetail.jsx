@@ -5,9 +5,11 @@ import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
 import AssignHomeworkModal from '../homework/AssignHomeworkModal';
 import styles from './CoachStudentDetail.module.css';
-import { useStudent, useStudentNotes, useUpdateCoachNotes, useAddExamResult, useSendInvite, useCoachStudentHomework, useCoachStudentCurriculum, useCoachStudentEvents, useCoachStudentSessions, useCreateCoachingSession } from '../coachApi';
+import { useStudent, useStudentNotes, useUpdateCoachNotes, useAddExamResult, useSendInvite, useCoachStudentHomework, useCoachStudentCurriculum, useCoachStudentEvents, useCoachStudentSessions, useCreateCoachingSession, useStudentTeacherNotes } from '../coachApi';
 import { apiClient } from '../../../api/apiClient';
 import InviteSharePanel from '../../../components/common/InviteSharePanel/InviteSharePanel';
+import ParentPermissionsPanel from './ParentPermissionsPanel';
+import WeeklyTimeBudgetCard from './WeeklyTimeBudgetCard';
 
 const CoachStudentDetail = () => {
   const { id } = useParams();
@@ -26,6 +28,7 @@ const CoachStudentDetail = () => {
   const { data: curriculum } = useCoachStudentCurriculum(id);
   const { data: studentEvents } = useCoachStudentEvents(id);
   const { data: sessions } = useCoachStudentSessions(id);
+  const { data: teacherNotes = [] } = useStudentTeacherNotes(id);
   const createSession = useCreateCoachingSession(id);
   const updateNotesMutation = useUpdateCoachNotes();
   const addExamMutation = useAddExamResult();
@@ -116,6 +119,18 @@ const CoachStudentDetail = () => {
           Veli Bilgileri
         </button>
         <button 
+          className={`${styles.tab} ${activeTab === 'timeBudget' ? styles.activeTab : ''}`}
+          onClick={() => setActiveTab('timeBudget')}
+        >
+          Zaman Bütçesi
+        </button>
+        <button 
+          className={`${styles.tab} ${activeTab === 'teacherNotes' ? styles.activeTab : ''}`}
+          onClick={() => setActiveTab('teacherNotes')}
+        >
+          Öğretmen Notları ({teacherNotes.length})
+        </button>
+        <button 
           className={`${styles.tab} ${activeTab === 'notes' ? styles.activeTab : ''}`}
           onClick={() => setActiveTab('notes')}
         >
@@ -198,6 +213,7 @@ const CoachStudentDetail = () => {
                   <span className={styles.infoLabel}>Telefon:</span>
                   <span className={styles.infoValue}>{parent.phone}</span>
                 </div>
+                <ParentPermissionsPanel studentId={id} parentId={parent.id} />
                 <div className={styles.mt4}>
                   <Button variant="secondary" size="sm">Düzenle</Button>
                 </div>
@@ -239,6 +255,49 @@ const CoachStudentDetail = () => {
                 />
               )}
             </Card>
+          </div>
+        )}
+
+        {/* Zaman Bütçesi Sekmesi (T43) */}
+        {activeTab === 'timeBudget' && (
+          <WeeklyTimeBudgetCard studentId={id} />
+        )}
+
+        {/* Öğretmen Notları Sekmesi (T55) */}
+        {activeTab === 'teacherNotes' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {teacherNotes.length === 0 && (
+              <Card padding="lg">
+                <div style={{ color: 'var(--text-secondary)' }}>Bu öğrenciye ait öğretmen notu bulunmuyor.</div>
+              </Card>
+            )}
+            {teacherNotes.map((tn) => (
+              <Card key={tn.id} padding="md" style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                    {tn.createdAt ? new Date(tn.createdAt).toLocaleString('tr-TR') : ''}
+                  </span>
+                  <span style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    background: tn.visibility === 'COACH_ONLY' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)',
+                    color: tn.visibility === 'COACH_ONLY' ? 'var(--color-danger, #ef4444)' : 'var(--color-success, #10b981)'
+                  }}>
+                    {tn.visibility === 'COACH_ONLY' ? 'Sadece Koç Görür' : 'Öğrenciye Açık'}
+                  </span>
+                </div>
+                {tn.summary && (
+                  <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                    Özet: {tn.summary}
+                  </div>
+                )}
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-primary)', whiteSpace: 'pre-wrap' }}>
+                  {tn.note}
+                </div>
+              </Card>
+            ))}
           </div>
         )}
 

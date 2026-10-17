@@ -10,7 +10,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import PersonalEventModal from '../../../components/common/PersonalEventModal/PersonalEventModal';
-import { useStudentCalendar } from '../studentApi';
+import { useStudentCalendar, useStudentSessions } from '../studentApi';
 import styles from './StudentCalendarPage.module.css';
 
 const locales = { tr };
@@ -22,19 +22,39 @@ const StudentCalendarPage = () => {
   const [range, setRange] = useState({ start: startOfMonth(new Date()), end: endOfMonth(new Date()) });
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
 
-  const { data: events, isLoading } = useStudentCalendar(
+  const { data: events, isLoading: isCalendarLoading } = useStudentCalendar(
     format(range.start, 'yyyy-MM-dd'),
     format(range.end, 'yyyy-MM-dd')
   );
+  const { data: sessions = [] } = useStudentSessions();
 
-  const formatted = (events || []).map((ev) => ({
+  const formattedCalendarEvents = (events || []).map((ev) => ({
     id: ev.id,
-    title: ev.title,
+    title: ev.type === 'VIDEO' ? `🎥 ${ev.title}${ev.isCompleted ? ' (İzlendi ✓)' : ''}` : ev.title,
     start: new Date(ev.start),
     end: new Date(ev.end),
     type: ev.type,
     color: ev.color,
   }));
+
+  const sessionEvents = sessions
+    .filter(s => s.sessionDate)
+    .map(s => {
+      const start = new Date(s.sessionDate);
+      const end = new Date(start.getTime() + 45 * 60 * 1000); // 45 dk seans
+      const isPast = start < new Date();
+      return {
+        id: s.id,
+        title: `🎯 ${s.title || 'Koçluk Görüşmesi'}${isPast ? ' (Tamamlandı ✓)' : ''}`,
+        start,
+        end,
+        type: 'SESSION',
+        color: isPast ? '#64748B' : '#EC4899',
+      };
+    });
+
+  const formatted = [...formattedCalendarEvents, ...sessionEvents];
+  const isLoading = isCalendarLoading;
 
   const handleRangeChange = (r) => {
     if (Array.isArray(r)) {
@@ -73,6 +93,7 @@ const StudentCalendarPage = () => {
           <span className={styles.legendItem}><span className={styles.dot} style={{ backgroundColor: '#EF4444' }} /> Gecikmiş</span>
           <span className={styles.legendItem}><span className={styles.dot} style={{ backgroundColor: '#F59E0B' }} /> Sınav</span>
           <span className={styles.legendItem}><span className={styles.dot} style={{ backgroundColor: '#8B5CF6' }} /> Ders Programı</span>
+          <span className={styles.legendItem}><span className={styles.dot} style={{ backgroundColor: '#EC4899' }} /> Koçluk Görüşmesi</span>
         </div>
         {isLoading ? (
           <div className={styles.loading}>Takvim yükleniyor...</div>

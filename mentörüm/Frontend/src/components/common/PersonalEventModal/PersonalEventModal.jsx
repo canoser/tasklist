@@ -11,9 +11,19 @@ const TYPES = [
   { value: 'STUDENT_EVENT', label: 'Çalışma Bloğu' },
 ];
 
+const CATEGORIES = [
+  { value: '', label: 'Kategori Yok (Genel)' },
+  { value: 'SLEEP', label: 'Uyku' },
+  { value: 'SPORT', label: 'Spor / Egzersiz' },
+  { value: 'SOCIAL', label: 'Sosyal / Aile' },
+  { value: 'SCHOOL', label: 'Okul / Dershane' },
+  { value: 'REST', label: 'Dinlenme / Mola' },
+];
+
 const PersonalEventModal = ({ isOpen, onClose, defaultType = 'COACHING_SESSION' }) => {
   const [title, setTitle] = useState('');
   const [type, setType] = useState(defaultType);
+  const [category, setCategory] = useState('');
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
   const mutation = useCreatePersonalEvent();
@@ -29,12 +39,15 @@ const PersonalEventModal = ({ isOpen, onClose, defaultType = 'COACHING_SESSION' 
       {
         title,
         eventType: type,
+        category: category || null,
         startAt: new Date(start).toISOString(),
         endAt: end ? new Date(end).toISOString() : null,
       },
       {
         onSuccess: () => {
           setTitle('');
+          setType(defaultType);
+          setCategory('');
           setStart('');
           setEnd('');
           onClose();
@@ -54,6 +67,14 @@ const PersonalEventModal = ({ isOpen, onClose, defaultType = 'COACHING_SESSION' 
           <select className={styles.select} value={type} onChange={(e) => setType(e.target.value)}>
             {TYPES.map((t) => (
               <option key={t.value} value={t.value}>{t.label}</option>
+            ))}
+          </select>
+        </div>
+        <div className={styles.field}>
+          <label className={styles.label}>Kategori (Zaman Dağılımı İçin)</label>
+          <select className={styles.select} value={category} onChange={(e) => setCategory(e.target.value)}>
+            {CATEGORIES.map((c) => (
+              <option key={c.value} value={c.value}>{c.label}</option>
             ))}
           </select>
         </div>

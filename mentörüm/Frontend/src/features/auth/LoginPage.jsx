@@ -18,12 +18,12 @@ const LoginPage = () => {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('Coach');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
   const googleButtonRef = useRef(null);
+  const googleInitialized = useRef(false);
 
   const redirectByRole = (role) => {
     navigate(
@@ -49,7 +49,7 @@ const LoginPage = () => {
       }
 
       if (isRegister) {
-        const data = await apiClient.post('/auth/register', { email, password, fullName, role });
+        const data = await apiClient.post('/auth/register', { email, password, fullName });
         if (data.pendingApproval) {
           setSuccessMsg('Kayıt başarılı! Yönetici onayından sonra giriş yapabilirsiniz.');
           setIsRegister(false);
@@ -97,31 +97,31 @@ const LoginPage = () => {
 
   useEffect(() => {
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    if (!clientId) return;
+    if (!clientId || googleInitialized.current) return;
 
-    const initGoogle = () => {
+    const renderGoogleButton = () => {
+      if (googleInitialized.current || !googleButtonRef.current) return;
+      googleInitialized.current = true;
       window.google.accounts.id.initialize({
         client_id: clientId,
         callback: handleGoogleCredential,
       });
-      if (googleButtonRef.current) {
-        window.google.accounts.id.renderButton(googleButtonRef.current, {
-          theme: 'outline', size: 'large', width: 320, text: isRegister ? 'signup_with' : 'signin_with'
-        });
-      }
+      window.google.accounts.id.renderButton(googleButtonRef.current, {
+        theme: 'outline', size: 'large', width: 320, text: 'continue_with'
+      });
     };
 
     if (window.google?.accounts?.id) {
-      initGoogle();
+      renderGoogleButton();
     } else {
       const script = document.createElement('script');
       script.src = 'https://accounts.google.com/gsi/client';
       script.async = true;
       script.defer = true;
-      script.onload = initGoogle;
+      script.onload = renderGoogleButton;
       document.head.appendChild(script);
     }
-  }, [isRegister]); // isRegister değiştiğinde Google buton metnini güncelle
+  }, []); // Google butonu yalnızca bir kez başlatılır
 
   return (
     <div className={styles.pageContainer}>
@@ -162,22 +162,9 @@ const LoginPage = () => {
             )}
 
             {isRegister && (
-              <div className={styles.roleGroup} style={{ marginBottom: '14px' }}>
-                <label className={styles.roleLabel} style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>Ben:</label>
-                {['Student', 'Parent', 'Coach'].map((r) => (
-                  <label key={r} style={{ display: 'inline-flex', alignItems: 'center', marginRight: '16px', fontSize: '14px', cursor: 'pointer' }}>
-                    <input
-                      type="radio"
-                      name="role"
-                      value={r}
-                      checked={role === r}
-                      onChange={() => setRole(r)}
-                      style={{ marginRight: '6px' }}
-                    />
-                    {{ Student: 'Öğrenciyim', Parent: 'Veliyim', Coach: 'Koçum' }[r]}
-                  </label>
-                ))}
-              </div>
+              <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '14px' }}>
+                Kayıt yalnızca <strong>koçlar</strong> içindir. Öğrenci, veli ve öğretmen hesabı koçunuzun davetiyle açılır.
+              </p>
             )}
 
             <Input

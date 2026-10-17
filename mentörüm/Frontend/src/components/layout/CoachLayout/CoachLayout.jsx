@@ -20,22 +20,25 @@ import {
   Plus, 
   Menu, 
   X,
-  Sparkles
+  Sparkles,
+  Eye
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import ThemeDecorContainer from '../../common/ThemeDecor/ThemeDecorContainer';
 import ThemeSelector from '../../common/ThemeSelector/ThemeSelector';
 import InstallAppButton from '../../common/InstallAppButton/InstallAppButton';
+import ViewAsModal from '../../../features/coach/view-as/ViewAsModal';
 import styles from './CoachLayout.module.css';
 
 const CoachLayout = () => {
-  const { user, clearAuth } = useAuthStore();
+  const { user, clearAuth, viewAs, setViewAs } = useAuthStore();
   const { sidebarOpen, toggleSidebar, closeSidebar, theme, toggleTheme } = useUIStore();
   const navigate = useNavigate();
   const location = useLocation();
   const searchInputRef = useRef(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isViewAsModalOpen, setIsViewAsModalOpen] = useState(false);
 
   // Süper yönetici onay sayacı
   const { data: pendingApprovals } = usePendingApprovals();
@@ -68,6 +71,7 @@ const CoachLayout = () => {
     if (p.includes('/students')) return 'Öğrenciler';
     if (p.includes('/programs')) return 'Programlar';
     if (p.includes('/calendar')) return 'Takvim';
+    if (p.includes('/approvals')) return 'Onay Merkezi';
     if (p.includes('/reports')) return 'Raporlar';
     if (p.includes('/profile')) return 'Profil';
     if (p.includes('/admin')) return 'Yönetim / Onaylar';
@@ -83,6 +87,7 @@ const CoachLayout = () => {
       items: [
         { path: '/coach/dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { path: '/coach/calendar', label: 'Takvim', icon: Calendar },
+        { path: '/coach/approvals', label: 'Onaylar', icon: ShieldCheck },
       ],
     },
     {
@@ -219,6 +224,39 @@ const CoachLayout = () => {
 
       {/* Ana İçerik Alanı */}
       <div className={styles.mainWrapper}>
+        {/* View-As Bildirim Bannerı (T51) */}
+        {viewAs && (
+          <div style={{
+            background: 'linear-gradient(90deg, #f59e0b, #d97706)',
+            color: '#ffffff',
+            padding: '0.5rem 1.25rem',
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            boxShadow: '0 2px 8px rgba(245, 158, 11, 0.3)',
+            zIndex: 100
+          }}>
+            <span>👁️ Gözüyle Gör Modu Aktif: {viewAs.role === 'Student' ? 'Öğrenci' : viewAs.role === 'Teacher' ? 'Öğretmen' : 'Veli'} — {viewAs.name} (Salt-Okunur Önizleme)</span>
+            <button 
+              onClick={() => setViewAs(null)}
+              style={{
+                background: 'rgba(0,0,0,0.25)',
+                border: 'none',
+                borderRadius: '4px',
+                color: '#fff',
+                padding: '4px 10px',
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              Önizlemeden Çık ✕
+            </button>
+          </div>
+        )}
+
         {/* Sticky Üst Bar (64px) */}
         <header className={styles.topbar}>
           <div className={styles.topbarLeft}>
@@ -251,6 +289,28 @@ const CoachLayout = () => {
 
           {/* Sağ Aksiyonlar */}
           <div className={styles.topbarRight}>
+            <button 
+              type="button" 
+              onClick={() => setIsViewAsModalOpen(true)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 12px',
+                borderRadius: '8px',
+                border: '1px solid var(--border-color)',
+                background: viewAs ? 'rgba(245, 158, 11, 0.2)' : 'var(--bg-card)',
+                color: viewAs ? '#f59e0b' : 'var(--text-primary)',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+              title="Rol Gözüyle Gör"
+            >
+              <Eye size={16} />
+              <span>{viewAs ? 'Gözüyle Gör: Açık' : 'Gözüyle Gör'}</span>
+            </button>
+
             <InstallAppButton />
 
             <button
@@ -274,6 +334,11 @@ const CoachLayout = () => {
           <Outlet />
         </main>
       </div>
+
+      <ViewAsModal 
+        isOpen={isViewAsModalOpen} 
+        onClose={() => setIsViewAsModalOpen(false)} 
+      />
     </div>
   );
 };

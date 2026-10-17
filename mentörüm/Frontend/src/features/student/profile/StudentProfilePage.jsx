@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useStudentProfile, useStudentExams, useStudentCurriculum, useStudentGoal, useUpdateStudentGoal } from '../studentApi';
+import { 
+  useStudentProfile, 
+  useStudentExams, 
+  useStudentCurriculum, 
+  useStudentGoal, 
+  useUpdateStudentGoal,
+  useStudentSubjectStats 
+} from '../studentApi';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
@@ -11,6 +18,7 @@ const StudentProfilePage = () => {
   const { data: profile, isLoading } = useStudentProfile();
   const { data: exams } = useStudentExams();
   const { data: curriculum } = useStudentCurriculum();
+  const { data: subjectStats = [] } = useStudentSubjectStats();
   const { data: goal } = useStudentGoal();
   const updateGoal = useUpdateStudentGoal();
 
@@ -97,6 +105,9 @@ const StudentProfilePage = () => {
         <button className={tab === 'curriculum' ? `${styles.tab} ${styles.tabActive}` : styles.tab} onClick={() => setTab('curriculum')}>
           Konu Takibi ({completed}/{total})
         </button>
+        <button className={tab === 'subjectStats' ? `${styles.tab} ${styles.tabActive}` : styles.tab} onClick={() => setTab('subjectStats')}>
+          Konu İstatistikleri ({subjectStats.length})
+        </button>
       </div>
 
       {tab === 'exams' && (
@@ -127,6 +138,30 @@ const StudentProfilePage = () => {
                 <span className={styles.meta}>{t.subjectName} · {t.grade}</span>
               </div>
             </div>
+          ))}
+        </div>
+      )}
+
+      {tab === 'subjectStats' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {subjectStats.length === 0 && (
+            <p className={styles.empty}>Henüz konu bazlı çalışma verisi kaydedilmemiş.</p>
+          )}
+          {subjectStats.map((st, idx) => (
+            <Card key={idx} className={styles.row} padding="md" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <strong>{st.subjectName} — {st.topicName}</strong>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                  ⏱️ Toplam {st.totalMinutes || 0} dk · 📝 {st.totalQuestions || 0} Soru
+                  <span style={{ marginLeft: '8px' }}>
+                    (✅ {st.totalCorrect || 0} D / ❌ {st.totalWrong || 0} Y / ⭕ {st.totalBlank || 0} B)
+                  </span>
+                </div>
+              </div>
+              <span className={styles.net} style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--color-primary)' }}>
+                {st.totalNet != null ? `${st.totalNet} Net` : '-'}
+              </span>
+            </Card>
           ))}
         </div>
       )}

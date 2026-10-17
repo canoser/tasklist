@@ -4,8 +4,10 @@ import {
   useStudents, 
   useCalendarEvents, 
   useReportsOverview, 
-  useCompleteHomework 
+  useCompleteHomework,
+  usePaymentPlans 
 } from '../coachApi';
+import { usePrograms } from '../coachSchoolApi';
 import Calendar from '../../../components/common/Calendar/Calendar';
 import AssignHomeworkModal from '../homework/AssignHomeworkModal';
 import Modal from '../../../components/common/Modal/Modal';
@@ -26,7 +28,8 @@ import {
   Sparkles, 
   X, 
   AlertCircle,
-  FileText
+  FileText,
+  CreditCard
 } from 'lucide-react';
 import styles from './CoachDashboard.module.css';
 
@@ -50,6 +53,9 @@ const CoachDashboard = () => {
   const { data: students = [], isLoading: isStudentsLoading } = useStudents();
   const { data: report } = useReportsOverview();
   const completeHomeworkMutation = useCompleteHomework();
+  const { data: programs = [] } = usePrograms();
+  const activeProgramId = programs[0]?.id;
+  const { data: paymentPlans = [] } = usePaymentPlans(activeProgramId);
 
   const { data: events = [] } = useCalendarEvents(
     format(dateRange.start, 'yyyy-MM-dd'),
@@ -226,6 +232,27 @@ const CoachDashboard = () => {
             ) : (
               'Gecikmiş ödev yok'
             )}
+          </div>
+        </div>
+
+        {/* 5. Finans / Ödeme Özeti (T50) */}
+        <div 
+          className={styles.kpiCard}
+          title="Finans ve ödeme planları"
+          onClick={() => navigate('/coach/approvals')}
+        >
+          <div className={styles.kpiHeader}>
+            <span className={styles.kpiLabel}>FİNANS & TAHSİLAT</span>
+            <div className={`${styles.kpiIconWrap} ${styles.iconEmerald}`}>
+              <CreditCard size={20} strokeWidth={1.75} />
+            </div>
+          </div>
+          <div className={styles.kpiValue}>
+            {paymentPlans.length} Plan
+          </div>
+          <div className={styles.kpiSubtext}>
+            <span className={styles.subtextDot} style={{ background: '#10b981' }} />
+            Ödeme ve onay merkezi
           </div>
         </div>
       </section>

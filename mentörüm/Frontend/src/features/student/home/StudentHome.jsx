@@ -4,6 +4,7 @@ import { useStudentHomework, useStudentExams, useStudentCurriculum, useStudentSe
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import { formatDate } from '../../../utils/dateUtils';
+import StudyTimerCard from './StudyTimerCard';
 import styles from './StudentHome.module.css';
 
 const StudentHome = () => {
@@ -83,6 +84,9 @@ const StudentHome = () => {
           </div>
         </Card>
       </div>
+
+      {/* Kronometre ve Quick-Log (T40 & T52) */}
+      <StudyTimerCard />
 
       {/* Yaklaşan Ödevler */}
       <section className={styles.section}>

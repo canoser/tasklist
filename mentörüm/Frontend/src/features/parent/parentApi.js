@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiClient } from '../../api/apiClient';
 
 export const useParentChildren = () => {
@@ -11,12 +11,12 @@ export const useParentChildren = () => {
   });
 };
 
-export const useParentChildDetails = (studentId) => {
+export const useParentChildPermissions = (studentId) => {
   return useQuery({
-    queryKey: ['parent', 'child', studentId],
+    queryKey: ['parent', 'child', studentId, 'permissions'],
     queryFn: async () => {
-      const response = await apiClient.get(`/parents/children/${studentId}`);
-      return response || null;
+      if (!studentId) return null;
+      return await apiClient.get(`/parents/children/${studentId}/permissions`);
     },
     enabled: !!studentId,
   });
@@ -53,5 +53,36 @@ export const useParentChildCalendar = (studentId, startDate, endDate) => {
       return (await apiClient.get(`/me/children/${studentId}/calendar?${params.toString()}`)) || [];
     },
     enabled: !!studentId && !!startDate && !!endDate,
+  });
+};
+
+export const useParentChildPayments = (studentId) => {
+  return useQuery({
+    queryKey: ['parent', 'child', studentId, 'payments'],
+    queryFn: async () => {
+      if (!studentId) return null;
+      return await apiClient.get(`/parent/children/${studentId}/payments`);
+    },
+    enabled: !!studentId,
+    refetchInterval: 10000, // T49: 10 sn polling
+  });
+};
+
+export const useCreatePaymentClaim = () => {
+  return useMutation({
+    mutationFn: async ({ studentId, data }) => {
+      return await apiClient.post(`/parent/children/${studentId}/payment-claims`, data);
+    },
+  });
+};
+
+export const useParentStudyStats = (studentId) => {
+  return useQuery({
+    queryKey: ['parent', 'child', studentId, 'study-stats'],
+    queryFn: async () => {
+      if (!studentId) return null;
+      return await apiClient.get(`/parent/children/${studentId}/study-stats`);
+    },
+    enabled: !!studentId,
   });
 };

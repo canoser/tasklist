@@ -4,11 +4,13 @@ import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
 import styles from './AssignHomeworkModal.module.css';
 import { useAssignHomework, useLevels, useSubjects, useTopics } from '../coachApi';
+import { usePrograms, useCourses } from '../coachSchoolApi';
 
 const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
   const [level, setLevel] = useState('');
   const [subject, setSubject] = useState('');
   const [topic, setTopic] = useState('');
+  const [courseId, setCourseId] = useState('');
   const [title, setTitle] = useState('');
   const [desc, setDesc] = useState('');
   const [dueDate, setDueDate] = useState('');
@@ -17,6 +19,9 @@ const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
   const { data: levels = [] } = useLevels();
   const { data: subjects = [] } = useSubjects(level || undefined);
   const { data: topics = [] } = useTopics(subject || undefined, level || undefined);
+  const { data: programs = [] } = usePrograms();
+  const activeProgramId = programs[0]?.id;
+  const { data: courses = [] } = useCourses(activeProgramId);
 
   if (!isOpen) return null;
 
@@ -30,6 +35,7 @@ const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
       studentId: selectedStudent?.id,
       subjectId: subject || null,
       curriculumTopicId: topic || null,
+      courseId: courseId || null,
       title,
       description: desc,
       dueDate
@@ -39,6 +45,7 @@ const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
         setLevel('');
         setSubject('');
         setTopic('');
+        setCourseId('');
         setTitle('');
         setDesc('');
         setDueDate('');
@@ -105,6 +112,21 @@ const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
               {topics.map(t => <option key={t.id} value={t.id}>{t.unitName} → {t.topicName}</option>)}
             </select>
           </div>
+
+          {courses.length > 0 && (
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Bağlı Ders / Kurs (Opsiyonel - Öğretmen Takibi)</label>
+              <select 
+                className={styles.select} 
+                value={courseId} 
+                onChange={e => setCourseId(e.target.value)}
+                disabled={assignHomeworkMutation.isPending}
+              >
+                <option value="">-- Genel Koçluk Ödevi (Derse Bağlı Değil) --</option>
+                {courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+          )}
 
           <div className={styles.divider}>veya serbest ödev girin</div>
 

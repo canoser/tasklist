@@ -9,6 +9,7 @@ import { useStudents } from '../coachApi';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
 import Card from '../../../components/common/Card/Card';
+import AddStudentsToCourseModal from './AddStudentsToCourseModal';
 import styles from './CoachCourseDetailPage.module.css';
 
 const PERMS = [
@@ -29,6 +30,7 @@ const CoachCourseDetailPage = () => {
   const { programId, courseId } = useParams();
   const navigate = useNavigate();
   const [tab, setTab] = useState('students');
+  const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
   const [studentId, setStudentId] = useState('');
   const [groupId, setGroupId] = useState('');
   const [resTitle, setResTitle] = useState('');
@@ -85,22 +87,25 @@ const CoachCourseDetailPage = () => {
 
       {tab === 'students' && (
         <div>
-          <Card className={styles.card} padding="md">
-            <div className={styles.formRow}>
-              <select value={studentId} onChange={(e) => setStudentId(e.target.value)} className={styles.select}>
-                <option value="">Öğrenci seç</option>
-                {allStudents.map((s) => <option key={s.id} value={s.id}>{s.fullName}</option>)}
-              </select>
-              <Button size="sm" onClick={() => addStudent.mutateAsync({ programId, courseId, studentId })}>Ekle</Button>
-            </div>
-          </Card>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-primary)' }}>
+              Kayıtlı Öğrenciler ({students?.length || 0})
+            </h3>
+            <Button size="sm" variant="primary" onClick={() => setIsAddStudentModalOpen(true)}>
+              + Arama ile Çoklu Öğrenci Ekle
+            </Button>
+          </div>
+
           {students?.map((s) => (
-            <Card key={s.id} className={styles.item} padding="md">
-              <strong>{s.fullName}</strong>
-              <span className={styles.meta}>{s.email}</span>
+            <Card key={s.id} className={styles.item} padding="md" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <strong>{s.fullName}</strong>
+                {s.email && <span className={styles.meta} style={{ display: 'block' }}>{s.email}</span>}
+              </div>
               <Button size="sm" variant="outline" onClick={() => removeStudent.mutateAsync({ programId, courseId, studentId: s.id })}>Çıkar</Button>
             </Card>
           ))}
+          {students?.length === 0 && <p className={styles.empty}>Henüz derse öğrenci eklenmedi.</p>}
         </div>
       )}
 
@@ -164,6 +169,18 @@ const CoachCourseDetailPage = () => {
         </Card>
         </div>
       )}
+
+      <AddStudentsToCourseModal
+        isOpen={isAddStudentModalOpen}
+        onClose={() => setIsAddStudentModalOpen(false)}
+        existingStudents={students || []}
+        onAddStudents={async (ids) => {
+          for (const sId of ids) {
+            await addStudent.mutateAsync({ programId, courseId, studentId: sId });
+          }
+        }}
+        title={`${course?.name || 'Derse'} Öğrenci Ekle`}
+      />
     </div>
   );
 };

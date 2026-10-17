@@ -18,6 +18,7 @@ const StudentLayout = () => {
 
   const tabs = [
     { path: '/student/home', label: 'Ana Sayfa', icon: '🏠' },
+    { path: '/student/calendar', label: 'Takvim', icon: '🗓️' },
     { path: '/student/schedule', label: 'Programım', icon: '📅' },
     { path: '/student/courses', label: 'Derslerim', icon: '📚' },
     { path: '/student/homework', label: 'Ödevler', icon: '📝' },

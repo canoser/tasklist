@@ -29,7 +29,11 @@ const TeacherSchedulePage = () => {
               {daySlots.map((s) => (
                 <div key={s.id} className={styles.slot}>
                   <span className={styles.time}>{fmt(s.startTime)}-{fmt(s.endTime)}</span>
-                  <span className={styles.slotTitle}>{s.title}</span>
+                  {s.isBusyOnly || !s.title ? (
+                    <span className={styles.busySlot}>Öğrenci Meşgul</span>
+                  ) : (
+                    <span className={styles.slotTitle}>{s.title}</span>
+                  )}
                 </div>
               ))}
             </Card>

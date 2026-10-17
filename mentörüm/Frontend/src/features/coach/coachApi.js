@@ -79,22 +79,27 @@ export const useReportsOverview = () => {
   });
 };
 
-export const useCalendarEvents = (startDate, endDate, studentId = null) => {
+export const useCalendarEvents = (startDate, endDate, filters = {}) => {
+  const filterObj = typeof filters === 'object' && filters !== null ? filters : { studentId: filters };
+  const { programId, studentId, courseId, teacherId, eventType } = filterObj;
+
   return useQuery({
-    queryKey: ['coach', 'calendar', startDate, endDate, studentId],
+    queryKey: ['coach', 'calendar', startDate, endDate, programId, studentId, courseId, teacherId, eventType],
     queryFn: async () => {
       if (!startDate || !endDate) return [];
       const params = new URLSearchParams({
         from: startDate,
         to: endDate,
       });
-      if (studentId) {
-        params.append('studentId', studentId);
-      }
+      if (programId) params.append('programId', programId);
+      if (studentId) params.append('studentId', studentId);
+      if (courseId) params.append('courseId', courseId);
+      if (teacherId) params.append('teacherId', teacherId);
+      if (eventType && eventType !== 'all') params.append('eventType', eventType);
+
       const response = await apiClient.get(`/calendar?${params.toString()}`);
       return response || [];
     },
-    // Sadece startDate ve endDate varsa çalışsın
     enabled: !!startDate && !!endDate,
   });
 };
@@ -310,6 +315,139 @@ export const useCompleteHomework = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coach', 'calendar'] });
       queryClient.invalidateQueries({ queryKey: ['coach', 'reports'] });
+    },
+  });
+};
+
+// T34: Onay Merkezi Hook'ları
+export const useApprovals = (programId, status) => {
+  return useQuery({
+    queryKey: ['coach', 'approvals', programId, status],
+    queryFn: async () => {
+      if (!programId) return [];
+      const qs = status ? `?status=${encodeURIComponent(status)}` : '';
+      return (await apiClient.get(`/programs/${programId}/approvals${qs}`)) || [];
+    },
+    enabled: !!programId,
+  });
+};
+
+export const useApproveItem = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id) => {
+      return await apiClient.post(`/approvals/${id}/approve`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coach', 'approvals'] });
+    },
+  });
+};
+
+export const useRejectItem = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, reason }) => {
+      return await apiClient.post(`/approvals/${id}/reject`, { reason });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coach', 'approvals'] });
+    },
+  });
+};
+
+// T36: Veli Yetkileri Hook'ları
+export const useParentPermissions = (studentId, parentId) => {
+  return useQuery({
+    queryKey: ['coach', 'student', studentId, 'parent', parentId, 'permissions'],
+    queryFn: async () => {
+      if (!studentId || !parentId) return null;
+      return await apiClient.get(`/students/${studentId}/parents/${parentId}/permissions`);
+    },
+    enabled: !!studentId && !!parentId,
+  });
+};
+
+export const useUpdateParentPermissions = (studentId, parentId) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (flags) => {
+      return await apiClient.put(`/students/${studentId}/parents/${parentId}/permissions`, flags);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coach', 'student', studentId, 'parent', parentId, 'permissions'] });
+    },
+  });
+};
+
+// T55: Koç için Öğretmen Notları
+export const useStudentTeacherNotes = (studentId) => {
+  return useQuery({
+    queryKey: ['coach', 'student', studentId, 'teacher-notes'],
+    queryFn: async () => {
+      if (!studentId) return [];
+      return (await apiClient.get(`/students/${studentId}/teacher-notes`)) || [];
+    },
+    enabled: !!studentId,
+  });
+};
+
+// T43: Konu İstatistikleri & Zaman Bütçesi
+export const useStudentSubjectStats = (studentId) => {
+  return useQuery({
+    queryKey: ['coach', 'student', studentId, 'subject-stats'],
+    queryFn: async () => {
+      if (!studentId) return [];
+      return (await apiClient.get(`/students/${studentId}/subject-stats`)) || [];
+    },
+    enabled: !!studentId,
+  });
+};
+
+export const useStudentTimeBudget = (studentId) => {
+  return useQuery({
+    queryKey: ['coach', 'student', studentId, 'time-budget'],
+    queryFn: async () => {
+      if (!studentId) return null;
+      return await apiClient.get(`/students/${studentId}/time-budget`);
+    },
+    enabled: !!studentId,
+  });
+};
+
+// Finans & Ödeme Planları
+export const usePaymentPlans = (programId) => {
+  return useQuery({
+    queryKey: ['coach', 'payment-plans', programId],
+    queryFn: async () => {
+      if (!programId) return [];
+      return (await apiClient.get(`/programs/${programId}/payment-plans`)) || [];
+    },
+    enabled: !!programId,
+  });
+};
+
+export const useCreatePaymentPlan = (programId) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data) => {
+      return await apiClient.post(`/programs/${programId}/payment-plans`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coach', 'payment-plans', programId] });
+    },
+  });
+};
+
+export const useCollectPayment = (programId) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ itemId, amount, method, receiptUrl }) => {
+      return await apiClient.post(`/payment-items/${itemId}/collect`, { amount, method, receiptUrl });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coach', 'payment-plans', programId] });
+      queryClient.invalidateQueries({ queryKey: ['coach', 'calendar'] });
     },
   });
 };

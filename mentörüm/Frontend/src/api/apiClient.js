@@ -16,9 +16,21 @@ export const apiClient = axios.create({
 // Request Interceptor: Access token'ı ekle
 apiClient.interceptors.request.use(
   (config) => {
-    const accessToken = useAuthStore.getState().accessToken;
+    const state = useAuthStore.getState();
+    const accessToken = state.accessToken;
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
+    }
+
+    const viewAs = state.viewAs;
+    if (viewAs && viewAs.id) {
+      if (viewAs.role === 'Student') {
+        config.headers['X-View-As-Student-Id'] = viewAs.id;
+      } else if (viewAs.role === 'Teacher') {
+        config.headers['X-View-As-Teacher-Id'] = viewAs.id;
+      } else if (viewAs.role === 'Parent') {
+        config.headers['X-View-As-Parent-Id'] = viewAs.id;
+      }
     }
     return config;
   },

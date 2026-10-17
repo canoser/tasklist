@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { usePendingApprovals, useAdminUsers, useApproveUser, useRejectUser, useAddUser, useChangeUserPassword } from '../coach/coachSchoolApi';
+import { usePendingApprovals, useAdminUsers, useApproveUser, useRejectUser, useAddUser, useChangeUserPassword, useRateLimits, useUpdateRateLimit } from '../coach/coachSchoolApi';
 import Button from '../../components/common/Button/Button';
 import Input from '../../components/common/Input/Input';
 import Card from '../../components/common/Card/Card';
@@ -29,6 +29,11 @@ const AdminPanelPage = () => {
   const [pwUser, setPwUser] = useState(null);
   const [pwValue, setPwValue] = useState('');
   const [pwMsg, setPwMsg] = useState('');
+
+  const { data: rateLimits } = useRateLimits();
+  const updateRateLimit = useUpdateRateLimit();
+  const [rlValues, setRlValues] = useState({});
+  const [rlMsg, setRlMsg] = useState('');
 
   const handleChangePassword = async (userId) => {
     if (pwValue.trim().length < 6) {
@@ -146,6 +151,12 @@ const AdminPanelPage = () => {
           onClick={() => setActiveTab('curriculum')}
         >
           📚 Müfredat
+        </button>
+        <button
+          className={`${styles.tabBtn} ${activeTab === 'security' ? styles.tabBtnActive : ''}`}
+          onClick={() => setActiveTab('security')}
+        >
+          🛡️ Güvenlik & Kota
         </button>
       </div>
 
@@ -341,6 +352,90 @@ const AdminPanelPage = () => {
               </div>
             )}
             {curriculumError && <p style={{ color: '#c00', marginTop: 10 }}>{curriculumError}</p>}
+          </Card>
+        </div>
+      )}
+
+      {/* SEKME 4: GÜVENLİK & KOTA */}
+      {activeTab === 'security' && (
+        <div className={styles.section}>
+          <Card padding="md">
+            <h3 className={styles.cardSectionTitle}>🛡️ Güvenlik & Kota Denetimi</h3>
+            <p style={{ color: '#555', marginBottom: 12 }}>
+              Hız limiti kurallarını düzenleyin. Değişiklik 30 saniye içinde geçerli olur.
+            </p>
+
+            <h4 style={{ margin: '12px 0 8px' }}>Hız Limiti Kuralları</h4>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+              <thead>
+                <tr style={{ textAlign: 'left', borderBottom: '1px solid #e2e8f0' }}>
+                  <th style={{ padding: '6px 8px' }}>Endpoint</th>
+                  <th style={{ padding: '6px 8px' }}>Limit (5 dk)</th>
+                  <th style={{ padding: '6px 8px' }}>Son Güncelleme</th>
+                  <th style={{ padding: '6px 8px' }}></th>
+                </tr>
+              </thead>
+              <tbody>
+                {(rateLimits?.rules || []).map((r) => (
+                  <tr key={r.path} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <td style={{ padding: '6px 8px', fontFamily: 'monospace' }}>{r.path}</td>
+                    <td style={{ padding: '6px 8px' }}>
+                      <input
+                        type="number"
+                        min="0"
+                        max="1000"
+                        value={rlValues[r.path] ?? r.maxAttempts}
+                        onChange={(e) => setRlValues((prev) => ({ ...prev, [r.path]: e.target.value }))}
+                        style={{ width: 80, padding: '5px 8px', borderRadius: 6, border: '1px solid #ccc' }}
+                      />
+                    </td>
+                    <td style={{ padding: '6px 8px', color: '#777' }}>{r.updatedAt ? new Date(r.updatedAt).toLocaleString('tr-TR') : '-'}</td>
+                    <td style={{ padding: '6px 8px' }}>
+                      <Button
+                        size="sm"
+                        onClick={async () => {
+                          try {
+                            await updateRateLimit.mutateAsync({ path: r.path, maxAttempts: parseInt(rlValues[r.path] ?? r.maxAttempts, 10) });
+                            setRlMsg('Kural güncellendi.');
+                          } catch {
+                            setRlMsg('Güncellenemedi.');
+                          }
+                        }}
+                      >
+                        Güncelle
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {rlMsg && <p style={{ marginTop: 8, fontSize: 13, color: rlMsg.startsWith('Kural') ? '#16a34a' : '#c00' }}>{rlMsg}</p>}
+
+            <h4 style={{ margin: '20px 0 8px' }}>Son Kota İhlalleri (429)</h4>
+            {rateLimits?.events?.length > 0 ? (
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                <thead>
+                  <tr style={{ textAlign: 'left', borderBottom: '1px solid #e2e8f0' }}>
+                    <th style={{ padding: '6px 8px' }}>Endpoint</th>
+                    <th style={{ padding: '6px 8px' }}>IP</th>
+                    <th style={{ padding: '6px 8px' }}>Deneme</th>
+                    <th style={{ padding: '6px 8px' }}>Zaman</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rateLimits.events.map((e) => (
+                    <tr key={e.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                      <td style={{ padding: '6px 8px', fontFamily: 'monospace' }}>{e.path}</td>
+                      <td style={{ padding: '6px 8px', fontFamily: 'monospace' }}>{e.ip}</td>
+                      <td style={{ padding: '6px 8px' }}>{e.attempts}</td>
+                      <td style={{ padding: '6px 8px', color: '#777' }}>{new Date(e.createdAt).toLocaleString('tr-TR')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p style={{ color: '#777', fontSize: 13 }}>Henüz kota ihlali kaydedilmedi.</p>
+            )}
           </Card>
         </div>
       )}

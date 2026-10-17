@@ -118,3 +118,46 @@ export const useUpdateSessionPrep = () => {
     },
   });
 };
+
+export const useCreateStudySession = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data) => {
+      return await apiClient.post('/student/study-sessions', data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student', 'study-sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['student', 'subject-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['student', 'time-budget'] });
+    },
+  });
+};
+
+export const useStudentStudySessions = () => {
+  return useQuery({
+    queryKey: ['student', 'study-sessions'],
+    queryFn: async () => (await apiClient.get('/student/study-sessions')) || [],
+  });
+};
+
+export const useStudentSubjectStats = () => {
+  return useQuery({
+    queryKey: ['student', 'subject-stats'],
+    queryFn: async () => (await apiClient.get('/student/subject-stats')) || [],
+  });
+};
+
+export const useStudentTimeBudget = () => {
+  return useQuery({
+    queryKey: ['student', 'time-budget'],
+    queryFn: async () => await apiClient.get('/student/time-budget'),
+  });
+};
+
+export const useStudentTeacherNotes = () => {
+  return useQuery({
+    queryKey: ['student', 'teacher-notes'],
+    queryFn: async () => (await apiClient.get('/student/teacher-notes')) || [],
+  });
+};
+

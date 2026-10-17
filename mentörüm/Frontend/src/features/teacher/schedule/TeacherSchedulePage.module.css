@@ -6,3 +6,11 @@
 .slot { display: flex; gap: 8px; padding: 4px 0; align-items: center; }
 .time { font-size: 0.8rem; color: var(--text-color-muted); min-width: 90px; }
 .slotTitle { font-size: 0.9rem; }
+.busySlot {
+  font-size: 0.85rem;
+  color: var(--text-color-muted, #94a3b8);
+  font-style: italic;
+  background: var(--bg-hover, rgba(148, 163, 184, 0.1));
+  padding: 2px 6px;
+  border-radius: 4px;
+}

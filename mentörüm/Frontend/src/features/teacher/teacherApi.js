@@ -87,3 +87,51 @@ export const useReviewTeacherHomework = () => {
     onSuccess: (_, v) => queryClient.invalidateQueries({ queryKey: ['teacher', 'course', v.courseId] }),
   });
 };
+
+export const useTeacherStudentNotes = (courseId, studentId) => {
+  return useQuery({
+    queryKey: ['teacher', 'course', courseId, 'student', studentId, 'notes'],
+    queryFn: async () => {
+      if (!courseId || !studentId) return [];
+      const response = await apiClient.get(`/teacher/courses/${courseId}/students/${studentId}/notes`);
+      return response || [];
+    },
+    enabled: !!courseId && !!studentId,
+  });
+};
+
+export const useCreateTeacherNote = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ courseId, studentId, data }) =>
+      apiClient.post(`/teacher/courses/${courseId}/students/${studentId}/notes`, data),
+    onSuccess: (_, v) => {
+      queryClient.invalidateQueries({
+        queryKey: ['teacher', 'course', v.courseId, 'student', v.studentId, 'notes'],
+      });
+    },
+  });
+};
+
+export const useTeacherCourseResources = (courseId) => {
+  return useQuery({
+    queryKey: ['teacher', 'course', courseId, 'resources'],
+    queryFn: async () => {
+      if (!courseId) return [];
+      const response = await apiClient.get(`/teacher/courses/${courseId}/resources`);
+      return response || [];
+    },
+    enabled: !!courseId,
+  });
+};
+
+export const useCompleteTeacherCourse = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ courseId, data }) =>
+      apiClient.post(`/teacher/courses/${courseId}/complete`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teacher', 'courses'] });
+    },
+  });
+};

@@ -11,6 +11,7 @@ import '../../../components/common/Calendar/CalendarOverrides.css';
 import Card from '../../../components/common/Card/Card';
 import PersonalEventModal from '../../../components/common/PersonalEventModal/PersonalEventModal';
 import { useCalendarEvents, useStudents } from '../coachApi';
+import { usePrograms, useCourses, useTeachers } from '../coachSchoolApi';
 import styles from './CalendarPage.module.css';
 
 const locales = {
@@ -30,15 +31,29 @@ const CalendarPage = () => {
   const [date, setDate] = useState(new Date());
   const [range, setRange] = useState({ start: startOfMonth(new Date()), end: endOfMonth(new Date()) });
 
+  const [programFilter, setProgramFilter] = useState('');
   const [studentFilter, setStudentFilter] = useState('');
+  const [courseFilter, setCourseFilter] = useState('');
+  const [teacherFilter, setTeacherFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
-  const { data: students } = useStudents();
+
+  const { data: programs = [] } = usePrograms();
+  const { data: students = [] } = useStudents();
+  const activeProgramId = programFilter || (programs.length > 0 ? programs[0].id : '');
+  const { data: courses = [] } = useCourses(activeProgramId);
+  const { data: teachers = [] } = useTeachers(activeProgramId);
 
   const { data: events, isLoading } = useCalendarEvents(
     format(range.start, 'yyyy-MM-dd'),
     format(range.end, 'yyyy-MM-dd'),
-    studentFilter || null
+    {
+      programId: programFilter || undefined,
+      studentId: studentFilter || undefined,
+      courseId: courseFilter || undefined,
+      teacherId: teacherFilter || undefined,
+      eventType: typeFilter !== 'all' ? typeFilter : undefined,
+    }
   );
 
   // Backend CalendarEventDto → react-big-calendar formatı
@@ -104,20 +119,50 @@ const CalendarPage = () => {
             <span className={styles.legendItem}><span className={styles.dot} style={{backgroundColor: '#EF4444'}}></span> Gecikmiş Ödev</span>
             <button type="button" className={styles.legendItem} onClick={() => setTypeFilter(typeFilter === 'EXAM' ? 'all' : 'EXAM')}><span className={styles.dot} style={{backgroundColor: '#F59E0B'}}></span> Sınav / Deneme</button>
             <button type="button" className={styles.legendItem} onClick={() => setTypeFilter(typeFilter === 'SCHEDULE' ? 'all' : 'SCHEDULE')}><span className={styles.dot} style={{backgroundColor: '#8B5CF6'}}></span> Ders Programı</button>
+            <button type="button" className={styles.legendItem} onClick={() => setTypeFilter(typeFilter === 'PAYMENT_DUE' ? 'all' : 'PAYMENT_DUE')}><span className={styles.dot} style={{backgroundColor: '#10B981'}}></span> Ödeme Günü</button>
           </div>
 
           <div className={styles.filters}>
+            {programs.length > 0 && (
+              <select value={programFilter} onChange={(e) => setProgramFilter(e.target.value)} className={styles.select}>
+                <option value="">Tüm Programlar</option>
+                {programs.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+            )}
+
             <select value={studentFilter} onChange={(e) => setStudentFilter(e.target.value)} className={styles.select}>
               <option value="">Tüm Öğrenciler</option>
               {students?.map((s) => (
                 <option key={s.id} value={s.id}>{s.fullName}</option>
               ))}
             </select>
+
+            {courses.length > 0 && (
+              <select value={courseFilter} onChange={(e) => setCourseFilter(e.target.value)} className={styles.select}>
+                <option value="">Tüm Dersler</option>
+                {courses.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            )}
+
+            {teachers.length > 0 && (
+              <select value={teacherFilter} onChange={(e) => setTeacherFilter(e.target.value)} className={styles.select}>
+                <option value="">Tüm Öğretmenler</option>
+                {teachers.map((t) => (
+                  <option key={t.id} value={t.id}>{t.fullName}</option>
+                ))}
+              </select>
+            )}
+
             <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className={styles.select}>
-              <option value="all">Tüm Etkinlikler</option>
+              <option value="all">Tüm Etkinlik Türleri</option>
               <option value="HOMEWORK">Ödev</option>
               <option value="EXAM">Sınav</option>
               <option value="SCHEDULE">Ders Programı</option>
+              <option value="PAYMENT_DUE">Ödeme Günü</option>
             </select>
           </div>
 

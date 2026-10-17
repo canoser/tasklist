@@ -4,6 +4,7 @@ import { useAuthStore } from './features/auth/authStore';
 import { apiClient } from './api/apiClient';
 
 import LoginPage from './features/auth/LoginPage';
+import ResetPasswordPage from './features/auth/ResetPasswordPage';
 import InviteAcceptPage from './features/auth/InviteAcceptPage';
 import CoachLayout from './components/layout/CoachLayout/CoachLayout';
 import StudentLayout from './components/layout/StudentLayout/StudentLayout';
@@ -32,12 +33,14 @@ import StudentSchedulePage from './features/student/schedule/StudentSchedulePage
 import StudentCoursesPage from './features/student/courses/StudentCoursesPage';
 import ParentSchedulePage from './features/parent/schedule/ParentSchedulePage';
 import ParentExamsPage from './features/parent/exams/ParentExamsPage';
+import ParentPaymentsPage from './features/parent/payments/ParentPaymentsPage';
 import TeacherCoursesPage from './features/teacher/courses/TeacherCoursesPage';
 import TeacherSchedulePage from './features/teacher/schedule/TeacherSchedulePage';
 import TeacherProfilePage from './features/teacher/profile/TeacherProfilePage';
 import StudentProfilePage from './features/student/profile/StudentProfilePage';
 import CoachTeacherDetailPage from './features/coach/teachers/CoachTeacherDetailPage';
 import CoachProfilePage from './features/coach/profile/CoachProfilePage';
+import ApprovalsPage from './features/coach/approvals/ApprovalsPage';
 
 // Korumalı Route Bileşeni
 const PrivateRoute = ({ children, allowedRoles, requireAdmin }) => {
@@ -98,6 +101,7 @@ function App() {
             } replace />
           ) : <LoginPage />
         } />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/invite/:token" element={<InviteAcceptPage />} />
         
         {/* Koç Rotaları */}
@@ -113,6 +117,7 @@ function App() {
           <Route path="students" element={<CoachStudents />} />
           <Route path="students/:id" element={<CoachStudentDetail />} />
           <Route path="calendar" element={<CalendarPage />} />
+          <Route path="approvals" element={<ApprovalsPage />} />
           <Route path="reports" element={<CoachReports />} />
           <Route path="profile" element={<CoachProfilePage />} />
           <Route path="programs" element={<CoachProgramsPage />} />
@@ -157,6 +162,7 @@ function App() {
           <Route path="calendar" element={<ParentCalendarPage />} />
           <Route path="schedule" element={<ParentSchedulePage />} />
           <Route path="exams" element={<ParentExamsPage />} />
+          <Route path="payments" element={<ParentPaymentsPage />} />
         </Route>
 
         {/* Öğretmen Rotaları */}

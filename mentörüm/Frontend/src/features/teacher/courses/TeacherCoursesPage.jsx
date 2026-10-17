@@ -1,8 +1,19 @@
 import React, { useState } from 'react';
-import { useTeacherCourses, useTeacherCourseStudents, useTeacherCourseHomework, useTeacherCourseExams, useCreateTeacherHomework, useCreateTeacherExam, useReviewTeacherHomework } from '../teacherApi';
+import { 
+  useTeacherCourses, 
+  useTeacherCourseStudents, 
+  useTeacherCourseHomework, 
+  useTeacherCourseExams, 
+  useCreateTeacherHomework, 
+  useCreateTeacherExam, 
+  useReviewTeacherHomework,
+  useTeacherCourseResources,
+  useCreateTeacherNote
+} from '../teacherApi';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
+import TeacherStudentNotesModal from './TeacherStudentNotesModal';
 import styles from './TeacherCoursesPage.module.css';
 
 const fmt = (d) => (d ? String(d).slice(0, 10) : '');
@@ -16,11 +27,24 @@ const TeacherCoursesPage = () => {
   const { data: students } = useTeacherCourseStudents(selected);
   const { data: homework } = useTeacherCourseHomework(selected);
   const { data: exams } = useTeacherCourseExams(selected);
+  const { data: resources = [] } = useTeacherCourseResources(selected);
+  
   const createHomework = useCreateTeacherHomework();
   const createExam = useCreateTeacherExam();
   const reviewHomework = useReviewTeacherHomework();
+  const createNoteMutation = useCreateTeacherNote();
+
   const [reviewTarget, setReviewTarget] = useState(null);
   const [reviewFeedback, setReviewFeedback] = useState('');
+
+  // T37: Öğrenci not modalı state
+  const [activeNotesStudent, setActiveNotesStudent] = useState(null);
+
+  // T39: Dersi tamamla state
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [completeSummary, setCompleteSummary] = useState('');
+  const [completeCoachNote, setCompleteCoachNote] = useState('');
+  const [completeSuccessMsg, setCompleteSuccessMsg] = useState('');
 
   const submitReview = async (h) => {
     await reviewHomework.mutateAsync({ courseId: selected, assignmentId: h.id, data: { status: 'DONE', feedback: reviewFeedback.trim() } });
@@ -77,22 +101,145 @@ const TeacherCoursesPage = () => {
         </div>
       ) : (
         <div>
-          <Button size="sm" variant="outline" onClick={() => setSelected(null)}>← Geri</Button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <Button size="sm" variant="outline" onClick={() => setSelected(null)}>← Geri</Button>
+            <Button 
+              size="sm" 
+              variant="primary" 
+              onClick={() => { setShowCompleteModal(true); setCompleteSuccessMsg(''); }}
+            >
+              ✓ Dersi Tamamla
+            </Button>
+          </div>
+
           <h2 className={styles.subtitle}>{course?.name}</h2>
+
+          {showCompleteModal && (
+            <div style={{
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '8px',
+              padding: '1rem',
+              marginBottom: '1rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.75rem'
+            }}>
+              <h4 style={{ margin: 0, color: 'var(--text-primary)' }}>Dersi Tamamla ve Değerlendirme Notu Ekle</h4>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
+                  Kısa Özet (Öğrenci & Veli Görür)
+                </label>
+                <input
+                  type="text"
+                  value={completeSummary}
+                  onChange={(e) => setCompleteSummary(e.target.value)}
+                  placeholder="Örn: Konu anlatımı ve soru çözümü tamamlandı."
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    borderRadius: '6px',
+                    border: '1px solid var(--border-color)',
+                    background: 'var(--bg-app)',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.85rem'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
+                  Koça Özel Not (Detaylı Pedagojik Değerlendirme)
+                </label>
+                <textarea
+                  rows={3}
+                  value={completeCoachNote}
+                  onChange={(e) => setCompleteCoachNote(e.target.value)}
+                  placeholder="Koçun bilmesi gereken pedagojik detaylar, dikkat dağılması, tavsiyeler..."
+                  style={{
+                    width: '100%',
+                    padding: '0.5rem',
+                    borderRadius: '6px',
+                    border: '1px solid var(--border-color)',
+                    background: 'var(--bg-app)',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.85rem'
+                  }}
+                />
+              </div>
+
+              {completeSuccessMsg && (
+                <div style={{ color: 'var(--color-success, #10b981)', fontSize: '0.85rem' }}>
+                  {completeSuccessMsg}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <Button
+                  size="sm"
+                  isLoading={createNoteMutation.isPending}
+                  onClick={async () => {
+                    if (!completeCoachNote.trim() && !completeSummary.trim()) {
+                      alert('Lütfen en az bir değerlendirme notu girin.');
+                      return;
+                    }
+                    if (students && students.length > 0) {
+                      for (const st of students) {
+                        await createNoteMutation.mutateAsync({
+                          courseId: selected,
+                          studentId: st.id,
+                          data: {
+                            note: completeCoachNote.trim() || completeSummary.trim(),
+                            summary: completeSummary.trim() || null,
+                            visibility: completeCoachNote.trim() ? 'COACH_ONLY' : 'STUDENT_VISIBLE'
+                          }
+                        });
+                      }
+                    }
+                    setCompleteSuccessMsg('Ders tamamlandı ve değerlendirme notları kaydedildi.');
+                    setTimeout(() => {
+                      setShowCompleteModal(false);
+                      setCompleteSummary('');
+                      setCompleteCoachNote('');
+                      setCompleteSuccessMsg('');
+                    }, 1500);
+                  }}
+                >
+                  Tamamla ve Notları Kaydet
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setShowCompleteModal(false)}>
+                  Vazgeç
+                </Button>
+              </div>
+            </div>
+          )}
 
           <div className={styles.tabs}>
             <button className={tab === 'students' ? `${styles.tab} ${styles.tabActive}` : styles.tab} onClick={() => setTab('students')}>Öğrencilerim</button>
             {course?.canViewHomework && <button className={tab === 'homework' ? `${styles.tab} ${styles.tabActive}` : styles.tab} onClick={() => setTab('homework')}>Ödevler</button>}
             {course?.canViewExams && <button className={tab === 'exams' ? `${styles.tab} ${styles.tabActive}` : styles.tab} onClick={() => setTab('exams')}>Sınavlar</button>}
+            <button className={tab === 'resources' ? `${styles.tab} ${styles.tabActive}` : styles.tab} onClick={() => setTab('resources')}>Kaynaklar ({resources.length})</button>
           </div>
 
           {tab === 'students' && (
             <div>
               {students?.map((s) => (
-                <Card key={s.id} className={styles.card} padding="md">
-                  <strong>{s.fullName}</strong>
-                  {s.email && <span className={styles.meta}>{s.email}</span>}
-                  {s.grade != null && <span className={styles.meta}>Sınıf: {s.grade}</span>}
+                <Card key={s.id} className={styles.card} padding="md" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <strong>{s.fullName}</strong>
+                    {s.email && <span className={styles.meta} style={{ display: 'block' }}>{s.email}</span>}
+                    {s.grade != null && <span className={styles.meta}>Sınıf: {s.grade}</span>}
+                  </div>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveNotesStudent(s);
+                    }}
+                  >
+                    Ders Notları
+                  </Button>
                 </Card>
               ))}
               {students?.length === 0 && <p className={styles.empty}>Öğrenci yok.</p>}
@@ -184,8 +331,46 @@ const TeacherCoursesPage = () => {
               {exams?.length === 0 && <p className={styles.empty}>Sınav yok.</p>}
             </div>
           )}
+
+          {tab === 'resources' && (
+            <div>
+              {resources?.map((r) => (
+                <Card key={r.id} className={styles.card} padding="md" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <strong>{r.title}</strong>
+                    <span className={styles.meta} style={{ display: 'block' }}>
+                      {r.resourceType || 'Ders Materyali'} {r.description ? `· ${r.description}` : ''}
+                    </span>
+                    {r.url && (
+                      <a href={r.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: 'var(--color-primary)' }}>
+                        Bağlantıyı Aç ↗
+                      </a>
+                    )}
+                  </div>
+                  <span style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    background: r.isCompleted ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                    color: r.isCompleted ? 'var(--color-success, #10b981)' : 'var(--color-warning, #f59e0b)'
+                  }}>
+                    {r.isCompleted ? 'Tamamlandı' : 'Devam Ediyor'}
+                  </span>
+                </Card>
+              ))}
+              {resources?.length === 0 && <p className={styles.empty}>Henüz ders kaynağı eklenmemiş.</p>}
+            </div>
+          )}
         </div>
       )}
+
+      <TeacherStudentNotesModal 
+        isOpen={!!activeNotesStudent} 
+        onClose={() => setActiveNotesStudent(null)} 
+        courseId={selected} 
+        student={activeNotesStudent} 
+      />
     </div>
   );
 };

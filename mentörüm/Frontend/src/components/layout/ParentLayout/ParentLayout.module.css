@@ -115,6 +115,8 @@
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
   z-index: 20;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .tab {
@@ -123,6 +125,8 @@
   align-items: center;
   justify-content: center;
   flex: 1;
+  min-width: 56px;
+  flex-shrink: 0;
   height: 100%;
   color: var(--text-color-muted);
   transition: all 0.2s;

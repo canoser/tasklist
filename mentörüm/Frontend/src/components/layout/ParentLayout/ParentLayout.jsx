@@ -1,13 +1,25 @@
 import React from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../../features/auth/authStore';
 import { apiClient } from '../../../api/apiClient';
+import { useParentChildren } from '../../../features/parent/parentApi';
 import NotificationDropdown from '../../common/NotificationDropdown/NotificationDropdown';
+import ParentEmptyState from '../../common/ParentEmptyState/ParentEmptyState';
 import styles from './ParentLayout.module.css';
 
 const ParentLayout = () => {
   const { user, clearAuth } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const { data: children = [], isLoading } = useParentChildren();
+  const activeChild = children[0];
+
+  const canViewHomework = activeChild ? activeChild.canViewHomework === 1 : true;
+  const canViewCalendar = activeChild ? activeChild.canViewCalendar === 1 : true;
+  const canViewExams = activeChild ? activeChild.canViewExams === 1 : true;
+  const canViewPayments = activeChild ? activeChild.canViewPayments === 1 : true;
+
   const handleLogout = async () => {
     try {
       await apiClient.post('/auth/logout');
@@ -16,12 +28,24 @@ const ParentLayout = () => {
     navigate('/login');
   };
 
+  // Dinamik sekmeler (T47 & T48 & T49)
   const tabs = [
-    { path: '/parent/summary', label: 'Özet', icon: '📊' },
-    { path: '/parent/homework', label: 'Ödev Takibi', icon: '📋' },
-    { path: '/parent/calendar', label: 'Takvim', icon: '🗓️' },
-    { path: '/parent/schedule', label: 'Program', icon: '📅' },
+    { path: '/parent/summary', label: 'Özet', icon: '📊', isAllowed: true },
+    ...(canViewHomework ? [{ path: '/parent/homework', label: 'Ödev Takibi', icon: '📋', isAllowed: canViewHomework }] : []),
+    ...(canViewCalendar ? [{ path: '/parent/calendar', label: 'Takvim', icon: '🗓️', isAllowed: canViewCalendar }] : []),
+    ...(canViewCalendar ? [{ path: '/parent/schedule', label: 'Program', icon: '📅', isAllowed: canViewCalendar }] : []),
+    ...(canViewExams ? [{ path: '/parent/exams', label: 'Sınavlar', icon: '📝', isAllowed: canViewExams }] : []),
+    ...(canViewPayments ? [{ path: '/parent/payments', label: 'Ödemeler', icon: '💳', isAllowed: canViewPayments }] : []),
   ];
+
+  // Aktif sayfanın yetki kontrolü
+  const currentPath = location.pathname;
+  let isCurrentRouteForbidden = false;
+  if (currentPath.includes('/parent/homework') && !canViewHomework) isCurrentRouteForbidden = true;
+  if (currentPath.includes('/parent/calendar') && !canViewCalendar) isCurrentRouteForbidden = true;
+  if (currentPath.includes('/parent/schedule') && !canViewCalendar) isCurrentRouteForbidden = true;
+  if (currentPath.includes('/parent/exams') && !canViewExams) isCurrentRouteForbidden = true;
+  if (currentPath.includes('/parent/payments') && !canViewPayments) isCurrentRouteForbidden = true;
 
   return (
     <div className={styles.layout}>
@@ -46,7 +70,11 @@ const ParentLayout = () => {
 
       {/* Main Content Area */}
       <main className={styles.main}>
-        <Outlet />
+        {isCurrentRouteForbidden ? (
+          <ParentEmptyState message="Koçunuz henüz bu alanı erişime açmadı." />
+        ) : (
+          <Outlet />
+        )}
       </main>
 
       {/* Bottom Tab Bar */}

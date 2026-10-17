@@ -79,6 +79,34 @@ export const useCreateGroup = () => {
   });
 };
 
+export const useGroupMembers = (programId, groupId) => useQuery({
+  queryKey: ['coach', 'program', programId, 'group', groupId, 'members'],
+  queryFn: async () => (await apiClient.get(`/programs/${programId}/groups/${groupId}/members`)) || [],
+  enabled: !!programId && !!groupId,
+});
+
+export const useAddGroupMember = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ programId, groupId, studentId }) => apiClient.post(`/programs/${programId}/groups/${groupId}/members`, { studentId }),
+    onSuccess: (_, v) => {
+      qc.invalidateQueries({ queryKey: ['coach', 'program', v.programId, 'group', v.groupId, 'members'] });
+      qc.invalidateQueries({ queryKey: ['coach', 'program', v.programId, 'groups'] });
+    },
+  });
+};
+
+export const useRemoveGroupMember = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ programId, groupId, studentId }) => apiClient.delete(`/programs/${programId}/groups/${groupId}/members/${studentId}`),
+    onSuccess: (_, v) => {
+      qc.invalidateQueries({ queryKey: ['coach', 'program', v.programId, 'group', v.groupId, 'members'] });
+      qc.invalidateQueries({ queryKey: ['coach', 'program', v.programId, 'groups'] });
+    },
+  });
+};
+
 // --- Haftalık Program ---
 export const useSchedule = (programId) => useQuery({
   queryKey: ['coach', 'program', programId, 'schedule'],
@@ -204,6 +232,20 @@ export const useChangeUserPassword = () => {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', 'users'] });
     },
+  });
+};
+
+// --- Güvenlik & Kota ---
+export const useRateLimits = () => useQuery({
+  queryKey: ['admin', 'rate-limits'],
+  queryFn: async () => (await apiClient.get('/admin/rate-limits')) || { rules: [], events: [] },
+});
+
+export const useUpdateRateLimit = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ path, maxAttempts }) => apiClient.put('/admin/rate-limits', { path, maxAttempts }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'rate-limits'] }),
   });
 };
 
