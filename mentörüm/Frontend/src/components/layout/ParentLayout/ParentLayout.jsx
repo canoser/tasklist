@@ -19,6 +19,7 @@ const ParentLayout = () => {
   const tabs = [
     { path: '/parent/summary', label: 'Özet', icon: '📊' },
     { path: '/parent/homework', label: 'Ödev Takibi', icon: '📋' },
+    { path: '/parent/calendar', label: 'Takvim', icon: '🗓️' },
     { path: '/parent/schedule', label: 'Program', icon: '📅' },
   ];
 

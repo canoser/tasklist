@@ -9,6 +9,7 @@ import tr from 'date-fns/locale/tr';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import Card from '../../../components/common/Card/Card';
 import { useParentChildren, useParentChildCalendar } from '../parentApi';
+import ChildSelector from '../../../components/common/ChildSelector/ChildSelector';
 import styles from './ParentCalendarPage.module.css';
 
 const locales = { tr };
@@ -70,13 +71,7 @@ const ParentCalendarPage = () => {
           <p className={styles.subtitle}>{student.fullName} adlı öğrencinin takvimi</p>
         </div>
       </header>
-      {children.length > 1 && (
-        <select value={student.studentId} onChange={(e) => setSelectedChildId(e.target.value)} className={styles.select}>
-          {children.map((c) => (
-            <option key={c.studentId} value={c.studentId}>{c.fullName}</option>
-          ))}
-        </select>
-      )}
+      <ChildSelector children={children} selectedId={student.studentId} onSelect={setSelectedChildId} />
       <Card className={styles.card}>
         {isLoading ? (
           <div className={styles.loading}>Takvim yükleniyor...</div>

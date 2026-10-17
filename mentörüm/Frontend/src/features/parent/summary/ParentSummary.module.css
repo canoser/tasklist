@@ -110,3 +110,42 @@
   color: var(--text-color-muted);
   font-size: 0.9rem;
 }
+
+.examEntryCard {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.examEntryIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  background: var(--color-primary-light);
+}
+
+.examEntryInfo {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.examEntryTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-color-main);
+}
+
+.examEntryDesc {
+  font-size: 0.8rem;
+  color: var(--text-color-muted);
+}
+
+.examEntryArrow {
+  color: var(--color-primary);
+  font-size: 1.25rem;
+}

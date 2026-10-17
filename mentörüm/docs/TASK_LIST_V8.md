@@ -61,12 +61,14 @@
 - [ ] **Ödev-Ders Bağlantısı Geliştirmesi (3.8 flash gemini):** Koçun atadığı `course_id = NULL` ödevlerin öğretmenden gizlenmesi veri sızıntısını önlemek için P0 aşamasında doğru karardır. Ancak pedagojik olarak koçun branşla ilgili atadığı ödevleri öğretmenin de görebilmesi istendiğinde, Aşama 3'te koçun `AssignHomeworkModal` formuna isteğe bağlı "Ders Seçimi (CourseId)" alanı eklenmelidir. Böylece koç dilerse ödevi derse bağlayıp öğretmenin takibine açabilir.
 - [x] **Güvenlik/Yazma Koruması (3.8 flash gemini):** Sadece okuma sorgularına değil, `CreateTeacherHomeworkAsync` ve `CreateTeacherExamAsync` yazma metodlarında da öğretmenin o derse atamasının anlık olarak aktif olduğu (`courses.teacher_id = @TeacherId AND courses.is_active = 1`) doğrulanmaya devam etmelidir.
 - [ ] **IDOR testi:** `Backend/MentorumApi.Tests/CrossTenantSecurityTests.cs`'e "öğretmen, kendi dersindeki öğrencinin başka derse ait ödev/sınavını göremez" senaryosu ekle. (DeepSeek)
+- [ ] **1.1 Test Tasarım Tavsiyesi (3.8 flash gemini):** Test kurgulanırken bir öğrenci iki farklı derse (ör. Matematik ve Fizik) atanmalı; Matematik öğretmeninin token'ı ile `GET /api/v1/teacher/courses/{matematikCourseId}/homework` sorgulandığında Fizik ödevinin listede dönmediği (`Assert.DoesNotContain`) doğrulanmalıdır.
 
 ### 1.2 Veli yetkisiz profil okuma (is_accepted eksik) (DeepSeek)
 
 - [x] `Backend/MentorumApi/Endpoints/ParentEndpoints.cs` → `GET /parents/children/{studentId}` içindeki `student_parents` sorgusuna `AND is_accepted = 1` ekle (satır 42-44; `my-children` ve ödev ucunda bu kontrol var, burada unutulmuş). (DeepSeek)
 - [x] **Diğer Veliler Alt Sorgusunda is_accepted Güvencesi (3.8 flash gemini):** `GET /parents/children/{studentId}` içerisindeki `otherParents` sorgusunda da (`sp.parent_id != @ParentId`), diğer velinin ilişkisinin de onaylı (`AND sp.is_accepted = 1`) olduğu filtrelenmelidir. İptal edilmiş/reddedilmiş bir velinin ismi dahi maskelenerek bile olsa diğer veliye sızdırılmamalıdır.
 - [ ] **IDOR testi:** kabul edilmemiş/iptal edilmiş veli ilişkisiyle çocuk profili isteği → `403 Forbid` dönmeli. (DeepSeek)
+- [ ] **1.2 Test Tasarım Tavsiyesi (3.8 flash gemini):** Test senaryosunda `student_parents` ilişkisi `is_accepted = 0` (bekleyen davet) olan veliyle yalnızca `GET /parents/children/{id}` değil, yeni açılan `/schedule` ve `/exams` uçları da sorgulanmalı ve tümünden `403 Forbid` alındığı doğrulanmalıdır.
 
 ---
 
@@ -81,6 +83,7 @@
 - [x] **Global Öğretmenlik Statüsünün Korunması (3.8 flash gemini):** Öğretmenin bir programdaki aktifliği bittiğinde sistem genelindeki `users.is_active = 1` ve `users.role = 'Teacher'` kaydı silinmemeli/kapatılmamalıdır. Çünkü öğretmen başka bir kurum veya koç tarafından gelecekte davet edilebilir. Yalnızca `program_teachers.is_active = 0` yapılmalıdır.
 - [ ] **Geçmiş Ödev ve Sınav Kayıtları (3.8 flash gemini):** Öğretmen dersten veya programdan ayrıldığında, geçmişte oluşturduğu ödevlerin ve sınavların (`created_by = teacherId`) silinmediği ve ders havuzunda kalmaya devam ettiği IDOR testleriyle doğrulanmalıdır.
 - [ ] **Test:** iki programda kayıtlı öğretmen, bir programdan pasife alınınca diğer programdaki derslerine erişmeye devam etmeli. (DeepSeek)
+- [ ] **2.1 Test Tasarım Tavsiyesi (3.8 flash gemini):** Testte öğretmenin Program A'dan pasife alındıktan sonra Program B'deki `GetTeacherCoursesAsync` ders listesinin eksilmediği ve Program B derslerine ödev ekleme yetkisinin korunduğu doğrulanmalıdır.
 
 ### 2.2 Çok çocuklu velinin programları karışıyor (DeepSeek)
 
@@ -107,6 +110,7 @@
 
 - [ ] `Frontend/src/features/coach/courses/CoachCoursesPage.jsx` → ders oluşturma formuna öğretmen `<select>` (programın öğretmenleri) + ders tipi + renk + 10 izin toggle'ı ekle. Backend `CreateCourseRequest.TeacherId` + `teacher_can_*` alanları hazır. (DeepSeek)
 - [ ] **Ders Oluşturma Formunu Şişirmeme / Akordeon UX (3.8 flash gemini):** Ders oluşturma anında 10 izin toggle'ını doğrudan ekrana yığmak koç için kafa karıştırıcıdır. Ders oluştururken sadece "Öğretmen Seçimi (Opsiyonel)" ve "Varsayılan İzinleri Kullan" seçeneği sunulmalı; 10 izin ayarı ise "Gelişmiş İzinler" başlığı altında daraltılabilir (akordeon) bir alanda tutulmalıdır.
+- [ ] **Ders Oluşturma Formu Varsayılan İzin Tavsiyesi (3.8 flash gemini):** Ders oluşturma formu sade tutulduğu için koçu 11 izinle boğmamak doğru bir karardır. Ancak formun altına "Varsayılan: Temel Profil ve Ödev İzinleri Açık, İleri İzinler Kapalı" şeklinde bir bilgilendirme metni konulmalı; özel yetkilendirmeler oluşturulduktan sonra ders detayındaki "İzinler" sekmesinden yönetilmeye devam edilmelidir.
 - [x] **Backend Tenant Doğrulaması (Kritik Güvenlik) (3.8 flash gemini):** `CourseRepository.CreateCourseAsync` ve `UpdateCourseAsync` içinde gönderilen `TeacherId`'nin gerçekten o programa ait bir öğretmen olduğu (`SELECT 1 FROM program_teachers WHERE teacher_id = @TeacherId AND program_id = @ProgramId AND is_active = 1`) mutlaka doğrulanmalıdır. Aksi halde yabancı öğretmen GUID'iyle ders açılmasına izin verilmiş olur.
 - [x] `CoachCourseDetailPage.jsx` → "İzinler" sekmesini salt okunurdan **düzenlenebilir** hale getir (switch + Kaydet → `PUT /programs/{id}/courses/{courseId}`). (DeepSeek)
 - [ ] **Toggle Tema Uyumu (3.8 flash gemini):** Ders detayındaki izin switch'leri özel CSS modules ile yapılmalı, Cyber ve Nature temalarında parlayan yeşil/mavi tema değişkenlerini (`var(--color-primary)`, `var(--color-success)`) kullanmalıdır.
@@ -116,6 +120,7 @@
 
 - [x] `ParentEndpoints.cs` → `GET /parents/children/{studentId}/exams` ucu (is_accepted kontrolüyle; öğrencinin `exam_results` listesini döndür). (DeepSeek)
 - [ ] Frontend: `ParentLayout` + `ParentHomework` yanına "Sınavlar" sekmesi; `parentApi.js`'e hook. (DeepSeek)
+- [ ] **Veli Sınavlar Sekmesi Tasarım Tavsiyesi (3.8 flash gemini):** Hook ve backend hazır olduğundan, `ParentLayout` altına doğrudan 5. sekme eklemek yerine `ParentHomeworkPage` yapısına benzer bağımsız bir `ParentExamsPage` yapılmalı; rotası `/parent/exams` olarak `App.jsx`'e eklenmelidir. Kartlarda `common/Card` ve `common/Badge` kullanılarak sınav adı, tarihi, neti ve ders bazlı dağılımı gösterilmelidir.
 - [ ] **Mobil Alt Navigasyon (BottomNav) Taşma Koruması (3.8 flash gemini):** `ParentLayout` alt barda şu an 4 sekme (Özet, Takvim, Ödevler, Program) bulunmaktadır. 5. bir "Sınavlar" sekmesi eklendiğinde küçük ekranlı telefonlarda (iPhone SE / 360px genişlik) butonların sıkışıp taşmaması için ikon ve yazı boyutları responsive test edilmelidir.
 - [ ] **Grafik ve Net Kartları Teması (3.8 flash gemini):** Sınav sonuçları listelenirken kullanılacak kartlar ve başarı rozetleri doğrudan `common/Card` ve `common/Badge` bileşenleriyle tasarlanmalı, Cyber Dark modda beyaz zemin patlaması yaratacak hardcoded renklerden kaçınılmalıdır.
 
@@ -133,11 +138,13 @@
   - `teacher_can_view_schedule`: Kesinlikle hayata geçirilmelidir (öğretmen ders programını görmelidir).
   - `teacher_can_manage_schedule`: Koçun genel program hiyerarşisini bozmamak için öğretmene takvim düzenleme yetkisi verilmemeli veya sadece kendi ders saati için onaylı talep olarak sınırlandırılmalıdır.
   - `teacher_can_add_notes`: Öğretmenin dersteki öğrenciye ders içi performans notu bırakabilmesi çok kıymetli bir pedagojik özelliktir; Aşama 3'te `teacher_notes` ucuyla hayata geçirilmelidir.
+- [ ] **3.4 Kapsam & Yol Haritası Tavsiyesi (3.8 flash gemini):** Öğretmen notları (`teacher_notes`) ve ödev işleme (`review`) başarıyla tamamlanmıştır. Kalan `teacher_can_view_schedule` için öğretmenin kendi dersi ve öğrencileriyle sınırlı salt-okunur bir `/teacher/courses/{id}/schedule` ucu açılmalı; `teacher_can_manage_schedule` (onaylı talep) ise bildirim akışıyla birlikte V9 sürümüne bırakılmalıdır.
 
 ### 3.5 `GetTeacherProgramIdAsync` `LIMIT 1` kısıtı (DeepSeek)
 
 - [x] `Backend/MentorumApi/Data/SchoolAccessRepository.cs` → `GetTeacherProgramIdAsync` yerine öğretmenin TÜM aktif programlarını döndüren `GetTeacherProgramIdsAsync` ekle; çağıranları buna göre güncelle. (DeepSeek)
 - [ ] **Çoklu Program Rozeti (Badge) UX (3.8 flash gemini):** Öğretmen birden çok kurumda/programda görev alıyorsa, `TeacherLayout` üst barında veya ders kartlarında dersin hangi koçluk programına ait olduğunu belirten renkli program rozetleri (`badge`) gösterilmelidir.
+- [ ] **3.5 Program Adı Entegrasyon Tavsiyesi (3.8 flash gemini):** Öğretmenin ders listesi sorgusuna (`SchoolAccessRepository.GetTeacherCoursesAsync`) `cp.name AS ProgramName` kolonu JOIN ile eklenmeli; `TeacherCoursesPage` ders kartlarında başlığın yanında `var(--color-primary)` ve `var(--bg-color-surface)` uyumlu minik bir program rozeti (`badge`) basılmalıdır.
 
 ---
 
@@ -148,6 +155,7 @@
 - [ ] `Backend/MentorumApi/Services/ProgramAccessGuard.cs` (EnsureCoachInProgramAsync / EnsureCoachOwnsStudentAsync / IsParentOfStudentAsync / IsTeacherOfCourseAsync) şu an yalnız `ExamEndpoints`'te kullanılıyor. (DeepSeek)
 - [ ] `StudentEndpoints`, `CourseEndpoints`, `GroupEndpoints`, `HomeworkEndpoints`'te dağınık `IsMemberAsync`/inline sahiplik kontrollerini bu guard'a taşı (defense-in-depth olarak SQL'deki filtreler kalır). (DeepSeek)
 - [ ] **Defense-in-Depth Yaklaşımı (3.8 flash gemini):** `ProgramAccessGuard` kullanıldığında dahi SQL sorgularındaki `AND program_id = @ProgramId` koşulları asla kaldırılmamalıdır (katmanlı savunma).
+- [ ] **4.1 Kademeli Geçiş Tavsiyesi (3.8 flash gemini):** Tek seferde tüm modülleri guard'a geçirmek regresyon riski yaratır. İlk etapta sadece `HomeworkEndpoints` ve `CourseEndpoints` dönüştürülmeli; test suite (`dotnet test`) ile doğrulandıktan sonra `StudentEndpoints` ve `GroupEndpoints`'e geçilmelidir.
 - [ ] `.agents/rules/security_guidelines.md` → `ProgramAccessGuard` zorunlu kalıp olarak işaretli; tüm repoların buna uyması sağlanmalı. (DeepSeek)
 
 ---
@@ -158,4 +166,5 @@
 - [x] `dotnet test Mentorum.sln` → 43/43 yeşil. (Cline)
 - [x] `cd Frontend && npm run build` → ✓ (0 hata). (Cline)
 - [x] P0 güvenlik düzeltmeleri (1.1, 1.2) diğerlerinden önce merge edilir. (DeepSeek)
+- [ ] **Inline Stilleri CSS Modules'e Taşıma (3.8 flash gemini):** `CoachCourseDetailPage.jsx`, `CoachCoursesPage.jsx` ve `TeacherCoursesPage.jsx` içerisindeki inline `style={{ ... }}` blokları (select menüleri, buton kapsayıcıları) ilgili `.module.css` dosyalarına taşınarak mimari temizlik sağlanmalıdır.
 

@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useParentChildren, useParentChildHomework } from '../parentApi';
 import Card from '../../../components/common/Card/Card';
+import ChildSelector from '../../../components/common/ChildSelector/ChildSelector';
 import { formatDate } from '../../../utils/dateUtils';
 import styles from './ParentSummary.module.css';
 
 const ParentSummary = () => {
+  const navigate = useNavigate();
   const { data: children, isLoading: isChildrenLoading } = useParentChildren();
   const [selectedChildId, setSelectedChildId] = useState(null);
 
@@ -26,17 +29,7 @@ const ParentSummary = () => {
       <header className={styles.header}>
         <h1 className={styles.title}>Haftalık Özet</h1>
         <p className={styles.subtitle}>{student.fullName} adlı öğrencinin genel durumu</p>
-        {children.length > 1 && (
-          <select
-            value={student.studentId}
-            onChange={(e) => setSelectedChildId(e.target.value)}
-            style={{ marginTop: 8, padding: '6px 10px', borderRadius: 8, border: '1px solid #e2e8f0' }}
-          >
-            {children.map((c) => (
-              <option key={c.studentId} value={c.studentId}>{c.fullName}</option>
-            ))}
-          </select>
-        )}
+        <ChildSelector children={children} selectedId={student.studentId} onSelect={setSelectedChildId} />
       </header>
 
       <div className={styles.statsGrid}>
@@ -56,6 +49,15 @@ const ParentSummary = () => {
           </div>
         </Card>
       </div>
+
+      <Card className={styles.examEntryCard} padding="lg" interactive onClick={() => navigate('/parent/exams')}>
+        <div className={styles.examEntryIcon}>📝</div>
+        <div className={styles.examEntryInfo}>
+          <span className={styles.examEntryTitle}>Sınav Sonuçları</span>
+          <span className={styles.examEntryDesc}>Çocuğunuzun sınavlarını görüntüleyin</span>
+        </div>
+        <span className={styles.examEntryArrow}>→</span>
+      </Card>
 
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>Son Tamamlananlar</h2>

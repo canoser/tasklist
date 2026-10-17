@@ -21,7 +21,7 @@ public static class ParentEndpoints
 
             // Veliye bağlı çocukları al
             var children = await conn.QueryAsync<dynamic>(@"
-                SELECT s.id as StudentId, u.full_name as FullName, s.grade as Grade, s.track as Area
+                SELECT s.id as ""studentId"", u.full_name as ""fullName"", s.grade as grade, s.track as area
                 FROM student_parents sp
                 JOIN students s ON sp.student_id = s.id
                 JOIN users u ON s.id = u.id
@@ -47,7 +47,7 @@ public static class ParentEndpoints
 
             // Çocuğun profili
             var student = await conn.QuerySingleOrDefaultAsync<dynamic>(@"
-                SELECT s.id, u.full_name, s.grade, s.track as area, s.target_university
+                SELECT s.id as id, u.full_name as ""fullName"", s.grade as grade, s.track as area, s.target_university as ""targetUniversity""
                 FROM students s
                 JOIN users u ON s.id = u.id
                 WHERE s.id = @StudentId
@@ -56,7 +56,7 @@ public static class ParentEndpoints
             // Diğer velilerin bilgilerini ÇEKERKEN MASKELİYORUZ (KRİTİK GÜVENLİK - Özeleştiri 3)
             var otherParents = await conn.QueryAsync<dynamic>(@"
                 SELECT 
-                    u.full_name as FullName,
+                    u.full_name as ""fullName"",
                     'GİZLİ' as Email, /* Mahremiyet kuralı */
                     'GİZLİ' as Phone  /* Mahremiyet kuralı */
                 FROM student_parents sp
@@ -83,7 +83,7 @@ public static class ParentEndpoints
             if (relation == 0) return Results.Forbid();
 
             var exams = await conn.QueryAsync<dynamic>(@"
-                SELECT e.id, e.exam_date AS ExamDate, COALESCE(e.exam_name, e.exam_type) AS Name, e.exam_type AS ExamType, e.total_net AS TotalNet
+                SELECT e.id as id, e.exam_date as ""examDate"", COALESCE(e.exam_name, e.exam_type) as name, e.exam_type as ""examType"", e.total_net as ""totalNet""
                 FROM exam_results e
                 WHERE e.student_id = @StudentId
                 ORDER BY e.exam_date DESC",

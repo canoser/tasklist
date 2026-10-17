@@ -31,6 +31,7 @@ import AdminPanelPage from './features/admin/AdminPanelPage';
 import StudentSchedulePage from './features/student/schedule/StudentSchedulePage';
 import StudentCoursesPage from './features/student/courses/StudentCoursesPage';
 import ParentSchedulePage from './features/parent/schedule/ParentSchedulePage';
+import ParentExamsPage from './features/parent/exams/ParentExamsPage';
 import TeacherCoursesPage from './features/teacher/courses/TeacherCoursesPage';
 import TeacherSchedulePage from './features/teacher/schedule/TeacherSchedulePage';
 import TeacherProfilePage from './features/teacher/profile/TeacherProfilePage';
@@ -155,6 +156,7 @@ function App() {
           <Route path="homework" element={<ParentHomework />} />
           <Route path="calendar" element={<ParentCalendarPage />} />
           <Route path="schedule" element={<ParentSchedulePage />} />
+          <Route path="exams" element={<ParentExamsPage />} />
         </Route>
 
         {/* Öğretmen Rotaları */}
