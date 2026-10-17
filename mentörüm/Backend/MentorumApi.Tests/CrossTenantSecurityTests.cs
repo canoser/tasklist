@@ -152,6 +152,10 @@ namespace MentorumApi.Tests
                 INSERT INTO courses (id, program_id, teacher_id, name, type) VALUES
                 ('99999999-0000-0000-0000-000000000001', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '99999999-9999-9999-9999-999999999998', 'Kimya', 'DERS'),
                 ('99999999-0000-0000-0000-000000000002', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '99999999-9999-9999-9999-999999999998', 'Biyoloji', 'DERS');
+                INSERT INTO homework_assignments (id, snapshot_title, student_id, program_id, course_id, created_by, due_date, status) VALUES
+                (gen_random_uuid(), 'Kimya Ödevi', '55555555-5555-5555-5555-555555555555', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '99999999-0000-0000-0000-000000000001', '99999999-9999-9999-9999-999999999998', '2026-10-22', 'PENDING');
+                INSERT INTO exam_results (id, student_id, created_by, exam_date, exam_name, exam_type, program_id, course_id) VALUES
+                (gen_random_uuid(), '55555555-5555-5555-5555-555555555555', '99999999-9999-9999-9999-999999999998', '2026-10-16', 'Kimya Sınavı', 'Deneme', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '99999999-0000-0000-0000-000000000001');
             ");
         }
 

@@ -1,3 +1,4 @@
+using Dapper;
 using MentorumApi.Data;
 using MentorumApi.DTOs;
 using Microsoft.Extensions.Configuration;
@@ -7,6 +8,7 @@ namespace MentorumApi.Tests
 {
     public class SchoolAccessTests : IClassFixture<IntegrationTestFixture>
     {
+        private readonly DbConnectionFactory _dbFactory;
         private readonly SchoolAccessRepository _repo;
         private readonly TeacherRepository _teacherRepo;
 
@@ -18,13 +20,14 @@ namespace MentorumApi.Tests
         private static readonly Guid StudentC = Guid.Parse("66666666-6666-6666-6666-666666666666");
         private static readonly Guid CoachA = Guid.Parse("11111111-1111-1111-1111-111111111111");
         private static readonly Guid TeacherC = Guid.Parse("99999999-9999-9999-9999-999999999998");
+        private static readonly Guid CourseE = Guid.Parse("99999999-0000-0000-0000-000000000001");
 
         public SchoolAccessTests(IntegrationTestFixture fixture)
         {
             var config = new ConfigurationBuilder().Build();
-            var factory = new DbConnectionFactory(config);
-            _repo = new SchoolAccessRepository(factory);
-            _teacherRepo = new TeacherRepository(factory);
+            _dbFactory = new DbConnectionFactory(config);
+            _repo = new SchoolAccessRepository(_dbFactory);
+            _teacherRepo = new TeacherRepository(_dbFactory);
         }
 
         [Fact]
@@ -134,6 +137,23 @@ namespace MentorumApi.Tests
             var names = courses.Select(c => c.Name).ToList();
             Assert.DoesNotContain("Kimya", names);   // Program A dersleri düştü
             Assert.Contains("Biyoloji", names);       // Program B dersi korundu
+        }
+
+        [Fact]
+        public async Task DeactivateTeacher_PreservesCreatedHomeworkAndExams()
+        {
+            await _teacherRepo.DeactivateTeacherAsync(ProgramA, TeacherC, CoachA);
+
+            using var conn = _dbFactory.CreateConnection();
+            var hwCount = await conn.ExecuteScalarAsync<int>(
+                "SELECT COUNT(1) FROM homework_assignments WHERE created_by = @TeacherId AND course_id = @CourseE",
+                new { TeacherId = TeacherC, CourseE = CourseE });
+            var examCount = await conn.ExecuteScalarAsync<int>(
+                "SELECT COUNT(1) FROM exam_results WHERE created_by = @TeacherId AND course_id = @CourseE",
+                new { TeacherId = TeacherC, CourseE = CourseE });
+
+            Assert.Equal(1, hwCount);
+            Assert.Equal(1, examCount);
         }
     }
 }
