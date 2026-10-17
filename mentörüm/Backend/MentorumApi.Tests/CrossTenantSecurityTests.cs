@@ -122,6 +122,36 @@ namespace MentorumApi.Tests
                 INSERT INTO courses (id, program_id, teacher_id, name, type) VALUES
                 ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '77777777-7777-7777-7777-777777777777', 'Fizik', 'DERS');
                 INSERT INTO student_groups (id, program_id, name) VALUES ('ffffffff-ffff-ffff-ffff-ffffffffffff', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Grup B');
+
+                -- 1.1 IDOR: Fizik dersi (Program A) — öğrenci 5555 hem Matematik(CourseA) hem Fizik(CourseC) dersinde
+                INSERT INTO courses (id, program_id, teacher_id, name, type) VALUES
+                ('99999999-9999-9999-9999-999999999999', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '44444444-4444-4444-4444-444444444444', 'Coğrafya', 'DERS');
+                INSERT INTO course_students (id, course_id, student_id, program_id) VALUES
+                (gen_random_uuid(), '99999999-9999-9999-9999-999999999999', '55555555-5555-5555-5555-555555555555', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
+                INSERT INTO homework_assignments (id, snapshot_title, student_id, program_id, course_id, created_by, due_date, status) VALUES
+                (gen_random_uuid(), 'Matematik Ödevi', '55555555-5555-5555-5555-555555555555', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'cccccccc-cccc-cccc-cccc-cccccccccccc', '44444444-4444-4444-4444-444444444444', '2026-10-21', 'PENDING'),
+                (gen_random_uuid(), 'Coğrafya Ödevi', '55555555-5555-5555-5555-555555555555', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '99999999-9999-9999-9999-999999999999', '44444444-4444-4444-4444-444444444444', '2026-10-20', 'PENDING');
+                INSERT INTO exam_results (id, student_id, created_by, exam_date, exam_name, exam_type, program_id, course_id) VALUES
+                (gen_random_uuid(), '55555555-5555-5555-5555-555555555555', '11111111-1111-1111-1111-111111111111', '2026-10-15', 'Matematik Sınavı', 'Deneme', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'cccccccc-cccc-cccc-cccc-cccccccccccc'),
+                (gen_random_uuid(), '55555555-5555-5555-5555-555555555555', '11111111-1111-1111-1111-111111111111', '2026-10-14', 'Coğrafya Sınavı', 'Deneme', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '99999999-9999-9999-9999-999999999999');
+
+                -- 1.2 IDOR: reddedilmiş/bekleyen veli ilişkisi (is_accepted=0)
+                INSERT INTO users (id, email, role, full_name) VALUES
+                ('bbbb1111-1111-1111-1111-111111111111', 'unaccepted@test.com', 'Parent', 'Reddedilmis Veli');
+                INSERT INTO parents (id) VALUES ('bbbb1111-1111-1111-1111-111111111111');
+                INSERT INTO student_parents (id, student_id, parent_id, parent_email, is_accepted) VALUES
+                (gen_random_uuid(), '55555555-5555-5555-5555-555555555555', 'bbbb1111-1111-1111-1111-111111111111', 'unaccepted@test.com', 0);
+
+                -- 2.1 IDOR: çok programlı öğretmen (Teacher C hem Program A hem Program B)
+                INSERT INTO users (id, email, role, full_name) VALUES
+                ('99999999-9999-9999-9999-999999999998', 'teacherC@test.com', 'Teacher', 'Teacher C');
+                INSERT INTO teachers (id, program_id) VALUES ('99999999-9999-9999-9999-999999999998', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
+                INSERT INTO program_teachers (id, program_id, teacher_id) VALUES
+                (gen_random_uuid(), 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '99999999-9999-9999-9999-999999999998'),
+                (gen_random_uuid(), 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '99999999-9999-9999-9999-999999999998');
+                INSERT INTO courses (id, program_id, teacher_id, name, type) VALUES
+                ('99999999-0000-0000-0000-000000000001', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '99999999-9999-9999-9999-999999999998', 'Kimya', 'DERS'),
+                ('99999999-0000-0000-0000-000000000002', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '99999999-9999-9999-9999-999999999998', 'Biyoloji', 'DERS');
             ");
         }
 

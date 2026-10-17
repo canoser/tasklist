@@ -150,7 +150,7 @@ namespace MentorumApi.Data
             // Not: Koçun AssignHomeworkAsync ile attığı course_id=NULL ödevler bu filtreyle öğretmene görünmez (kabul edilen davranış).
             using var conn = _connectionFactory.CreateConnection();
             return await conn.QueryAsync(@"
-                SELECT h.id, h.student_id AS StudentId, u.full_name AS StudentName, h.snapshot_title AS Title, h.due_date AS DueDate, h.status AS Status, h.feedback AS Feedback
+                SELECT h.id, h.student_id as ""studentId"", u.full_name as ""studentName"", h.snapshot_title as title, h.due_date as ""dueDate"", h.status as status, h.feedback as feedback
                 FROM homework_assignments h
                 JOIN users u ON u.id = h.student_id
                 WHERE h.program_id = (SELECT program_id FROM courses WHERE id = @CourseId)
@@ -168,7 +168,7 @@ namespace MentorumApi.Data
         {
             using var conn = _connectionFactory.CreateConnection();
             return await conn.QueryAsync(@"
-                SELECT e.id, e.student_id AS StudentId, u.full_name AS StudentName, COALESCE(e.exam_name, e.exam_type) AS Name, e.exam_date AS ExamDate, e.total_net AS TotalNet
+                SELECT e.id, e.student_id as ""studentId"", u.full_name as ""studentName"", COALESCE(e.exam_name, e.exam_type) as name, e.exam_date as ""examDate"", e.total_net as ""totalNet""
                 FROM exam_results e
                 JOIN users u ON u.id = e.student_id
                 WHERE e.program_id = (SELECT program_id FROM courses WHERE id = @CourseId)

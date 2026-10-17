@@ -102,7 +102,7 @@ namespace MentorumApi.Data
                 new { SlotId = slotId, ProgramId = programId });
             return rows > 0;
         }
-        // Öğretmenin derslerinin slotları
+        // Öğretmenin derslerinin slotları (teacher_can_view_schedule=1 olan derslerle sınırlı)
         public async Task<IEnumerable<ScheduleSlotDto>> GetTeacherSlotsAsync(Guid teacherId)
         {
             using var conn = _connectionFactory.CreateConnection();
@@ -110,7 +110,7 @@ namespace MentorumApi.Data
                 {SlotSelect}
                 FROM schedule_slots s
                 WHERE s.is_active = 1
-                  AND s.course_id IN (SELECT id FROM courses WHERE teacher_id = @TeacherId AND is_active = 1)
+                  AND s.course_id IN (SELECT id FROM courses WHERE teacher_id = @TeacherId AND is_active = 1 AND COALESCE(teacher_can_view_schedule, 0) = 1)
                 ORDER BY s.day_of_week, s.start_time", new { TeacherId = teacherId });
         }
 

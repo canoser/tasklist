@@ -8,6 +8,7 @@ namespace MentorumApi.Tests
     public class SchoolAccessTests : IClassFixture<IntegrationTestFixture>
     {
         private readonly SchoolAccessRepository _repo;
+        private readonly TeacherRepository _teacherRepo;
 
         private static readonly Guid ProgramA = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
         private static readonly Guid ProgramB = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
@@ -15,11 +16,15 @@ namespace MentorumApi.Tests
         private static readonly Guid CourseA = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
         private static readonly Guid StudentB = Guid.Parse("55555555-5555-5555-5555-555555555555");
         private static readonly Guid StudentC = Guid.Parse("66666666-6666-6666-6666-666666666666");
+        private static readonly Guid CoachA = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        private static readonly Guid TeacherC = Guid.Parse("99999999-9999-9999-9999-999999999998");
 
         public SchoolAccessTests(IntegrationTestFixture fixture)
         {
             var config = new ConfigurationBuilder().Build();
-            _repo = new SchoolAccessRepository(new DbConnectionFactory(config));
+            var factory = new DbConnectionFactory(config);
+            _repo = new SchoolAccessRepository(factory);
+            _teacherRepo = new TeacherRepository(factory);
         }
 
         [Fact]
@@ -99,6 +104,36 @@ namespace MentorumApi.Tests
             Assert.Equal("s@test.com", masked.Email);
             Assert.Null(masked.Grade);
             Assert.Null(masked.Track);
+        }
+
+        [Fact]
+        public async Task GetTeacherCourseHomework_OnlyReturnsOwnCourseHomework()
+        {
+            var list = await _repo.GetTeacherCourseHomeworkAsync(CourseA);
+            var titles = list.Select(h => (string)h.title).ToList();
+            Assert.Contains("Matematik Ödevi", titles);
+            Assert.DoesNotContain("Coğrafya Ödevi", titles);
+        }
+
+        [Fact]
+        public async Task GetTeacherCourseExams_OnlyReturnsOwnCourseExams()
+        {
+            var list = await _repo.GetTeacherCourseExamsAsync(CourseA);
+            var names = list.Select(e => (string)e.name).ToList();
+            Assert.Contains("Matematik Sınavı", names);
+            Assert.DoesNotContain("Coğrafya Sınavı", names);
+        }
+
+        [Fact]
+        public async Task DeactivateTeacher_FromOneProgram_KeepsOtherProgramCourses()
+        {
+            var result = await _teacherRepo.DeactivateTeacherAsync(ProgramA, TeacherC, CoachA);
+            Assert.Equal("OK", result);
+
+            var courses = await _repo.GetTeacherCoursesAsync(TeacherC);
+            var names = courses.Select(c => c.Name).ToList();
+            Assert.DoesNotContain("Kimya", names);   // Program A dersleri düştü
+            Assert.Contains("Biyoloji", names);       // Program B dersi korundu
         }
     }
 }

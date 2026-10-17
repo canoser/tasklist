@@ -86,8 +86,8 @@ namespace MentorumApi.Endpoints
             });
 
             // Veli okuma
-            var parent = app.MapGroup("/api/v1/parent/schedule").RequireAuthorization("RequireParentRole");
-            parent.MapGet("/", async ([FromServices] ScheduleRepository repo, ClaimsPrincipal user) =>
+            var parent = app.MapGroup("/api/v1/parent").RequireAuthorization("RequireParentRole");
+            parent.MapGet("/schedule", async ([FromServices] ScheduleRepository repo, ClaimsPrincipal user) =>
             {
                 var parentId = GetUserId(user);
                 if (parentId == null) return Results.Unauthorized();
