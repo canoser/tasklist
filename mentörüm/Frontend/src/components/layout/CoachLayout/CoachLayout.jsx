@@ -32,7 +32,7 @@ import ViewAsModal from '../../../features/coach/view-as/ViewAsModal';
 import styles from './CoachLayout.module.css';
 
 const CoachLayout = () => {
-  const { user, clearAuth, viewAs, setViewAs } = useAuthStore();
+  const { user, clearAuth, viewAs } = useAuthStore();
   const { sidebarOpen, toggleSidebar, closeSidebar, theme, toggleTheme } = useUIStore();
   const navigate = useNavigate();
   const location = useLocation();
@@ -224,38 +224,7 @@ const CoachLayout = () => {
 
       {/* Ana İçerik Alanı */}
       <div className={styles.mainWrapper}>
-        {/* View-As Bildirim Bannerı (T51) */}
-        {viewAs && (
-          <div style={{
-            background: 'linear-gradient(90deg, #f59e0b, #d97706)',
-            color: '#ffffff',
-            padding: '0.5rem 1.25rem',
-            fontSize: '0.85rem',
-            fontWeight: 600,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            boxShadow: '0 2px 8px rgba(245, 158, 11, 0.3)',
-            zIndex: 100
-          }}>
-            <span>👁️ Gözüyle Gör Modu Aktif: {viewAs.role === 'Student' ? 'Öğrenci' : viewAs.role === 'Teacher' ? 'Öğretmen' : 'Veli'} — {viewAs.name} (Salt-Okunur Önizleme)</span>
-            <button 
-              onClick={() => setViewAs(null)}
-              style={{
-                background: 'rgba(0,0,0,0.25)',
-                border: 'none',
-                borderRadius: '4px',
-                color: '#fff',
-                padding: '4px 10px',
-                fontSize: '0.8rem',
-                fontWeight: 600,
-                cursor: 'pointer'
-              }}
-            >
-              Önizlemeden Çık ✕
-            </button>
-          </div>
-        )}
+        {/* View-As banner'ı artık global ViewAsBanner bileşeninde */}
 
         {/* Sticky Üst Bar (64px) */}
         <header className={styles.topbar}>

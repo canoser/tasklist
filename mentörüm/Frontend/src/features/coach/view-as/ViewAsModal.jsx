@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Modal from '../../../components/common/Modal/Modal';
 import Button from '../../../components/common/Button/Button';
 import { useAuthStore } from '../../auth/authStore';
-import { useStudents } from '../coachApi';
+import { useStudents, useStudent } from '../coachApi';
 import { usePrograms, useTeachers } from '../coachSchoolApi';
 
 export default function ViewAsModal({ isOpen, onClose }) {
   const { viewAs, setViewAs } = useAuthStore();
+  const navigate = useNavigate();
   const [role, setRole] = useState('Student'); // 'Student' | 'Teacher' | 'Parent'
   const [targetId, setTargetId] = useState('');
+  const [parentStudentId, setParentStudentId] = useState('');
 
   const { data: students = [] } = useStudents();
   const { data: programs = [] } = usePrograms();
   const { data: teachers = [] } = useTeachers(programs[0]?.id);
+  const { data: selectedStudent } = useStudent(role === 'Parent' ? parentStudentId : null);
 
   if (!isOpen) return null;
 
@@ -23,22 +27,29 @@ export default function ViewAsModal({ isOpen, onClose }) {
     }
 
     let name = '';
+    let id = targetId;
     if (role === 'Student') {
       name = students.find(s => s.id === targetId)?.fullName || 'Öğrenci';
     } else if (role === 'Teacher') {
       name = teachers.find(t => t.id === targetId)?.fullName || 'Öğretmen';
     } else if (role === 'Parent') {
-      // Öğrencinin velisi
-      name = `Veli (${students.find(s => s.id === targetId)?.fullName || 'Öğrenci'})`;
+      const parent = selectedStudent?.parents?.find(p => p.id === targetId);
+      name = parent?.fullName || 'Veli';
     }
 
-    setViewAs({ role, id: targetId, name });
+    setViewAs({ role, id, name });
     onClose();
+
+    // Tıpa tıp önizleme: hedef rolün ana sayfasına yönlendir
+    if (role === 'Student') navigate('/student/home');
+    else if (role === 'Teacher') navigate('/teacher/courses');
+    else if (role === 'Parent') navigate('/parent/summary');
   };
 
   const handleExit = () => {
     setViewAs(null);
     onClose();
+    navigate('/coach/dashboard');
   };
 
   return (
@@ -109,8 +120,34 @@ export default function ViewAsModal({ isOpen, onClose }) {
         </div>
 
         <div>
+          {role === 'Parent' && (
+            <div style={{ marginBottom: '0.5rem' }}>
+              <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
+                Öğrenci Seçin:
+              </label>
+              <select
+                value={parentStudentId}
+                onChange={(e) => { setParentStudentId(e.target.value); setTargetId(''); }}
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  borderRadius: '6px',
+                  border: '1px solid var(--border-color)',
+                  background: 'var(--bg-app)',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.875rem'
+                }}
+              >
+                <option value="">-- Öğrenci Seçin --</option>
+                {students.map(s => (
+                  <option key={s.id} value={s.id}>{s.fullName}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
-            Kişi Seçin:
+            {role === 'Parent' ? 'Veli Seçin:' : 'Kişi Seçin:'}
           </label>
           <select
             value={targetId}
@@ -132,8 +169,8 @@ export default function ViewAsModal({ isOpen, onClose }) {
             {role === 'Teacher' && teachers.map(t => (
               <option key={t.id} value={t.id}>{t.fullName} ({t.branch || 'Öğretmen'})</option>
             ))}
-            {role === 'Parent' && students.map(s => (
-              <option key={s.id} value={s.id}>{s.fullName} Velisi</option>
+            {role === 'Parent' && (selectedStudent?.parents || []).map(p => (
+              <option key={p.id} value={p.id}>{p.fullName}{p.relation ? ` (${p.relation})` : ''}</option>
             ))}
           </select>
         </div>

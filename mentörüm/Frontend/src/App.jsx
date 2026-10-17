@@ -41,10 +41,12 @@ import StudentProfilePage from './features/student/profile/StudentProfilePage';
 import CoachTeacherDetailPage from './features/coach/teachers/CoachTeacherDetailPage';
 import CoachProfilePage from './features/coach/profile/CoachProfilePage';
 import ApprovalsPage from './features/coach/approvals/ApprovalsPage';
+import ViewAsBanner from './components/common/ViewAsBanner/ViewAsBanner';
+import ThemeSync from './components/common/ThemeSync/ThemeSync';
 
 // Korumalı Route Bileşeni
 const PrivateRoute = ({ children, allowedRoles, requireAdmin }) => {
-  const { user } = useAuthStore();
+  const { user, viewAs } = useAuthStore();
 
   if (!user) {
     return <Navigate to="/login" replace />;
@@ -54,7 +56,12 @@ const PrivateRoute = ({ children, allowedRoles, requireAdmin }) => {
     return <Navigate to="/coach/dashboard" replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
+  // Koç, "Gözüyle Gör" aktifken hedef rolün rotalarına erişebilir (salt-okunur önizleme).
+  const effectiveRole = (user.role === 'Coach' || user.role === 'Admin') && viewAs
+    ? viewAs.role
+    : user.role;
+
+  if (allowedRoles && !allowedRoles.includes(effectiveRole)) {
     return <div>Yetkisiz Erişim (403)</div>;
   }
 
@@ -90,6 +97,8 @@ function App() {
 
   return (
     <Router>
+      <ViewAsBanner />
+      <ThemeSync />
       <Routes>
         <Route path="/login" element={
           user ? (

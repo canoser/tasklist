@@ -5,12 +5,16 @@ import { apiClient } from '../../../api/apiClient';
 import { useParentChildren } from '../../../features/parent/parentApi';
 import NotificationDropdown from '../../common/NotificationDropdown/NotificationDropdown';
 import ParentEmptyState from '../../common/ParentEmptyState/ParentEmptyState';
+import ThemeSelector from '../../common/ThemeSelector/ThemeSelector';
+import ThemeDecorContainer from '../../common/ThemeDecor/ThemeDecorContainer';
 import styles from './ParentLayout.module.css';
 
 const ParentLayout = () => {
-  const { user, clearAuth } = useAuthStore();
+  const { user, viewAs, clearAuth } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
+  const displayName = viewAs?.name || user?.fullName || 'Veli';
+  const displayInitial = displayName.charAt(0);
 
   const { data: children = [], isLoading } = useParentChildren();
   const activeChild = children[0];
@@ -49,18 +53,20 @@ const ParentLayout = () => {
 
   return (
     <div className={styles.layout}>
+      <ThemeDecorContainer />
       {/* Topbar for mobile/parent view */}
       <header className={styles.topbar}>
         <div className={styles.userInfo}>
           <div className={styles.avatar}>
-            {user?.fullName?.charAt(0) || 'V'}
+            {displayInitial}
           </div>
           <div>
             <div className={styles.greeting}>Merhaba,</div>
-            <div className={styles.userName}>{user?.fullName?.split(' ')[0]}</div>
+            <div className={styles.userName}>{displayName.split(' ')[0]}</div>
           </div>
         </div>
         <div className={styles.topbarActions}>
+          <ThemeSelector />
           <NotificationDropdown />
           <button className={styles.logoutBtn} onClick={handleLogout} title="Çıkış Yap">
             🚪

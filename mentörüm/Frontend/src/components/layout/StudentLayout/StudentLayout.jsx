@@ -3,11 +3,15 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../../features/auth/authStore';
 import { apiClient } from '../../../api/apiClient';
 import NotificationDropdown from '../../common/NotificationDropdown/NotificationDropdown';
+import ThemeSelector from '../../common/ThemeSelector/ThemeSelector';
+import ThemeDecorContainer from '../../common/ThemeDecor/ThemeDecorContainer';
 import styles from './StudentLayout.module.css';
 
 const StudentLayout = () => {
-  const { user, clearAuth } = useAuthStore();
+  const { user, viewAs, clearAuth } = useAuthStore();
   const navigate = useNavigate();
+  const displayName = viewAs?.name || user?.fullName || 'Öğrenci';
+  const displayInitial = displayName.charAt(0);
   const handleLogout = async () => {
     try {
       await apiClient.post('/auth/logout');
@@ -27,6 +31,7 @@ const StudentLayout = () => {
 
   return (
     <div className={styles.layout}>
+      <ThemeDecorContainer />
       {/* Tablet & Masaüstü Sol Menü (Sidebar) */}
       <aside className={styles.sidebar}>
         <div className={styles.sidebarHeader}>
@@ -36,10 +41,10 @@ const StudentLayout = () => {
 
         <div className={styles.sidebarUser}>
           <div className={styles.avatar}>
-            {user?.fullName?.charAt(0) || 'Ö'}
+            {displayInitial}
           </div>
           <div className={styles.sidebarUserDetails}>
-            <div className={styles.sidebarUserName}>{user?.fullName || 'Öğrenci'}</div>
+            <div className={styles.sidebarUserName}>{displayName}</div>
             <div className={styles.sidebarUserEmail}>{user?.email}</div>
           </div>
         </div>
@@ -73,11 +78,11 @@ const StudentLayout = () => {
           {/* Mobil kullanıcı selamlama */}
           <div className={styles.mobileUserInfo}>
             <div className={styles.avatar}>
-              {user?.fullName?.charAt(0) || 'Ö'}
+              {displayInitial}
             </div>
             <div>
               <div className={styles.greeting}>Merhaba,</div>
-              <div className={styles.userName}>{user?.fullName?.split(' ')[0]}</div>
+              <div className={styles.userName}>{displayName.split(' ')[0]}</div>
             </div>
           </div>
 
@@ -87,6 +92,7 @@ const StudentLayout = () => {
           </div>
 
           <div className={styles.topbarActions}>
+            <ThemeSelector />
             <NotificationDropdown />
             <button className={styles.mobileLogoutBtn} onClick={handleLogout} title="Çıkış Yap">
               🚪

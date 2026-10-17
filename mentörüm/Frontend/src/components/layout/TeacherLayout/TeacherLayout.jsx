@@ -3,11 +3,15 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../../features/auth/authStore';
 import { apiClient } from '../../../api/apiClient';
 import NotificationDropdown from '../../common/NotificationDropdown/NotificationDropdown';
+import ThemeSelector from '../../common/ThemeSelector/ThemeSelector';
+import ThemeDecorContainer from '../../common/ThemeDecor/ThemeDecorContainer';
 import styles from './TeacherLayout.module.css';
 
 const TeacherLayout = () => {
-  const { user, clearAuth } = useAuthStore();
+  const { user, viewAs, clearAuth } = useAuthStore();
   const navigate = useNavigate();
+  const displayName = viewAs?.name || user?.fullName || 'Öğretmen';
+  const displayInitial = displayName.charAt(0);
   const handleLogout = async () => {
     try {
       await apiClient.post('/auth/logout');
@@ -24,17 +28,19 @@ const TeacherLayout = () => {
 
   return (
     <div className={styles.layout}>
+      <ThemeDecorContainer />
       <header className={styles.topbar}>
         <div className={styles.userInfo}>
           <div className={styles.avatar}>
-            {user?.fullName?.charAt(0) || 'T'}
+            {displayInitial}
           </div>
           <div>
             <div className={styles.greeting}>Merhaba,</div>
-            <div className={styles.userName}>{user?.fullName?.split(' ')[0]}</div>
+            <div className={styles.userName}>{displayName.split(' ')[0]}</div>
           </div>
         </div>
         <div className={styles.topbarActions}>
+          <ThemeSelector />
           <NotificationDropdown />
           <button className={styles.logoutBtn} onClick={handleLogout} title="Çıkış Yap">
             🚪
