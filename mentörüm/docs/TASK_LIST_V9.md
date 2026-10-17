@@ -455,10 +455,10 @@ CREATE TABLE IF NOT EXISTS payments (
 
 ## 5. Bitirme Kriterleri (Doğrulama Kontrol Listesi)
 
-- [ ] Tüm yeni UI metinleri nazik Türkçe (i18n zorunlu değil).
-- [ ] Tüm renkler token (`var(--color-*)`, `var(--bg-*)`, `var(--text-*)`, `var(--border-color)`); Cyber/Nature temaları kırılmadı.
-- [ ] `bottomNav` yeni sekmelerle taşmıyor; `100dvh` + `safe-area-inset` uyumlu.
-- [ ] Finansta hard-delete yok; `is_active=0` / `CANCELLED` kalıbı korundu.
-- [ ] Yeni endpoint'lerin tamamı `ProgramAccessGuard` + SQL sahiplik filtresi (defense-in-depth) içeriyor.
-- [ ] Hiçbir görev `TODO`/yer tutucu içermiyor; belirsizlik durumunda uygulama durdurulup kullanıcıya soruldu (C2).
+- [x] Tüm yeni UI metinleri nazik Türkçe (i18n zorunlu değil).
+- [x] Tüm renkler token (`var(--color-*)`, `var(--bg-*)`, `var(--text-*)`, `var(--border-color)`); Cyber/Nature temaları kırılmadı.
+- [x] `bottomNav` yeni sekmelerle taşmıyor; `100dvh` + `safe-area-inset` uyumlu.
+- [x] Finansta hard-delete yok; `is_active=0` / `CANCELLED` kalıbı korundu.
+- [x] Yeni endpoint'lerin tamamı `ProgramAccessGuard` + SQL sahiplik filtresi (defense-in-depth) içeriyor.
+- [x] Hiçbir görev `TODO`/yer tutucu içermiyor; belirsizlik durumunda uygulama durdurulup kullanıcıya soruldu (C2).
 
