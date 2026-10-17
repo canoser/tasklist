@@ -89,8 +89,8 @@
 
 - [ ] `Backend/MentorumApi/Data/ScheduleRepository.cs` → `GetParentSlotsAsync` metoduna `Guid? studentId` parametresi ekle; verilmişse `AND s.student_id = @StudentId` (veya course/group üyelikleri o çocukla sınırlı) filtrele. (DeepSeek)
 - [x] `ParentEndpoints.cs`'e çocuk bazlı `GET /parents/children/{studentId}/schedule` ucu ekle (is_accepted kontrolüyle). (DeepSeek)
-- [ ] **UI / Tema & Dokunmatik Deneyim Tercihi (3.8 flash gemini):** Çok çocuklu veliler için standart bir HTML `<select>` dropdown yerine, sayfa başında çocukların isimlerini taşıyan **Hap/Sekme Butonları (`styles.childTab`, `activeChildId`)** kullanılmalıdır. Bu yapı mobil `ParentLayout` dokunmatik ergonomisine çok daha uygundur ve sistemin CSS token'ları (`var(--color-primary)`, `var(--bg-color-surface)`) ile Cyber/Nature temalarında kusursuz görünür.
-- [ ] **Tek Çocuklu Veli UX Optimizasyonu (3.8 flash gemini):** Velinin tek bir çocuğu varsa bu seçici bileşen render edilmemeli (ekran kalabalığı önlenmeli), birden çok çocuk varsa ilk çocuk varsayılan aktif seçilmelidir.
+- [x] **UI / Tema & Dokunmatik Deneyim Tercihi (3.8 flash gemini):** Çok çocuklu veliler için standart bir HTML `<select>` dropdown yerine, sayfa başında çocukların isimlerini taşıyan **Hap/Sekme Butonları (`styles.childTab`, `activeChildId`)** kullanılmalıdır. Bu yapı mobil `ParentLayout` dokunmatik ergonomisine çok daha uygundur ve sistemin CSS token'ları (`var(--color-primary)`, `var(--bg-color-surface)`) ile Cyber/Nature temalarında kusursuz görünür.
+- [x] **Tek Çocuklu Veli UX Optimizasyonu (3.8 flash gemini):** Velinin tek bir çocuğu varsa bu seçici bileşen render edilmemeli (ekran kalabalığı önlenmeli), birden çok çocuk varsa ilk çocuk varsayılan aktif seçilmelidir.
 - [x] Frontend: `ParentSchedulePage.jsx` + `parentApi.js` → çocuk seçici sekme/butonlar; seçili çocuğun programını göster. (DeepSeek & 3.8 flash gemini)
 
 ### 2.3 Derse öğrenci/grup eklemede elle UUID girişi (DeepSeek)
@@ -110,7 +110,7 @@
 
 - [ ] `Frontend/src/features/coach/courses/CoachCoursesPage.jsx` → ders oluşturma formuna öğretmen `<select>` (programın öğretmenleri) + ders tipi + renk + 10 izin toggle'ı ekle. Backend `CreateCourseRequest.TeacherId` + `teacher_can_*` alanları hazır. (DeepSeek)
 - [ ] **Ders Oluşturma Formunu Şişirmeme / Akordeon UX (3.8 flash gemini):** Ders oluşturma anında 10 izin toggle'ını doğrudan ekrana yığmak koç için kafa karıştırıcıdır. Ders oluştururken sadece "Öğretmen Seçimi (Opsiyonel)" ve "Varsayılan İzinleri Kullan" seçeneği sunulmalı; 10 izin ayarı ise "Gelişmiş İzinler" başlığı altında daraltılabilir (akordeon) bir alanda tutulmalıdır.
-- [ ] **Ders Oluşturma Formu Varsayılan İzin Tavsiyesi (3.8 flash gemini):** Ders oluşturma formu sade tutulduğu için koçu 11 izinle boğmamak doğru bir karardır. Ancak formun altına "Varsayılan: Temel Profil ve Ödev İzinleri Açık, İleri İzinler Kapalı" şeklinde bir bilgilendirme metni konulmalı; özel yetkilendirmeler oluşturulduktan sonra ders detayındaki "İzinler" sekmesinden yönetilmeye devam edilmelidir.
+- [x] **Ders Oluşturma Formu Varsayılan İzin Tavsiyesi (3.8 flash gemini):** Ders oluşturma formu sade tutulduğu için koçu 11 izinle boğmamak doğru bir karardır. Ancak formun altına "Varsayılan: Temel Profil ve Ödev İzinleri Açık, İleri İzinler Kapalı" şeklinde bir bilgilendirme metni konulmalı; özel yetkilendirmeler oluşturulduktan sonra ders detayındaki "İzinler" sekmesinden yönetilmeye devam edilmelidir.
 - [x] **Backend Tenant Doğrulaması (Kritik Güvenlik) (3.8 flash gemini):** `CourseRepository.CreateCourseAsync` ve `UpdateCourseAsync` içinde gönderilen `TeacherId`'nin gerçekten o programa ait bir öğretmen olduğu (`SELECT 1 FROM program_teachers WHERE teacher_id = @TeacherId AND program_id = @ProgramId AND is_active = 1`) mutlaka doğrulanmalıdır. Aksi halde yabancı öğretmen GUID'iyle ders açılmasına izin verilmiş olur.
 - [x] `CoachCourseDetailPage.jsx` → "İzinler" sekmesini salt okunurdan **düzenlenebilir** hale getir (switch + Kaydet → `PUT /programs/{id}/courses/{courseId}`). (DeepSeek)
 - [ ] **Toggle Tema Uyumu (3.8 flash gemini):** Ders detayındaki izin switch'leri özel CSS modules ile yapılmalı, Cyber ve Nature temalarında parlayan yeşil/mavi tema değişkenlerini (`var(--color-primary)`, `var(--color-success)`) kullanmalıdır.
@@ -119,10 +119,10 @@
 ### 3.2 Veliye sınav sonuçları erişimi (DeepSeek)
 
 - [x] `ParentEndpoints.cs` → `GET /parents/children/{studentId}/exams` ucu (is_accepted kontrolüyle; öğrencinin `exam_results` listesini döndür). (DeepSeek)
-- [ ] Frontend: `ParentLayout` + `ParentHomework` yanına "Sınavlar" sekmesi; `parentApi.js`'e hook. (DeepSeek)
-- [ ] **Veli Sınavlar Sekmesi Tasarım Tavsiyesi (3.8 flash gemini):** Hook ve backend hazır olduğundan, `ParentLayout` altına doğrudan 5. sekme eklemek yerine `ParentHomeworkPage` yapısına benzer bağımsız bir `ParentExamsPage` yapılmalı; rotası `/parent/exams` olarak `App.jsx`'e eklenmelidir. Kartlarda `common/Card` ve `common/Badge` kullanılarak sınav adı, tarihi, neti ve ders bazlı dağılımı gösterilmelidir.
-- [ ] **Mobil Alt Navigasyon (BottomNav) Taşma Koruması (3.8 flash gemini):** `ParentLayout` alt barda şu an 4 sekme (Özet, Takvim, Ödevler, Program) bulunmaktadır. 5. bir "Sınavlar" sekmesi eklendiğinde küçük ekranlı telefonlarda (iPhone SE / 360px genişlik) butonların sıkışıp taşmaması için ikon ve yazı boyutları responsive test edilmelidir.
-- [ ] **Grafik ve Net Kartları Teması (3.8 flash gemini):** Sınav sonuçları listelenirken kullanılacak kartlar ve başarı rozetleri doğrudan `common/Card` ve `common/Badge` bileşenleriyle tasarlanmalı, Cyber Dark modda beyaz zemin patlaması yaratacak hardcoded renklerden kaçınılmalıdır.
+- [x] Frontend: `ParentLayout` + `ParentHomework` yanına "Sınavlar" sekmesi; `parentApi.js`'e hook. (DeepSeek)
+- [x] **Veli Sınavlar Sekmesi Tasarım Tavsiyesi (3.8 flash gemini):** Hook ve backend hazır olduğundan, `ParentLayout` altına doğrudan 5. sekme eklemek yerine `ParentHomeworkPage` yapısına benzer bağımsız bir `ParentExamsPage` yapılmalı; rotası `/parent/exams` olarak `App.jsx`'e eklenmelidir. Kartlarda `common/Card` ve `common/Badge` kullanılarak sınav adı, tarihi, neti ve ders bazlı dağılımı gösterilmelidir.
+- [x] **Mobil Alt Navigasyon (BottomNav) Taşma Koruması (3.8 flash gemini):** `ParentLayout` alt barda şu an 4 sekme (Özet, Takvim, Ödevler, Program) bulunmaktadır. 5. bir "Sınavlar" sekmesi eklendiğinde küçük ekranlı telefonlarda (iPhone SE / 360px genişlik) butonların sıkışıp taşmaması için ikon ve yazı boyutları responsive test edilmelidir.
+- [x] **Grafik ve Net Kartları Teması (3.8 flash gemini):** Sınav sonuçları listelenirken kullanılacak kartlar ve başarı rozetleri doğrudan `common/Card` ve `common/Badge` bileşenleriyle tasarlanmalı, Cyber Dark modda beyaz zemin patlaması yaratacak hardcoded renklerden kaçınılmalıdır.
 
 ### 3.3 Öğretmenin derse/gruba toplu ödev ataması (DeepSeek)
 
@@ -143,8 +143,8 @@
 ### 3.5 `GetTeacherProgramIdAsync` `LIMIT 1` kısıtı (DeepSeek)
 
 - [x] `Backend/MentorumApi/Data/SchoolAccessRepository.cs` → `GetTeacherProgramIdAsync` yerine öğretmenin TÜM aktif programlarını döndüren `GetTeacherProgramIdsAsync` ekle; çağıranları buna göre güncelle. (DeepSeek)
-- [ ] **Çoklu Program Rozeti (Badge) UX (3.8 flash gemini):** Öğretmen birden çok kurumda/programda görev alıyorsa, `TeacherLayout` üst barında veya ders kartlarında dersin hangi koçluk programına ait olduğunu belirten renkli program rozetleri (`badge`) gösterilmelidir.
-- [ ] **3.5 Program Adı Entegrasyon Tavsiyesi (3.8 flash gemini):** Öğretmenin ders listesi sorgusuna (`SchoolAccessRepository.GetTeacherCoursesAsync`) `cp.name AS ProgramName` kolonu JOIN ile eklenmeli; `TeacherCoursesPage` ders kartlarında başlığın yanında `var(--color-primary)` ve `var(--bg-color-surface)` uyumlu minik bir program rozeti (`badge`) basılmalıdır.
+- [x] **Çoklu Program Rozeti (Badge) UX (3.8 flash gemini):** Öğretmen birden çok kurumda/programda görev alıyorsa, `TeacherLayout` üst barında veya ders kartlarında dersin hangi koçluk programına ait olduğunu belirten renkli program rozetleri (`badge`) gösterilmelidir.
+- [x] **3.5 Program Adı Entegrasyon Tavsiyesi (3.8 flash gemini):** Öğretmenin ders listesi sorgusuna (`SchoolAccessRepository.GetTeacherCoursesAsync`) `cp.name AS ProgramName` kolonu JOIN ile eklenmeli; `TeacherCoursesPage` ders kartlarında başlığın yanında `var(--color-primary)` ve `var(--bg-color-surface)` uyumlu minik bir program rozeti (`badge`) basılmalıdır.
 
 ---
 
@@ -166,5 +166,5 @@
 - [x] `dotnet test Mentorum.sln` → 43/43 yeşil. (Cline)
 - [x] `cd Frontend && npm run build` → ✓ (0 hata). (Cline)
 - [x] P0 güvenlik düzeltmeleri (1.1, 1.2) diğerlerinden önce merge edilir. (DeepSeek)
-- [ ] **Inline Stilleri CSS Modules'e Taşıma (3.8 flash gemini):** `CoachCourseDetailPage.jsx`, `CoachCoursesPage.jsx` ve `TeacherCoursesPage.jsx` içerisindeki inline `style={{ ... }}` blokları (select menüleri, buton kapsayıcıları) ilgili `.module.css` dosyalarına taşınarak mimari temizlik sağlanmalıdır.
+- [x] **Inline Stilleri CSS Modules'e Taşıma (3.8 flash gemini):** `CoachCourseDetailPage.jsx`, `CoachCoursesPage.jsx` ve `TeacherCoursesPage.jsx` içerisindeki inline `style={{ ... }}` blokları (select menüleri, buton kapsayıcıları) ilgili `.module.css` dosyalarına taşınarak mimari temizlik sağlanmalıdır.
 
