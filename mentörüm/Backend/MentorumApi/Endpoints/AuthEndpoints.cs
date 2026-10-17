@@ -451,7 +451,7 @@ var token = jwt.GenerateAccessToken(user);
                 using var conn = db.CreateConnection();
                 var meDto = await conn.QuerySingleOrDefaultAsync<UserDto>(@"
                     SELECT u.id AS Id, u.email AS Email, u.role AS Role, u.full_name AS FullName, u.avatar_url AS AvatarUrl, u.is_admin AS IsAdmin,
-                           c.bio AS Bio, c.specialty AS Specialty
+                           c.bio AS Bio, c.specialty AS Specialty, u.theme_mode AS ThemeMode, u.theme_style AS ThemeStyle
                     FROM users u
                     LEFT JOIN coaches c ON c.id = u.id
                     WHERE u.id = @Id AND u.is_active = 1",
@@ -473,6 +473,23 @@ var token = jwt.GenerateAccessToken(user);
 
                 if (rows == 0) return Results.NotFound(new { error = "Koç profili bulunamadı." });
                 return Results.Ok(new { message = "Profil güncellendi." });
+            });
+
+            // Tema tercihi (açık/koyu mod + stil) — tüm roller
+            meGroup.MapPut("/theme", async ([FromBody] UpdateThemeRequest req, [FromServices] DbConnectionFactory db, HttpContext ctx) =>
+            {
+                var idStr = ctx.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(idStr, out var id)) return Results.Unauthorized();
+
+                var mode = req.ThemeMode == "dark" ? "dark" : "light";
+                var style = new[] { "classic", "nature", "ocean", "cyber", "formal" }.Contains(req.ThemeStyle) ? req.ThemeStyle : "classic";
+
+                using var conn = db.CreateConnection();
+                await conn.ExecuteAsync(
+                    "UPDATE users SET theme_mode = @Mode, theme_style = @Style WHERE id = @Id",
+                    new { Id = id, Mode = mode, Style = style });
+
+                return Results.Ok(new { message = "Tema güncellendi." });
             });
 
         }

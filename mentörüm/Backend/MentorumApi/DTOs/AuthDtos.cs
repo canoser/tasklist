@@ -65,6 +65,14 @@ namespace MentorumApi.DTOs
         public bool IsAdmin { get; set; }
         public string? Bio { get; set; }
         public string? Specialty { get; set; }
+        public string? ThemeMode { get; set; }
+        public string? ThemeStyle { get; set; }
+    }
+
+    public class UpdateThemeRequest
+    {
+        public string? ThemeMode { get; set; }
+        public string? ThemeStyle { get; set; }
     }
 
     public class UpdateCoachProfileRequest
