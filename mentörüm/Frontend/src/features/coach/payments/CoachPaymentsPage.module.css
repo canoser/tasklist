@@ -1,0 +1,297 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.titleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-color-main);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: var(--text-color-muted);
+  margin: 0;
+}
+
+.programSelector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.selectInput {
+  padding: 8px 12px;
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-color-surface);
+  color: var(--text-color-main);
+  font-size: 0.875rem;
+  outline: none;
+}
+
+/* KPI Kartları */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.kpiCard {
+  background-color: var(--bg-color-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  padding: 18px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kpiLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.kpiValue {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-color-main);
+  line-height: 1.1;
+}
+
+.kpiSubtext {
+  font-size: 0.75rem;
+  color: var(--text-color-muted);
+}
+
+.alertValue {
+  color: var(--color-danger);
+}
+
+.successValue {
+  color: var(--color-success);
+}
+
+/* Plan Tablosu & Kartları */
+.plansSection {
+  background-color: var(--bg-color-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.sectionTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-color-main);
+  margin: 0;
+}
+
+.filterTabs {
+  display: flex;
+  gap: 8px;
+  background-color: var(--bg-app);
+  padding: 4px;
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--border-color);
+}
+
+.filterBtn {
+  padding: 5px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-color-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.filterBtnActive {
+  background-color: var(--bg-color-surface);
+  color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.plansList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.planCard {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  padding: 16px;
+  background-color: var(--bg-app);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.planCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.studentInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.studentAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.studentName {
+  font-weight: 700;
+  color: var(--text-color-main);
+  font-size: 0.95rem;
+}
+
+.planTotalBadge {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-color-main);
+  background-color: var(--bg-color-surface);
+  border: 1px solid var(--border-color);
+  padding: 4px 10px;
+  border-radius: var(--radius-btn);
+}
+
+.itemsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.itemCard {
+  background-color: var(--bg-color-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-btn);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.itemTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.itemDueDate {
+  font-size: 0.75rem;
+  color: var(--text-color-muted);
+}
+
+.itemStatusBadge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+}
+
+.statusPaid {
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.statusOverdue {
+  background-color: var(--color-danger-light);
+  color: var(--color-danger);
+}
+
+.statusPending {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.itemAmountRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.itemAmount {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-color-main);
+}
+
+.collectBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: none;
+  background-color: var(--color-primary);
+  color: #FFFFFF;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.collectBtn:hover {
+  opacity: 0.9;
+}
+
+.emptyNotice {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-color-muted);
+  font-size: 0.875rem;
+}

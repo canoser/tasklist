@@ -3,7 +3,8 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../../features/auth/authStore';
 import { apiClient } from '../../../api/apiClient';
 import { useUIStore } from '../../../store/uiStore';
-import { usePendingApprovals } from '../../../features/coach/coachSchoolApi';
+import { usePendingApprovals, usePrograms } from '../../../features/coach/coachSchoolApi';
+import { useApprovals } from '../../../features/coach/coachApi';
 import NotificationDropdown from '../../common/NotificationDropdown/NotificationDropdown';
 import { 
   LayoutDashboard, 
@@ -12,7 +13,10 @@ import {
   BookOpen, 
   BarChart3, 
   ShieldCheck, 
+  ShieldAlert,
   UserCog, 
+  GraduationCap,
+  CreditCard,
   LogOut, 
   Sun, 
   Moon, 
@@ -44,6 +48,12 @@ const CoachLayout = () => {
   const { data: pendingApprovals } = usePendingApprovals();
   const pendingCount = user?.isAdmin ? (pendingApprovals?.length || 0) : 0;
 
+  // Koç bekleyen onayları sayacı
+  const { data: programs = [] } = usePrograms();
+  const activeProgramId = programs[0]?.id;
+  const { data: coachApprovals = [] } = useApprovals(activeProgramId, 'PENDING');
+  const coachPendingCount = coachApprovals?.length || 0;
+
   // ⌘K / Ctrl+K Global Kısayol Dinleyicisi
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -69,45 +79,59 @@ const CoachLayout = () => {
     const p = location.pathname;
     if (p.includes('/dashboard')) return 'Dashboard';
     if (p.includes('/students')) return 'Öğrenciler';
-    if (p.includes('/programs')) return 'Programlar';
-    if (p.includes('/calendar')) return 'Takvim';
+    if (p.includes('/teachers')) return 'Öğretmenler';
+    if (p.includes('/payments')) return 'Finans & Ödemeler';
+    if (p.includes('/programs')) return 'Programlar & Dersler';
+    if (p.includes('/calendar')) return 'Takvim & Haftalık Program';
     if (p.includes('/approvals')) return 'Onay Merkezi';
-    if (p.includes('/reports')) return 'Raporlar';
-    if (p.includes('/profile')) return 'Profil';
-    if (p.includes('/admin')) return 'Yönetim / Onaylar';
+    if (p.includes('/reports')) return 'Raporlar & Analiz';
+    if (p.includes('/profile')) return 'Ayarlar & Profil';
+    if (p.includes('/admin')) return 'Sistem Yönetimi (Admin)';
     return 'Panel';
   };
 
   const currentDateFormatted = format(new Date(), 'd MMMM yyyy, EEEE', { locale: tr });
 
-  // Menü Gruplaması
+  // Menü Gruplaması (30 SaaS analizine uygun 4 Temiz Grup)
   const navGroups = [
     {
-      groupTitle: 'GENEL',
+      groupTitle: 'KOMUTA MERKEZİ',
       items: [
         { path: '/coach/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { path: '/coach/calendar', label: 'Takvim', icon: Calendar },
-        { path: '/coach/approvals', label: 'Onaylar', icon: ShieldCheck },
+        { path: '/coach/calendar', label: 'Takvim & Program', icon: Calendar },
+        { 
+          path: '/coach/approvals', 
+          label: 'Onay Merkezi', 
+          icon: ShieldCheck, 
+          badge: coachPendingCount > 0 ? coachPendingCount : null 
+        },
       ],
     },
     {
-      groupTitle: 'AKADEMİK TAKİP',
+      groupTitle: 'AKADEMİK YÖNETİM',
       items: [
         { path: '/coach/students', label: 'Öğrenciler', icon: Users },
-        { path: '/coach/programs', label: 'Programlar', icon: BookOpen },
-        { path: '/coach/reports', label: 'Raporlar', icon: BarChart3 },
+        { path: '/coach/programs', label: 'Programlar & Dersler', icon: BookOpen },
+        { path: '/coach/teachers', label: 'Öğretmenler', icon: GraduationCap },
+      ],
+    },
+    {
+      groupTitle: 'ANALİZ & FİNANS',
+      items: [
+        { path: '/coach/payments', label: 'Finans & Ödemeler', icon: CreditCard },
+        { path: '/coach/reports', label: 'Raporlar & Analiz', icon: BarChart3 },
       ],
     },
     {
       groupTitle: 'SİSTEM',
       items: [
+        { path: '/coach/profile', label: 'Ayarlar & Profil', icon: UserCog },
         ...(user?.isAdmin ? [{ 
           path: '/coach/admin', 
-          label: 'Yönetim / Onaylar', 
-          icon: ShieldCheck, 
+          label: 'Sistem Yönetimi (Admin)', 
+          icon: ShieldAlert, 
           badge: pendingCount > 0 ? pendingCount : null 
         }] : []),
-        { path: '/coach/profile', label: 'Profil', icon: UserCog },
       ],
     },
   ];

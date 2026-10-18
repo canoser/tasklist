@@ -17,6 +17,10 @@ namespace MentorumApi.DTOs
         public int ActiveHomeworkCount { get; set; }
         public int CompletedHomeworkCount { get; set; }
         public int OverdueHomeworkCount { get; set; }
+        public int ThisWeekStudyMinutes { get; set; }
+        public int ThisWeekQuestionCount { get; set; }
+        public decimal? LastExamNet { get; set; }
+        public decimal? PrevExamNet { get; set; }
     }
 
     public class StudentDetailDto : StudentListDto

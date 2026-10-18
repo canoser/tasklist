@@ -317,6 +317,17 @@ namespace MentorumApi.Endpoints
                 return Results.Ok(notes);
             });
 
+            group.MapGet("/recent-teacher-notes", async (
+                [FromServices] SchoolAccessRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var coachIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(coachIdStr, out var coachId)) return Results.Unauthorized();
+
+                var notes = await repo.GetRecentTeacherNotesForCoachAsync(coachId, 10);
+                return Results.Ok(notes);
+            });
+
             // --- Öğrenci kendi verisi (Aşama 1) ---
             var self = app.MapGroup("/api/v1/student").RequireAuthorization("RequireStudentRole");
 

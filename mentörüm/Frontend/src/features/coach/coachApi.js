@@ -452,3 +452,12 @@ export const useCollectPayment = (programId) => {
   });
 };
 
+export const useRecentTeacherNotes = () => {
+  return useQuery({
+    queryKey: ['coach', 'recent-teacher-notes'],
+    queryFn: async () => {
+      return (await apiClient.get('/students/recent-teacher-notes')) || [];
+    },
+  });
+};
+

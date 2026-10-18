@@ -398,6 +398,33 @@ namespace MentorumApi.Data
                 new { StudentId = studentId });
         }
 
+        public async Task<IEnumerable<dynamic>> GetRecentTeacherNotesForCoachAsync(Guid coachId, int limit = 10)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            return await conn.QueryAsync(@"
+                SELECT 
+                    tn.id, 
+                    tn.student_id AS StudentId,
+                    su.full_name AS StudentName,
+                    tn.course_id AS CourseId, 
+                    c.name AS CourseName, 
+                    tn.teacher_id AS TeacherId, 
+                    tu.full_name AS TeacherName, 
+                    tn.note AS Note, 
+                    tn.summary AS Summary, 
+                    tn.visibility AS Visibility, 
+                    tn.created_at AS CreatedAt
+                FROM teacher_notes tn
+                JOIN courses c ON c.id = tn.course_id
+                JOIN users tu ON tu.id = tn.teacher_id
+                JOIN users su ON su.id = tn.student_id
+                JOIN students s ON s.id = tn.student_id
+                WHERE s.program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)
+                ORDER BY tn.created_at DESC
+                LIMIT @Limit",
+                new { CoachId = coachId, Limit = limit });
+        }
+
         private sealed class HomeworkReviewTarget
         {
             public Guid Id { get; set; }

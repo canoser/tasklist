@@ -41,6 +41,7 @@ import StudentProfilePage from './features/student/profile/StudentProfilePage';
 import CoachTeacherDetailPage from './features/coach/teachers/CoachTeacherDetailPage';
 import CoachProfilePage from './features/coach/profile/CoachProfilePage';
 import ApprovalsPage from './features/coach/approvals/ApprovalsPage';
+import CoachPaymentsPage from './features/coach/payments/CoachPaymentsPage';
 import ViewAsBanner from './components/common/ViewAsBanner/ViewAsBanner';
 import ThemeSync from './components/common/ThemeSync/ThemeSync';
 
@@ -127,6 +128,8 @@ function App() {
           <Route path="students/:id" element={<CoachStudentDetail />} />
           <Route path="calendar" element={<CalendarPage />} />
           <Route path="approvals" element={<ApprovalsPage />} />
+          <Route path="teachers" element={<CoachTeachersPage />} />
+          <Route path="payments" element={<CoachPaymentsPage />} />
           <Route path="reports" element={<CoachReports />} />
           <Route path="profile" element={<CoachProfilePage />} />
           <Route path="programs" element={<CoachProgramsPage />} />

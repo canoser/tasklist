@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useTeachers, useDeactivateTeacher } from '../coachSchoolApi';
+import { useTeachers, useDeactivateTeacher, usePrograms } from '../coachSchoolApi';
 import { useSendInvite } from '../coachApi';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
@@ -8,8 +8,12 @@ import Card from '../../../components/common/Card/Card';
 import styles from './CoachTeachersPage.module.css';
 
 const CoachTeachersPage = () => {
-  const { programId } = useParams();
+  const { programId: routeProgramId } = useParams();
   const navigate = useNavigate();
+  const { data: programs = [] } = usePrograms();
+  const [selectedProgramId, setSelectedProgramId] = useState('');
+  
+  const programId = routeProgramId || selectedProgramId || (programs.length > 0 ? programs[0].id : null);
   const { data: teachers, isLoading } = useTeachers(programId);
   const deactivateTeacher = useDeactivateTeacher();
   const sendInvite = useSendInvite();
