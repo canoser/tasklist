@@ -8,10 +8,10 @@ import styles from './CoachPaymentsPage.module.css';
 
 export default function CoachPaymentsPage() {
   const { data: programs = [] } = usePrograms();
-  const [selectedProgramId, setSelectedProgramId] = useState('');
+  const [selectedProgramId, setSelectedProgramId] = useState('all');
   const [filterStatus, setFilterStatus] = useState('ALL'); // ALL, PENDING, OVERDUE, PAID
 
-  const activeProgramId = selectedProgramId || (programs.length > 0 ? programs[0].id : null);
+  const activeProgramId = selectedProgramId === 'all' ? undefined : selectedProgramId;
   const { data: plans = [], isLoading } = usePaymentPlans(activeProgramId);
   const collectPaymentMutation = useCollectPayment(activeProgramId);
 
@@ -81,9 +81,10 @@ export default function CoachPaymentsPage() {
             <label className={styles.kpiLabel}>Program:</label>
             <select
               className={styles.selectInput}
-              value={activeProgramId || ''}
+              value={selectedProgramId}
               onChange={(e) => setSelectedProgramId(e.target.value)}
             >
+              <option value="all">🌐 Tüm Programlar</option>
               {programs.map(p => (
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}

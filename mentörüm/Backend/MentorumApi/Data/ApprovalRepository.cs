@@ -35,6 +35,34 @@ namespace MentorumApi.Data
             return await conn.QueryAsync<ApprovalItemDto>(sql, new { ProgramId = programId, Status = status });
         }
 
+        public async Task<IEnumerable<ApprovalItemDto>> ListForCoachAsync(Guid coachId, string? status = null)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            var sql = @"
+                SELECT
+                    id,
+                    program_id AS ProgramId,
+                    entity_type AS EntityType,
+                    entity_id AS EntityId,
+                    payload::text AS Payload,
+                    status AS Status,
+                    created_by AS CreatedBy,
+                    created_at AS CreatedAt,
+                    resolved_at AS ResolvedAt,
+                    resolved_by AS ResolvedBy,
+                    rejection_reason AS RejectionReason
+                FROM approval_items
+                WHERE program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)";
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                sql += " AND status = @Status";
+            }
+            sql += " ORDER BY created_at DESC";
+
+            return await conn.QueryAsync<ApprovalItemDto>(sql, new { CoachId = coachId, Status = status });
+        }
+
         public async Task<bool> ApproveAsync(Guid id, Guid coachId)
         {
             using var conn = _connectionFactory.CreateConnection();

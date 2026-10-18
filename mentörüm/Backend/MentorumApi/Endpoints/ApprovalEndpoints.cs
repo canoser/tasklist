@@ -36,6 +36,19 @@ namespace MentorumApi.Endpoints
                 return Results.Ok(items);
             });
 
+            // GET /api/v1/approvals — koçun TÜM programlarındaki onaylar (çok programlı toplulaştırma)
+            coachGroup.MapGet("/approvals", async (
+                [FromQuery] string? status,
+                [FromServices] ApprovalRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var coachIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(coachIdStr, out var coachId)) return Results.Unauthorized();
+
+                var items = await repo.ListForCoachAsync(coachId, status);
+                return Results.Ok(items);
+            });
+
             // POST /api/v1/approvals/{id}/approve
             coachGroup.MapPost("/approvals/{id:guid}/approve", async (
                 Guid id,

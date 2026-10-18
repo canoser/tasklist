@@ -79,8 +79,8 @@ Koç takviminde **her şey** görünür ve filtrelenebilir:
 - Veli "ödeme yaptım" bildirince onay merkezine düşer; koç onaylayınca tahsilat kaydedilir.
 
 ### 2.7 "Rol Gözüyle Gör" (View As)
-- Koç, **"Veli gözüyle gör"** veya **"Öğretmen gözüyle gör"** modunu açıp o kişinin ekranını **salt-okunur** önizler.
-- Güvenlik: bu modda hiçbir yazma işlemi yapılamaz; yalnızca koçun kendi programındaki kişiler simüle edilebilir.
+- Süper Yönetici (Admin), **"Veli gözüyle gör"** veya **"Öğretmen gözüyle gör"** modunu açıp o kişinin ekranını **salt-okunur** önizler.
+- Güvenlik: bu modda hiçbir yazma işlemi yapılamaz.
 
 ---
 
@@ -199,7 +199,7 @@ Veli, yalnızca kendi çocuğunun/çocuklarının verisini, koçun izin verdiği
 
 ### 7.3 Güvenlik Protokolleri (Özet)
 - **Veri izolasyonu (IDOR):** Her istek, kullanıcının yalnızca kendi programı/öğrencisi/dersi/çocuğu üzerindeki yetkisini doğrular. Koç başka programın, öğretmen başka dersin, veli başka çocuğun verisini **göremez**.
-- **Rol Gözüyle Gör (View As):** Yalnızca koç kullanabilir; salt-okunurdur (yazma işlemleri engellenir) ve yalnızca kendi programındaki kişiler simüle edilebilir.
+- **Rol Gözüyle Gör (View As):** Yalnızca süper yönetici (Admin) kullanabilir; salt-okunurdur (yazma işlemleri engellenir).
 - **Finans izolasyonu:** Ödeme/bakiye verisi yalnızca koç + izin verilmiş veli; öğretmen ve öğrenci finans uçlarına erişemez.
 - **Öğretmen notu gizliliği:** Koça özel not (`COACH_ONLY`) öğrenci/veliye asla gösterilmez; yalnızca özet görünür.
 - **Hız sınırlama:** Giriş/kayıt/davet uçları IP bazlı sınırlıdır; aşım 429 ile reddedilir ve günlüğe yazılır (e-posta kotası kötüye kullanımı engellenir).

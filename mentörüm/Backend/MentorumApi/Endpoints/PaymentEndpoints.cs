@@ -25,6 +25,17 @@ namespace MentorumApi.Endpoints
                 return Results.Ok(plans);
             });
 
+            // GET /api/v1/payment-plans — koçun TÜM programlarındaki planlar (çok programlı toplulaştırma)
+            coachGroup.MapGet("/payment-plans", async (
+                [FromServices] PaymentRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = GetUserId(user);
+                if (coachId == null) return Results.Unauthorized();
+                var plans = await repo.GetPlansForCoachAsync(coachId.Value);
+                return Results.Ok(plans);
+            });
+
             // Plan Oluşturma
             coachGroup.MapPost("/programs/{programId:guid}/payment-plans", async (
                 Guid programId,

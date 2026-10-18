@@ -54,7 +54,9 @@ const CoachDashboard = () => {
   const { data: report } = useReportsOverview();
   const completeHomeworkMutation = useCompleteHomework();
   const { data: programs = [] } = usePrograms();
-  const activeProgramId = programs[0]?.id;
+  // 'all' = tüm programlar toplulaştırılmış; aksi halde tek program
+  const [selectedProgramId, setSelectedProgramId] = useState('all');
+  const activeProgramId = selectedProgramId === 'all' ? undefined : selectedProgramId;
   const { data: paymentPlans = [] } = usePaymentPlans(activeProgramId);
   const { data: coachApprovals = [] } = useApprovals(activeProgramId, 'PENDING');
   const approveMutation = useApproveItem();
@@ -169,6 +171,30 @@ const CoachDashboard = () => {
 
   return (
     <div className={styles.dashboardContainer}>
+      {programs.length > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
+          <select
+            value={selectedProgramId}
+            onChange={(e) => setSelectedProgramId(e.target.value)}
+            style={{
+              padding: '8px 12px',
+              borderRadius: '8px',
+              border: '1px solid var(--border-color)',
+              background: 'var(--bg-card)',
+              color: 'var(--text-primary)',
+              fontSize: '0.875rem',
+              fontWeight: 600,
+              cursor: 'pointer'
+            }}
+          >
+            <option value="all">🌐 Tüm Programlar</option>
+            {programs.map((p) => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {/* ── KATMAN 1: ÜST AKSİYONLU KPI ŞERİDİ (4 NET KART) ──────── */}
       <section className={styles.kpiGrid}>
         {/* 1. Aktif Öğrenci & Uyum */}

@@ -3,7 +3,7 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../../features/auth/authStore';
 import { apiClient } from '../../../api/apiClient';
 import { useUIStore } from '../../../store/uiStore';
-import { usePendingApprovals, usePrograms } from '../../../features/coach/coachSchoolApi';
+import { usePendingApprovals } from '../../../features/coach/coachSchoolApi';
 import { useApprovals } from '../../../features/coach/coachApi';
 import NotificationDropdown from '../../common/NotificationDropdown/NotificationDropdown';
 import { 
@@ -48,10 +48,8 @@ const CoachLayout = () => {
   const { data: pendingApprovals } = usePendingApprovals();
   const pendingCount = user?.isAdmin ? (pendingApprovals?.length || 0) : 0;
 
-  // Koç bekleyen onayları sayacı
-  const { data: programs = [] } = usePrograms();
-  const activeProgramId = programs[0]?.id;
-  const { data: coachApprovals = [] } = useApprovals(activeProgramId, 'PENDING');
+  // Koç bekleyen onayları sayacı (tüm programlar)
+  const { data: coachApprovals = [] } = useApprovals(undefined, 'PENDING');
   const coachPendingCount = coachApprovals?.length || 0;
 
   // ⌘K / Ctrl+K Global Kısayol Dinleyicisi

@@ -322,13 +322,12 @@ export const useCompleteHomework = () => {
 // T34: Onay Merkezi Hook'ları
 export const useApprovals = (programId, status) => {
   return useQuery({
-    queryKey: ['coach', 'approvals', programId, status],
+    queryKey: ['coach', 'approvals', programId || 'all', status],
     queryFn: async () => {
-      if (!programId) return [];
       const qs = status ? `?status=${encodeURIComponent(status)}` : '';
-      return (await apiClient.get(`/programs/${programId}/approvals${qs}`)) || [];
+      const url = programId ? `/programs/${programId}/approvals${qs}` : `/approvals${qs}`;
+      return (await apiClient.get(url)) || [];
     },
-    enabled: !!programId,
   });
 };
 
@@ -418,12 +417,11 @@ export const useStudentTimeBudget = (studentId) => {
 // Finans & Ödeme Planları
 export const usePaymentPlans = (programId) => {
   return useQuery({
-    queryKey: ['coach', 'payment-plans', programId],
+    queryKey: ['coach', 'payment-plans', programId || 'all'],
     queryFn: async () => {
-      if (!programId) return [];
-      return (await apiClient.get(`/programs/${programId}/payment-plans`)) || [];
+      const url = programId ? `/programs/${programId}/payment-plans` : '/payment-plans';
+      return (await apiClient.get(url)) || [];
     },
-    enabled: !!programId,
   });
 };
 
@@ -434,7 +432,7 @@ export const useCreatePaymentPlan = (programId) => {
       return await apiClient.post(`/programs/${programId}/payment-plans`, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['coach', 'payment-plans', programId] });
+      queryClient.invalidateQueries({ queryKey: ['coach', 'payment-plans'] });
     },
   });
 };
@@ -446,7 +444,7 @@ export const useCollectPayment = (programId) => {
       return await apiClient.post(`/payment-items/${itemId}/collect`, { amount, method, receiptUrl });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['coach', 'payment-plans', programId] });
+      queryClient.invalidateQueries({ queryKey: ['coach', 'payment-plans'] });
       queryClient.invalidateQueries({ queryKey: ['coach', 'calendar'] });
     },
   });

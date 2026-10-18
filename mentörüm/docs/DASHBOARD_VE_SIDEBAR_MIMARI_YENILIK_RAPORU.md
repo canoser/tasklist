@@ -166,7 +166,44 @@ Koçun tüm öğrencilerinin mali durumunu tek ekrandan yönetebilmesi için ba�
 2. **Backend (.NET 9 Minimal API):**
    ```bash
    dotnet build Backend/Mentorum.sln
-   Oluşturma başarılı oldu. 0 Uyarı, 0 Hata
+   Oluşturma başarılı oldu. 0 Hata (10 önceden var olan nullable/obsolete uyarısı)
    ```
 3. **Güvenlik & Tenant İzolasyonu:**
    Eklenen tüm veritabanı sorguları `WHERE s.program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)` ve `BaseRepository` filtreleri kullanılarak IDOR açıklarına karşı tam korumalı olarak yazılmıştır.
+
+---
+
+## 10. Bağımsız Teknik Analiz (Cline)
+
+> Bu bölüm raporun dışından, koda karşı bağımsız doğrulamayla yazılmıştır.
+
+### 10.1 İddia Doğrulaması
+
+| İddia | Sonuç |
+|---|---|
+| Commit `064e233`: 12 dosya, +1.722 / -758 | ✅ Birebir doğru (`git show --stat`) |
+| `/coach/teachers` ve `/coach/payments` rotaları eklendi | ✅ App.jsx:131-132 |
+| `GetRecentTeacherNotesForCoachAsync` eklendi | ✅ SchoolAccessRepository.cs:401 |
+| `GET /api/v1/students/recent-teacher-notes` ucu | ✅ StudentEndpoints.cs:320 |
+| `CoachPaymentsPage.jsx` yeni dosya | ✅ Mevcut |
+| Dashboard 3 katmanlı (KPI + Operasyon + Timeline/Radar) | ✅ `usePaymentPlans`/`useApprovals`/`useApproveItem`/`useRejectItem`/`useRecentTeacherNotes` artık çekiliyor |
+
+### 10.2 Bulgular ve Riskler
+
+**B1 — "0 Uyarı" iddiası yanlış.** Bölüm 9.2 "0 Uyarı, 0 Hata" diyor; ancak `dotnet build` **10 uyarı** üretiyor (CS8618 nullable DTO alanları, CS0108 test handler gizleme, CS0618 eski PostgreSqlBuilder). Bu uyarılar bu commit'te oluşmadı (önceden vardı), fakat raporun "0 Uyarı" ifadesi gerçeği yansıtmıyor; "0 Hata (10 uyarı)" olmalıydı.
+
+**B2 — `GetRecentTeacherNotesForCoachAsync` `IEnumerable<dynamic>` dönüyor.** Sorgu zaten tipli kolonlar seçiyor (`StudentId`, `StudentName`, `Note`, `Visibility`…); `dynamic` dönüşü tip güvenliğini kaybettiriyor ve yanlış kullanım riski taşıyor. Tipli bir DTO (`RecentTeacherNoteDto`) dönmeli. Güvenlik açısından sorun yok: `WHERE s.program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)` filtresi hem IDOR-korumalı hem de **tüm programları kapsıyor** (çok programlı doğru).
+
+**B3 — Çok programlı koçta "ilk program" varsayımı (en önemli eksik).** Dashboard (`programs[0]?.id`), CoachLayout rozetleri (`programs[0]?.id`), `/coach/teachers` ve Finans sayfası yalnızca **ilk programın** verisini kullanıyor. Koçun birden fazla programı varsa KPI'lar, onay sayısı ve ödemeler diğer programları yansıtmaz. Rapor "Komuta Merkezi" iddiasına rağmen bu toplulaştırma boşluğunu ele almıyor. Öneri: program seçici ekle ya da veriyi programlar arası toplulaştır.
+
+**B4 — "Gözüyle Gör" yalnızca Süper Yönetici'ye açık (düzeltildi).** CoachLayout'ta buton/modal `user?.isAdmin &&` ile sarılı; backend `ViewAsMiddleware` da `if (!isAdmin) return 403` kontrolüyle (satır 44-51) yalnızca admin'e izin veriyor. Yani **frontend ve backend uyumlu** (her ikisi de admin-only). Kalan tek eksik dokümantasyon: 064e233 raporu ve KULLANIM_KILAVUZU "Gözüyle Gör"ün süper yöneticiye özel olduğunu belirtmiyor.
+
+**B5 — Git geçmişinde geri-alma (revert) gürültüsü.** Dashboard şu akıştan geçti: `f87c583` (sürüklenebilir kutular) → `866c661` (revert: bento grid'e dönüş) → `064e233` (yeniden tasarım). Rapor yalnızca son hâli anlatıyor, ara revert'i geçiyor. Süreç şeffaflığı açısından eksik.
+
+### 10.3 Öneriler (öncelik sırası)
+
+1. **Çok programlı koç desteği:** Dashboard/Öğretmenler/Finans ekranlarına program seçici veya programlar arası toplulaştırma ekle; `programs[0]?.id` varsayımını kaldır. (Mevcut mimari çok programı desteklediği için bu, günlük kullanımda en kritik eksiktir.)
+2. **Dokümantasyon:** View-As zaten hem frontend hem backend'de admin-only (uyumlu); bu durum KULLANIM_KILAVUZU.md ve rapora işlenmeli.
+3. **Tip güvenliği:** `GetRecentTeacherNotesForCoachAsync` → tipli DTO.
+4. **Rapor düzeltmesi:** "0 Uyarı" → "0 Hata (10 uyarı)".
+

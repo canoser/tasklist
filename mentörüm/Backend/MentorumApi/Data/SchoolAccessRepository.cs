@@ -398,10 +398,10 @@ namespace MentorumApi.Data
                 new { StudentId = studentId });
         }
 
-        public async Task<IEnumerable<dynamic>> GetRecentTeacherNotesForCoachAsync(Guid coachId, int limit = 10)
+        public async Task<IEnumerable<RecentTeacherNoteDto>> GetRecentTeacherNotesForCoachAsync(Guid coachId, int limit = 10)
         {
             using var conn = _connectionFactory.CreateConnection();
-            return await conn.QueryAsync(@"
+            return await conn.QueryAsync<RecentTeacherNoteDto>(@"
                 SELECT 
                     tn.id, 
                     tn.student_id AS StudentId,

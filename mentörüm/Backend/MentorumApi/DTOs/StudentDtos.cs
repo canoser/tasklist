@@ -120,4 +120,19 @@ namespace MentorumApi.DTOs
         public bool CanViewStudyStats { get; set; }
         public bool CanViewPayments { get; set; }
     }
+
+    public class RecentTeacherNoteDto
+    {
+        public Guid Id { get; set; }
+        public Guid StudentId { get; set; }
+        public string StudentName { get; set; } = "";
+        public Guid CourseId { get; set; }
+        public string CourseName { get; set; } = "";
+        public Guid TeacherId { get; set; }
+        public string TeacherName { get; set; } = "";
+        public string Note { get; set; } = "";
+        public string? Summary { get; set; }
+        public string Visibility { get; set; } = "";
+        public DateTime CreatedAt { get; set; }
+    }
 }
