@@ -451,8 +451,7 @@ var token = jwt.GenerateAccessToken(user);
                 using var conn = db.CreateConnection();
                 var meDto = await conn.QuerySingleOrDefaultAsync<UserDto>(@"
                     SELECT u.id AS Id, u.email AS Email, u.role AS Role, u.full_name AS FullName, u.avatar_url AS AvatarUrl, u.is_admin AS IsAdmin,
-                           c.bio AS Bio, c.specialty AS Specialty, u.theme_mode AS ThemeMode, u.theme_style AS ThemeStyle,
-                           u.dashboard_preferences::text AS DashboardPreferences
+                           c.bio AS Bio, c.specialty AS Specialty, u.theme_mode AS ThemeMode, u.theme_style AS ThemeStyle
                     FROM users u
                     LEFT JOIN coaches c ON c.id = u.id
                     WHERE u.id = @Id AND u.is_active = 1",
@@ -491,33 +490,6 @@ var token = jwt.GenerateAccessToken(user);
                     new { Id = id, Mode = mode, Style = style });
 
                 return Results.Ok(new { message = "Tema güncellendi." });
-            });
-
-            // Dashboard tercihleri (kutu sıralaması ve özel boyutlar) — online saklama
-            meGroup.MapGet("/dashboard-preferences", async ([FromServices] DbConnectionFactory db, HttpContext ctx) =>
-            {
-                var idStr = ctx.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-                if (!Guid.TryParse(idStr, out var id)) return Results.Unauthorized();
-
-                using var conn = db.CreateConnection();
-                var rawJson = await conn.ExecuteScalarAsync<string>(
-                    "SELECT dashboard_preferences::text FROM users WHERE id = @Id", new { Id = id });
-
-                return Results.Ok(new { preferences = rawJson ?? "{}" });
-            });
-
-            meGroup.MapPut("/dashboard-preferences", async ([FromBody] System.Text.Json.JsonElement body, [FromServices] DbConnectionFactory db, HttpContext ctx) =>
-            {
-                var idStr = ctx.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-                if (!Guid.TryParse(idStr, out var id)) return Results.Unauthorized();
-
-                var jsonString = body.ToString();
-                using var conn = db.CreateConnection();
-                await conn.ExecuteAsync(
-                    "UPDATE users SET dashboard_preferences = @Preferences::jsonb WHERE id = @Id",
-                    new { Id = id, Preferences = jsonString });
-
-                return Results.Ok(new { message = "Tercihler kaydedildi." });
             });
 
         }
