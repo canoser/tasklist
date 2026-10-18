@@ -452,3 +452,31 @@ export const useCollectPayment = (programId) => {
   });
 };
 
+export const useDashboardPreferences = () => {
+  return useQuery({
+    queryKey: ['coach', 'dashboard-preferences'],
+    queryFn: async () => {
+      const res = await apiClient.get('/me/dashboard-preferences');
+      try {
+        return typeof res?.preferences === 'string' ? JSON.parse(res.preferences) : (res?.preferences || {});
+      } catch {
+        return {};
+      }
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
+export const useUpdateDashboardPreferences = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (preferences) => {
+      return await apiClient.put('/me/dashboard-preferences', preferences);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.setQueryData(['coach', 'dashboard-preferences'], variables);
+    },
+  });
+};
+
+

@@ -258,27 +258,29 @@ const CoachLayout = () => {
 
           {/* Sağ Aksiyonlar */}
           <div className={styles.topbarRight}>
-            <button 
-              type="button" 
-              onClick={() => setIsViewAsModalOpen(true)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '6px 12px',
-                borderRadius: '8px',
-                border: '1px solid var(--border-color)',
-                background: viewAs ? 'rgba(245, 158, 11, 0.2)' : 'var(--bg-card)',
-                color: viewAs ? '#f59e0b' : 'var(--text-primary)',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                cursor: 'pointer'
-              }}
-              title="Rol Gözüyle Gör"
-            >
-              <Eye size={16} />
-              <span>{viewAs ? 'Gözüyle Gör: Açık' : 'Gözüyle Gör'}</span>
-            </button>
+            {user?.isAdmin && (
+              <button 
+                type="button" 
+                onClick={() => setIsViewAsModalOpen(true)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-color)',
+                  background: viewAs ? 'rgba(245, 158, 11, 0.2)' : 'var(--bg-card)',
+                  color: viewAs ? '#f59e0b' : 'var(--text-primary)',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+                title="Rol Gözüyle Gör"
+              >
+                <Eye size={16} />
+                <span>{viewAs ? 'Gözüyle Gör: Açık' : 'Gözüyle Gör'}</span>
+              </button>
+            )}
 
             <InstallAppButton />
 
@@ -304,10 +306,12 @@ const CoachLayout = () => {
         </main>
       </div>
 
-      <ViewAsModal 
-        isOpen={isViewAsModalOpen} 
-        onClose={() => setIsViewAsModalOpen(false)} 
-      />
+      {user?.isAdmin && (
+        <ViewAsModal 
+          isOpen={isViewAsModalOpen} 
+          onClose={() => setIsViewAsModalOpen(false)} 
+        />
+      )}
     </div>
   );
 };

@@ -24,13 +24,8 @@ namespace MentorumApi.Middleware
 
             var role = user.FindFirst(ClaimTypes.Role)?.Value;
             var coachIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            // View-As yalnızca Koç ve Admin için geçerlidir
-            if (role != "Coach" && role != "Admin")
-            {
-                await _next(context);
-                return;
-            }
+            var isAdminClaim = user.FindFirst("is_admin")?.Value;
+            var isAdmin = isAdminClaim == "true" || role == "Admin";
 
             var viewAsStudent = context.Request.Headers["X-View-As-Student-Id"].FirstOrDefault();
             var viewAsParent = context.Request.Headers["X-View-As-Parent-Id"].FirstOrDefault();
@@ -43,6 +38,15 @@ namespace MentorumApi.Middleware
             if (!isViewAsRequested)
             {
                 await _next(context);
+                return;
+            }
+
+            // View-As yalnızca Süper Yönetici (Admin) için geçerlidir
+            if (!isAdmin)
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsync("{\"error\":\"Rol Gözüyle Gör (View-As) modu yalnızca süper yöneticiler tarafından kullanılabilir.\"}");
                 return;
             }
 

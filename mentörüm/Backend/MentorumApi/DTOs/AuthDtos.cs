@@ -67,6 +67,7 @@ namespace MentorumApi.DTOs
         public string? Specialty { get; set; }
         public string? ThemeMode { get; set; }
         public string? ThemeStyle { get; set; }
+        public string? DashboardPreferences { get; set; }
     }
 
     public class UpdateThemeRequest

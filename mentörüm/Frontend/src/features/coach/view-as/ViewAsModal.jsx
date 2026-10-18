@@ -7,7 +7,7 @@ import { useStudents, useStudent } from '../coachApi';
 import { usePrograms, useTeachers } from '../coachSchoolApi';
 
 export default function ViewAsModal({ isOpen, onClose }) {
-  const { viewAs, setViewAs } = useAuthStore();
+  const { user, viewAs, setViewAs } = useAuthStore();
   const navigate = useNavigate();
   const [role, setRole] = useState('Student'); // 'Student' | 'Teacher' | 'Parent'
   const [targetId, setTargetId] = useState('');
@@ -18,7 +18,7 @@ export default function ViewAsModal({ isOpen, onClose }) {
   const { data: teachers = [] } = useTeachers(programs[0]?.id);
   const { data: selectedStudent } = useStudent(role === 'Parent' ? parentStudentId : null);
 
-  if (!isOpen) return null;
+  if (!isOpen || !user?.isAdmin) return null;
 
   const handleApply = () => {
     if (!targetId) {
