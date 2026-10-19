@@ -14,7 +14,7 @@ import {
 import { usePrograms } from '../coachSchoolApi';
 import AssignHomeworkModal from '../homework/AssignHomeworkModal';
 import Modal from '../../../components/common/Modal/Modal';
-import { format, addDays, startOfWeek, endOfWeek } from 'date-fns';
+import { format, addDays, subDays, startOfWeek, endOfWeek } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { 
   Users, 
@@ -69,11 +69,11 @@ const CoachDashboard = () => {
   const todayStr = useMemo(() => format(today, 'yyyy-MM-dd'), [today]);
   const tomorrowStr = useMemo(() => format(tomorrow, 'yyyy-MM-dd'), [tomorrow]);
 
-  // Takvim Etkinlikleri (Bu Hafta)
-  const weekStartStr = useMemo(() => format(startOfWeek(today, { weekStartsOn: 1 }), 'yyyy-MM-dd'), [today]);
-  const weekEndStr = useMemo(() => format(endOfWeek(today, { weekStartsOn: 1 }), 'yyyy-MM-dd'), [today]);
+  // Takvim Etkinlikleri (Geçmiş 30 gün ve gelecek 14 gün — gecikmiş ödevler dahil)
+  const eventStartStr = useMemo(() => format(subDays(today, 30), 'yyyy-MM-dd'), [today]);
+  const eventEndStr = useMemo(() => format(addDays(today, 14), 'yyyy-MM-dd'), [today]);
 
-  const { data: events = [] } = useCalendarEvents(weekStartStr, weekEndStr);
+  const { data: events = [] } = useCalendarEvents(eventStartStr, eventEndStr);
 
   const formattedEvents = useMemo(() => {
     return events.map((ev) => ({
@@ -102,16 +102,27 @@ const CoachDashboard = () => {
   // Gecikmiş / Acil Takip Bekleyen Görevler
   const overdueTasks = useMemo(() => {
     return formattedEvents.filter(ev => {
-      if (ev.type !== 'HOMEWORK') return false;
-      if (ev.status === 'COMPLETED') return false;
+      const isHomework = ev.type === 'HOMEWORK' || ev.type === 'HOMEWORK_DUE';
+      if (!isHomework) return false;
+      if (ev.status === 'COMPLETED' || ev.status === 'DONE') return false;
       return ev.isOverdue || new Date(ev.start) < new Date(todayStr);
     });
   }, [formattedEvents, todayStr]);
 
+  // Zaman Çizelgesi Saat Formatlayıcı (Saati olmayan / UTC+3 03:00 ödevler için Gün Boyu / Son Teslim)
+  const getTimelineTimeLabel = (ev) => {
+    const timeStr = format(ev.start, 'HH:mm');
+    if (ev.isAllDay || ev.type === 'HOMEWORK' || ev.type === 'HOMEWORK_DUE' || timeStr === '03:00' || timeStr === '00:00') {
+      return 'Gün Boyu / Son Teslim';
+    }
+    return timeStr;
+  };
+
   // KPI Hesaplamaları
   const totalStudentsCount = students.length;
   const totalOverdueCount = useMemo(() => {
-    return students.reduce((sum, s) => sum + (s.overdueHomeworkCount || 0), overdueTasks.length > 0 ? overdueTasks.length : 0);
+    const studentOverdue = students.reduce((sum, s) => sum + (s.overdueHomeworkCount || 0), 0);
+    return Math.max(studentOverdue, overdueTasks.length);
   }, [students, overdueTasks]);
 
   const weeklyCompletionRate = useMemo(() => {
@@ -187,7 +198,7 @@ const CoachDashboard = () => {
               cursor: 'pointer'
             }}
           >
-            <option value="all">🌐 Tüm Programlar</option>
+            <option value="all">Tüm Programlar</option>
             {programs.map((p) => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
@@ -298,12 +309,7 @@ const CoachDashboard = () => {
                 className={`${styles.tabBtn} ${activeTab === 'OVERDUE' ? styles.tabBtnActive : ''}`}
                 onClick={() => setActiveTab('OVERDUE')}
               >
-                <span>Acil & Gecikenler</span>
-                {overdueTasks.length > 0 && (
-                  <span className={`${styles.tabBadge} ${styles.badgeAlert}`}>
-                    {overdueTasks.length}
-                  </span>
-                )}
+                <span>Acil & Gecikenler ({overdueTasks.length})</span>
               </button>
 
               <button
@@ -311,12 +317,7 @@ const CoachDashboard = () => {
                 className={`${styles.tabBtn} ${activeTab === 'APPROVALS' ? styles.tabBtnActive : ''}`}
                 onClick={() => setActiveTab('APPROVALS')}
               >
-                <span>Onay Bekleyenler</span>
-                {coachApprovals.length > 0 && (
-                  <span className={styles.tabBadge}>
-                    {coachApprovals.length}
-                  </span>
-                )}
+                <span>Onay Bekleyenler ({coachApprovals.length})</span>
               </button>
 
               <button
@@ -324,12 +325,7 @@ const CoachDashboard = () => {
                 className={`${styles.tabBtn} ${activeTab === 'TEACHER_NOTES' ? styles.tabBtnActive : ''}`}
                 onClick={() => setActiveTab('TEACHER_NOTES')}
               >
-                <span>Öğretmen Notları</span>
-                {recentTeacherNotes.length > 0 && (
-                  <span className={styles.tabBadge}>
-                    {recentTeacherNotes.length}
-                  </span>
-                )}
+                <span>Öğretmen Notları ({recentTeacherNotes.length})</span>
               </button>
             </div>
           </div>
@@ -393,7 +389,8 @@ const CoachDashboard = () => {
                 ))
               ) : (
                 <div className={styles.emptyNotice}>
-                  Gecikmiş veya acil müdahale gerektiren ödev bulunmuyor. 🎉
+                  <CheckCircle2 size={16} style={{ verticalAlign: 'middle', marginRight: 6, color: '#16a34a' }} />
+                  Gecikmiş veya acil müdahale gerektiren ödev bulunmuyor.
                 </div>
               )
             )}
@@ -506,7 +503,7 @@ const CoachDashboard = () => {
                 title="Yeni Ödev veya Görev Ata"
               >
                 <Plus size={13} strokeWidth={2.5} />
-                <span>+ Görev</span>
+                <span>Görev</span>
               </button>
               <button
                 type="button"
@@ -537,7 +534,7 @@ const CoachDashboard = () => {
                     >
                       <div className={styles.timelineDot} />
                       <span className={styles.timelineTime}>
-                        {format(ev.start, 'HH:mm')}
+                        {getTimelineTimeLabel(ev)}
                       </span>
                       <div className={styles.timelineEventDetails}>
                         <span className={styles.timelineEventTitle}>{ev.title}</span>
@@ -572,7 +569,7 @@ const CoachDashboard = () => {
                     >
                       <div className={styles.timelineDot} />
                       <span className={styles.timelineTime}>
-                        {format(ev.start, 'HH:mm')}
+                        {getTimelineTimeLabel(ev)}
                       </span>
                       <div className={styles.timelineEventDetails}>
                         <span className={styles.timelineEventTitle}>{ev.title}</span>

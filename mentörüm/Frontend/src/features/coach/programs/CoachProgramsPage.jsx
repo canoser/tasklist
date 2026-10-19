@@ -5,6 +5,8 @@ import { useStudents } from '../coachApi';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
 import Card from '../../../components/common/Card/Card';
+import Modal from '../../../components/common/Modal/Modal';
+import { Plus, Users, BookOpen, GraduationCap, Target, AlertCircle } from 'lucide-react';
 import styles from './CoachProgramsPage.module.css';
 
 const CoachProgramsPage = () => {
@@ -12,6 +14,7 @@ const CoachProgramsPage = () => {
   const { data: programs, isLoading } = usePrograms();
   const { data: students } = useStudents();
   const createProgram = useCreateProgram();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
 
@@ -31,25 +34,18 @@ const CoachProgramsPage = () => {
     await createProgram.mutateAsync({ name: name.trim(), category: category || null });
     setName('');
     setCategory('');
+    setIsModalOpen(false);
   };
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Programlarım</h1>
-
-      <Card className={styles.card} padding="md">
-        <form onSubmit={handleCreate} className={styles.form}>
-          <Input label="Yeni Program Adı" value={name} onChange={(e) => setName(e.target.value)} placeholder="Örn: 12-A Koçluk" />
-          <select value={category} onChange={(e) => setCategory(e.target.value)} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0' }}>
-            <option value="">Kategori Seç (opsiyonel)</option>
-            <option value="YKS">YKS</option>
-            <option value="LGS">LGS</option>
-            <option value="Ara Sınıf">Ara Sınıf</option>
-            <option value="Okul Dersi">Okul Dersi</option>
-          </select>
-          <Button type="submit" isLoading={createProgram.isPending}>Program Oluştur</Button>
-        </form>
-      </Card>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Programlarım</h1>
+        <Button variant="primary" onClick={() => setIsModalOpen(true)}>
+          <Plus size={16} />
+          <span>Yeni Program</span>
+        </Button>
+      </div>
 
       <div className={styles.list}>
         {isLoading && <p>Yükleniyor...</p>}
@@ -65,10 +61,34 @@ const CoachProgramsPage = () => {
                 <span className={styles.badge}>{p.role === 'YONETICI' ? 'Yönetici' : 'Yardımcı'}</span>
               </div>
               {p.description && <div className={styles.itemDesc}>{p.description}</div>}
-              <div className={styles.itemMeta}>
-                👤 Öğrenci: {p.studentCount} · 📚 Ders: {p.courseCount} · 👨‍🏫 Öğretmen: {p.teacherCount}
-                {p.category ? ` · 🎯 ${p.category}` : ''}
-                {p.overdueCount > 0 ? ` · 🔴 Gecikmiş: ${p.overdueCount}` : ''}
+              <div className={styles.itemMeta} style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                  <Users size={14} /> Öğrenci: {p.studentCount}
+                </span>
+                <span>·</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                  <BookOpen size={14} /> Ders: {p.courseCount}
+                </span>
+                <span>·</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                  <GraduationCap size={14} /> Öğretmen: {p.teacherCount}
+                </span>
+                {p.category && (
+                  <>
+                    <span>·</span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      <Target size={14} /> {p.category}
+                    </span>
+                  </>
+                )}
+                {p.overdueCount > 0 && (
+                  <>
+                    <span>·</span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#ef4444', fontWeight: 600 }}>
+                      <AlertCircle size={14} /> Gecikmiş: {p.overdueCount}
+                    </span>
+                  </>
+                )}
               </div>
               {programStudents.length > 0 && (
                 <div className={styles.studentsBlock}>
@@ -88,16 +108,48 @@ const CoachProgramsPage = () => {
                 </div>
               )}
               <div className={styles.actions}>
-                <Button size="sm" onClick={() => navigate(`/coach/programs/${p.id}/teachers`)}>Öğretmenler</Button>
-                <Button size="sm" onClick={() => navigate(`/coach/programs/${p.id}/courses`)}>Dersler</Button>
-                <Button size="sm" onClick={() => navigate(`/coach/programs/${p.id}/groups`)}>Gruplar</Button>
-                <Button size="sm" onClick={() => navigate(`/coach/programs/${p.id}/schedule`)}>Program</Button>
-                <Button size="sm" variant="outline" onClick={() => navigate(`/coach/programs/${p.id}/settings`)}>Ayarlar</Button>
+                <Button size="sm" variant="outline" onClick={() => navigate(`/coach/programs/${p.id}/teachers`)}>Öğretmenler</Button>
+                <Button size="sm" variant="outline" onClick={() => navigate(`/coach/programs/${p.id}/courses`)}>Dersler</Button>
+                <Button size="sm" variant="outline" onClick={() => navigate(`/coach/programs/${p.id}/groups`)}>Gruplar</Button>
+                <Button size="sm" variant="outline" onClick={() => navigate(`/coach/programs/${p.id}/schedule`)}>Program</Button>
+                <Button size="sm" variant="ghost" onClick={() => navigate(`/coach/programs/${p.id}/settings`)}>Ayarlar</Button>
               </div>
             </Card>
           );
         })}
       </div>
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Yeni Program Oluştur">
+        <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '8px 0' }}>
+          <Input 
+            label="Yeni Program Adı" 
+            value={name} 
+            onChange={(e) => setName(e.target.value)} 
+            placeholder="Örn: 12-A Koçluk" 
+            required 
+          />
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '6px', color: 'var(--text-color-main)' }}>
+              Kategori Seç (opsiyonel)
+            </label>
+            <select 
+              value={category} 
+              onChange={(e) => setCategory(e.target.value)} 
+              style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-color-surface)', color: 'var(--text-color-main)' }}
+            >
+              <option value="">Kategori Seçin...</option>
+              <option value="YKS">YKS</option>
+              <option value="LGS">LGS</option>
+              <option value="Ara Sınıf">Ara Sınıf</option>
+              <option value="Okul Dersi">Okul Dersi</option>
+            </select>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '8px' }}>
+            <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>İptal</Button>
+            <Button type="submit" variant="primary" isLoading={createProgram.isPending}>Program Oluştur</Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

@@ -5,6 +5,7 @@ import Button from '../../../components/common/Button/Button';
 import { useAuthStore } from '../../auth/authStore';
 import { useStudents, useStudent } from '../coachApi';
 import { usePrograms, useTeachers } from '../coachSchoolApi';
+import { GraduationCap, UserCheck, Users } from 'lucide-react';
 
 export default function ViewAsModal({ isOpen, onClose }) {
   const { user, viewAs, setViewAs } = useAuthStore();
@@ -70,6 +71,10 @@ export default function ViewAsModal({ isOpen, onClose }) {
               onClick={() => { setRole('Student'); setTargetId(''); }}
               style={{
                 flex: 1,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
                 padding: '0.5rem',
                 borderRadius: '6px',
                 border: '1px solid var(--border-color)',
@@ -80,13 +85,18 @@ export default function ViewAsModal({ isOpen, onClose }) {
                 cursor: 'pointer'
               }}
             >
-              🎓 Öğrenci
+              <GraduationCap size={15} />
+              <span>Öğrenci</span>
             </button>
             <button
               type="button"
               onClick={() => { setRole('Teacher'); setTargetId(''); }}
               style={{
                 flex: 1,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
                 padding: '0.5rem',
                 borderRadius: '6px',
                 border: '1px solid var(--border-color)',
@@ -97,13 +107,18 @@ export default function ViewAsModal({ isOpen, onClose }) {
                 cursor: 'pointer'
               }}
             >
-              👨‍🏫 Öğretmen
+              <UserCheck size={15} />
+              <span>Öğretmen</span>
             </button>
             <button
               type="button"
               onClick={() => { setRole('Parent'); setTargetId(''); }}
               style={{
                 flex: 1,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
                 padding: '0.5rem',
                 borderRadius: '6px',
                 border: '1px solid var(--border-color)',
@@ -114,7 +129,8 @@ export default function ViewAsModal({ isOpen, onClose }) {
                 cursor: 'pointer'
               }}
             >
-              👨‍👩‍👧 Veli
+              <Users size={15} />
+              <span>Veli</span>
             </button>
           </div>
         </div>

@@ -27,8 +27,9 @@ const DroppableCell = ({ id, children }) => {
 };
 
 
-const WeeklySchedulePage = () => {
-  const { programId } = useParams();
+const WeeklySchedulePage = ({ programId: propProgramId }) => {
+  const { programId: routeProgramId } = useParams();
+  const programId = propProgramId || routeProgramId;
   const { data: slots } = useSchedule(programId);
   const { data: courses } = useCourses(programId);
   const { data: groups } = useGroups(programId);

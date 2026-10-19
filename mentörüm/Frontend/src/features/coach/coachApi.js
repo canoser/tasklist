@@ -428,8 +428,9 @@ export const usePaymentPlans = (programId) => {
 export const useCreatePaymentPlan = (programId) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data) => {
-      return await apiClient.post(`/programs/${programId}/payment-plans`, data);
+    mutationFn: async (payload) => {
+      const pid = payload.programId || programId;
+      return await apiClient.post(`/programs/${pid}/payment-plans`, payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coach', 'payment-plans'] });

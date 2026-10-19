@@ -3,12 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
+import CoachGroupsPage from '../groups/CoachGroupsPage';
+import { Users, FolderGit2, BookOpen, CheckCircle2, AlertCircle, School, Mail, Search } from 'lucide-react';
 import { useStudents, useSendInvite, usePendingInvites } from '../coachApi';
 import { usePrograms } from '../coachSchoolApi';
 import styles from './CoachStudents.module.css';
 
 const CoachStudents = () => {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('STUDENTS'); // 'STUDENTS' | 'GROUPS'
   const { data: students, isLoading } = useStudents();
   const { data: programs } = usePrograms();
   const { data: pendingInvites } = usePendingInvites();
@@ -38,9 +41,9 @@ const CoachStudents = () => {
       });
 
       if (res.directAdded) {
-        setInviteMsg(`✅ ${res.message}`);
+        setInviteMsg(res.message);
       } else {
-        setInviteMsg(`✅ Davet oluşturuldu. Kod: ${res.code} (Bekleyen Davetler listesine eklendi)`);
+        setInviteMsg(`Davet oluşturuldu. Kod: ${res.code} (Bekleyen Davetler listesine eklendi)`);
       }
       setInviteEmail('');
     } catch (err) {
@@ -77,147 +80,181 @@ const CoachStudents = () => {
         </Button>
       </header>
 
-      {showInvite && (
-        <Card className={styles.filterCard}>
-          <form onSubmit={handleInvite} className={styles.filterGrid}>
-            <Input 
-              label="Öğrenci E-postası" 
-              type="email" 
-              value={inviteEmail} 
-              onChange={(e) => setInviteEmail(e.target.value)} 
-              placeholder="ogrenci@ornek.com" 
-            />
-            <div>
-              <label className={styles.selectLabel}>Program Seçin</label>
-              <select className={styles.select} value={inviteProgramId} onChange={(e) => setInviteProgramId(e.target.value)}>
-                <option value="">Program seç...</option>
-                {programs?.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-              </select>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-              <Button type="submit" isLoading={sendInvite.isPending} style={{ width: '100%', height: '42px' }}>
-                Davet Gönder / Ekle
-              </Button>
-            </div>
-          </form>
-          {inviteMsg && (
-            <p style={{ margin: '12px 0 0', fontSize: '0.875rem', fontWeight: 600, color: inviteMsg.startsWith('✅') ? '#16a34a' : '#dc2626' }}>
-              {inviteMsg}
-            </p>
-          )}
-        </Card>
-      )}
-
-      {/* Bekleyen Davetler Kartı */}
-      {pendingInvites && pendingInvites.length > 0 && (
-        <Card className={styles.pendingCard}>
-          <div className={styles.pendingHeader}>
-            <h3 className={styles.pendingTitle}>📬 Bekleyen Davetler ({pendingInvites.length})</h3>
-            <span className={styles.pendingSubtitle}>Öğrenci henüz davet linkiyle giriş yapıp şifresini belirlemedi.</span>
-          </div>
-          <div className={styles.pendingList}>
-            {pendingInvites.map((inv) => (
-              <div key={inv.id} className={styles.pendingItem}>
-                <div className={styles.pendingInfo}>
-                  <div className={styles.pendingEmail}>{inv.email}</div>
-                  <div className={styles.pendingMeta}>
-                    <span>Program: <strong>{inv.programname || 'Genel'}</strong></span>
-                    <span> • Kod: <code className={styles.codeBadge}>{inv.code}</code></span>
-                  </div>
-                </div>
-                <div className={styles.pendingActions}>
-                  <span className={styles.pendingBadge}>Bekliyor</span>
-                  <Button 
-                    variant="secondary" 
-                    size="sm" 
-                    onClick={() => handleCopyLink(inv.code)}
-                  >
-                    {copiedCode === inv.code ? '✓ Kopyalandı' : '🔗 Linki Kopyala'}
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-      )}
-
-      <Card className={styles.filterCard}>
-        <Input placeholder="Öğrenci ara (isim veya e-posta)..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-        <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
-          <select 
-            value={programFilter} 
-            onChange={(e) => setProgramFilter(e.target.value)} 
-            style={{ 
-              padding: '6px 10px', 
-              borderRadius: 8, 
-              border: '1px solid var(--border-color)',
-              backgroundColor: 'var(--bg-color-surface)',
-              color: 'var(--text-color-main)',
-              outline: 'none',
-              fontSize: '0.875rem'
-            }}
-          >
-            <option value="">Tüm Programlar</option>
-            {programs?.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-          </select>
-          <select 
-            value={gradeFilter} 
-            onChange={(e) => setGradeFilter(e.target.value)} 
-            style={{ 
-              padding: '6px 10px', 
-              borderRadius: 8, 
-              border: '1px solid var(--border-color)',
-              backgroundColor: 'var(--bg-color-surface)',
-              color: 'var(--text-color-main)',
-              outline: 'none',
-              fontSize: '0.875rem'
-            }}
-          >
-            <option value="">Tüm Sınıflar</option>
-            {[...new Set((students || []).map((s) => s.grade).filter((g) => g != null))].map((g) => (
-              <option key={g} value={g}>{g}. Sınıf</option>
-            ))}
-          </select>
-        </div>
-      </Card>
-
-      <div className={styles.studentsGrid}>
-        {filtered.map((student) => (
-          <Card key={student.id} interactive className={styles.studentCard} onClick={() => navigate(`/coach/students/${student.id}`)}>
-            <div className={styles.cardHeader}>
-              <div className={styles.avatar}>{student.fullName?.charAt(0) || 'Ö'}</div>
-              <div className={styles.studentMeta}>
-                <h3 className={styles.studentName}>{student.fullName}</h3>
-                <div className={styles.studentEmail}>{student.email}</div>
-                <span className={styles.studentDetail}>
-                  {student.grade != null ? `${student.grade}. Sınıf` : ''}
-                  {student.track ? ` • ${student.track}` : ''}
-                  {student.programName ? ` • 🏫 ${student.programName}` : ''}
-                </span>
-                <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: '0.72rem', padding: '2px 8px', borderRadius: 999, background: '#eef2ff', color: '#4f46e5' }}>📚 {student.activeHomeworkCount}</span>
-                  <span style={{ fontSize: '0.72rem', padding: '2px 8px', borderRadius: 999, background: '#f0fdf4', color: '#16a34a' }}>✅ {student.completedHomeworkCount}</span>
-                  <span style={{ fontSize: '0.72rem', padding: '2px 8px', borderRadius: 999, background: student.overdueHomeworkCount > 0 ? '#fef2f2' : '#f8fafc', color: student.overdueHomeworkCount > 0 ? '#dc2626' : '#94a3b8' }}>🔴 {student.overdueHomeworkCount}</span>
-                </div>
-              </div>
-              <div className={`${styles.statusBadge} ${student.isActive ? styles.active : styles.inactive}`}>
-                {student.isActive ? 'Kayıtlı / Aktif' : 'Pasif'}
-              </div>
-            </div>
-            <div className={styles.cardFooter}>
-              <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/coach/students/${student.id}`); }}>Profili Gör</Button>
-              <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/coach/students/${student.id}`); }}>Ödev Ata</Button>
-            </div>
-          </Card>
-        ))}
+      {/* 2'li Sekme: Öğrenciler | Gruplar */}
+      <div className={styles.segmentedTabs}>
+        <button
+          type="button"
+          className={`${styles.segmentedBtn} ${activeTab === 'STUDENTS' ? styles.segmentedBtnActive : ''}`}
+          onClick={() => setActiveTab('STUDENTS')}
+        >
+          <Users size={16} />
+          <span>Öğrenciler</span>
+        </button>
+        <button
+          type="button"
+          className={`${styles.segmentedBtn} ${activeTab === 'GROUPS' ? styles.segmentedBtnActive : ''}`}
+          onClick={() => setActiveTab('GROUPS')}
+        >
+          <FolderGit2 size={16} />
+          <span>Gruplar</span>
+        </button>
       </div>
 
-      {filtered.length === 0 && (
-        <div className={styles.emptyState}>
-          <div className={styles.emptyIcon}>🔍</div>
-          <h3>Öğrenci Bulunamadı</h3>
-          <p>Kayıtlı öğrenciniz yok veya arama sonucuyla eşleşmedi. "+ Yeni Öğrenci Ekle" ile davet gönderin.</p>
-        </div>
+      {activeTab === 'GROUPS' ? (
+        <CoachGroupsPage programId={programFilter || programs?.[0]?.id} />
+      ) : (
+        <>
+          {showInvite && (
+            <Card className={styles.filterCard}>
+              <form onSubmit={handleInvite} className={styles.filterGrid}>
+                <Input 
+                  label="Öğrenci E-postası" 
+                  type="email" 
+                  value={inviteEmail} 
+                  onChange={(e) => setInviteEmail(e.target.value)} 
+                  placeholder="ogrenci@ornek.com" 
+                />
+                <div>
+                  <label className={styles.selectLabel}>Program Seçin</label>
+                  <select className={styles.select} value={inviteProgramId} onChange={(e) => setInviteProgramId(e.target.value)}>
+                    <option value="">Program seç...</option>
+                    {programs?.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  </select>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                  <Button type="submit" isLoading={sendInvite.isPending} style={{ width: '100%', height: '42px' }}>
+                    Davet Gönder / Ekle
+                  </Button>
+                </div>
+              </form>
+              {inviteMsg && (
+                <p style={{ margin: '12px 0 0', fontSize: '0.875rem', fontWeight: 600, color: '#16a34a', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <CheckCircle2 size={16} />
+                  <span>{inviteMsg}</span>
+                </p>
+              )}
+            </Card>
+          )}
+
+          {/* Bekleyen Davetler Kartı */}
+          {pendingInvites && pendingInvites.length > 0 && (
+            <Card className={styles.pendingCard}>
+              <div className={styles.pendingHeader}>
+                <h3 className={styles.pendingTitle} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Mail size={16} /> Bekleyen Davetler ({pendingInvites.length})
+                </h3>
+                <span className={styles.pendingSubtitle}>Öğrenci henüz davet linkiyle giriş yapıp şifresini belirlemedi.</span>
+              </div>
+              <div className={styles.pendingList}>
+                {pendingInvites.map((inv) => (
+                  <div key={inv.id} className={styles.pendingItem}>
+                    <div className={styles.pendingInfo}>
+                      <div className={styles.pendingEmail}>{inv.email}</div>
+                      <div className={styles.pendingMeta}>
+                        <span>Program: <strong>{inv.programname || 'Genel'}</strong></span>
+                        <span> • Kod: <code className={styles.codeBadge}>{inv.code}</code></span>
+                      </div>
+                    </div>
+                    <div className={styles.pendingActions}>
+                      <span className={styles.pendingBadge}>Bekliyor</span>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => handleCopyLink(inv.code)}
+                      >
+                        {copiedCode === inv.code ? 'Kopyalandı!' : 'Linki Kopyala'}
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {/* Filtreler */}
+          <Card className={styles.filterCard}>
+            <div className={styles.filterGrid}>
+              <Input
+                placeholder="Öğrenci ara (isim veya e-posta)..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ height: '42px' }}
+              />
+              <select
+                className={styles.select}
+                value={programFilter}
+                onChange={(e) => setProgramFilter(e.target.value)}
+              >
+                <option value="">Tüm Programlar</option>
+                {programs?.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+              <select
+                className={styles.select}
+                value={gradeFilter}
+                onChange={(e) => setGradeFilter(e.target.value)}
+              >
+                <option value="">Tüm Sınıflar</option>
+                {[9, 10, 11, 12].map((g) => (
+                  <option key={g} value={String(g)}>{g}. Sınıf</option>
+                ))}
+                <option value="Mezun">Mezun</option>
+              </select>
+            </div>
+          </Card>
+
+          <div className={styles.studentsGrid}>
+            {filtered.map((student) => (
+              <Card key={student.id} interactive className={styles.studentCard} onClick={() => navigate(`/coach/students/${student.id}`)}>
+                <div className={styles.cardHeader}>
+                  <div className={styles.avatar}>{student.fullName?.charAt(0) || 'Ö'}</div>
+                  <div className={styles.studentMeta}>
+                    <h3 className={styles.studentName}>{student.fullName}</h3>
+                    <div className={styles.studentEmail}>{student.email}</div>
+                    <span className={styles.studentDetail}>
+                      {student.grade != null ? `${student.grade}. Sınıf` : ''}
+                      {student.track ? ` • ${student.track}` : ''}
+                      {student.programName && (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                          {' • '}<School size={12} /> {student.programName}
+                        </span>
+                      )}
+                    </span>
+                    <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.72rem', padding: '2px 8px', borderRadius: 999, background: '#eef2ff', color: '#4f46e5', fontWeight: 600 }}>
+                        <BookOpen size={12} /> {student.activeHomeworkCount} Aktif Ödev
+                      </span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.72rem', padding: '2px 8px', borderRadius: 999, background: '#f0fdf4', color: '#16a34a', fontWeight: 600 }}>
+                        <CheckCircle2 size={12} /> {student.completedHomeworkCount} Tamamlanan
+                      </span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.72rem', padding: '2px 8px', borderRadius: 999, background: student.overdueHomeworkCount > 0 ? '#fef2f2' : '#f8fafc', color: student.overdueHomeworkCount > 0 ? '#dc2626' : '#94a3b8', fontWeight: 600 }}>
+                        <AlertCircle size={12} /> {student.overdueHomeworkCount} Geciken
+                      </span>
+                    </div>
+                  </div>
+                  <div className={`${styles.statusBadge} ${student.isActive ? styles.active : styles.inactive}`}>
+                    {student.isActive ? 'Kayıtlı / Aktif' : 'Pasif'}
+                  </div>
+                </div>
+                <div className={styles.cardFooter}>
+                  <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/coach/students/${student.id}`); }}>Profili Gör</Button>
+                  <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/coach/students/${student.id}`); }}>Ödev Ata</Button>
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          {filtered.length === 0 && (
+            <div className={styles.emptyState}>
+              <div className={styles.emptyIcon} style={{ display: 'flex', justifyContent: 'center' }}>
+                <Search size={36} color="var(--text-color-muted)" />
+              </div>
+              <h3>Öğrenci Bulunamadı</h3>
+              <p>Kayıtlı öğrenciniz yok veya arama sonucuyla eşleşmedi. "+ Yeni Öğrenci Ekle" ile davet gönderin.</p>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

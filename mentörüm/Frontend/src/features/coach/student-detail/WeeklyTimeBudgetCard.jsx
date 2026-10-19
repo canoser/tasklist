@@ -1,6 +1,7 @@
 import React from 'react';
 import Card from '../../../components/common/Card/Card';
 import { useStudentTimeBudget } from '../coachApi';
+import { BookOpen, Moon, School, Activity, Users, Coffee, Pin } from 'lucide-react';
 
 const CATEGORY_COLORS = {
   study: 'var(--color-primary, #6366f1)',
@@ -35,21 +36,22 @@ export default function WeeklyTimeBudgetCard({ studentId }) {
   const schoolMins = budget.schoolMinutes ?? budget.SchoolMinutes ?? 0;
   const sportMins = budget.sportMinutes ?? budget.SportMinutes ?? 0;
   const socialMins = budget.socialMinutes ?? budget.SocialMinutes ?? 0;
+  const otherMins = budget.otherMinutes ?? budget.OtherMinutes ?? 0;
   const restMins = budget.restMinutes ?? budget.RestMinutes ?? 0;
   const sumMins = studyMins + sleepMins + schoolMins + sportMins + socialMins + restMins + otherMins;
   const totalMins = (budget.totalMinutes ?? budget.TotalMinutes ?? sumMins) || 1;
 
   const categories = [
-    { label: 'Ders Çalışma & Etüt', mins: studyMins, color: CATEGORY_COLORS.study, icon: '📚' },
-    { label: 'Uyku & Dinlenme', mins: sleepMins, color: CATEGORY_COLORS.sleep, icon: '🛏️' },
-    { label: 'Okul & Dershane', mins: schoolMins, color: CATEGORY_COLORS.school, icon: '🏫' },
-    { label: 'Spor & Egzersiz', mins: sportMins, color: CATEGORY_COLORS.sport, icon: '⚽' },
-    { label: 'Sosyal & Aile', mins: socialMins, color: CATEGORY_COLORS.social, icon: '👥' },
-    { label: 'Mola & Eğlence', mins: restMins, color: CATEGORY_COLORS.rest, icon: '☕' },
+    { label: 'Ders Çalışma & Etüt', mins: studyMins, color: CATEGORY_COLORS.study, icon: <BookOpen size={16} /> },
+    { label: 'Uyku & Dinlenme', mins: sleepMins, color: CATEGORY_COLORS.sleep, icon: <Moon size={16} /> },
+    { label: 'Okul & Dershane', mins: schoolMins, color: CATEGORY_COLORS.school, icon: <School size={16} /> },
+    { label: 'Spor & Egzersiz', mins: sportMins, color: CATEGORY_COLORS.sport, icon: <Activity size={16} /> },
+    { label: 'Sosyal & Aile', mins: socialMins, color: CATEGORY_COLORS.social, icon: <Users size={16} /> },
+    { label: 'Mola & Eğlence', mins: restMins, color: CATEGORY_COLORS.rest, icon: <Coffee size={16} /> },
   ];
 
   if (otherMins > 0) {
-    categories.push({ label: 'Diğer Aktiviteler', mins: otherMins, color: CATEGORY_COLORS.other, icon: '📌' });
+    categories.push({ label: 'Diğer Aktiviteler', mins: otherMins, color: CATEGORY_COLORS.other, icon: <Pin size={16} /> });
   }
 
   return (
@@ -113,7 +115,7 @@ export default function WeeklyTimeBudgetCard({ studentId }) {
               border: '1px solid var(--border-color)'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '1.1rem' }}>{c.icon}</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', color: c.color }}>{c.icon}</span>
                 <div>
                   <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>
                     {c.label}

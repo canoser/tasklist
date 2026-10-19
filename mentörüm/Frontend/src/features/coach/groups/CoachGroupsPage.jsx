@@ -127,8 +127,9 @@ const GroupItem = ({ group, programId }) => {
   );
 };
 
-const CoachGroupsPage = () => {
-  const { programId } = useParams();
+const CoachGroupsPage = ({ programId: propProgramId }) => {
+  const { programId: routeProgramId } = useParams();
+  const programId = propProgramId || routeProgramId;
   const { data: groups, isLoading } = useGroups(programId);
   const createGroup = useCreateGroup();
   const [name, setName] = useState('');

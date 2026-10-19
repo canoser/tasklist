@@ -26,6 +26,43 @@
   width: 100%;
 }
 
+.segmentedTabs {
+  display: inline-flex;
+  background-color: var(--bg-color-surface-elevated, var(--bg-app));
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-btn);
+  padding: 4px;
+  gap: 4px;
+  margin-bottom: var(--spacing-sm);
+  width: fit-content;
+}
+
+.segmentedBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-color-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.segmentedBtn:hover:not(.segmentedBtnActive) {
+  color: var(--text-color-main);
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.segmentedBtnActive {
+  background-color: var(--bg-color-surface) !important;
+  color: var(--color-primary) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
 .calendarCard {
   padding: var(--spacing-xl);
   display: flex;

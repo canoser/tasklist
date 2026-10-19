@@ -313,7 +313,7 @@ const CoachLayout = () => {
               title="Öğrenci veya Ödev İşlemleri"
             >
               <Plus size={16} strokeWidth={2.2} />
-              <span>+ Ödev / Program Ata</span>
+              <span>Ödev / Program Ata</span>
             </button>
 
             <ThemeSelector />

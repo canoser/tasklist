@@ -1,19 +1,34 @@
 import React, { useState, useMemo } from 'react';
 import { usePrograms } from '../coachSchoolApi';
-import { usePaymentPlans, useCollectPayment } from '../coachApi';
+import { usePaymentPlans, useCollectPayment, useStudents, useCreatePaymentPlan } from '../coachApi';
+import Button from '../../../components/common/Button/Button';
+import Modal from '../../../components/common/Modal/Modal';
+import Input from '../../../components/common/Input/Input';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import { CreditCard, CheckCircle2, AlertTriangle, Clock, Check } from 'lucide-react';
+import { CreditCard, CheckCircle2, AlertTriangle, Clock, Check, Plus } from 'lucide-react';
 import styles from './CoachPaymentsPage.module.css';
 
 export default function CoachPaymentsPage() {
   const { data: programs = [] } = usePrograms();
+  const { data: students = [] } = useStudents();
   const [selectedProgramId, setSelectedProgramId] = useState('all');
   const [filterStatus, setFilterStatus] = useState('ALL'); // ALL, PENDING, OVERDUE, PAID
 
   const activeProgramId = selectedProgramId === 'all' ? undefined : selectedProgramId;
   const { data: plans = [], isLoading } = usePaymentPlans(activeProgramId);
   const collectPaymentMutation = useCollectPayment(activeProgramId);
+  const createPaymentPlanMutation = useCreatePaymentPlan(activeProgramId);
+
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formProgramId, setFormProgramId] = useState('');
+  const [formStudentId, setFormStudentId] = useState('');
+  const [formPeriodType, setFormPeriodType] = useState('MONTHLY_DAY');
+  const [formAmount, setFormAmount] = useState('');
+  const [formMonthDay, setFormMonthDay] = useState(1);
+  const [formStartDate, setFormStartDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [formError, setFormError] = useState('');
 
   // Metrikler
   const stats = useMemo(() => {
@@ -53,6 +68,52 @@ export default function CoachPaymentsPage() {
     });
   };
 
+  const handleOpenCreateModal = () => {
+    setFormProgramId(selectedProgramId !== 'all' ? selectedProgramId : (programs[0]?.id || ''));
+    setFormStudentId(students[0]?.id || '');
+    setFormAmount('');
+    setFormMonthDay(1);
+    setFormStartDate(format(new Date(), 'yyyy-MM-dd'));
+    setFormError('');
+    setIsModalOpen(true);
+  };
+
+  const handleCreateSubmit = async (e) => {
+    e.preventDefault();
+    if (!formProgramId) {
+      setFormError('Lütfen bir program seçin.');
+      return;
+    }
+    if (!formStudentId) {
+      setFormError('Lütfen bir öğrenci seçin.');
+      return;
+    }
+    if (!formAmount || parseFloat(formAmount) <= 0) {
+      setFormError('Lütfen geçerli bir tutar girin.');
+      return;
+    }
+
+    try {
+      await createPaymentPlanMutation.mutateAsync({
+        programId: formProgramId,
+        studentId: formStudentId,
+        periodType: formPeriodType,
+        amount: parseFloat(formAmount),
+        monthDay: formPeriodType === 'MONTHLY_DAY' ? parseInt(formMonthDay, 10) : null,
+        startDate: formStartDate,
+        currency: 'TRY'
+      });
+      setIsModalOpen(false);
+    } catch (err) {
+      setFormError(err?.response?.data?.error || 'Ödeme planı oluşturulamadı.');
+    }
+  };
+
+  const filteredStudentsForModal = useMemo(() => {
+    if (!formProgramId) return students;
+    return students.filter(s => s.programId === formProgramId);
+  }, [students, formProgramId]);
+
   const filteredPlans = useMemo(() => {
     if (filterStatus === 'ALL') return plans;
     return plans.map(p => {
@@ -76,21 +137,28 @@ export default function CoachPaymentsPage() {
           <p className={styles.subtitle}>Öğrenci ödeme planları, tahsilatlar ve geciken taksit takibi</p>
         </div>
 
-        {programs.length > 1 && (
-          <div className={styles.programSelector}>
-            <label className={styles.kpiLabel}>Program:</label>
-            <select
-              className={styles.selectInput}
-              value={selectedProgramId}
-              onChange={(e) => setSelectedProgramId(e.target.value)}
-            >
-              <option value="all">🌐 Tüm Programlar</option>
-              {programs.map(p => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </select>
-          </div>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          {programs.length > 1 && (
+            <div className={styles.programSelector}>
+              <label className={styles.kpiLabel}>Program:</label>
+              <select
+                className={styles.selectInput}
+                value={selectedProgramId}
+                onChange={(e) => setSelectedProgramId(e.target.value)}
+              >
+                <option value="all">Tüm Programlar</option>
+                {programs.map(p => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <Button variant="primary" onClick={handleOpenCreateModal}>
+            <Plus size={16} />
+            <span>Ödeme Planı Oluştur</span>
+          </Button>
+        </div>
       </div>
 
       {/* KPI Kartları */}
@@ -114,8 +182,9 @@ export default function CoachPaymentsPage() {
           <div className={`${styles.kpiValue} ${stats.totalOverdue > 0 ? styles.alertValue : ''}`}>
             ₺{stats.totalOverdue.toLocaleString('tr-TR')}
           </div>
-          <span className={styles.kpiSubtext}>
-            {stats.totalOverdue > 0 ? '⚠️ Vadesi geçmiş taksitler' : 'Gecikmiş taksit bulunmuyor'}
+          <span className={styles.kpiSubtext} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            {stats.totalOverdue > 0 && <AlertTriangle size={13} style={{ color: '#ef4444' }} />}
+            {stats.totalOverdue > 0 ? 'Vadesi geçmiş taksitler' : 'Gecikmiş taksit bulunmuyor'}
           </span>
         </div>
 
@@ -226,11 +295,113 @@ export default function CoachPaymentsPage() {
             })}
           </div>
         ) : (
-          <div className={styles.emptyNotice}>
-            Seçili kriterlere uygun ödeme planı veya taksit bulunamadı.
+          <div className={styles.emptyNotice} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px', padding: '36px 16px' }}>
+            <span>Seçili kriterlere uygun ödeme planı veya taksit bulunamadı.</span>
+            <Button variant="primary" size="sm" onClick={handleOpenCreateModal}>
+              <Plus size={14} />
+              <span>Ödeme Planı Oluştur</span>
+            </Button>
           </div>
         )}
       </div>
+
+      {/* Ödeme Planı Oluşturma Modalı */}
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Yeni Ödeme Planı Oluştur">
+        <form onSubmit={handleCreateSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px', padding: '8px 0' }}>
+          {formError && (
+            <div style={{ color: '#ef4444', fontSize: '0.875rem', fontWeight: 600 }}>{formError}</div>
+          )}
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>
+              Program
+            </label>
+            <select
+              value={formProgramId}
+              onChange={(e) => setFormProgramId(e.target.value)}
+              style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-color-surface)', color: 'var(--text-color-main)' }}
+              required
+            >
+              <option value="">Program Seçin...</option>
+              {programs.map(p => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>
+              Öğrenci
+            </label>
+            <select
+              value={formStudentId}
+              onChange={(e) => setFormStudentId(e.target.value)}
+              style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-color-surface)', color: 'var(--text-color-main)' }}
+              required
+            >
+              <option value="">Öğrenci Seçin...</option>
+              {filteredStudentsForModal.map(s => (
+                <option key={s.id} value={s.id}>{s.fullName} ({s.email})</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>
+              Periyot Türü
+            </label>
+            <select
+              value={formPeriodType}
+              onChange={(e) => setFormPeriodType(e.target.value)}
+              style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-color-surface)', color: 'var(--text-color-main)' }}
+              required
+            >
+              <option value="MONTHLY_DAY">Aylık (Her Ayın Belirli Günü)</option>
+              <option value="FOUR_WEEK">4 Haftalık</option>
+              <option value="PER_LESSON">Ders Başına</option>
+              <option value="PER_SESSION">Seans Başına</option>
+            </select>
+          </div>
+
+          <Input
+            label="Taksit / Dönem Tutarı (₺)"
+            type="number"
+            min="1"
+            step="0.01"
+            placeholder="Örn: 2500"
+            value={formAmount}
+            onChange={(e) => setFormAmount(e.target.value)}
+            required
+          />
+
+          {formPeriodType === 'MONTHLY_DAY' && (
+            <Input
+              label="Ayın Günü (1-31)"
+              type="number"
+              min="1"
+              max="31"
+              value={formMonthDay}
+              onChange={(e) => setFormMonthDay(e.target.value)}
+              required
+            />
+          )}
+
+          <Input
+            label="Başlangıç Tarihi"
+            type="date"
+            value={formStartDate}
+            onChange={(e) => setFormStartDate(e.target.value)}
+            required
+          />
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '10px' }}>
+            <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>İptal</Button>
+            <Button type="submit" variant="primary" isLoading={createPaymentPlanMutation.isPending}>
+              Planı Kaydet
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

@@ -10,6 +10,7 @@ import { apiClient } from '../../../api/apiClient';
 import InviteSharePanel from '../../../components/common/InviteSharePanel/InviteSharePanel';
 import ParentPermissionsPanel from './ParentPermissionsPanel';
 import WeeklyTimeBudgetCard from './WeeklyTimeBudgetCard';
+import { CheckCircle2, Square } from 'lucide-react';
 
 const CoachStudentDetail = () => {
   const { id } = useParams();
@@ -439,7 +440,10 @@ const CoachStudentDetail = () => {
             {curriculum && curriculum.length > 0 ? (
               curriculum.map((t) => (
                 <div key={t.id} style={{ padding: '6px 0', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between' }}>
-                  <span>{t.isCompleted ? '✅' : '⬜'} {t.topicName}</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    {t.isCompleted ? <CheckCircle2 size={14} color="#16a34a" /> : <Square size={14} color="#94a3b8" />}
+                    <span>{t.topicName}</span>
+                  </span>
                   <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{t.subjectName}</span>
                 </div>
               ))
