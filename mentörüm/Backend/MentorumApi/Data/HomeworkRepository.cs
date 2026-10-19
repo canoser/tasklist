@@ -127,8 +127,9 @@ namespace MentorumApi.Data
                     h.due_date as DueDate, 
                     h.completed_at as CompletedAt,
                     h.completion_percentage as CompletionPercentage,
+                    h.student_note as StudentNote,
                     CASE 
-                        WHEN h.status = 'PENDING' AND h.due_date < @Now THEN 'OVERDUE'
+                        WHEN h.status = 'PENDING' AND h.due_date < CURRENT_DATE THEN 'OVERDUE'
                         ELSE h.status 
                     END as Status,
                     s.name as SubjectName,
@@ -141,7 +142,7 @@ namespace MentorumApi.Data
                 ORDER BY h.due_date DESC";
 
             using var conn = _connectionFactory.CreateConnection();
-            return await conn.QueryAsync<HomeworkItemDto>(sql, new { CoachId = coachId, StudentId = studentId, Now = DateTime.UtcNow });
+            return await conn.QueryAsync<HomeworkItemDto>(sql, new { CoachId = coachId, StudentId = studentId });
         }
     }
 }

@@ -35,7 +35,7 @@ namespace MentorumApi.Data
                     'HOMEWORK_DUE' AS Type,
                     CASE 
                         WHEN h.status = 'DONE' THEN '#22C55E'
-                        WHEN h.status = 'OVERDUE' THEN '#EF4444'
+                        WHEN h.status = 'OVERDUE' OR (h.status = 'PENDING' AND h.due_date < CURRENT_DATE) THEN '#EF4444'
                         WHEN h.status = 'LATE_DONE' THEN '#F97316'
                         ELSE '#3B82F6'
                     END AS Color,
@@ -289,6 +289,56 @@ namespace MentorumApi.Data
                 sqlBuilder.Append(" AND 1=0 "); // Veli görmüyor
             }
 
+            // 4.5 Okul Şablonu (SCHOOL_BLOCK) — V10 T08
+            sqlBuilder.Append(" UNION ALL ");
+            sqlBuilder.Append(@"
+                SELECT
+                    ss.id AS Id,
+                    COALESCE(ss.label, 'Okul') AS Title,
+                    (occ.d + ss.start_time) AS Start,
+                    (occ.d + ss.end_time) AS End,
+                    'SCHOOL_BLOCK' AS Type,
+                    '#0EA5E9' AS Color,
+                    ss.student_id AS StudentId,
+                    u.full_name AS StudentName
+                FROM school_schedules ss
+                CROSS JOIN LATERAL (
+                    SELECT d::date FROM generate_series(@From::date, @To::date, interval '1 day') AS g(d)
+                    WHERE EXTRACT(ISODOW FROM d) = ss.day_of_week
+                ) occ
+                LEFT JOIN users u ON ss.student_id = u.id
+                WHERE occ.d >= @From::date AND occ.d <= @To::date
+            ");
+
+            if (!string.IsNullOrWhiteSpace(eventType) && eventType != "SCHOOL_BLOCK")
+            {
+                sqlBuilder.Append(" AND 1=0 ");
+            }
+
+            if (role == "Coach")
+            {
+                if (programId.HasValue)
+                {
+                    sqlBuilder.Append(" AND ss.program_id = @ProgramId");
+                }
+                else
+                {
+                    sqlBuilder.Append(" AND ss.program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @UserId)");
+                }
+                if (studentId.HasValue)
+                {
+                    sqlBuilder.Append(" AND ss.student_id = @StudentId");
+                }
+            }
+            else if (role == "Student")
+            {
+                sqlBuilder.Append(" AND ss.student_id = @UserId");
+            }
+            else
+            {
+                sqlBuilder.Append(" AND 1=0 ");
+            }
+
             // 5. Ödemeler (PAYMENT_DUE)
             sqlBuilder.Append(" UNION ALL ");
             sqlBuilder.Append(@"
@@ -375,10 +425,11 @@ namespace MentorumApi.Data
         {
             using var conn = _connectionFactory.CreateConnection();
             return await conn.QueryAsync<PersonalEventDto>(@"
-                SELECT id AS Id, user_id AS UserId, title AS Title, event_type AS EventType, category AS Category, start_at AS StartAt, end_at AS EndAt
+                SELECT id AS Id, user_id AS UserId, title AS Title, event_type AS EventType, category AS Category, start_at AS StartAt, end_at AS EndAt, checked_in AS CheckedIn, actual_minutes AS ActualMinutes
                 FROM personal_events
-                WHERE user_id = @UserId
-                ORDER BY start_at DESC",
+                WHERE user_id = @UserId AND (start_at >= CURRENT_DATE - INTERVAL '30 days')
+                ORDER BY start_at DESC
+                LIMIT 50",
                 new { UserId = userId });
         }
 
@@ -398,11 +449,21 @@ namespace MentorumApi.Data
             return id;
         }
 
+        public async Task<bool> UpdatePersonalEventCheckinAsync(Guid userId, Guid eventId, bool checkedIn, int? actualMinutes)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            var rows = await conn.ExecuteAsync(@"
+                UPDATE personal_events SET checked_in = @CheckedIn, actual_minutes = @ActualMinutes
+                WHERE id = @Id AND user_id = @UserId",
+                new { Id = eventId, UserId = userId, CheckedIn = checkedIn ? 1 : 0, ActualMinutes = actualMinutes });
+            return rows > 0;
+        }
+
         public async Task<IEnumerable<PersonalEventDto>> GetStudentPersonalEventsForCoachAsync(Guid coachId, Guid studentId)
         {
             using var conn = _connectionFactory.CreateConnection();
             return await conn.QueryAsync<PersonalEventDto>(@"
-                SELECT pe.id AS Id, pe.user_id AS UserId, pe.title AS Title, pe.event_type AS EventType, pe.category AS Category, pe.start_at AS StartAt, pe.end_at AS EndAt
+                SELECT pe.id AS Id, pe.user_id AS UserId, pe.title AS Title, pe.event_type AS EventType, pe.category AS Category, pe.start_at AS StartAt, pe.end_at AS EndAt, pe.checked_in AS CheckedIn, pe.actual_minutes AS ActualMinutes
                 FROM personal_events pe
                 WHERE pe.user_id = @StudentId
                   AND EXISTS (SELECT 1 FROM students s WHERE s.id = @StudentId AND s.program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId))

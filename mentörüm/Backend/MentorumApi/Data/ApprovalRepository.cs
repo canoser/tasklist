@@ -63,6 +63,17 @@ namespace MentorumApi.Data
             return await conn.QueryAsync<ApprovalItemDto>(sql, new { CoachId = coachId, Status = status });
         }
 
+        public async Task<Guid> CreateAsync(Guid programId, string entityType, Guid entityId, string payload, Guid createdBy)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            var id = Guid.NewGuid();
+            await conn.ExecuteAsync(@"
+                INSERT INTO approval_items (id, program_id, entity_type, entity_id, payload, status, created_by, created_at)
+                VALUES (@Id, @ProgramId, @EntityType, @EntityId, @Payload::jsonb, 'PENDING', @CreatedBy, NOW())",
+                new { Id = id, ProgramId = programId, EntityType = entityType, EntityId = entityId, Payload = payload, CreatedBy = createdBy });
+            return id;
+        }
+
         public async Task<bool> ApproveAsync(Guid id, Guid coachId)
         {
             using var conn = _connectionFactory.CreateConnection();
@@ -129,6 +140,48 @@ namespace MentorumApi.Data
                                     new { NewPaid = newPaid, ItemId = targetItemId }, tx);
                             }
                         }
+                    }
+                    catch
+                    {
+                        // JSON parsing hatasında onaylama engellenmez
+                    }
+                }
+
+                // V10 T04: HOMEWORK_EXTENSION onayı → ödev teslim tarihini uzat
+                if ((string)item.entity_type == "HOMEWORK_EXTENSION")
+                {
+                    try
+                    {
+                        using var doc = System.Text.Json.JsonDocument.Parse((string)item.payload);
+                        var root = doc.RootElement;
+                        Guid assignmentId = (Guid)item.entity_id;
+                        DateTime? requestedDueDate = null;
+                        if (root.TryGetProperty("requestedDueDate", out var dueProp) && dueProp.ValueKind == System.Text.Json.JsonValueKind.String)
+                        {
+                            if (DateTime.TryParse(dueProp.GetString(), out var parsed))
+                                requestedDueDate = parsed;
+                        }
+
+                        DateTime newDate;
+                        if (requestedDueDate.HasValue)
+                        {
+                            newDate = requestedDueDate.Value;
+                        }
+                        else
+                        {
+                            var currentDue = await conn.QuerySingleOrDefaultAsync<DateTime?>(
+                                "SELECT due_date FROM homework_assignments WHERE id = @AssignmentId",
+                                new { AssignmentId = assignmentId }, tx);
+                            var baseDate = (currentDue.HasValue && currentDue.Value > DateTime.UtcNow.Date) ? currentDue.Value : DateTime.UtcNow.Date;
+                            newDate = baseDate.AddDays(3);
+                        }
+
+                        await conn.ExecuteAsync(@"
+                            UPDATE homework_assignments
+                            SET due_date = @NewDate::date,
+                                status = CASE WHEN status = 'OVERDUE' THEN 'PENDING' ELSE status END
+                            WHERE id = @AssignmentId",
+                            new { NewDate = newDate, AssignmentId = assignmentId }, tx);
                     }
                     catch
                     {

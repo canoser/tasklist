@@ -23,6 +23,8 @@ namespace MentorumApi.DTOs
         public string? Category { get; set; }
         public DateTime StartAt { get; set; }
         public DateTime? EndAt { get; set; }
+        public bool CheckedIn { get; set; }
+        public int? ActualMinutes { get; set; }
     }
 
     public class CreatePersonalEventRequest
@@ -32,6 +34,12 @@ namespace MentorumApi.DTOs
         public string? Category { get; set; }
         public DateTime StartAt { get; set; }
         public DateTime? EndAt { get; set; }
+    }
+
+    public class CheckinEventRequest
+    {
+        public bool CheckedIn { get; set; }
+        public int? ActualMinutes { get; set; }
     }
 
     public class CoachingSessionDto

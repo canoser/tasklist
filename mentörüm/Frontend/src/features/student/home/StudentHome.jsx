@@ -4,7 +4,12 @@ import { useStudentHomework, useStudentExams, useStudentCurriculum, useStudentSe
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import { formatDate } from '../../../utils/dateUtils';
+import { BookOpen, Target, FlaskConical, BookMarked, Edit3 } from 'lucide-react';
 import StudyTimerCard from './StudyTimerCard';
+import MoodCheckinCard from './MoodCheckinCard';
+import StudentNotesCard from './StudentNotesCard';
+import GoalStreakCard from './GoalStreakCard';
+import StudentQuestionsCard from './StudentQuestionsCard';
 import styles from './StudentHome.module.css';
 
 const StudentHome = () => {
@@ -45,7 +50,7 @@ const StudentHome = () => {
     <div className={styles.pageContainer}>
       <header className={styles.header}>
         <div>
-          <h1 className={styles.title}>İyi çalışmalar! 🚀</h1>
+          <h1 className={styles.title}>İyi çalışmalar!</h1>
           <p className={styles.subtitle}>Bugün hedeflerine bir adım daha yaklaşmak için harika bir gün.</p>
         </div>
       </header>
@@ -53,7 +58,7 @@ const StudentHome = () => {
       {/* İlerleme ve Özet Kartları */}
       <div className={styles.statsGrid}>
         <Card className={styles.statCard} padding="lg">
-          <div className={styles.statIcon} style={{ background: 'rgba(99, 102, 241, 0.1)', color: '#6366f1' }}>📚</div>
+          <div className={styles.statIcon} style={{ background: 'rgba(99, 102, 241, 0.1)', color: '#6366f1' }}><BookOpen size={20} /></div>
           <div className={styles.statInfo}>
             <span className={styles.statValue}>{isLoading ? '...' : pendingHomeworks.length}</span>
             <span className={styles.statLabel}>Bekleyen Ödev</span>
@@ -61,7 +66,7 @@ const StudentHome = () => {
         </Card>
         
         <Card className={styles.statCard} padding="lg">
-          <div className={styles.statIcon} style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e' }}>🎯</div>
+          <div className={styles.statIcon} style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e' }}><Target size={20} /></div>
           <div className={styles.statInfo}>
             <span className={styles.statValue}>{isLoading ? '...' : `%${completionRate}`}</span>
             <span className={styles.statLabel}>Tamamlama Oranı</span>
@@ -69,7 +74,7 @@ const StudentHome = () => {
         </Card>
 
         <Card className={styles.statCard} padding="lg">
-          <div className={styles.statIcon} style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>🧪</div>
+          <div className={styles.statIcon} style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}><FlaskConical size={20} /></div>
           <div className={styles.statInfo}>
             <span className={styles.statValue}>{lastExam?.totalNet ?? '-'}</span>
             <span className={styles.statLabel}>Son Deneme Neti</span>
@@ -77,7 +82,7 @@ const StudentHome = () => {
         </Card>
 
         <Card className={styles.statCard} padding="lg">
-          <div className={styles.statIcon} style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6' }}>📖</div>
+          <div className={styles.statIcon} style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6' }}><BookMarked size={20} /></div>
           <div className={styles.statInfo}>
             <span className={styles.statValue}>{`${completedTopics}/${totalTopics}`}</span>
             <span className={styles.statLabel}>Tamamlanan Konu</span>
@@ -85,8 +90,20 @@ const StudentHome = () => {
         </Card>
       </div>
 
+      {/* V10: Hedef & Streak */}
+      <GoalStreakCard />
+
       {/* Kronometre ve Quick-Log (T40 & T52) */}
       <StudyTimerCard />
+
+      {/* V10: Günlük Durum + Kişisel Notlar */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', alignItems: 'start' }}>
+        <MoodCheckinCard />
+        <StudentNotesCard />
+      </div>
+
+      {/* V10: Takıldığım Konular */}
+      <StudentQuestionsCard />
 
       {/* Yaklaşan Ödevler */}
       <section className={styles.section}>
@@ -102,7 +119,7 @@ const StudentHome = () => {
             upcomingHomeworks.map((hw) => (
               <Card key={hw.id} interactive className={styles.homeworkCard}>
                 <div className={styles.hwInfo}>
-                  <div className={styles.hwIcon}>✏️</div>
+                  <div className={styles.hwIcon}><Edit3 size={18} /></div>
                   <div>
                     <h3 className={styles.hwTitle}>{hw.snapshotTitle}</h3>
                     <p className={styles.hwDate}>Son Teslim: {formatDate(hw.dueDate, 'dd MMM')}</p>
@@ -131,7 +148,7 @@ const StudentHome = () => {
               </p>
             )}
             {upcomingSession.actionItems && (
-              <p style={{ fontSize: '0.85rem', color: '#b45309', margin: '0 0 8px' }}>📌 {upcomingSession.actionItems}</p>
+              <p style={{ fontSize: '0.85rem', color: '#b45309', margin: '0 0 8px' }}>{upcomingSession.actionItems}</p>
             )}
             <textarea
               value={prepNote}

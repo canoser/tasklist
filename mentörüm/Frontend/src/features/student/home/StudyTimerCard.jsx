@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
-import { useCreateStudySession } from '../studentApi';
+import { useCreateStudySession, useStudentCurriculum } from '../studentApi';
 
 export default function StudyTimerCard() {
   const [activeTab, setActiveTab] = useState('timer'); // 'timer' | 'quicklog'
@@ -28,6 +28,9 @@ export default function StudyTimerCard() {
   const [quickWrong, setQuickWrong] = useState(2);
 
   const createSessionMutation = useCreateStudySession();
+  const { data: curriculum = [] } = useStudentCurriculum();
+  const [topicId, setTopicId] = useState('');
+  const topics = (curriculum || []).map((t) => ({ id: t.id, label: `${t.subjectName} - ${t.topicName}` }));
 
   useEffect(() => {
     let interval = null;
@@ -79,6 +82,7 @@ export default function StudyTimerCard() {
       wrong: Number(wrong) || 0,
       blank: Number(blank) || 0,
       sourceType,
+      curriculumTopicId: topicId || undefined,
       startedAt: sessionStartTime || new Date().toISOString(),
       endedAt: new Date().toISOString(),
     }, {
@@ -100,6 +104,7 @@ export default function StudyTimerCard() {
       wrong: Number(quickWrong) || 0,
       blank: Math.max(0, (Number(quickQuestions) || 0) - (Number(quickCorrect) || 0) - (Number(quickWrong) || 0)),
       sourceType: 'QUICK_LOG',
+      curriculumTopicId: topicId || undefined,
       startedAt: new Date().toISOString(),
       endedAt: new Date().toISOString(),
     }, {
@@ -213,6 +218,10 @@ export default function StudyTimerCard() {
             }}>
               <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '0.95rem' }}>Oturum İstatistikleri</h4>
               <form onSubmit={handleSaveSession} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <select value={topicId} onChange={(e) => setTopicId(e.target.value)} style={{ padding: '0.4rem', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-app)', color: 'var(--text-primary)' }}>
+                  <option value="">Ders / Konu seç (opsiyonel)</option>
+                  {topics.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
+                </select>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                   <div>
                     <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block' }}>Süre (Dakika)</label>
@@ -281,6 +290,10 @@ export default function StudyTimerCard() {
 
       {activeTab === 'quicklog' && (
         <form onSubmit={handleQuickLogSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '0.5rem 0' }}>
+          <select value={topicId} onChange={(e) => setTopicId(e.target.value)} style={{ padding: '0.4rem', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-app)', color: 'var(--text-primary)' }}>
+            <option value="">Ders / Konu seç (opsiyonel)</option>
+            {topics.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
+          </select>
           <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
             Tamamladığın çalışma oturumunu tek tıkla sisteme işle:
           </p>

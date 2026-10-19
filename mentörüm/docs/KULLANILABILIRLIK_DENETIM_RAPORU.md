@@ -216,4 +216,24 @@ Eğer mevcut aşamaları değiştirmek yerine Sprint 1 önüne bağımsız bir p
 > **Sprint 0 (P0/P1 — Kullanılabilirlik & Hızlı Kazanımlar):** Aşama 0 (Şifre sıfırlama, menü erişimleri, öğretmen not UI'sı, ödev-ders bağlantısı).
 satırı eklenmelidir.
 
+---
+
+## 6. Durum Güncellemesi — Tüm Bulgular Çözüldü
+
+> **Tarih:** 19 Ekim 2026 · Bu rapor yazıldıktan sonra V9 uygulaması kapsamında aşağıdaki bulguların tamamı koda işlenip doğrulandı. Bölüm 5'teki "TASK_LIST_V9'a ekleme" yönergesi de aynı kapsamda uygulandı; bu rapor artık geçmiş/arşiv niteliğindedir.
+
+| # | Bulgu | Durum | Çözüm |
+|---|---|---|---|
+| 1 | Şifre Sıfırlama (P0) | ✅ Çözüldü | `ResetPasswordPage.jsx` + `/reset-password` rotası + `LoginPage` "Şifremi unuttum" |
+| 2 | Öğretmen Pedagojik Not (P1) | ✅ Çözüldü | `teacherApi` hook'ları + `TeacherStudentNotesModal` + `visibility`/`summary` |
+| 3 | Öğrenci Takvimi (P1) | ✅ Çözüldü | `StudentLayout` sekmelerine "Takvim" eklendi |
+| 4 | Veli Sınavlar (P2) | ✅ Çözüldü | `ParentLayout` sekmelerine "Sınavlar" eklendi |
+| 5 | Ödev-Ders Bağlantısı (P2) | ✅ Çözüldü | `AssignHomeworkRequest.CourseId` + `HomeworkRepository` + `AssignHomeworkModal` ders seçimi |
+| 6 | Öğretmen Ders Kaynakları (P2) | ✅ Çözüldü | `GET /api/v1/teacher/courses/{id}/resources` + `TeacherCoursesPage` "Kaynaklar" sekmesi |
+| 7 | Koç Öğretmen Notları (P2) | ✅ Çözüldü | `GET /api/v1/students/{id}/teacher-notes` + `CoachStudentDetail` "Öğretmen Notları" |
+| 8 | BottomNav Taşma Riski (P3) | ✅ Çözüldü | `overflow-x:auto` + `min-width:56px` + `safe-area-inset` |
+| 9 | Ölü Kod (P3) | ✅ Çözüldü | `ComingSoon.jsx` silindi; `useParentChildDetails` kaldırıldı |
+
+**Doğrulama:** Backend 0 hata · frontend build başarılı · 52/52 entegrasyon testi yeşil.
+
 

@@ -95,8 +95,8 @@ namespace MentorumApi.Endpoints
                 if (db != null)
                 {
                     var updated = await Dapper.SqlMapper.ExecuteAsync(db, 
-                        $"UPDATE homework_assignments SET status = @Status, completed_at = @Now, completion_percentage = @Pct WHERE id = @Id {whereClause}", 
-                        new { Now = percentage == 100 ? DateTime.UtcNow : (DateTime?)null, Status = status, Pct = percentage, Id = assignmentId, UserId = userId });
+                        $"UPDATE homework_assignments SET status = @Status, completed_at = @Now, completion_percentage = @Pct, student_note = CASE WHEN @Note IS NULL THEN student_note ELSE @Note END WHERE id = @Id {whereClause}", 
+                        new { Now = percentage == 100 ? DateTime.UtcNow : (DateTime?)null, Status = status, Pct = percentage, Id = assignmentId, UserId = userId, Note = req.Note });
                         
                     if (updated == 0) return Results.BadRequest(new { error = "Ödev bulunamadı veya yetkiniz yok." });
                 }
@@ -124,8 +124,9 @@ namespace MentorumApi.Endpoints
                         h.due_date as DueDate, 
                         h.completed_at as CompletedAt,
                         h.completion_percentage as CompletionPercentage,
+                        h.student_note as StudentNote,
                         CASE 
-                            WHEN h.status = 'PENDING' AND h.due_date < @Now THEN 'OVERDUE'
+                            WHEN h.status = 'PENDING' AND h.due_date < CURRENT_DATE THEN 'OVERDUE'
                             ELSE h.status 
                         END as Status,
                         s.name as SubjectName,
@@ -135,9 +136,40 @@ namespace MentorumApi.Endpoints
                     LEFT JOIN curriculum_topics ct ON ct.id = h.curriculum_topic_id
                     WHERE h.student_id = @UserId
                     ORDER BY h.due_date ASC
-                ", new { UserId = userId, Now = DateTime.UtcNow });
+                ", new { UserId = userId });
 
                 return Results.Ok(homeworks);
+            });
+
+            // V10 T04: Ödev ek süre talebi → koç onay merkezine düşer
+            studentGroup.MapPost("/{assignmentId:guid}/request-extension", async (
+                Guid assignmentId,
+                [FromBody] HomeworkExtensionRequest req,
+                [FromServices] DbConnectionFactory dbFactory,
+                [FromServices] ApprovalRepository approvalRepo,
+                ClaimsPrincipal user) =>
+            {
+                var userIdStr = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(userIdStr, out var userId)) return Results.Unauthorized();
+
+                using var db = dbFactory.CreateConnection();
+                var programId = await Dapper.SqlMapper.QuerySingleOrDefaultAsync<Guid?>(db,
+                    "SELECT program_id FROM homework_assignments WHERE id = @Id AND student_id = @UserId",
+                    new { Id = assignmentId, UserId = userId });
+
+                if (programId == null) return Results.BadRequest(new { error = "Ödev bulunamadı." });
+
+                var hasPending = await Dapper.SqlMapper.ExecuteScalarAsync<int>(db,
+                    "SELECT 1 FROM approval_items WHERE entity_type = 'HOMEWORK_EXTENSION' AND entity_id = @Id AND status = 'PENDING' LIMIT 1",
+                    new { Id = assignmentId });
+                if (hasPending > 0)
+                {
+                    return Results.BadRequest(new { error = "Bu ödev için zaten değerlendirme bekleyen bir ek süre talebiniz bulunmaktadır." });
+                }
+
+                var payload = System.Text.Json.JsonSerializer.Serialize(new { homeworkId = assignmentId, reason = req.Reason, requestedDueDate = req.RequestedDueDate });
+                var id = await approvalRepo.CreateAsync(programId.Value, "HOMEWORK_EXTENSION", assignmentId, payload, userId);
+                return Results.Ok(new { id, message = "Ek süre talebi koçunuza iletildi." });
             });
 
             // VELİ ÇOCUĞUNUN ÖDEVLERİNİ ÇEKER (Salt Okunur)
@@ -167,8 +199,9 @@ namespace MentorumApi.Endpoints
                         h.due_date as DueDate, 
                         h.completed_at as CompletedAt,
                         h.completion_percentage as CompletionPercentage,
+                        h.student_note as StudentNote,
                         CASE 
-                            WHEN h.status = 'PENDING' AND h.due_date < @Now THEN 'OVERDUE'
+                            WHEN h.status = 'PENDING' AND h.due_date < CURRENT_DATE THEN 'OVERDUE'
                             ELSE h.status 
                         END as Status,
                         s.name as SubjectName,
@@ -178,7 +211,7 @@ namespace MentorumApi.Endpoints
                     LEFT JOIN curriculum_topics ct ON ct.id = h.curriculum_topic_id
                     WHERE h.student_id = @StudentId
                     ORDER BY h.due_date ASC
-                ", new { StudentId = studentId, Now = DateTime.UtcNow });
+                ", new { StudentId = studentId });
 
                 return Results.Ok(homeworks);
             });

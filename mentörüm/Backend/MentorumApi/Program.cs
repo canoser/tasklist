@@ -79,6 +79,10 @@ try
     builder.Services.AddScoped<PaymentRepository>();
     builder.Services.AddScoped<ProgramAccessGuard>();
     builder.Services.AddScoped<RateLimitRepository>();
+    builder.Services.AddScoped<StudentCheckinRepository>();
+    builder.Services.AddScoped<StudentNotesRepository>();
+    builder.Services.AddScoped<StudentQuestionsRepository>();
+    builder.Services.AddScoped<SchoolScheduleRepository>();
     builder.Services.AddMemoryCache();
     builder.Services.AddHostedService<MentorumApi.Services.Background.OverdueHomeworkJob>();
 

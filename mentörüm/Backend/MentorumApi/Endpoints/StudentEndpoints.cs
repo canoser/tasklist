@@ -1,6 +1,7 @@
 using MentorumApi.Data;
 using MentorumApi.DTOs;
 using MentorumApi.Services;
+using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using QuestPDF.Fluent;
@@ -328,6 +329,34 @@ namespace MentorumApi.Endpoints
                 return Results.Ok(notes);
             });
 
+            // --- V10: Koç için öğrenci günlük durumu + koç görünür notları ---
+            group.MapGet("/{id:guid}/checkins", async (Guid id, [FromServices] StudentCheckinRepository repo, [FromServices] ProgramAccessGuard guard, ClaimsPrincipal user) =>
+            {
+                var coachIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(coachIdStr, out var coachId)) return Results.Unauthorized();
+                try { await guard.EnsureCoachOwnsStudentAsync(coachId, id); }
+                catch (UnauthorizedAccessException) { return Results.Json(new { error = "Yetkiniz yok." }, statusCode: 403); }
+                return Results.Ok(await repo.GetRecentAsync(id));
+            });
+
+            group.MapGet("/{id:guid}/student-notes", async (Guid id, [FromServices] StudentNotesRepository repo, [FromServices] ProgramAccessGuard guard, ClaimsPrincipal user) =>
+            {
+                var coachIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(coachIdStr, out var coachId)) return Results.Unauthorized();
+                try { await guard.EnsureCoachOwnsStudentAsync(coachId, id); }
+                catch (UnauthorizedAccessException) { return Results.Json(new { error = "Yetkiniz yok." }, statusCode: 403); }
+                return Results.Ok(await repo.GetForCoachAsync(id));
+            });
+
+            group.MapGet("/{id:guid}/questions", async (Guid id, [FromServices] StudentQuestionsRepository repo, [FromServices] ProgramAccessGuard guard, ClaimsPrincipal user) =>
+            {
+                var coachIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(coachIdStr, out var coachId)) return Results.Unauthorized();
+                try { await guard.EnsureCoachOwnsStudentAsync(coachId, id); }
+                catch (UnauthorizedAccessException) { return Results.Json(new { error = "Yetkiniz yok." }, statusCode: 403); }
+                return Results.Ok(await repo.ListAsync(id));
+            });
+
             // --- Öğrenci kendi verisi (Aşama 1) ---
             var self = app.MapGroup("/api/v1/student").RequireAuthorization("RequireStudentRole");
 
@@ -454,6 +483,137 @@ namespace MentorumApi.Endpoints
 
                 var budget = await repo.GetWeeklyTimeBudgetAsync(studentId.Value);
                 return Results.Ok(budget);
+            });
+
+            // --- V10: Günlük Durum (Mood Check-in) ---
+            self.MapPut("/checkin", async ([FromBody] UpsertCheckinRequest req, [FromServices] StudentCheckinRepository repo, [FromServices] DbConnectionFactory db, ClaimsPrincipal user) =>
+            {
+                var studentId = GetStudentId(user);
+                if (studentId == null) return Results.Unauthorized();
+                if (string.IsNullOrWhiteSpace(req.Mood)) return Results.BadRequest(new { error = "Durum gerekli." });
+
+                using var conn = db.CreateConnection();
+                var programId = await conn.ExecuteScalarAsync<Guid?>("SELECT program_id FROM students WHERE id = @Id", new { Id = studentId.Value });
+                if (programId == null) return Results.Unauthorized();
+
+                await repo.UpsertAsync(studentId.Value, programId.Value, req.Mood, req.Note);
+                return Results.Ok(new { message = "Durum kaydedildi." });
+            });
+
+            self.MapGet("/checkins", async ([FromServices] StudentCheckinRepository repo, ClaimsPrincipal user) =>
+            {
+                var studentId = GetStudentId(user);
+                if (studentId == null) return Results.Unauthorized();
+                return Results.Ok(await repo.GetRecentAsync(studentId.Value));
+            });
+
+            // --- V10: Kişisel Notlar (pin + gizlilik) ---
+            self.MapGet("/notes", async ([FromServices] StudentNotesRepository repo, ClaimsPrincipal user) =>
+            {
+                var studentId = GetStudentId(user);
+                if (studentId == null) return Results.Unauthorized();
+                return Results.Ok(await repo.ListAsync(studentId.Value));
+            });
+
+            self.MapPost("/notes", async ([FromBody] CreatePersonalNoteRequest req, [FromServices] StudentNotesRepository repo, [FromServices] DbConnectionFactory db, ClaimsPrincipal user) =>
+            {
+                var studentId = GetStudentId(user);
+                if (studentId == null) return Results.Unauthorized();
+
+                using var conn = db.CreateConnection();
+                var programId = await conn.ExecuteScalarAsync<Guid?>("SELECT program_id FROM students WHERE id = @Id", new { Id = studentId.Value });
+                if (programId == null) return Results.Unauthorized();
+
+                var id = await repo.CreateAsync(studentId.Value, programId.Value, req);
+                return Results.Ok(new { id });
+            });
+
+            self.MapPut("/notes/{noteId:guid}", async (Guid noteId, [FromBody] UpdatePersonalNoteRequest req, [FromServices] StudentNotesRepository repo, ClaimsPrincipal user) =>
+            {
+                var studentId = GetStudentId(user);
+                if (studentId == null) return Results.Unauthorized();
+                var ok = await repo.UpdateAsync(studentId.Value, noteId, req);
+                return ok ? Results.Ok(new { message = "Not güncellendi." }) : Results.NotFound(new { error = "Not bulunamadı." });
+            });
+
+            self.MapDelete("/notes/{noteId:guid}", async (Guid noteId, [FromServices] StudentNotesRepository repo, ClaimsPrincipal user) =>
+            {
+                var studentId = GetStudentId(user);
+                if (studentId == null) return Results.Unauthorized();
+                var ok = await repo.DeleteAsync(studentId.Value, noteId);
+                return ok ? Results.Ok(new { message = "Not silindi." }) : Results.NotFound(new { error = "Not bulunamadı." });
+            });
+
+            // --- V10: Takıldığım Konular (Sorulacaklar) ---
+            self.MapGet("/questions", async ([FromServices] StudentQuestionsRepository repo, ClaimsPrincipal user) =>
+            {
+                var studentId = GetStudentId(user);
+                if (studentId == null) return Results.Unauthorized();
+                return Results.Ok(await repo.ListAsync(studentId.Value));
+            });
+
+            self.MapPost("/questions", async ([FromBody] CreateStudentQuestionRequest req, [FromServices] StudentQuestionsRepository repo, [FromServices] DbConnectionFactory db, ClaimsPrincipal user) =>
+            {
+                var studentId = GetStudentId(user);
+                if (studentId == null) return Results.Unauthorized();
+                if (string.IsNullOrWhiteSpace(req.TopicText)) return Results.BadRequest(new { error = "Konu gerekli." });
+
+                using var conn = db.CreateConnection();
+                var programId = await conn.ExecuteScalarAsync<Guid?>("SELECT program_id FROM students WHERE id = @Id", new { Id = studentId.Value });
+                if (programId == null) return Results.Unauthorized();
+
+                var id = await repo.CreateAsync(studentId.Value, programId.Value, req);
+                return Results.Ok(new { id });
+            });
+
+            self.MapPatch("/questions/{questionId:guid}", async (Guid questionId, [FromServices] StudentQuestionsRepository repo, ClaimsPrincipal user) =>
+            {
+                var studentId = GetStudentId(user);
+                if (studentId == null) return Results.Unauthorized();
+                var ok = await repo.SetStatusAsync(studentId.Value, questionId, "RESOLVED");
+                return ok ? Results.Ok(new { message = "Çözüldü olarak işaretlendi." }) : Results.NotFound(new { error = "Bulunamadı." });
+            });
+
+            // --- V10: Streak ---
+            self.MapGet("/streak", async ([FromServices] StudySessionRepository repo, ClaimsPrincipal user) =>
+            {
+                var studentId = GetStudentId(user);
+                if (studentId == null) return Results.Unauthorized();
+                return Results.Ok(await repo.GetStreakAsync(studentId.Value));
+            });
+
+            // --- V10: Okul Haftalık Şablonu ---
+            self.MapGet("/school-schedule", async ([FromServices] SchoolScheduleRepository repo, ClaimsPrincipal user) =>
+            {
+                var studentId = GetStudentId(user);
+                if (studentId == null) return Results.Unauthorized();
+                return Results.Ok(await repo.ListAsync(studentId.Value));
+            });
+
+            self.MapPost("/school-schedule", async ([FromBody] CreateSchoolScheduleRequest req, [FromServices] SchoolScheduleRepository repo, [FromServices] DbConnectionFactory db, ClaimsPrincipal user) =>
+            {
+                var studentId = GetStudentId(user);
+                if (studentId == null) return Results.Unauthorized();
+                if (req.DayOfWeek < 1 || req.DayOfWeek > 7 || string.IsNullOrWhiteSpace(req.StartTime) || string.IsNullOrWhiteSpace(req.EndTime))
+                    return Results.BadRequest(new { error = "Gün ve saatler gerekli." });
+
+                if (!TimeSpan.TryParse(req.StartTime, out var startTime) || !TimeSpan.TryParse(req.EndTime, out var endTime) || startTime >= endTime)
+                    return Results.BadRequest(new { error = "Başlangıç saati bitiş saatinden önce olmalıdır." });
+
+                using var conn = db.CreateConnection();
+                var programId = await conn.ExecuteScalarAsync<Guid?>("SELECT program_id FROM students WHERE id = @Id", new { Id = studentId.Value });
+                if (programId == null) return Results.Unauthorized();
+
+                var id = await repo.CreateAsync(studentId.Value, programId.Value, req);
+                return Results.Ok(new { id });
+            });
+
+            self.MapDelete("/school-schedule/{scheduleId:guid}", async (Guid scheduleId, [FromServices] SchoolScheduleRepository repo, ClaimsPrincipal user) =>
+            {
+                var studentId = GetStudentId(user);
+                if (studentId == null) return Results.Unauthorized();
+                var ok = await repo.DeleteAsync(studentId.Value, scheduleId);
+                return ok ? Results.Ok(new { message = "Silindi." }) : Results.NotFound(new { error = "Bulunamadı." });
             });
         }
 

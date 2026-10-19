@@ -11,6 +11,7 @@ import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import PersonalEventModal from '../../../components/common/PersonalEventModal/PersonalEventModal';
 import { useStudentCalendar, useStudentSessions } from '../studentApi';
+import { usePersonalEvents, useCheckinPersonalEvent } from '../../../hooks/usePersonalEvents';
 import styles from './StudentCalendarPage.module.css';
 
 const locales = { tr };
@@ -27,6 +28,8 @@ const StudentCalendarPage = () => {
     format(range.end, 'yyyy-MM-dd')
   );
   const { data: sessions = [] } = useStudentSessions();
+  const { data: personalEvents = [] } = usePersonalEvents();
+  const checkin = useCheckinPersonalEvent();
 
   const formattedCalendarEvents = (events || []).map((ev) => ({
     id: ev.id,
@@ -118,6 +121,32 @@ const StudentCalendarPage = () => {
       </Card>
 
       <PersonalEventModal isOpen={isEventModalOpen} onClose={() => setIsEventModalOpen(false)} defaultType="STUDENT_EVENT" />
+
+      {/* V10 T07: Aktivite Check-in */}
+      <Card className={styles.card}>
+        <h2 style={{ margin: '0 0 10px', fontSize: '1rem' }}>Aktivitelerim (Check-in)</h2>
+        {personalEvents.length === 0 ? (
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Henüz etkinlik yok. Takvimden "+ Yeni Etkinlik" ile ekleyebilirsin.</p>
+        ) : (
+          personalEvents.map((ev) => (
+            <div key={ev.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', borderBottom: '1px solid var(--border-color)' }}>
+              <input
+                type="checkbox"
+                checked={!!ev.checkedIn}
+                onChange={(e) => checkin.mutate({ id: ev.id, data: { checkedIn: e.target.checked, actualMinutes: ev.actualMinutes } })}
+                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+              />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '0.85rem', textDecoration: ev.checkedIn ? 'line-through' : 'none' }}>{ev.title}</div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>{ev.category || ev.eventType}</div>
+              </div>
+              <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+                {ev.startAt ? new Date(ev.startAt).toLocaleString('tr-TR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
+              </span>
+            </div>
+          ))
+        )}
+      </Card>
     </div>
   );
 };

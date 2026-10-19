@@ -15,10 +15,11 @@ export const useCompleteHomework = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ homeworkId, percentage = 100 }) => {
+    mutationFn: async ({ homeworkId, percentage = 100, note = null }) => {
       // Backend'deki endpoint'e POST isteği yapıyoruz.
       const response = await apiClient.post(`/homework/assignments/${homeworkId}/complete`, {
-        CompletionPercentage: percentage
+        CompletionPercentage: percentage,
+        Note: note
       });
       return response;
     },
@@ -158,6 +159,123 @@ export const useStudentTeacherNotes = () => {
   return useQuery({
     queryKey: ['student', 'teacher-notes'],
     queryFn: async () => (await apiClient.get('/student/teacher-notes')) || [],
+  });
+};
+
+// V10: Günlük Durum (Mood Check-in)
+export const useStudentCheckins = () => {
+  return useQuery({
+    queryKey: ['student', 'checkins'],
+    queryFn: async () => (await apiClient.get('/student/checkins')) || [],
+  });
+};
+
+export const useSaveCheckin = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => apiClient.put('/student/checkin', data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['student', 'checkins'] }),
+  });
+};
+
+// V10: Kişisel Notlar
+export const useStudentNotes = () => {
+  return useQuery({
+    queryKey: ['student', 'notes'],
+    queryFn: async () => (await apiClient.get('/student/notes')) || [],
+  });
+};
+
+export const useCreateNote = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => apiClient.post('/student/notes', data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['student', 'notes'] }),
+  });
+};
+
+export const useUpdateNote = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }) => apiClient.put(`/student/notes/${id}`, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['student', 'notes'] }),
+  });
+};
+
+export const useDeleteNote = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => apiClient.delete(`/student/notes/${id}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['student', 'notes'] }),
+  });
+};
+
+// V10: Takıldığım Konular (Sorulacaklar)
+export const useStudentQuestions = () => {
+  return useQuery({
+    queryKey: ['student', 'questions'],
+    queryFn: async () => (await apiClient.get('/student/questions')) || [],
+  });
+};
+
+export const useCreateQuestion = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => apiClient.post('/student/questions', data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['student', 'questions'] }),
+  });
+};
+
+export const useResolveQuestion = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => apiClient.patch(`/student/questions/${id}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['student', 'questions'] }),
+  });
+};
+
+// V10: Streak
+export const useStudentStreak = () => {
+  return useQuery({
+    queryKey: ['student', 'streak'],
+    queryFn: async () => (await apiClient.get('/student/streak')) || { currentStreak: 0, totalStudyDays: 0 },
+  });
+};
+
+// V10: Okul Haftalık Şablonu
+export const useStudentSchoolSchedule = () => {
+  return useQuery({
+    queryKey: ['student', 'school-schedule'],
+    queryFn: async () => (await apiClient.get('/student/school-schedule')) || [],
+  });
+};
+
+export const useCreateSchoolSchedule = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => apiClient.post('/student/school-schedule', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student', 'school-schedule'] });
+      queryClient.invalidateQueries({ queryKey: ['student', 'calendar'] });
+    },
+  });
+};
+
+export const useDeleteSchoolSchedule = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => apiClient.delete(`/student/school-schedule/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student', 'school-schedule'] });
+      queryClient.invalidateQueries({ queryKey: ['student', 'calendar'] });
+    },
+  });
+};
+
+// V10: Ödev Ek Süre Talebi
+export const useRequestExtension = () => {
+  return useMutation({
+    mutationFn: ({ homeworkId, data }) => apiClient.post(`/homework/${homeworkId}/request-extension`, data),
   });
 };
 

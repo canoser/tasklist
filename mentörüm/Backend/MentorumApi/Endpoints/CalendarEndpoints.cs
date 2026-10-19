@@ -82,6 +82,14 @@ namespace MentorumApi.Endpoints
                 var id = await repo.CreatePersonalEventAsync(userId, req);
                 return Results.Ok(new { id });
             });
+            meEventsGroup.MapPatch("/{eventId:guid}/checkin", async (Guid eventId, [FromBody] CheckinEventRequest req, [FromServices] CalendarRepository repo, ClaimsPrincipal user) =>
+            {
+                var userIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(userIdStr, out var userId)) return Results.Unauthorized();
+
+                var ok = await repo.UpdatePersonalEventCheckinAsync(userId, eventId, req.CheckedIn, req.ActualMinutes);
+                return ok ? Results.Ok(new { message = "Güncellendi." }) : Results.NotFound(new { error = "Etkinlik bulunamadı." });
+            });
         }
     }
 }

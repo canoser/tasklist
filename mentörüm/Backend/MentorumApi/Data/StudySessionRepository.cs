@@ -17,6 +17,25 @@ namespace MentorumApi.Data
 
             if (studentInfo == null) throw new UnauthorizedAccessException("Öğrenci bulunamadı.");
 
+            Guid? resolvedSubjectId = req.SubjectId;
+            string? subjectName = null;
+
+            if (req.SubjectId.HasValue)
+            {
+                subjectName = await conn.QuerySingleOrDefaultAsync<string>("SELECT name FROM subjects WHERE id = @SubjectId", new { req.SubjectId });
+            }
+            else if (req.CurriculumTopicId.HasValue)
+            {
+                var subjectInfo = await conn.QuerySingleOrDefaultAsync<dynamic>(
+                    "SELECT s.id, s.name FROM curriculum_topics ct JOIN subjects s ON s.id = ct.subject_id WHERE ct.id = @TopicId",
+                    new { TopicId = req.CurriculumTopicId });
+                if (subjectInfo != null)
+                {
+                    resolvedSubjectId = (Guid)subjectInfo.id;
+                    subjectName = (string)subjectInfo.name;
+                }
+            }
+
             var id = Guid.NewGuid();
             var sql = @"
                 INSERT INTO study_sessions (
@@ -29,12 +48,12 @@ namespace MentorumApi.Data
                     @StartedAt, @EndedAt, NOW()
                 )";
 
-            await conn.ExecuteAsync(sql, new
+            var parameters = new
             {
                 Id = id,
                 ProgramId = (Guid)studentInfo.program_id,
                 StudentId = studentId,
-                req.SubjectId,
+                SubjectId = resolvedSubjectId,
                 req.CurriculumTopicId,
                 req.Minutes,
                 req.QuestionCount,
@@ -44,9 +63,62 @@ namespace MentorumApi.Data
                 SourceType = string.IsNullOrWhiteSpace(req.SourceType) ? "MANUAL" : req.SourceType,
                 req.StartedAt,
                 req.EndedAt
-            });
+            };
+
+            // T06: Kronometre kaydı → aynı işlemde takvime otomatik "Çalışma" bloğu
+            if (!req.StartedAt.HasValue)
+            {
+                await conn.ExecuteAsync(sql, parameters);
+                return id;
+            }
+
+            if (conn.State != System.Data.ConnectionState.Open) conn.Open();
+            using var tx = conn.BeginTransaction();
+            try
+            {
+                await conn.ExecuteAsync(sql, parameters, tx);
+
+                var label = string.IsNullOrWhiteSpace(subjectName) ? "Çalışma" : $"Çalışma: {subjectName}";
+                var blockEnd = req.EndedAt ?? req.StartedAt.Value.AddMinutes(req.Minutes);
+
+                await conn.ExecuteAsync(@"
+                    INSERT INTO personal_events (id, user_id, title, event_type, category, start_at, end_at)
+                    VALUES (gen_random_uuid(), @StudentId, @Label, 'STUDENT_EVENT', 'STUDY', @StartAt, @EndAt)",
+                    new { StudentId = studentId, Label = label, StartAt = req.StartedAt.Value, EndAt = blockEnd }, tx);
+
+                tx.Commit();
+            }
+            catch
+            {
+                tx.Rollback();
+                throw;
+            }
 
             return id;
+        }
+
+        public async Task<StreakDto> GetStreakAsync(Guid studentId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            var days = await conn.QueryAsync<DateTime>(@"
+                SELECT DISTINCT COALESCE((started_at AT TIME ZONE 'Europe/Istanbul')::date, (created_at AT TIME ZONE 'Europe/Istanbul')::date) AS d
+                FROM study_sessions
+                WHERE student_id = @StudentId",
+                new { StudentId = studentId });
+
+            var distinct = days.Select(d => d.Date).Distinct().OrderBy(d => d).ToList();
+            var cursor = DateTime.UtcNow.AddHours(3).Date; // Türkiye (UTC+3) yerel günü
+            if (!distinct.Contains(cursor))
+                cursor = cursor.AddDays(-1);
+
+            var streak = 0;
+            while (distinct.Contains(cursor))
+            {
+                streak++;
+                cursor = cursor.AddDays(-1);
+            }
+
+            return new StreakDto { CurrentStreak = streak, TotalStudyDays = distinct.Count };
         }
 
         public async Task<IEnumerable<StudySessionDto>> ListAsync(Guid studentId, DateTime? from = null, DateTime? to = null)

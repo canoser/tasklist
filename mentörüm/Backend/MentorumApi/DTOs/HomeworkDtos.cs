@@ -38,6 +38,7 @@ namespace MentorumApi.DTOs
     public class CompleteHomeworkRequest
     {
         public int CompletionPercentage { get; set; } = 100;
+        public string? Note { get; set; }
     }
 
     public class HomeworkItemDto
@@ -51,5 +52,6 @@ namespace MentorumApi.DTOs
         public string Status { get; set; } = "";
         public string? SubjectName { get; set; }
         public string? TopicName { get; set; }
+        public string? StudentNote { get; set; }
     }
 }
