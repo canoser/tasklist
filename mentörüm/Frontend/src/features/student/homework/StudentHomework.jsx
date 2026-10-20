@@ -49,7 +49,7 @@ const HomeworkCard = ({ hw, onComplete, onRequestExtension }) => {
         onChange={(e) => setNote(e.target.value)}
         rows={2}
         placeholder="Zorlandığın noktalar / koçuna not (opsiyonel)"
-        style={{ width: '100%', marginTop: '8px', padding: '8px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-app)', color: 'var(--text-primary)', resize: 'vertical' }}
+        style={{ width: '100%', marginTop: '8px', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'rgba(255, 255, 255, 0.03)', color: 'var(--text-primary)', colorScheme: 'dark', resize: 'vertical', fontSize: '0.85rem' }}
       />
 
       <div className={styles.cardFooter}>

@@ -106,8 +106,8 @@
 
 /* Tamamlananlar */
 .homeworkCardCompleted {
-  opacity: 0.8;
-  background-color: #F8FAFC !important;
+  opacity: 0.85;
+  background-color: var(--bg-color-surface) !important;
   border-left: 4px solid var(--color-success);
 }
 
@@ -128,7 +128,7 @@
 .emptyState {
   padding: var(--spacing-xl);
   text-align: center;
-  background-color: #F8FAFC;
+  background-color: var(--bg-color-surface);
   border-radius: var(--radius-md);
   color: var(--text-color-muted);
   border: 1px dashed var(--border-color);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
+import { Timer, Zap, Play, Pause, RotateCcw, Check } from 'lucide-react';
 import { useCreateStudySession, useStudentCurriculum } from '../studentApi';
 
 export default function StudyTimerCard() {
@@ -136,10 +137,13 @@ export default function StudyTimerCard() {
               padding: '0.4rem 0.8rem',
               fontWeight: 600,
               fontSize: '0.85rem',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px'
             }}
           >
-            ⏱️ Canlı Kronometre
+            <Timer size={15} /> Canlı Kronometre
           </button>
           <button 
             type="button"
@@ -152,10 +156,13 @@ export default function StudyTimerCard() {
               padding: '0.4rem 0.8rem',
               fontWeight: 600,
               fontSize: '0.85rem',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px'
             }}
           >
-            ⚡ Hızlı Kayıt (Quick-Log)
+            <Zap size={15} /> Hızlı Kayıt (Quick-Log)
           </button>
         </div>
 
@@ -180,22 +187,22 @@ export default function StudyTimerCard() {
 
           <div style={{ display: 'flex', gap: '0.75rem' }}>
             {!isActive ? (
-              <Button size="md" variant="primary" onClick={handleStart}>
-                Başlat ▶
+              <Button size="md" variant="primary" onClick={handleStart} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <Play size={16} /> Başlat
               </Button>
             ) : (
-              <Button size="md" variant="secondary" onClick={handlePause}>
-                Duraklat ⏸
+              <Button size="md" variant="secondary" onClick={handlePause} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <Pause size={16} /> Duraklat
               </Button>
             )}
 
-            <Button size="md" variant="ghost" onClick={handleReset}>
-              Sıfırla ↺
+            <Button size="md" variant="ghost" onClick={handleReset} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <RotateCcw size={16} /> Sıfırla
             </Button>
 
             {seconds > 0 && (
-              <Button size="md" variant="primary" onClick={handleFinishTimer}>
-                Oturumu Bitir ve Kaydet ✓
+              <Button size="md" variant="primary" onClick={handleFinishTimer} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <Check size={16} /> Oturumu Bitir ve Kaydet
               </Button>
             )}
           </div>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useStudentCourses, useStudentCourseResources, useUpdateResourceProgress } from '../studentSchoolApi';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
+import { BookOpen } from 'lucide-react';
 import styles from './StudentCoursesPage.module.css';
 
 const StudentCoursesPage = () => {
@@ -21,12 +22,22 @@ const StudentCoursesPage = () => {
 
       {!selectedCourse ? (
         <div className={styles.list}>
-          {courses?.map((c) => (
-            <Card key={c.id} className={styles.card} padding="md" onClick={() => setSelectedCourse(c.id)}>
-              <strong>{c.name}</strong>
-              <span className={styles.type}>{c.type}</span>
+          {(!courses || courses.length === 0) ? (
+            <Card padding="lg" style={{ textAlign: 'center', color: 'var(--text-secondary)', background: 'var(--bg-color-surface)' }}>
+              <div style={{ display: 'inline-flex', padding: '14px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.1)', color: 'var(--color-primary)', marginBottom: '12px' }}>
+                <BookOpen size={28} />
+              </div>
+              <h3 style={{ margin: '0 0 6px', fontSize: '1.05rem', color: 'var(--text-primary)' }}>Kayıtlı Dersin Bulunmuyor</h3>
+              <p style={{ margin: 0, fontSize: '0.85rem' }}>Koçun veya okulun henüz sana bir ders atamamış. Atanan dersler ve kaynaklar burada listelenecek.</p>
             </Card>
-          ))}
+          ) : (
+            courses.map((c) => (
+              <Card key={c.id} className={styles.card} padding="md" onClick={() => setSelectedCourse(c.id)}>
+                <strong>{c.name}</strong>
+                <span className={styles.type}>{c.type}</span>
+              </Card>
+            ))
+          )}
         </div>
       ) : (
         <div>

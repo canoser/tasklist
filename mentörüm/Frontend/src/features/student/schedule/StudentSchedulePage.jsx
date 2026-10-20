@@ -8,7 +8,7 @@ import styles from './StudentSchedulePage.module.css';
 const DAYS = ['', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
 const fmt = (t) => (t ? t.slice(0, 5) : '');
 
-const inputStyle = { padding: '8px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-app)', color: 'var(--text-primary)' };
+const inputStyle = { padding: '8px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-app)', color: 'var(--text-primary)', colorScheme: 'dark' };
 
 const StudentSchedulePage = () => {
   const { data: slots, isLoading } = useStudentSchedule();
@@ -40,7 +40,7 @@ const StudentSchedulePage = () => {
         <h2 style={{ margin: '0 0 10px', fontSize: '1rem' }}>Okul Saatlerim (Haftalık Tekrarlayan Şablon)</h2>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '10px' }}>
           <select value={day} onChange={(e) => setDay(e.target.value)} style={inputStyle}>
-            {DAYS.map((d, i) => i > 0 && <option key={i} value={i}>{d}</option>)}
+            {DAYS.map((d, i) => i > 0 && <option key={i} value={i} style={{ background: '#0f172a', color: '#f8fafc' }}>{d}</option>)}
           </select>
           <input type="time" value={start} onChange={(e) => setStart(e.target.value)} style={inputStyle} />
           <input type="time" value={end} onChange={(e) => setEnd(e.target.value)} style={inputStyle} />
