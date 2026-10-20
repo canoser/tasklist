@@ -12,6 +12,7 @@ import {
   CheckSquare, 
   Palette, 
   User, 
+  FolderOpen,
   LogOut 
 } from 'lucide-react';
 import styles from './StudentLayout.module.css';
@@ -35,6 +36,7 @@ const StudentLayout = () => {
     { path: '/student/schedule', label: 'Programım', icon: CalendarDays },
     { path: '/student/courses', label: 'Derslerim', icon: BookOpen },
     { path: '/student/homework', label: 'Ödevler', icon: CheckSquare },
+    { path: '/student/storage', label: 'Dosyalar', icon: FolderOpen },
     { path: '/student/theme', label: 'Temalar', icon: Palette },
     { path: '/student/profile', label: 'Profil', icon: User },
   ];

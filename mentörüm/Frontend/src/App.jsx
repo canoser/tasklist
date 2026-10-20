@@ -45,6 +45,7 @@ import ApprovalsPage from './features/coach/approvals/ApprovalsPage';
 import CoachPaymentsPage from './features/coach/payments/CoachPaymentsPage';
 import ViewAsBanner from './components/common/ViewAsBanner/ViewAsBanner';
 import ThemeSync from './components/common/ThemeSync/ThemeSync';
+import StoragePage from './features/storage/StoragePage';
 
 // Korumalı Route Bileşeni
 const PrivateRoute = ({ children, allowedRoles, requireAdmin }) => {
@@ -141,6 +142,7 @@ function App() {
           <Route path="programs/:programId/groups" element={<CoachGroupsPage />} />
           <Route path="programs/:programId/schedule" element={<WeeklySchedulePage />} />
           <Route path="programs/:programId/settings" element={<CoachProgramSettingsPage />} />
+          <Route path="storage" element={<StoragePage />} />
           <Route path="admin" element={<PrivateRoute requireAdmin><AdminPanelPage /></PrivateRoute>} />
         </Route>
 
@@ -160,6 +162,7 @@ function App() {
           <Route path="courses" element={<StudentCoursesPage />} />
           <Route path="profile" element={<StudentProfilePage />} />
           <Route path="theme" element={<StudentThemePage />} />
+          <Route path="storage" element={<StoragePage />} />
         </Route>
 
         {/* Veli Rotaları */}
@@ -191,6 +194,7 @@ function App() {
           <Route path="courses" element={<TeacherCoursesPage />} />
           <Route path="schedule" element={<TeacherSchedulePage />} />
           <Route path="profile" element={<TeacherProfilePage />} />
+          <Route path="storage" element={<StoragePage />} />
         </Route>
 
         {/* Ana sayfa yönlendirmesi */}

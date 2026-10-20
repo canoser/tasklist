@@ -7,6 +7,7 @@ namespace MentorumApi.DTOs
         public required string Title { get; set; }
         public string? Type { get; set; }
         public string? ResourceRef { get; set; }
+        public Guid? UploadId { get; set; }
         public int SortOrder { get; set; }
         public int? Progress { get; set; }   // öğrenci görünümünde dolu
         public int? IsDone { get; set; }     // öğrenci görünümünde dolu
@@ -18,6 +19,7 @@ namespace MentorumApi.DTOs
         public required string Title { get; set; }
         public string? Type { get; set; }
         public string? ResourceRef { get; set; }
+        public Guid? UploadId { get; set; }
         public int? SortOrder { get; set; }
     }
 
@@ -26,6 +28,7 @@ namespace MentorumApi.DTOs
         public string? Title { get; set; }
         public string? Type { get; set; }
         public string? ResourceRef { get; set; }
+        public Guid? UploadId { get; set; }
         public int? SortOrder { get; set; }
     }
 

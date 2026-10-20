@@ -49,6 +49,7 @@ namespace MentorumApi.DTOs
         public string TopicText { get; set; } = "";
         public string Status { get; set; } = "OPEN";
         public Guid? SubjectId { get; set; }
+        public Guid? UploadId { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 
@@ -56,6 +57,7 @@ namespace MentorumApi.DTOs
     {
         public string TopicText { get; set; } = "";
         public Guid? SubjectId { get; set; }
+        public Guid? UploadId { get; set; }
     }
 
     public class SchoolScheduleDto

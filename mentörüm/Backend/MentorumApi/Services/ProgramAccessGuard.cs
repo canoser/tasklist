@@ -108,5 +108,49 @@ namespace MentorumApi.Services
             if (!await IsCoachOfGroupAsync(coachId, groupId))
                 throw new UnauthorizedAccessException("FORBIDDEN");
         }
+
+        /// <summary>Öğretmenin derste dosya paylaşım yetkisi olup olmadığını döner.</summary>
+        public async Task<bool> CanTeacherShareFilesAsync(Guid teacherId, Guid courseId)
+        {
+            using var conn = _dbFactory.CreateConnection();
+            var found = await conn.ExecuteScalarAsync<int?>(
+                "SELECT 1 FROM courses WHERE id = @CourseId AND teacher_id = @TeacherId AND teacher_can_share_files = 1",
+                new { CourseId = courseId, TeacherId = teacherId });
+            return found != null;
+        }
+
+        /// <summary>Öğrencinin derse üye olup olmadığını döner (bireysel veya grup).</summary>
+        public async Task<bool> IsStudentInCourseAsync(Guid studentId, Guid courseId)
+        {
+            using var conn = _dbFactory.CreateConnection();
+            var found = await conn.ExecuteScalarAsync<int?>(@"
+                SELECT 1 FROM course_students WHERE course_id = @CourseId AND student_id = @StudentId AND is_active = 1
+                UNION
+                SELECT 1 FROM course_groups cg
+                JOIN student_group_members sgm ON sgm.group_id = cg.group_id
+                WHERE cg.course_id = @CourseId AND sgm.student_id = @StudentId",
+                new { CourseId = courseId, StudentId = studentId });
+            return found != null;
+        }
+
+        /// <summary>Öğrencinin programa ait olup olmadığını döner.</summary>
+        public async Task<bool> IsStudentInProgramAsync(Guid studentId, Guid programId)
+        {
+            using var conn = _dbFactory.CreateConnection();
+            var found = await conn.ExecuteScalarAsync<int?>(
+                "SELECT 1 FROM students WHERE id = @StudentId AND program_id = @ProgramId",
+                new { StudentId = studentId, ProgramId = programId });
+            return found != null;
+        }
+
+        /// <summary>Öğretmenin programa atanıp atanmadığını döner.</summary>
+        public async Task<bool> IsTeacherInProgramAsync(Guid teacherId, Guid programId)
+        {
+            using var conn = _dbFactory.CreateConnection();
+            var found = await conn.ExecuteScalarAsync<int?>(
+                "SELECT 1 FROM program_teachers WHERE teacher_id = @TeacherId AND program_id = @ProgramId AND is_active = 1",
+                new { TeacherId = teacherId, ProgramId = programId });
+            return found != null;
+        }
     }
 }

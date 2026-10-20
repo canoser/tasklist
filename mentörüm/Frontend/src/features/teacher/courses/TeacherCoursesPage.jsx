@@ -13,6 +13,7 @@ import {
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
+import { useDownloadUrl } from '../../storage/storageApi';
 import TeacherStudentNotesModal from './TeacherStudentNotesModal';
 import styles from './TeacherCoursesPage.module.css';
 
@@ -22,6 +23,7 @@ const TeacherCoursesPage = () => {
   const { data: courses, isLoading } = useTeacherCourses();
   const [selected, setSelected] = useState(null);
   const [tab, setTab] = useState('students');
+  const download = useDownloadUrl();
 
   const course = courses?.find((c) => c.courseId === selected);
   const { data: students } = useTeacherCourseStudents(selected);
@@ -345,6 +347,22 @@ const TeacherCoursesPage = () => {
                       <a href={r.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: 'var(--color-primary)' }}>
                         Bağlantıyı Aç ↗
                       </a>
+                    )}
+                    {r.uploadId && (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            const res = await download.mutateAsync(r.uploadId);
+                            window.open(res.url, '_blank', 'noopener');
+                          } catch {
+                            alert('Dosya açılamadı.');
+                          }
+                        }}
+                        style={{ background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', padding: 0, fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}
+                      >
+                        📄 Yüklenen Belgeyi Aç ↗
+                      </button>
                     )}
                   </div>
                   <span style={{

@@ -1,16 +1,54 @@
-import React from 'react';
-import { Clock } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import axios from 'axios';
+import { Clock, Paperclip, X, Image as ImageIcon } from 'lucide-react';
 import { useStudentHomework, useCompleteHomework, useRequestExtension } from '../studentApi';
+import { useCreateUploadUrl, useConfirmUpload } from '../../storage/storageApi';
+import { compressImage } from '../../../utils/imageCompressor';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import { formatDate } from '../../../utils/dateUtils';
 import styles from './StudentHomework.module.css';
 
 const HomeworkCard = ({ hw, onComplete, onRequestExtension }) => {
-  const [percentage, setPercentage] = React.useState(hw.completionPercentage || 0);
-  const [note, setNote] = React.useState(hw.studentNote || '');
-  const [showExtension, setShowExtension] = React.useState(false);
-  const [reason, setReason] = React.useState('');
+  const [percentage, setPercentage] = useState(hw.completionPercentage || 0);
+  const [note, setNote] = useState(hw.studentNote || '');
+  const [showExtension, setShowExtension] = useState(false);
+  const [reason, setReason] = useState('');
+  const [attachments, setAttachments] = useState([]);
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const createUpload = useCreateUploadUrl();
+  const confirmUpload = useConfirmUpload();
+
+  const handleAttachFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    setUploadingFile(true);
+    try {
+      const isImg = file.type.startsWith('image/');
+      const fileToUpload = isImg ? await compressImage(file) : file;
+      const res = await createUpload.mutateAsync({
+        fileName: fileToUpload.name,
+        fileSizeInBytes: fileToUpload.size,
+        contentType: fileToUpload.type,
+        homeworkId: hw.id,
+      });
+      await axios.put(res.uploadUrl, fileToUpload, { headers: { 'Content-Type': fileToUpload.type } });
+      await confirmUpload.mutateAsync(res.uploadId);
+      setAttachments((prev) => [...prev, { id: res.uploadId, name: fileToUpload.name }]);
+    } catch (err) {
+      alert('Dosya yüklenemedi: ' + (err?.message || 'Hata'));
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
+  const handleRemoveAttachment = (id) => {
+    setAttachments((prev) => prev.filter((a) => a.id !== id));
+  };
 
   return (
     <Card interactive className={styles.homeworkCard}>
@@ -52,16 +90,77 @@ const HomeworkCard = ({ hw, onComplete, onRequestExtension }) => {
         style={{ width: '100%', marginTop: '8px', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'rgba(255, 255, 255, 0.03)', color: 'var(--text-primary)', colorScheme: 'dark', resize: 'vertical', fontSize: '0.85rem' }}
       />
 
+      {/* Eklenen Dosyalar Çipleri */}
+      {attachments.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' }}>
+          {attachments.map((att) => (
+            <div
+              key={att.id}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'rgba(59, 130, 246, 0.1)',
+                border: '1px solid rgba(59, 130, 246, 0.3)',
+                borderRadius: '6px',
+                padding: '4px 8px',
+                fontSize: '0.8rem',
+                color: 'var(--text-primary)',
+              }}
+            >
+              <Paperclip size={13} style={{ color: 'var(--color-primary)' }} />
+              <span style={{ maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {att.name}
+              </span>
+              <button
+                type="button"
+                onClick={() => handleRemoveAttachment(att.id)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', color: 'var(--text-secondary)' }}
+              >
+                <X size={14} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className={styles.cardFooter}>
         <div className={styles.dueDate}>
           Son Teslim: {formatDate(hw.dueDate, 'dd MMM yyyy, HH:mm')}
         </div>
-        <Button 
-          size="sm" 
-          onClick={() => onComplete({ homeworkId: hw.id, percentage, note })}
-        >
-          {percentage === 100 ? 'Tamamla' : 'İlerlemeyi Kaydet'}
-        </Button>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".png,.jpg,.jpeg,.webp,.pdf,.docx"
+            hidden
+            onChange={handleAttachFile}
+          />
+          <Button
+            size="sm"
+            variant="ghost"
+            disabled={uploadingFile}
+            onClick={() => fileInputRef.current?.click()}
+            title="Ödev Çözümü / Ek Yükle"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+          >
+            <Paperclip size={14} />
+            <span>{uploadingFile ? 'Yükleniyor…' : 'Ek / Çözüm'}</span>
+          </Button>
+
+          <Button 
+            size="sm" 
+            disabled={uploadingFile}
+            onClick={() => onComplete({
+              homeworkId: hw.id,
+              percentage,
+              note,
+              attachmentIds: attachments.length > 0 ? attachments.map((a) => a.id) : undefined,
+            })}
+          >
+            {percentage === 100 ? 'Tamamla' : 'İlerlemeyi Kaydet'}
+          </Button>
+        </div>
       </div>
 
       {showExtension ? (

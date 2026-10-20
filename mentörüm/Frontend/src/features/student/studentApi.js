@@ -15,11 +15,12 @@ export const useCompleteHomework = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ homeworkId, percentage = 100, note = null }) => {
+    mutationFn: async ({ homeworkId, percentage = 100, note = null, attachmentIds = null }) => {
       // Backend'deki endpoint'e POST isteği yapıyoruz.
       const response = await apiClient.post(`/homework/assignments/${homeworkId}/complete`, {
         CompletionPercentage: percentage,
-        Note: note
+        Note: note,
+        AttachmentIds: attachmentIds
       });
       return response;
     },

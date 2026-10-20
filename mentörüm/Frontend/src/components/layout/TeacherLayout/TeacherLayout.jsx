@@ -23,6 +23,7 @@ const TeacherLayout = () => {
   const tabs = [
     { path: '/teacher/courses', label: 'Derslerim', icon: '📚' },
     { path: '/teacher/schedule', label: 'Program', icon: '📅' },
+    { path: '/teacher/storage', label: 'Dosyalar', icon: '📁' },
     { path: '/teacher/profile', label: 'Profil', icon: '👤' },
   ];
 

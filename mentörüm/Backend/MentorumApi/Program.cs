@@ -6,6 +6,7 @@ using System.Text;
 using Dapper;
 using MentorumApi.Data;
 using MentorumApi.Services;
+using MentorumApi.Services.Background;
 using MentorumApi.Middleware;
 using MentorumApi.Endpoints;
 
@@ -63,6 +64,8 @@ try
 
     // Dependency Injection
     builder.Services.AddSingleton<DbConnectionFactory>();
+    builder.Services.AddSingleton<IStorageService, R2StorageService>();
+    builder.Services.AddHostedService<StorageMaintenanceService>();
     builder.Services.AddScoped<JwtService>();
     builder.Services.AddScoped<GoogleAuthService>();
     builder.Services.AddHttpClient();
@@ -87,6 +90,9 @@ try
     builder.Services.AddScoped<PaymentPlanService>();
     builder.Services.AddScoped<PaymentRepository>();
     builder.Services.AddScoped<ProgramAccessGuard>();
+    builder.Services.AddScoped<UploadRepository>();
+    builder.Services.AddScoped<DeviceRepository>();
+    builder.Services.AddScoped<QuestionCollectionRepository>();
     builder.Services.AddScoped<RateLimitRepository>();
     builder.Services.AddScoped<StudentCheckinRepository>();
     builder.Services.AddScoped<StudentNotesRepository>();
@@ -215,6 +221,9 @@ try
     app.MapCourseResourceEndpoints();
     app.MapApprovalEndpoints();
     app.MapPaymentEndpoints();
+    app.MapStorageEndpoints();
+    app.MapDeviceEndpoints();
+    app.MapQuestionCollectionEndpoints();
 
     app.MapGet("/", () => "Mentorum API Auth/Authz Katmanı Devrede!");
 

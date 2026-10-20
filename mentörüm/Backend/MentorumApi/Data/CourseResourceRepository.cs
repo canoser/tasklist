@@ -22,7 +22,7 @@ namespace MentorumApi.Data
             if (!await IsMemberAsync(programId, coachId)) return Enumerable.Empty<CourseResourceDto>();
             using var conn = _connectionFactory.CreateConnection();
             return await conn.QueryAsync<CourseResourceDto>(@"
-                SELECT r.id, r.course_id AS CourseId, r.title AS Title, r.type AS Type, r.resource_ref AS ResourceRef, r.sort_order AS SortOrder
+                SELECT r.id, r.course_id AS CourseId, r.title AS Title, r.type AS Type, r.resource_ref AS ResourceRef, r.upload_id AS UploadId, r.sort_order AS SortOrder
                 FROM course_resources r
                 JOIN courses c ON c.id = r.course_id
                 WHERE r.course_id = @CourseId AND c.program_id = @ProgramId
@@ -36,11 +36,11 @@ namespace MentorumApi.Data
             var id = Guid.NewGuid();
             using var conn = _connectionFactory.CreateConnection();
             var rows = await conn.ExecuteAsync(@"
-                INSERT INTO course_resources (id, course_id, program_id, title, type, resource_ref, sort_order)
-                SELECT @Id, c.id, c.program_id, @Title, @Type, @ResourceRef, COALESCE(@SortOrder, 0)
+                INSERT INTO course_resources (id, course_id, program_id, title, type, resource_ref, upload_id, sort_order)
+                SELECT @Id, c.id, c.program_id, @Title, @Type, @ResourceRef, @UploadId, COALESCE(@SortOrder, 0)
                 FROM courses c
                 WHERE c.id = @CourseId AND c.program_id = @ProgramId",
-                new { Id = id, CourseId = courseId, ProgramId = programId, req.Title, req.Type, req.ResourceRef, req.SortOrder });
+                new { Id = id, CourseId = courseId, ProgramId = programId, req.Title, req.Type, req.ResourceRef, req.UploadId, req.SortOrder });
             if (rows == 0) throw new InvalidOperationException("COURSE_NOT_IN_PROGRAM");
             return id;
         }
@@ -54,11 +54,12 @@ namespace MentorumApi.Data
                     title = COALESCE(@Title, title),
                     type = COALESCE(@Type, type),
                     resource_ref = COALESCE(@ResourceRef, resource_ref),
+                    upload_id = COALESCE(@UploadId, upload_id),
                     sort_order = COALESCE(@SortOrder, sort_order),
                     updated_at = NOW()
                 FROM courses c
                 WHERE r.id = @ResourceId AND r.course_id = c.id AND c.program_id = @ProgramId",
-                new { ResourceId = resourceId, ProgramId = programId, req.Title, req.Type, req.ResourceRef, req.SortOrder });
+                new { ResourceId = resourceId, ProgramId = programId, req.Title, req.Type, req.ResourceRef, req.UploadId, req.SortOrder });
             return rows > 0;
         }
 
@@ -78,7 +79,7 @@ namespace MentorumApi.Data
         {
             using var conn = _connectionFactory.CreateConnection();
             return await conn.QueryAsync<CourseResourceDto>(@"
-                SELECT r.id, r.course_id AS CourseId, r.title AS Title, r.type AS Type, r.resource_ref AS ResourceRef, r.sort_order AS SortOrder,
+                SELECT r.id, r.course_id AS CourseId, r.title AS Title, r.type AS Type, r.resource_ref AS ResourceRef, r.upload_id AS UploadId, r.sort_order AS SortOrder,
                        p.progress AS Progress, p.is_done AS IsDone
                 FROM course_resources r
                 LEFT JOIN course_resource_progress p ON p.course_resource_id = r.id AND p.student_id = @StudentId
@@ -123,6 +124,7 @@ namespace MentorumApi.Data
                     r.title AS Title, 
                     r.type AS Type, 
                     r.resource_ref AS ResourceRef, 
+                    r.upload_id AS UploadId,
                     r.sort_order AS SortOrder,
                     (SELECT COUNT(1) FROM course_resource_progress p WHERE p.course_resource_id = r.id AND p.is_done = 1) AS CompletedCount
                 FROM course_resources r

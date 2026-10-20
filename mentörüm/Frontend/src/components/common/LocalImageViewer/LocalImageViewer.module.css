@@ -1,0 +1,11 @@
+.viewer {
+    max-width: 100%;
+    border-radius: 8px;
+    display: block;
+}
+
+.placeholder {
+    padding: 16px;
+    color: #6b7280;
+    font-size: 13px;
+}

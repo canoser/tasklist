@@ -99,6 +99,17 @@ namespace MentorumApi.Endpoints
                         new { Now = percentage == 100 ? DateTime.UtcNow : (DateTime?)null, Status = status, Pct = percentage, Id = assignmentId, UserId = userId, Note = req.Note });
                         
                     if (updated == 0) return Results.BadRequest(new { error = "Ödev bulunamadı veya yetkiniz yok." });
+
+                    // T09: Öğrencinin yüklediği ekleri (resim) bu ödeve bağla (IDOR: sender_user_id = kullanıcı).
+                    if (req.AttachmentIds != null && req.AttachmentIds.Count > 0)
+                    {
+                        foreach (var attachId in req.AttachmentIds)
+                        {
+                            await Dapper.SqlMapper.ExecuteAsync(db,
+                                "UPDATE uploads SET homework_id = @HomeworkId, updated_at = NOW() WHERE id = @UploadId AND sender_user_id = @UserId AND status = 'UPLOADED'",
+                                new { HomeworkId = assignmentId, UploadId = attachId, UserId = userId });
+                        }
+                    }
                 }
 
                 return Results.Ok(new { message = "Ödev ilerlemesi kaydedildi." });

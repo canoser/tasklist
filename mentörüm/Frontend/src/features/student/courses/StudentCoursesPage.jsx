@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useStudentCourses, useStudentCourseResources, useUpdateResourceProgress } from '../studentSchoolApi';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, FileText } from 'lucide-react';
+import { useDownloadUrl } from '../../storage/storageApi';
 import styles from './StudentCoursesPage.module.css';
 
 const StudentCoursesPage = () => {
@@ -10,6 +11,7 @@ const StudentCoursesPage = () => {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const { data: resources } = useStudentCourseResources(selectedCourse);
   const updateProgress = useUpdateResourceProgress();
+  const download = useDownloadUrl();
 
   const handleProgress = (resourceId, progress) => {
     updateProgress.mutateAsync({ resourceId, data: { progress, isDone: progress >= 100 } });
@@ -46,6 +48,26 @@ const StudentCoursesPage = () => {
             {resources?.map((r) => (
               <Card key={r.id} className={styles.card} padding="md">
                 <strong>{r.title}</strong>
+                {r.uploadId && (
+                  <div style={{ marginTop: '6px' }}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={async () => {
+                        try {
+                          const res = await download.mutateAsync(r.uploadId);
+                          window.open(res.url, '_blank', 'noopener');
+                        } catch {
+                          alert('Dosya açılamadı.');
+                        }
+                      }}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 8px', fontSize: '0.8rem' }}
+                    >
+                      <FileText size={14} />
+                      <span>Belgeyi Aç / İndir ↗</span>
+                    </Button>
+                  </div>
+                )}
                 <div className={styles.progressBar}>
                   <div className={styles.progressFill} style={{ width: `${r.progress || 0}%` }} />
                 </div>

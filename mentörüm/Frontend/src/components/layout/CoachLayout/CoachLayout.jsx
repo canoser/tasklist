@@ -25,7 +25,8 @@ import {
   Menu, 
   X,
   Sparkles,
-  Eye
+  Eye,
+  FolderOpen
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -83,6 +84,7 @@ const CoachLayout = () => {
     if (p.includes('/calendar')) return 'Takvim & Haftalık Program';
     if (p.includes('/approvals')) return 'Onay Merkezi';
     if (p.includes('/reports')) return 'Raporlar & Analiz';
+    if (p.includes('/storage')) return 'Dosyalarım';
     if (p.includes('/profile')) return 'Ayarlar & Profil';
     if (p.includes('/admin')) return 'Sistem Yönetimi (Admin)';
     return 'Panel';
@@ -111,6 +113,7 @@ const CoachLayout = () => {
         { path: '/coach/students', label: 'Öğrenciler', icon: Users },
         { path: '/coach/programs', label: 'Programlar & Dersler', icon: BookOpen },
         { path: '/coach/teachers', label: 'Öğretmenler', icon: GraduationCap },
+        { path: '/coach/storage', label: 'Dosyalarım', icon: FolderOpen },
       ],
     },
     {

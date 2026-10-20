@@ -39,6 +39,7 @@ namespace MentorumApi.DTOs
     {
         public int CompletionPercentage { get; set; } = 100;
         public string? Note { get; set; }
+        public List<Guid>? AttachmentIds { get; set; }
     }
 
     public class HomeworkItemDto
