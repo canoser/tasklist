@@ -38,6 +38,7 @@ import TeacherCoursesPage from './features/teacher/courses/TeacherCoursesPage';
 import TeacherSchedulePage from './features/teacher/schedule/TeacherSchedulePage';
 import TeacherProfilePage from './features/teacher/profile/TeacherProfilePage';
 import StudentProfilePage from './features/student/profile/StudentProfilePage';
+import StudentThemePage from './features/student/theme/StudentThemePage';
 import CoachTeacherDetailPage from './features/coach/teachers/CoachTeacherDetailPage';
 import CoachProfilePage from './features/coach/profile/CoachProfilePage';
 import ApprovalsPage from './features/coach/approvals/ApprovalsPage';
@@ -158,6 +159,7 @@ function App() {
           <Route path="schedule" element={<StudentSchedulePage />} />
           <Route path="courses" element={<StudentCoursesPage />} />
           <Route path="profile" element={<StudentProfilePage />} />
+          <Route path="theme" element={<StudentThemePage />} />
         </Route>
 
         {/* Veli Rotaları */}

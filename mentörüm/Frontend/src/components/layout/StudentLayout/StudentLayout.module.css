@@ -270,19 +270,24 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 68px;
+  height: 64px;
   background-color: var(--bg-color-surface, #FFFFFF);
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
   display: flex;
   justify-content: space-around;
   align-items: center;
-  padding: 0 var(--spacing-sm, 8px);
+  padding: 0 4px;
   padding-bottom: env(safe-area-inset-bottom);
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
-  z-index: 20;
+  z-index: 50;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.bottomNav::-webkit-scrollbar {
+  display: none;
 }
 
 .tab {
@@ -291,23 +296,27 @@
   align-items: center;
   justify-content: center;
   flex: 1;
-  min-width: 56px;
+  min-width: 46px;
   flex-shrink: 0;
   height: 100%;
   color: var(--text-color-muted, #64748B);
   transition: all 0.2s;
   text-decoration: none;
+  padding: 4px 2px;
 }
 
 .tabIcon {
-  font-size: 1.4rem;
-  margin-bottom: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2px;
   transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .tabLabel {
-  font-size: 0.72rem;
+  font-size: 0.65rem;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .tabActive {

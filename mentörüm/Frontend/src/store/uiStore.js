@@ -19,6 +19,14 @@ const getInitialThemeStyle = () => {
   return 'classic';
 };
 
+const getInitialStudentHomeLayout = () => {
+  if (typeof window !== 'undefined') {
+    const saved = localStorage.getItem('mentorum_student_home_layout');
+    if (saved === 'compact' || saved === 'widget') return saved;
+  }
+  return 'compact';
+};
+
 const applyThemeToDom = (style, mode) => {
   if (typeof document !== 'undefined') {
     const root = document.documentElement;
@@ -30,6 +38,7 @@ const applyThemeToDom = (style, mode) => {
 
 const initialMode = getInitialThemeMode();
 const initialStyle = getInitialThemeStyle();
+const initialStudentHomeLayout = getInitialStudentHomeLayout();
 applyThemeToDom(initialStyle, initialMode);
 
 export const useUIStore = create((set) => ({
@@ -38,6 +47,7 @@ export const useUIStore = create((set) => ({
   theme: initialMode, // Geriye dönük uyumluluk: 'light' | 'dark'
   themeMode: initialMode,
   themeStyle: initialStyle,
+  studentHomeLayout: initialStudentHomeLayout, // 'compact' | 'widget'
 
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
   openSidebar: () => set({ sidebarOpen: true }),
@@ -80,6 +90,13 @@ export const useUIStore = create((set) => ({
       localStorage.setItem('mentorum_theme', theme);
     }
     return { theme, themeMode: theme };
+  }),
+
+  setStudentHomeLayout: (layout) => set(() => {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('mentorum_student_home_layout', layout);
+    }
+    return { studentHomeLayout: layout };
   }),
 }));
 

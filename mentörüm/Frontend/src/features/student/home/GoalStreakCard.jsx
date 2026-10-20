@@ -11,7 +11,7 @@ const getNextExamDate = () => {
 };
 const EXAM_DATE = getNextExamDate();
 
-export default function GoalStreakCard() {
+export default function GoalStreakCard({ variant = 'default' }) {
   const { data: goal } = useStudentGoal();
   const { data: streak = { currentStreak: 0, totalStudyDays: 0 } } = useStudentStreak();
 
@@ -20,6 +20,72 @@ export default function GoalStreakCard() {
   const score = goal?.targetScore ?? goal?.target_score ?? goal?.TargetScore;
 
   const daysLeft = Math.max(0, Math.ceil((EXAM_DATE - new Date()) / (1000 * 60 * 60 * 24)));
+  const targetSummary = [uni, dept, score ? `${score} Net` : null].filter(Boolean).join(' · ') || (score ? `${score} Net Hedef` : 'Hedef Belirlenmedi');
+
+  // 1. Kompakt Şerit Görünümü (Tek Satır Strip)
+  if (variant === 'strip') {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        background: 'var(--bg-card)',
+        border: '1px solid var(--border-color)',
+        borderRadius: '12px',
+        padding: '8px 12px',
+        gap: '8px',
+        overflowX: 'auto',
+        fontSize: '0.78rem'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, color: '#f59e0b', whiteSpace: 'nowrap' }}>
+          <Flame size={16} />
+          <span>{streak.currentStreak} Gün Seri</span>
+        </div>
+        <div style={{ width: 1, height: 16, background: 'var(--border-color)', flexShrink: 0 }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, color: '#3b82f6', whiteSpace: 'nowrap' }}>
+          <CalendarClock size={16} />
+          <span>{daysLeft} Gün Sınava</span>
+        </div>
+        <div style={{ width: 1, height: 16, background: 'var(--border-color)', flexShrink: 0 }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, color: 'var(--color-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <Target size={15} />
+          <span style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{targetSummary}</span>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Hero Widget Görünümü
+  if (variant === 'hero') {
+    return (
+      <Card padding="md" style={{
+        background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(6, 17, 13, 0.05))',
+        border: '1px solid rgba(16, 185, 129, 0.25)',
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontSize: '0.7rem', color: 'var(--color-primary)', fontWeight: 800, letterSpacing: '0.5px', textTransform: 'uppercase' }}>HEDEF PLANIN</div>
+            <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: 2 }}>{targetSummary}</div>
+          </div>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '5px',
+            background: 'rgba(245, 158, 11, 0.15)',
+            color: '#f59e0b',
+            padding: '4px 10px',
+            borderRadius: '20px',
+            fontSize: '0.75rem',
+            fontWeight: 700,
+            border: '1px solid rgba(245, 158, 11, 0.3)'
+          }}>
+            <Flame size={14} />
+            <span>{streak.currentStreak} Gün Seri</span>
+          </div>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card padding="md">

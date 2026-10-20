@@ -4,8 +4,11 @@ import Button from '../../../components/common/Button/Button';
 import { Timer, Zap, Play, Pause, RotateCcw, Check } from 'lucide-react';
 import { useCreateStudySession, useStudentCurriculum } from '../studentApi';
 
-export default function StudyTimerCard() {
+import { ChevronDown, ChevronUp } from 'lucide-react';
+
+export default function StudyTimerCard({ compact = false, collapsible = false }) {
   const [activeTab, setActiveTab] = useState('timer'); // 'timer' | 'quicklog'
+  const [isExpanded, setIsExpanded] = useState(!collapsible);
   
   // Kronometre state
   const [seconds, setSeconds] = useState(0);
@@ -122,10 +125,54 @@ export default function StudyTimerCard() {
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
+  if (collapsible && !isExpanded) {
+    return (
+      <Card padding="sm" style={{ marginBottom: compact ? '0.75rem' : '1.5rem', border: '1px solid var(--border-color)', background: 'var(--bg-card)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div 
+            onClick={() => setIsExpanded(true)} 
+            style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', flex: 1 }}
+          >
+            <div style={{ width: 34, height: 34, borderRadius: 8, background: 'rgba(99, 102, 241, 0.12)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Timer size={18} />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                {isActive ? `Çalışıyor: ${formatTimer(seconds)}` : 'Kronometre Hazır'}
+              </div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                {isActive ? 'Oturumu duraklatmak veya detaylar için tıkla' : 'Hızlı odaklanma veya manuel kayıt için tıkla'}
+              </div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {!isActive ? (
+              <Button size="sm" variant="primary" onClick={handleStart} style={{ padding: '6px 12px', fontSize: '0.78rem' }}>
+                <Play size={13} style={{ marginRight: 4 }} /> Başlat
+              </Button>
+            ) : (
+              <Button size="sm" variant="secondary" onClick={handlePause} style={{ padding: '6px 12px', fontSize: '0.78rem' }}>
+                <Pause size={13} style={{ marginRight: 4 }} /> Duraklat
+              </Button>
+            )}
+            <button 
+              type="button" 
+              onClick={() => setIsExpanded(true)}
+              style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: 4 }}
+              title="Genişlet"
+            >
+              <ChevronDown size={18} />
+            </button>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
   return (
-    <Card padding="lg" style={{ marginBottom: '1.5rem', border: '1px solid var(--border-color)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+    <Card padding={compact ? 'md' : 'lg'} style={{ marginBottom: compact ? '0.75rem' : '1.5rem', border: '1px solid var(--border-color)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: compact ? '0.6rem' : '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: compact ? '0.5rem' : '0.75rem' }}>
+        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
           <button 
             type="button"
             onClick={() => setActiveTab('timer')}
@@ -134,16 +181,16 @@ export default function StudyTimerCard() {
               color: activeTab === 'timer' ? 'var(--color-primary, #6366f1)' : 'var(--text-secondary)',
               border: 'none',
               borderRadius: '6px',
-              padding: '0.4rem 0.8rem',
+              padding: compact ? '0.3rem 0.6rem' : '0.4rem 0.8rem',
               fontWeight: 600,
-              fontSize: '0.85rem',
+              fontSize: compact ? '0.78rem' : '0.85rem',
               cursor: 'pointer',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '6px'
+              gap: '5px'
             }}
           >
-            <Timer size={15} /> Canlı Kronometre
+            <Timer size={14} /> Canlı Kronometre
           </button>
           <button 
             type="button"
@@ -153,64 +200,77 @@ export default function StudyTimerCard() {
               color: activeTab === 'quicklog' ? 'var(--color-primary, #6366f1)' : 'var(--text-secondary)',
               border: 'none',
               borderRadius: '6px',
-              padding: '0.4rem 0.8rem',
+              padding: compact ? '0.3rem 0.6rem' : '0.4rem 0.8rem',
               fontWeight: 600,
-              fontSize: '0.85rem',
+              fontSize: compact ? '0.78rem' : '0.85rem',
               cursor: 'pointer',
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '6px'
+              gap: '5px'
             }}
           >
-            <Zap size={15} /> Hızlı Kayıt (Quick-Log)
+            <Zap size={14} /> Hızlı Kayıt
           </button>
         </div>
 
-        {successMsg && (
-          <span style={{ fontSize: '0.85rem', color: 'var(--color-success, #10b981)', fontWeight: 600 }}>
-            {successMsg}
-          </span>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {successMsg && (
+            <span style={{ fontSize: '0.8rem', color: 'var(--color-success, #10b981)', fontWeight: 600 }}>
+              {successMsg}
+            </span>
+          )}
+          {collapsible && (
+            <button 
+              type="button" 
+              onClick={() => setIsExpanded(false)}
+              style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: 2 }}
+              title="Daralt"
+            >
+              <ChevronUp size={18} />
+            </button>
+          )}
+        </div>
       </div>
 
       {activeTab === 'timer' && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', padding: '1rem 0' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: compact ? '0.6rem' : '1rem', padding: compact ? '0.4rem 0' : '1rem 0' }}>
           <div style={{
-            fontSize: '3.5rem',
+            fontSize: compact ? '2.3rem' : '3.5rem',
             fontFamily: 'monospace',
             fontWeight: 800,
             color: isActive ? 'var(--color-primary, #6366f1)' : 'var(--text-primary)',
-            letterSpacing: '2px'
+            letterSpacing: '2px',
+            lineHeight: 1
           }}>
             {formatTimer(seconds)}
           </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
             {!isActive ? (
-              <Button size="md" variant="primary" onClick={handleStart} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                <Play size={16} /> Başlat
+              <Button size={compact ? 'sm' : 'md'} variant="primary" onClick={handleStart} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <Play size={14} /> Başlat
               </Button>
             ) : (
-              <Button size="md" variant="secondary" onClick={handlePause} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                <Pause size={16} /> Duraklat
+              <Button size={compact ? 'sm' : 'md'} variant="secondary" onClick={handlePause} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <Pause size={14} /> Duraklat
               </Button>
             )}
 
-            <Button size="md" variant="ghost" onClick={handleReset} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-              <RotateCcw size={16} /> Sıfırla
+            <Button size={compact ? 'sm' : 'md'} variant="ghost" onClick={handleReset} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+              <RotateCcw size={14} /> Sıfırla
             </Button>
 
             {seconds > 0 && (
-              <Button size="md" variant="primary" onClick={handleFinishTimer} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                <Check size={16} /> Oturumu Bitir ve Kaydet
+              <Button size={compact ? 'sm' : 'md'} variant="primary" onClick={handleFinishTimer} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <Check size={14} /> Bitir ve Kaydet
               </Button>
             )}
           </div>
 
-          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', alignSelf: 'center' }}>Hızlı Süre:</span>
-            <Button size="sm" variant="outline" onClick={() => handleQuickPreset(25)}>25 dk (Pomodoro)</Button>
-            <Button size="sm" variant="outline" onClick={() => handleQuickPreset(45)}>45 dk (Ders)</Button>
+          <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.2rem', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Hızlı Süre:</span>
+            <Button size="sm" variant="outline" onClick={() => handleQuickPreset(25)} style={{ padding: '3px 8px', fontSize: '0.72rem' }}>25 dk (Pomodoro)</Button>
+            <Button size="sm" variant="outline" onClick={() => handleQuickPreset(45)} style={{ padding: '3px 8px', fontSize: '0.72rem' }}>45 dk (Ders)</Button>
           </div>
 
           {showLogModal && (

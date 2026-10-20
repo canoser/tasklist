@@ -1,27 +1,238 @@
 .pageContainer {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xl);
-  padding-bottom: var(--spacing-xl);
+  gap: var(--spacing-md, 16px);
+  padding-bottom: 96px; /* Mobil bottomNav için safe-area boşluğu */
 }
 
 .header {
-  margin-bottom: var(--spacing-xs);
+  margin-bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
 .title {
-  font-size: 1.75rem;
+  font-size: 1.45rem;
   font-weight: 800;
-  color: var(--text-color-main);
-  margin-bottom: 4px;
+  color: var(--text-color-main, var(--text-primary));
+  margin-bottom: 2px;
+  line-height: 1.2;
 }
 
 .subtitle {
-  color: var(--text-color-muted);
-  font-size: 0.875rem;
+  color: var(--text-color-muted, var(--text-secondary));
+  font-size: 0.8rem;
 }
 
-/* Stats Grid */
+/* ==================================================
+   1. KOMPAKT DÜZEN (SEÇENEK 1) STILLERI
+   ================================================== */
+
+.compactKpiGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.compactKpiItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-color-surface, var(--bg-card)) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 12px;
+  padding: 8px 10px;
+  min-height: 52px;
+  box-shadow: var(--shadow-sm);
+}
+
+.kpiMiniIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.kpiTextCol {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.kpiVal {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-color-main, var(--text-primary));
+  line-height: 1.1;
+}
+
+.kpiLbl {
+  font-size: 0.68rem;
+  color: var(--text-color-muted, var(--text-secondary));
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Sekmeli Not & Soru Kartı */
+.tabbedCard {
+  background: var(--bg-color-surface, var(--bg-card)) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.tabCardHeader {
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
+  margin: -4px -4px 10px;
+  padding: 0 4px 6px;
+  gap: 8px;
+}
+
+.tabPillBtn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.tabPillBtn.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+/* ==================================================
+   2. WIDGET DÜZENI (SEÇENEK 3) STILLERI
+   ================================================== */
+
+.statBar4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: var(--bg-color-surface, var(--bg-card));
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 8px 4px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.statBarCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid var(--border-color);
+  padding: 2px 4px;
+}
+
+.statBarCol:last-child {
+  border-right: none;
+}
+
+.statBarVal {
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.statBarLbl {
+  font-size: 0.65rem;
+  color: var(--text-color-muted, var(--text-secondary));
+  font-weight: 600;
+  margin-top: 1px;
+}
+
+/* ==================================================
+   3. ORTAK BILEŞENLER (ÖDEVLER, MOTIVASYON, GÖRÜŞME)
+   ================================================== */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sectionTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-color-main, var(--text-primary));
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.homeworkList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.homeworkCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px !important;
+  background-color: var(--bg-color-surface, var(--bg-card)) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 10px;
+}
+
+.hwInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.hwIcon {
+  width: 36px;
+  height: 36px;
+  background-color: rgba(99, 102, 241, 0.1);
+  color: var(--color-primary);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.hwTitle {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-color-main, var(--text-primary));
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hwDate {
+  font-size: 0.7rem;
+  color: var(--color-danger, #ef4444);
+  font-weight: 600;
+}
+
+/* Klasik Geniş Ekran Stats Grid (Desktop) */
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -33,7 +244,7 @@
   flex-direction: column;
   align-items: flex-start;
   gap: var(--spacing-sm);
-  background: var(--bg-color-surface) !important;
+  background: var(--bg-color-surface, var(--bg-card)) !important;
   border: 1px solid var(--border-color) !important;
 }
 
@@ -44,7 +255,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.25rem;
 }
 
 .statInfo {
@@ -55,114 +265,50 @@
 .statValue {
   font-size: 1.5rem;
   font-weight: 800;
-  color: var(--text-color-main);
+  color: var(--text-color-main, var(--text-primary));
   line-height: 1.2;
 }
 
 .statLabel {
   font-size: 0.75rem;
-  color: var(--text-color-muted);
+  color: var(--text-color-muted, var(--text-secondary));
   font-weight: 500;
 }
 
-/* Sections */
-.section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-}
-
-.sectionHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.sectionTitle {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--text-color-main);
-}
-
-.homeworkList {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
-.homeworkCard {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-md) !important;
-  background-color: var(--bg-color-surface) !important;
-}
-
-.hwInfo {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-}
-
-.hwIcon {
-  width: 48px;
-  height: 48px;
-  background-color: #F1F5F9;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-}
-
-.hwTitle {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-color-main);
-  margin-bottom: 2px;
-}
-
-.hwDate {
-  font-size: 0.75rem;
-  color: var(--color-danger);
-  font-weight: 500;
-}
-
-/* Motivation Banner */
+/* Motivasyon Kartı */
 .motivationBanner {
-  background: linear-gradient(135deg, var(--color-primary), #818CF8);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-lg);
+  background: linear-gradient(135deg, var(--color-primary, #10b981), #3b82f6);
+  border-radius: 12px;
+  padding: 12px 16px;
   color: white;
   text-align: center;
-  box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
   position: relative;
   overflow: hidden;
 }
 
-.motivationBanner::after {
-  content: '✨';
-  position: absolute;
-  top: -10px;
-  right: -10px;
-  font-size: 4rem;
-  opacity: 0.1;
-}
-
 .motivationBanner p {
-  font-size: 1rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  margin-bottom: 8px;
-  line-height: 1.4;
+  margin-bottom: 4px;
+  line-height: 1.3;
   font-style: italic;
 }
 
 .motivationBanner span {
-  font-size: 0.75rem;
-  opacity: 0.8;
+  font-size: 0.7rem;
+  opacity: 0.85;
 }
 
 @media (min-width: 768px) {
+  .pageContainer {
+    padding-bottom: var(--spacing-xl, 24px);
+  }
+  
+  .compactKpiGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
   .statsGrid {
     grid-template-columns: repeat(4, 1fr);
   }

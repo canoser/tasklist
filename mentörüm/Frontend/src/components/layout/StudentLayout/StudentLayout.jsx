@@ -3,8 +3,17 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../../features/auth/authStore';
 import { apiClient } from '../../../api/apiClient';
 import NotificationDropdown from '../../common/NotificationDropdown/NotificationDropdown';
-import ThemeSelector from '../../common/ThemeSelector/ThemeSelector';
 import ThemeDecorContainer from '../../common/ThemeDecor/ThemeDecorContainer';
+import { 
+  Home, 
+  Calendar, 
+  CalendarDays, 
+  BookOpen, 
+  CheckSquare, 
+  Palette, 
+  User, 
+  LogOut 
+} from 'lucide-react';
 import styles from './StudentLayout.module.css';
 
 const StudentLayout = () => {
@@ -21,12 +30,13 @@ const StudentLayout = () => {
   };
 
   const tabs = [
-    { path: '/student/home', label: 'Ana Sayfa', icon: '🏠' },
-    { path: '/student/calendar', label: 'Takvim', icon: '🗓️' },
-    { path: '/student/schedule', label: 'Programım', icon: '📅' },
-    { path: '/student/courses', label: 'Derslerim', icon: '📚' },
-    { path: '/student/homework', label: 'Ödevler', icon: '📝' },
-    { path: '/student/profile', label: 'Profil', icon: '👤' },
+    { path: '/student/home', label: 'Ana Sayfa', icon: Home },
+    { path: '/student/calendar', label: 'Takvim', icon: Calendar },
+    { path: '/student/schedule', label: 'Programım', icon: CalendarDays },
+    { path: '/student/courses', label: 'Derslerim', icon: BookOpen },
+    { path: '/student/homework', label: 'Ödevler', icon: CheckSquare },
+    { path: '/student/theme', label: 'Temalar', icon: Palette },
+    { path: '/student/profile', label: 'Profil', icon: User },
   ];
 
   return (
@@ -50,23 +60,26 @@ const StudentLayout = () => {
         </div>
 
         <nav className={styles.sidebarNav}>
-          {tabs.map((tab) => (
-            <NavLink
-              key={tab.path}
-              to={tab.path}
-              className={({ isActive }) => 
-                isActive ? `${styles.sidebarLink} ${styles.sidebarLinkActive}` : styles.sidebarLink
-              }
-            >
-              <span className={styles.sidebarIcon}>{tab.icon}</span>
-              <span className={styles.sidebarLabel}>{tab.label}</span>
-            </NavLink>
-          ))}
+          {tabs.map((tab) => {
+            const IconComponent = tab.icon;
+            return (
+              <NavLink
+                key={tab.path}
+                to={tab.path}
+                className={({ isActive }) => 
+                  isActive ? `${styles.sidebarLink} ${styles.sidebarLinkActive}` : styles.sidebarLink
+                }
+              >
+                <span className={styles.sidebarIcon}><IconComponent size={18} /></span>
+                <span className={styles.sidebarLabel}>{tab.label}</span>
+              </NavLink>
+            );
+          })}
         </nav>
 
         <div className={styles.sidebarFooter}>
           <button className={styles.sidebarLogoutBtn} onClick={handleLogout} title="Çıkış Yap">
-            <span className={styles.logoutIcon}>🚪</span>
+            <span className={styles.logoutIcon}><LogOut size={16} /></span>
             <span>Çıkış Yap</span>
           </button>
         </div>
@@ -92,10 +105,9 @@ const StudentLayout = () => {
           </div>
 
           <div className={styles.topbarActions}>
-            <ThemeSelector />
             <NotificationDropdown />
             <button className={styles.mobileLogoutBtn} onClick={handleLogout} title="Çıkış Yap">
-              🚪
+              <LogOut size={18} />
             </button>
           </div>
         </header>
@@ -107,18 +119,21 @@ const StudentLayout = () => {
 
         {/* Mobil Alt Menü Barı (< 768px) */}
         <nav className={styles.bottomNav}>
-          {tabs.map((tab) => (
-            <NavLink
-              key={tab.path}
-              to={tab.path}
-              className={({ isActive }) => 
-                isActive ? `${styles.tab} ${styles.tabActive}` : styles.tab
-              }
-            >
-              <span className={styles.tabIcon}>{tab.icon}</span>
-              <span className={styles.tabLabel}>{tab.label}</span>
-            </NavLink>
-          ))}
+          {tabs.map((tab) => {
+            const IconComponent = tab.icon;
+            return (
+              <NavLink
+                key={tab.path}
+                to={tab.path}
+                className={({ isActive }) => 
+                  isActive ? `${styles.tab} ${styles.tabActive}` : styles.tab
+                }
+              >
+                <span className={styles.tabIcon}><IconComponent size={20} /></span>
+                <span className={styles.tabLabel}>{tab.label}</span>
+              </NavLink>
+            );
+          })}
         </nav>
       </div>
     </div>

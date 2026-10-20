@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useStudentHomework, useStudentExams, useStudentCurriculum, useStudentSessions, useUpdateSessionPrep } from '../studentApi';
+import { useStudentHomework, useStudentExams, useStudentCurriculum, useStudentSessions, useUpdateSessionPrep, useStudentGoal, useStudentStreak } from '../studentApi';
+import { useUIStore } from '../../../store/uiStore';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import { formatDate } from '../../../utils/dateUtils';
-import { BookOpen, Target, FlaskConical, BookMarked, Edit3 } from 'lucide-react';
+import { BookOpen, Target, FlaskConical, BookMarked, Edit3, MessageSquare, StickyNote, HelpCircle } from 'lucide-react';
 import StudyTimerCard from './StudyTimerCard';
 import MoodCheckinCard from './MoodCheckinCard';
 import StudentNotesCard from './StudentNotesCard';
@@ -12,14 +13,26 @@ import GoalStreakCard from './GoalStreakCard';
 import StudentQuestionsCard from './StudentQuestionsCard';
 import styles from './StudentHome.module.css';
 
+const getNextExamDate = () => {
+  const now = new Date();
+  let exam = new Date(now.getFullYear(), 5, 20);
+  if (exam < now) exam = new Date(now.getFullYear() + 1, 5, 20);
+  return exam;
+};
+const EXAM_DATE = getNextExamDate();
+
 const StudentHome = () => {
   const navigate = useNavigate();
+  const { studentHomeLayout } = useUIStore();
   const { data: homeworks, isLoading } = useStudentHomework();
   const { data: exams } = useStudentExams();
   const { data: curriculum } = useStudentCurriculum();
   const { data: sessions } = useStudentSessions();
+  const { data: streak = { currentStreak: 0 } } = useStudentStreak();
   const updatePrep = useUpdateSessionPrep();
+  
   const [prepNote, setPrepNote] = useState('');
+  const [activeTabbedSection, setActiveTabbedSection] = useState('notes'); // 'notes' | 'questions'
 
   // Hesaplamalar
   const pendingHomeworks = homeworks?.filter(hw => hw.status === 'PENDING' || hw.status === 'OVERDUE') || [];
@@ -31,6 +44,8 @@ const StudentHome = () => {
   const lastExam = exams?.length ? exams[0] : null;
   const completedTopics = curriculum?.filter(t => t.isCompleted)?.length || 0;
   const totalTopics = curriculum?.length || 0;
+
+  const daysLeft = Math.max(0, Math.ceil((EXAM_DATE - new Date()) / (1000 * 60 * 60 * 24)));
 
   const upcomingSession = (sessions || [])
     .filter((s) => s.sessionDate && new Date(s.sessionDate) >= new Date())
@@ -46,6 +61,112 @@ const StudentHome = () => {
     .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
     .slice(0, 3);
 
+  // Ortak: Yaklaşan Ödevler Bileşeni
+  const renderUpcomingHomeworks = () => (
+    <section className={styles.section}>
+      <div className={styles.sectionHeader}>
+        <h2 className={styles.sectionTitle}>
+          <Edit3 size={16} /> Yaklaşan Ödevler
+        </h2>
+        <Button variant="ghost" size="sm" onClick={() => navigate('/student/homework')}>
+          Tümünü Gör ({pendingHomeworks.length})
+        </Button>
+      </div>
+      
+      <div className={styles.homeworkList}>
+        {isLoading ? (
+          <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>Ödevler yükleniyor...</p>
+        ) : upcomingHomeworks.length > 0 ? (
+          upcomingHomeworks.map((hw) => (
+            <div key={hw.id} className={styles.homeworkCard}>
+              <div className={styles.hwInfo}>
+                <div className={styles.hwIcon}><Edit3 size={16} /></div>
+                <div>
+                  <h3 className={styles.hwTitle}>{hw.snapshotTitle}</h3>
+                  <p className={styles.hwDate}>Son Teslim: {formatDate(hw.dueDate, 'dd MMM')}</p>
+                </div>
+              </div>
+              <Button size="sm" variant="secondary" onClick={() => navigate('/student/homework')}>İncele</Button>
+            </div>
+          ))
+        ) : (
+          <div style={{ padding: '10px 12px', background: 'var(--bg-card)', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
+            Şu anda bekleyen veya yaklaşan bir ödevin yok! 🎉
+          </div>
+        )}
+      </div>
+    </section>
+  );
+
+  // Ortak: Sekmeli Notlarım & Takıldığım Sorular
+  const renderTabbedNotesAndQuestions = () => (
+    <div className={styles.tabbedCard}>
+      <div className={styles.tabCardHeader}>
+        <button
+          type="button"
+          className={`${styles.tabPillBtn} ${activeTabbedSection === 'notes' ? styles.active : ''}`}
+          onClick={() => setActiveTabbedSection('notes')}
+        >
+          <StickyNote size={14} /> Kişisel Notlarım
+        </button>
+        <button
+          type="button"
+          className={`${styles.tabPillBtn} ${activeTabbedSection === 'questions' ? styles.active : ''}`}
+          onClick={() => setActiveTabbedSection('questions')}
+        >
+          <HelpCircle size={14} /> Takıldıklarım & Sorular
+        </button>
+      </div>
+
+      <div>
+        {activeTabbedSection === 'notes' ? (
+          <StudentNotesCard />
+        ) : (
+          <StudentQuestionsCard />
+        )}
+      </div>
+    </div>
+  );
+
+  // Ortak: Görüşme Hazırlığı
+  const renderUpcomingSession = () => (
+    <section className={styles.section}>
+      <div className={styles.sectionHeader}>
+        <h2 className={styles.sectionTitle}>
+          <MessageSquare size={16} /> Koç Görüşmesi Hazırlığı
+        </h2>
+      </div>
+      {upcomingSession ? (
+        <Card className={styles.homeworkCard} padding="sm">
+          <h3 style={{ margin: '0 0 4px', fontSize: '0.9rem' }}>{upcomingSession.title}</h3>
+          {upcomingSession.sessionDate && (
+            <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', margin: '0 0 6px' }}>
+              {new Date(upcomingSession.sessionDate).toLocaleString('tr-TR')}
+            </p>
+          )}
+          {upcomingSession.actionItems && (
+            <p style={{ fontSize: '0.78rem', color: '#b45309', margin: '0 0 6px' }}>{upcomingSession.actionItems}</p>
+          )}
+          <textarea
+            value={prepNote}
+            onChange={(e) => setPrepNote(e.target.value)}
+            rows={2}
+            placeholder="Görüşme öncesi koçuna iletmek istediğin notlar..."
+            style={{ width: '100%', padding: '6px 8px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-app)', color: 'var(--text-primary)', fontSize: '0.8rem' }}
+          />
+          <div style={{ marginTop: 6, display: 'flex', alignItems: 'center' }}>
+            <Button size="sm" variant="primary" onClick={() => updatePrep.mutate({ sessionId: upcomingSession.id, prepNotes: prepNote })}>
+              {updatePrep.isPending ? 'Kaydediliyor...' : 'Notu Kaydet'}
+            </Button>
+            {updatePrep.isSuccess && <span style={{ marginLeft: 8, color: '#16a34a', fontSize: '0.78rem' }}>✓ Kaydedildi</span>}
+          </div>
+        </Card>
+      ) : (
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', margin: 0 }}>Planlanmış yaklaşan görüşme bulunmuyor.</p>
+      )}
+    </section>
+  );
+
   return (
     <div className={styles.pageContainer}>
       <header className={styles.header}>
@@ -55,119 +176,113 @@ const StudentHome = () => {
         </div>
       </header>
 
-      {/* İlerleme ve Özet Kartları */}
-      <div className={styles.statsGrid}>
-        <Card className={styles.statCard} padding="lg">
-          <div className={styles.statIcon} style={{ background: 'rgba(99, 102, 241, 0.1)', color: '#6366f1' }}><BookOpen size={20} /></div>
-          <div className={styles.statInfo}>
-            <span className={styles.statValue}>{isLoading ? '...' : pendingHomeworks.length}</span>
-            <span className={styles.statLabel}>Bekleyen Ödev</span>
+      {/* =========================================================
+          DÜZEN 1: KOMPAKT & ODAKLI AKIŞ (studentHomeLayout === 'compact')
+          ========================================================= */}
+      {studentHomeLayout !== 'widget' ? (
+        <>
+          {/* 1. Tek Satır Kompakt Streak & Sınav Şeridi */}
+          <GoalStreakCard variant="strip" />
+
+          {/* 2. Kompakt 2x2 Inline KPI Izgarası */}
+          <div className={styles.compactKpiGrid}>
+            <div className={styles.compactKpiItem}>
+              <div className={styles.kpiMiniIcon} style={{ background: 'rgba(99, 102, 241, 0.15)', color: '#6366f1' }}>
+                <BookOpen size={17} />
+              </div>
+              <div className={styles.kpiTextCol}>
+                <span className={styles.kpiVal}>{isLoading ? '...' : pendingHomeworks.length}</span>
+                <span className={styles.kpiLbl}>Bekleyen Ödev</span>
+              </div>
+            </div>
+
+            <div className={styles.compactKpiItem}>
+              <div className={styles.kpiMiniIcon} style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e' }}>
+                <Target size={17} />
+              </div>
+              <div className={styles.kpiTextCol}>
+                <span className={styles.kpiVal}>{isLoading ? '...' : `%${completionRate}`}</span>
+                <span className={styles.kpiLbl}>Tamamlama</span>
+              </div>
+            </div>
+
+            <div className={styles.compactKpiItem}>
+              <div className={styles.kpiMiniIcon} style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b' }}>
+                <FlaskConical size={17} />
+              </div>
+              <div className={styles.kpiTextCol}>
+                <span className={styles.kpiVal}>{lastExam?.totalNet ?? '—'}</span>
+                <span className={styles.kpiLbl}>Son Net</span>
+              </div>
+            </div>
+
+            <div className={styles.compactKpiItem}>
+              <div className={styles.kpiMiniIcon} style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#8b5cf6' }}>
+                <BookMarked size={17} />
+              </div>
+              <div className={styles.kpiTextCol}>
+                <span className={styles.kpiVal}>{`${completedTopics}/${totalTopics}`}</span>
+                <span className={styles.kpiLbl}>Biten Konu</span>
+              </div>
+            </div>
           </div>
-        </Card>
-        
-        <Card className={styles.statCard} padding="lg">
-          <div className={styles.statIcon} style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e' }}><Target size={20} /></div>
-          <div className={styles.statInfo}>
-            <span className={styles.statValue}>{isLoading ? '...' : `%${completionRate}`}</span>
-            <span className={styles.statLabel}>Tamamlama Oranı</span>
+
+          {/* 3. Öncelikli Aksiyon: Yaklaşan Ödevler */}
+          {renderUpcomingHomeworks()}
+
+          {/* 4. Kompakt Canlı Kronometre Kartı */}
+          <StudyTimerCard compact={true} />
+
+          {/* 5. Tek Satır 4'lü Mood Barı */}
+          <MoodCheckinCard compact={true} />
+
+          {/* 6. Sekmeli Not & Soru Kartı */}
+          {renderTabbedNotesAndQuestions()}
+        </>
+      ) : (
+        /* =========================================================
+           DÜZEN 2: MINI-BAR & MODÜLER WIDGET (studentHomeLayout === 'widget')
+           ========================================================= */
+        <>
+          {/* 1. 4'lü Tek Satır Mikro Stat Barı */}
+          <div className={styles.statBar4}>
+            <div className={styles.statBarCol}>
+              <span className={styles.statBarVal} style={{ color: '#6366f1' }}>{isLoading ? '...' : pendingHomeworks.length}</span>
+              <span className={styles.statBarLbl}>Ödev</span>
+            </div>
+            <div className={styles.statBarCol}>
+              <span className={styles.statBarVal} style={{ color: '#22c55e' }}>%{completionRate}</span>
+              <span className={styles.statBarLbl}>Biten</span>
+            </div>
+            <div className={styles.statBarCol}>
+              <span className={styles.statBarVal} style={{ color: '#f59e0b' }}>{streak.currentStreak}g</span>
+              <span className={styles.statBarLbl}>Seri</span>
+            </div>
+            <div className={styles.statBarCol}>
+              <span className={styles.statBarVal} style={{ color: '#3b82f6' }}>{daysLeft}g</span>
+              <span className={styles.statBarLbl}>Sınav</span>
+            </div>
           </div>
-        </Card>
 
-        <Card className={styles.statCard} padding="lg">
-          <div className={styles.statIcon} style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}><FlaskConical size={20} /></div>
-          <div className={styles.statInfo}>
-            <span className={styles.statValue}>{lastExam?.totalNet ?? '-'}</span>
-            <span className={styles.statLabel}>Son Deneme Neti</span>
-          </div>
-        </Card>
+          {/* 2. Hero Hedef Plan Kartı */}
+          <GoalStreakCard variant="hero" />
 
-        <Card className={styles.statCard} padding="lg">
-          <div className={styles.statIcon} style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6' }}><BookMarked size={20} /></div>
-          <div className={styles.statInfo}>
-            <span className={styles.statValue}>{`${completedTopics}/${totalTopics}`}</span>
-            <span className={styles.statLabel}>Tamamlanan Konu</span>
-          </div>
-        </Card>
-      </div>
+          {/* 3. Akıllı Katlanabilir Kronometre Çubuğu */}
+          <StudyTimerCard compact={true} collapsible={true} />
 
-      {/* V10: Hedef & Streak */}
-      <GoalStreakCard />
+          {/* 4. Yaklaşan Ödevler */}
+          {renderUpcomingHomeworks()}
 
-      {/* Kronometre ve Quick-Log (T40 & T52) */}
-      <StudyTimerCard />
+          {/* 5. Mood Check-in */}
+          <MoodCheckinCard compact={true} />
 
-      {/* V10: Günlük Durum + Kişisel Notlar */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', alignItems: 'start' }}>
-        <MoodCheckinCard />
-        <StudentNotesCard />
-      </div>
-
-      {/* V10: Takıldığım Konular */}
-      <StudentQuestionsCard />
-
-      {/* Yaklaşan Ödevler */}
-      <section className={styles.section}>
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Yaklaşan Ödevler</h2>
-          <Button variant="ghost" size="sm" onClick={() => navigate('/student/homework')}>Tümünü Gör</Button>
-        </div>
-        
-        <div className={styles.homeworkList}>
-          {isLoading ? (
-            <p>Ödevler yükleniyor...</p>
-          ) : upcomingHomeworks.length > 0 ? (
-            upcomingHomeworks.map((hw) => (
-              <Card key={hw.id} interactive className={styles.homeworkCard}>
-                <div className={styles.hwInfo}>
-                  <div className={styles.hwIcon}><Edit3 size={18} /></div>
-                  <div>
-                    <h3 className={styles.hwTitle}>{hw.snapshotTitle}</h3>
-                    <p className={styles.hwDate}>Son Teslim: {formatDate(hw.dueDate, 'dd MMM')}</p>
-                  </div>
-                </div>
-                <Button size="sm" variant="secondary" onClick={() => navigate('/student/homework')}>İncele</Button>
-              </Card>
-            ))
-          ) : (
-            <div style={{ padding: '15px', color: '#64748b', fontSize: '0.9rem' }}>Şu anda yaklaşan ödeviniz yok.</div>
-          )}
-        </div>
-      </section>
+          {/* 6. Sekmeli Notlarım & Sorularım */}
+          {renderTabbedNotesAndQuestions()}
+        </>
+      )}
 
       {/* Görüşme Hazırlığı (M-157) */}
-      <section className={styles.section}>
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Görüşme Hazırlığı</h2>
-        </div>
-        {upcomingSession ? (
-          <Card className={styles.homeworkCard}>
-            <h3 style={{ margin: '0 0 4px' }}>{upcomingSession.title}</h3>
-            {upcomingSession.sessionDate && (
-              <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '0 0 8px' }}>
-                {new Date(upcomingSession.sessionDate).toLocaleString('tr-TR')}
-              </p>
-            )}
-            {upcomingSession.actionItems && (
-              <p style={{ fontSize: '0.85rem', color: '#b45309', margin: '0 0 8px' }}>{upcomingSession.actionItems}</p>
-            )}
-            <textarea
-              value={prepNote}
-              onChange={(e) => setPrepNote(e.target.value)}
-              rows={3}
-              placeholder="Görüşme öncesi öz-değerlendirme notun (neler zorladı, hedefin ne durumda)..."
-              style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: '0.9rem' }}
-            />
-            <div style={{ marginTop: 8 }}>
-              <Button size="sm" variant="primary" onClick={() => updatePrep.mutate({ sessionId: upcomingSession.id, prepNotes: prepNote })}>
-                {updatePrep.isPending ? 'Kaydediliyor...' : 'Hazırlık Notunu Kaydet'}
-              </Button>
-              {updatePrep.isSuccess && <span style={{ marginLeft: 10, color: '#16a34a', fontSize: '0.85rem' }}>✓ Kaydedildi</span>}
-            </div>
-          </Card>
-        ) : (
-          <p style={{ color: '#64748b', fontSize: '0.9rem' }}>Yaklaşan görüşme bulunmuyor.</p>
-        )}
-      </section>
+      {renderUpcomingSession()}
 
       {/* Motivasyon Sözü */}
       <div className={styles.motivationBanner}>
