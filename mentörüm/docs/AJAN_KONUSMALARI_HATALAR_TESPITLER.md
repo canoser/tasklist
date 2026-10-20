@@ -1375,3 +1375,20 @@ Kodlama (Aşama 1-3) öncesinde sistemin ölçeklenebilirlik, eşzamanlılık (c
   3. `Frontend/src/api/apiClient.js` içindeki varsayılan fallback portu 5000'den 5130'a çekildi.
   4. `Backend/MentorumApi/Program.cs` CORS politikasına `SetIsOriginAllowed` (localhost, 127.0.0.1, 192.168.*) ve View-As başlıkları eklenerek yerel ağ testleri garantiye alındı.
   5. `ALTYAPI_KURULUM.md` dosyasındaki port referansları ve yerel çalıştırma talimatları güncellendi.
+
+---
+
+### 📱 Analiz 28: Öğrenci Mobil Arayüzü Aşırı Dikey Büyüklük, Ergonomi ve Çift Yerleşim Seçicisi (20 Ekim 2026)
+- **Sorun:** Telefon ekranında öğrenci ana sayfası kartlarının (`padding: lg`, `font-size: 3.5rem` kronometre, 280px kaplayan 2x2 dev KPI kartları, 120px streak kartı) ekranda dikey olarak aşırı yer kaplaması, kullanıcının acil görevlere ve aksiyonlara ulaşmak için uzun uzun kaydırma yapması gerekmesi ve sağ üstteki tema değiştirici butonunun dar mobil ekranda görsel karmaşa yaratması.
+- **Kök Neden & Kullanıcı Talebi:**
+  - Öğrenci mobil cihazlarda en çok yaklaşan ödevleri teslim etme, canlı kronometre açma ve durum check-in'i gibi mikro eylemler gerçekleştirir.
+  - Tasarlanan Seçenek 1 ("Kompakt & Odaklı Akış") ve Seçenek 3 ("Mini-Bar & Modüler Widget") modelleri kullanıcı tarafından onaylandı ve sistemde **iki düzenin de** dinamik olarak seçilebilir olması talep edildi.
+  - Tema butonunun sağ üst bardan kaldırılarak sol/alt menüye bağımsız "Temalar" sekmesi olarak taşınması istendi.
+- **Çözüm & Aksiyonlar:**
+  1. **Zustand State (`uiStore.js`):** `studentHomeLayout` ('compact' | 'widget') state'i ve localStorage senkronizasyonu eklendi.
+  2. **Temalar & Görünüm Sayfası (`StudentThemePage.jsx`):** Hem 1. ve 2. Yerleşim Düzeni kartları (aktif seçim rozeti + minyatür şematik önizleme), hem Görünüm Modu (Açık/Koyu), hem de 5 tema stili tek bir çatı altında toplandı.
+  3. **Sidebar & BottomNav (`StudentLayout.jsx`):** Sağ üstteki tema butonu kaldırıldı, sol menü ve mobil alt çubuğa Lucide `Palette` ikonuyla "Temalar" sekmesi eklendi.
+  4. **Adaptif Ana Sayfa (`StudentHome.jsx`):**
+     - `'compact'` modunda: Tek satır streak/sınav şeridi, 2x2 inline KPI (52px min-yükseklik), öncelikli ödevler kartı üstte, kompakt kronometre (`compact=true`), 4'lü tek sıra mood barı (`repeat(4, 1fr)`) ve sekmeli not/soru kartı.
+     - `'widget'` modunda: 4'lü tek satır mikro stat barı, hero hedef plan kartı, tek tıkla katlanabilir kronometre çubuğu (`collapsible=true`), ödevler ve sekmeli notlar.
+  5. **Safe-Area Boşluğu:** Mobil alt menünün (`bottomNav`) kartların sonunu kapatmaması için sayfa altına `padding-bottom: 96px` güvenli mesafe eklendi.
