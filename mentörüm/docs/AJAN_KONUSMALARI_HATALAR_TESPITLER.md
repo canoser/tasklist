@@ -1359,3 +1359,19 @@ Kodlama (Aşama 1-3) öncesinde sistemin ölçeklenebilirlik, eşzamanlılık (c
 - **Durum:** Öğretmenlere dersleri üzerinde yönetici (`teacher_can_manage_schedule` vb.) yetkileri verilmektedir.
 - **Sorun:** Ders bilgilerini (`PUT /api/v1/teacher/courses/{id}`) güncelleyen bir öğretmen, yanlışlıkla veya kötü niyetli bir payload ile `teacher_id` alanını NULL veya başka bir UUID olarak gönderirse derse olan erişimini kalıcı olarak kaybeder (Self-Lockout).
 - **Çözüm/Aksiyon:** Öğretmenin kendi çağırdığı update uçlarında (endpoint), `teacher_id` alanının değiştirilmesi işlemi DTO'dan tamamen çıkartılmalı (Immutable), bu işlem sadece yöneticilere (Koç) bırakılmalıdır.
+
+---
+
+### 🚨 Analiz 27: Lokal Geliştirme Port Uyuşmazlığı ve Ağ Bağlantı Hatası (20 Ekim 2026)
+- **Sorun:** Canlı sitede şifresi belirlenen öğrenci hesabıyla lokalde giriş yapılamaması (`ERR_CONNECTION_REFUSED` / "Giriş başarısız. Bilgilerinizi kontrol edin.").
+- **Kök Neden:** 
+  1. Frontend `.env` dosyasında `VITE_API_URL` değeri `http://localhost:5000/api/v1` olarak kalmıştı.
+  2. Ancak Kestrel backend API (`launchSettings.json`), `http://localhost:5130` portunda çalışıyordu.
+  3. Port 5000 sistemde dinlenmediği için frontend'den atılan hiçbir giriş (login) ve API isteği backend'e ulaşamadan doğrudan bağlantı reddi alıyordu.
+  4. Eski dokümantasyonda (`ALTYAPI_KURULUM.md` satır 528) port 5000 referansı yer aldığı için bu uyuşmazlık sessizce devam etmişti.
+- **Çözüm & Aksiyonlar:**
+  1. `Frontend/.env` dosyasındaki `VITE_API_URL` değeri `http://localhost:5130/api/v1` olarak güncellendi.
+  2. `Frontend/vite.config.js` dosyasına `/api` reverse proxy eklendi; böylece hem masaüstünden hem de Wi-Fi üzerinden telefondan (`192.168.x.x:5173`) bağlanıldığında istekler kesintisiz `http://localhost:5130` portuna yönlendirildi.
+  3. `Frontend/src/api/apiClient.js` içindeki varsayılan fallback portu 5000'den 5130'a çekildi.
+  4. `Backend/MentorumApi/Program.cs` CORS politikasına `SetIsOriginAllowed` (localhost, 127.0.0.1, 192.168.*) ve View-As başlıkları eklenerek yerel ağ testleri garantiye alındı.
+  5. `ALTYAPI_KURULUM.md` dosyasındaki port referansları ve yerel çalıştırma talimatları güncellendi.

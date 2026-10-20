@@ -46,9 +46,18 @@ try
     {
         options.AddPolicy("MentorumCors",
             policy => policy
-                .WithOrigins(corsOrigins)
+                .SetIsOriginAllowed(origin =>
+                {
+                    if (string.IsNullOrWhiteSpace(origin)) return false;
+                    if (corsOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase)) return true;
+                    if (Uri.TryCreate(origin, UriKind.Absolute, out var uri))
+                    {
+                        return uri.Host == "localhost" || uri.Host == "127.0.0.1" || uri.Host.StartsWith("192.168.");
+                    }
+                    return false;
+                })
                 .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE")
-                .WithHeaders("Authorization", "Content-Type", "Idempotency-Key")
+                .WithHeaders("Authorization", "Content-Type", "Idempotency-Key", "X-View-As-Student-Id", "X-View-As-Teacher-Id", "X-View-As-Parent-Id")
                 .AllowCredentials());
     });
 

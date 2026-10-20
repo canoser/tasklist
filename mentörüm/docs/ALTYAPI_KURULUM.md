@@ -517,23 +517,27 @@ Zararlı içerik olan bir dosya commit etmeyi dene:
 ### 8.1 Backend Başlatma
 
   cd mentörüm/backend
-  # .env dosyasını yükle (PowerShell):
-  Get-Content .env | ForEach-Object {
-    if ($_ -match "^([^#][^=]*)=(.*)$") {
-      [Environment]::SetEnvironmentVariable($matches[1], $matches[2])
-    }
-  }
   dotnet run --project MentorumApi/MentorumApi.csproj
 
-  API adresi: http://localhost:5000 veya https://localhost:7000
+  API adresi: http://localhost:5130 (Kestrel varsayılan portu: launchSettings.json)
 
-### 8.2 Frontend Başlatma
+  ⚠️ ÖNEMLİ PORT NOTU:
+  MentorumApi yerel Kestrel profili HTTP 5130 portunda çalışır.
+  Frontend .env içindeki VITE_API_URL değeri kesinlikle http://localhost:5130/api/v1 olmalıdır.
+  Port 5000 kapalıdır; eski dokümanlardaki 5000 referansı bağlantı reddi (ERR_CONNECTION_REFUSED) hatasına yol açar.
+
+### 8.2 Frontend Başlatma & Vite Proxy
 
   cd mentörüm/frontend
   npm install
-  npm run dev
+  npm run dev (veya yerel ağ için: npx vite --host 0.0.0.0)
 
   Uygulama: http://localhost:5173
+  Mobil / Wi-Fi Testi: http://192.168.x.x:5173
+
+  Vite Ters Proxy (vite.config.js):
+  Frontend /api isteklerini doğrudan http://localhost:5130 backend'ine yönlendirir.
+  Bu sayede aynı Wi-Fi ağındaki mobil cihazlar da port karmaşası ve CORS engeli yaşamadan backend API ile haberleşir.
 
 ### 8.3 .env Dosyalarını dotnet user-secrets ile Yönet (Alternatif)
 
