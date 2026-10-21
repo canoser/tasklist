@@ -11,6 +11,8 @@
   align-items: center;
   flex-wrap: wrap;
   gap: var(--spacing-md);
+  position: relative;
+  z-index: 2;
 }
 
 .headerButtons {
@@ -28,6 +30,8 @@
   padding: 4px;
   gap: 4px;
   width: fit-content;
+  position: relative;
+  z-index: 2;
 }
 
 .segmentedBtn {
@@ -68,136 +72,163 @@
   font-size: 0.875rem;
 }
 
-/* Filters */
-.filterCard {
-  background: var(--bg-color-surface);
+/* T25: 2-Mode Segmented Add Student Card */
+.addFormCard {
+  background: var(--bg-color-surface) !important;
   border: 1px solid var(--border-color);
-}
-
-.filterGrid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--spacing-md);
-}
-
-.select {
-  width: 100%;
-  padding: 0.625rem 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  background-color: var(--bg-color-main);
-  color: var(--text-color-main);
-  font-size: 0.875rem;
-  font-family: inherit;
-  outline: none;
-  transition: all 0.2s ease;
-  appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 1rem center;
-  background-size: 1em;
-}
-
-.selectLabel {
-  display: block;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-color-main);
-  margin-bottom: 6px;
-}
-
-.select:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-}
-
-/* Pending Invites Card */
-.pendingCard {
-  background: rgba(245, 158, 11, 0.08);
-  border: 1px solid rgba(245, 158, 11, 0.25);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  z-index: 2;
   padding: var(--spacing-lg) !important;
 }
 
-.pendingHeader {
-  margin-bottom: 14px;
+.formModeTabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+  flex-wrap: wrap;
 }
 
-.pendingTitle {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--color-warning);
-  margin-bottom: 4px;
-}
-
-.pendingSubtitle {
-  font-size: 0.8rem;
+.formModeBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-btn, 8px);
+  border: 1px solid transparent;
+  background: transparent;
   color: var(--text-color-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-.pendingList {
+.formModeBtn:hover:not(.formModeBtnActive) {
+  color: var(--text-color-main);
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.formModeBtnActive {
+  background-color: var(--color-primary-light, rgba(99, 102, 241, 0.1)) !important;
+  color: var(--color-primary) !important;
+  border-color: rgba(99, 102, 241, 0.25) !important;
+  font-weight: 700;
+}
+
+.directForm {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--spacing-md);
 }
 
-.pendingItem {
+.directRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+.directRowThree {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+.directHint {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--text-color-muted);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.formError {
+  padding: 8px 12px;
+  border-radius: var(--radius-sm, 6px);
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger, #ef4444);
+  font-size: 0.85rem;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-xs);
+}
+
+.inviteSuccessInline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-success, #16a34a);
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 4px 0;
+}
+
+/* Success Panel */
+.successPanel {
+  padding: var(--spacing-md);
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.successIconRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.successIcon {
+  color: var(--color-success, #16a34a);
+  flex-shrink: 0;
+}
+
+.successTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-success, #16a34a);
+  margin: 0 0 2px;
+}
+
+.successDesc {
+  font-size: 0.85rem;
+  color: var(--text-color-muted);
+  margin: 0;
+}
+
+.shareBox {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 10px 14px;
   background: var(--bg-color-surface);
   border: 1px solid var(--border-color);
-  padding: 12px 16px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm, 6px);
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
 
-.pendingInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.pendingEmail {
-  font-weight: 700;
-  font-size: 0.95rem;
+.shareInfo {
+  font-size: 0.875rem;
+  font-weight: 600;
   color: var(--text-color-main);
 }
 
-.pendingMeta {
-  font-size: 0.8rem;
-  color: var(--text-color-muted);
-}
-
-.codeBadge {
-  background: rgba(245, 158, 11, 0.15);
-  color: var(--color-warning);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-weight: 700;
-  font-family: monospace;
-}
-
-.pendingActions {
+.successActions {
   display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.pendingBadge {
-  background-color: rgba(245, 158, 11, 0.15);
-  color: var(--color-warning);
-  font-size: 0.75rem;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 20px;
-  border: 1px solid rgba(245, 158, 11, 0.3);
-}
-
-.studentEmail {
-  font-size: 0.8rem;
-  color: var(--text-color-muted);
-  margin-bottom: 3px;
+  gap: var(--spacing-sm);
+  justify-content: flex-end;
 }
 
 /* Students Grid */
@@ -205,6 +236,8 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--spacing-md);
+  position: relative;
+  z-index: 2;
 }
 
 .studentCard {
@@ -212,6 +245,9 @@
   flex-direction: column;
   padding: 0 !important;
   overflow: hidden;
+  position: relative;
+  z-index: 2;
+  background-color: var(--bg-color-surface) !important;
 }
 
 .cardHeader {
@@ -263,13 +299,15 @@
 }
 
 .active {
-  background-color: rgba(34, 197, 94, 0.1);
-  color: #22c55e;
+  background-color: rgba(34, 197, 94, 0.12);
+  color: var(--color-success, #16a34a);
+  border: 1px solid rgba(34, 197, 94, 0.25);
 }
 
 .inactive {
-  background-color: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.12);
+  color: var(--color-danger, #ef4444);
+  border: 1px solid rgba(239, 68, 68, 0.25);
 }
 
 .cardBody {
@@ -455,6 +493,23 @@
   justify-content: flex-end;
   gap: var(--spacing-sm);
   margin-top: var(--spacing-sm);
+}
+
+@media (max-width: 768px) {
+  .directRow,
+  .directRowThree {
+    grid-template-columns: 1fr;
+  }
+
+  .shareBox {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .shareBox button {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 @media (min-width: 768px) {

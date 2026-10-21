@@ -254,7 +254,7 @@ V9, V10 ve V11 sürümleriyle sistemin backend, veritabanı, güvenlik (IDOR) ve
 6. **Aşama 6 (V12.1 Ek İyileştirmeler):** T13 + T14 + T15 + T16 [Tamamlandı].
 7. **Aşama 7 (V12.2 Tema Sekmeleri, Sistem Modu & Derslerim Tikleme):** T17 + T18 [Tamamlandı].
 8. **Aşama 8 (V12.3 Koç Mobil Arayüzü & Sadeleştirme):** T19 + T20 + T21 + T22 + T23 + T24 [Tamamlandı].
-9. **Aşama 9 (V12.4 Öğrenci Ekleme & Yönetim Tasarımı):** T25 + T26 + T27 [Planlandı].
+9. **Aşama 9 (V12.4 Öğrenci Ekleme & Yönetim Tasarımı):** T25 + T26 + T27 [Tamamlandı].
 
 ---
 
@@ -331,7 +331,7 @@ V9, V10 ve V11 sürümleriyle sistemin backend, veritabanı, güvenlik (IDOR) ve
 
 ### BÖLÜM 9: V12.4 Öğrenci Ekleme Alanı & Yönetim UI/UX Tasarımı
 
-#### [ ] T25 — Öğrenci Ekleme Alanı İkili Mod Tasarımı (Doğrudan Ekleme vs. E-posta ile Davet)
+#### [x] T25 — Öğrenci Ekleme Alanı İkili Mod Tasarımı (Doğrudan Ekleme vs. E-posta ile Davet)
 - **Dosyalar:**
   - `Frontend/src/features/coach/students/CoachStudents.jsx`
   - `Frontend/src/features/coach/students/CoachStudents.module.css`
@@ -349,7 +349,7 @@ V9, V10 ve V11 sürümleriyle sistemin backend, veritabanı, güvenlik (IDOR) ve
        - Öğrencinin e-posta adresine davet bağlantısı göndermek isteyen koçlar için mevcut davet akışını temiz bir alt sekmede korur.
   2. Başarılı ekleme sonrası form altında yeşil bilgilendirme kartı ve gerektiğinde öğrenciyle elden/WhatsApp üzerinden paylaşılabilecek şık bir "Giriş / Davet Bilgisi Kopyala" kutusu sunulması.
 
-#### [ ] T26 — Öğrenci Arama, Filtreleme ve Kart Hiyerarşisi UI İyileştirmesi
+#### [x] T26 — Öğrenci Arama, Filtreleme ve Kart Hiyerarşisi UI İyileştirmesi
 - **Dosyalar:**
   - `Frontend/src/features/coach/students/CoachStudents.jsx`
   - `Frontend/src/features/coach/students/CoachStudents.module.css`
@@ -358,7 +358,7 @@ V9, V10 ve V11 sürümleriyle sistemin backend, veritabanı, güvenlik (IDOR) ve
   2. **Öğrenci Kartları Rozetleri:** Kart üstündeki `Kayıtlı / Aktif` veya `Pasif` rozetlerinin tema zemin rengiyle çakışmayan ferah kontrastta düzenlenmesi; ödev istatistik haplarının (`Aktif`, `Tamamlanan`, `Geciken`) mobil ekranda taşma yapmadan sarmalanması (`flex-wrap`).
   3. **Bekleyen Davetler Kartı:** Bekleyen davetler listesinin açılır/kapanır (`collapsible`) kompakt bir akordeon veya rozet haline getirilerek ana öğrenci listesini aşağı itmesinin önlenmesi.
 
-#### [ ] T27 — Güneş Dekoru & Aksiyon Butonları Katman Koruması (Z-Index & Opaque Shield)
+#### [x] T27 — Güneş Dekoru & Aksiyon Butonları Katman Koruması (Z-Index & Opaque Shield)
 - **Dosyalar:**
   - `Frontend/src/features/coach/students/CoachStudents.module.css`
   - `Frontend/src/components/common/ThemeDecor/SkyDecor.module.css`
