@@ -54,5 +54,6 @@ namespace MentorumApi.DTOs
         public string? SubjectName { get; set; }
         public string? TopicName { get; set; }
         public string? StudentNote { get; set; }
+        public string? CourseType { get; set; }
     }
 }

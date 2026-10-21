@@ -1,4 +1,5 @@
 using MentorumApi.DTOs;
+using MentorumApi.Services;
 using Dapper;
 
 namespace MentorumApi.Data
@@ -13,6 +14,9 @@ namespace MentorumApi.Data
                 SELECT u.id, u.full_name AS FullName, u.email, u.avatar_url AS AvatarUrl, 
                        s.grade, s.track, s.target_university AS TargetUniversity, s.is_active AS IsActive,
                        s.program_id AS ProgramId, cp.name AS ProgramName,
+                       s.invite_status AS InviteStatus,
+                       (SELECT g.name FROM student_group_members m JOIN student_groups g ON g.id = m.group_id WHERE m.student_id = u.id AND m.is_active = 1 LIMIT 1) AS GroupName,
+                       (SELECT COUNT(1) FROM course_students cs JOIN courses c ON c.id = cs.course_id WHERE cs.student_id = u.id AND cs.is_active = 1 AND c.type = 'OZEL_DERS') > 0 AS HasIndividualCourse,
                        (SELECT COUNT(1) FROM homework_assignments ha WHERE ha.student_id = u.id AND ha.status IN ('PENDING','OVERDUE')) AS active_homework_count,
                        (SELECT COUNT(1) FROM homework_assignments ha WHERE ha.student_id = u.id AND ha.status IN ('DONE','LATE_DONE')) AS completed_homework_count,
                        (SELECT COUNT(1) FROM homework_assignments ha WHERE ha.student_id = u.id AND ha.status = 'OVERDUE') AS overdue_homework_count,
@@ -182,6 +186,174 @@ namespace MentorumApi.Data
                 VALUES (@Id, @CoachId, @StudentId, @SessionDate, @Title, @Notes, @ActionItems)",
                 new { Id = id, CoachId = coachId, StudentId = studentId, req.SessionDate, Title = req.Title ?? "Koçluk Görüşmesi", req.Notes, req.ActionItems });
             return id;
+        }
+
+        public async Task<bool> EmailExistsAsync(string email)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            var count = await conn.ExecuteScalarAsync<int>(
+                "SELECT COUNT(1) FROM users WHERE email = @Email", new { Email = email });
+            return count > 0;
+        }
+
+        public async Task<Guid> CreateStudentAsync(Guid programId, CreateStudentRequest req)
+        {
+            var studentId = Guid.NewGuid();
+            var fullName = $"{req.FirstName} {req.LastName}".Trim();
+            var email = string.IsNullOrWhiteSpace(req.Email) ? null : req.Email.ToLowerInvariant();
+            var track = NormalizeTrack(req.TargetExam);
+            var inviteStatus = email != null ? "INVITED" : "NOT_INVITED";
+
+            using var conn = _connectionFactory.CreateConnection();
+            conn.Open();
+            using var tx = conn.BeginTransaction();
+            try
+            {
+                await conn.ExecuteAsync(@"
+                    INSERT INTO users (id, email, role, full_name, is_active)
+                    VALUES (@Id, @Email, 'Student', @FullName, 1)",
+                    new { Id = studentId, Email = email, FullName = fullName }, tx);
+
+                await conn.ExecuteAsync(@"
+                    INSERT INTO students (id, program_id, grade, track, is_active, invite_status)
+                    VALUES (@Id, @ProgramId, @Grade, @Track, 1, @InviteStatus)",
+                    new { Id = studentId, ProgramId = programId, Grade = req.ClassLevel, Track = track, InviteStatus = inviteStatus }, tx);
+
+                if (email != null)
+                {
+                    var code = InviteCode.Generate();
+                    await conn.ExecuteAsync(@"
+                        INSERT INTO invite_tokens (id, token, code, email, role, related_id, expires_at)
+                        VALUES (@Id, @Token, @Code, @Email, 'Student', @ProgramId, @ExpiresAt)",
+                        new { Id = Guid.NewGuid(), Token = Guid.NewGuid(), Code = code, Email = email, ProgramId = programId, ExpiresAt = DateTime.UtcNow.AddHours(48) }, tx);
+                }
+
+                if (req.GroupId.HasValue)
+                {
+                    await conn.ExecuteAsync(@"
+                        INSERT INTO student_group_members (id, group_id, student_id, program_id, is_active)
+                        SELECT @Id, @GroupId, @StudentId, @ProgramId, 1
+                        WHERE EXISTS (SELECT 1 FROM student_groups WHERE id = @GroupId AND program_id = @ProgramId)",
+                        new { Id = Guid.NewGuid(), GroupId = req.GroupId.Value, StudentId = studentId, ProgramId = programId }, tx);
+                }
+
+                tx.Commit();
+                return studentId;
+            }
+            catch
+            {
+                tx.Rollback();
+                throw;
+            }
+        }
+
+        public async Task<(string Code, DateTime ExpiresAt)?> InviteStudentAsync(Guid programId, Guid studentId, string email)
+        {
+            var emailLower = email.ToLowerInvariant();
+            var code = InviteCode.Generate();
+            var expiresAt = DateTime.UtcNow.AddHours(48);
+
+            using var conn = _connectionFactory.CreateConnection();
+            conn.Open();
+            using var tx = conn.BeginTransaction();
+            try
+            {
+                var updated = await conn.ExecuteAsync(@"
+                    UPDATE users SET email = @Email
+                    WHERE id = @StudentId
+                      AND EXISTS (SELECT 1 FROM students WHERE id = @StudentId AND program_id = @ProgramId)",
+                    new { Email = emailLower, StudentId = studentId, ProgramId = programId }, tx);
+                if (updated == 0) { tx.Rollback(); return null; }
+
+                await conn.ExecuteAsync("UPDATE students SET invite_status = 'INVITED' WHERE id = @StudentId", new { StudentId = studentId }, tx);
+                await conn.ExecuteAsync(@"
+                    INSERT INTO invite_tokens (id, token, code, email, role, related_id, expires_at)
+                    VALUES (@Id, @Token, @Code, @Email, 'Student', @ProgramId, @ExpiresAt)",
+                    new { Id = Guid.NewGuid(), Token = Guid.NewGuid(), Code = code, Email = emailLower, ProgramId = programId, ExpiresAt = expiresAt }, tx);
+
+                tx.Commit();
+                return (code, expiresAt);
+            }
+            catch
+            {
+                tx.Rollback();
+                throw;
+            }
+        }
+
+        public async Task<bool> MoveToGroupAsync(Guid programId, Guid studentId, Guid groupId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            conn.Open();
+            using var tx = conn.BeginTransaction();
+            try
+            {
+                var groupOk = await conn.ExecuteScalarAsync<int>(
+                    "SELECT COUNT(1) FROM student_groups WHERE id = @GroupId AND program_id = @ProgramId",
+                    new { GroupId = groupId, ProgramId = programId }, tx);
+                if (groupOk == 0) { tx.Rollback(); return false; }
+
+                await conn.ExecuteAsync(@"
+                    INSERT INTO student_group_members (id, group_id, student_id, program_id, is_active)
+                    VALUES (@Id, @GroupId, @StudentId, @ProgramId, 1)
+                    ON CONFLICT (group_id, student_id) DO UPDATE SET is_active = 1",
+                    new { Id = Guid.NewGuid(), GroupId = groupId, StudentId = studentId, ProgramId = programId }, tx);
+
+                await conn.ExecuteAsync(@"
+                    UPDATE course_students SET is_active = 0
+                    WHERE student_id = @StudentId
+                      AND course_id IN (SELECT id FROM courses WHERE type = 'OZEL_DERS' AND program_id = @ProgramId)",
+                    new { StudentId = studentId, ProgramId = programId }, tx);
+
+                tx.Commit();
+                return true;
+            }
+            catch
+            {
+                tx.Rollback();
+                throw;
+            }
+        }
+
+        public async Task MoveToIndividualAsync(Guid programId, Guid studentId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            conn.Open();
+            using var tx = conn.BeginTransaction();
+            try
+            {
+                await conn.ExecuteAsync(@"
+                    UPDATE student_group_members SET is_active = 0
+                    WHERE student_id = @StudentId
+                      AND group_id IN (SELECT id FROM student_groups WHERE program_id = @ProgramId)",
+                    new { StudentId = studentId, ProgramId = programId }, tx);
+
+                var courseId = Guid.NewGuid();
+                await conn.ExecuteAsync(@"
+                    INSERT INTO courses (id, program_id, name, type, is_active)
+                    VALUES (@Id, @ProgramId, 'Bireysel Koçluk', 'OZEL_DERS', 1)",
+                    new { Id = courseId, ProgramId = programId }, tx);
+
+                await conn.ExecuteAsync(@"
+                    INSERT INTO course_students (id, course_id, student_id, program_id, is_active)
+                    VALUES (@Id, @CourseId, @StudentId, @ProgramId, 1)
+                    ON CONFLICT (course_id, student_id) DO UPDATE SET is_active = 1",
+                    new { Id = Guid.NewGuid(), CourseId = courseId, StudentId = studentId, ProgramId = programId }, tx);
+
+                tx.Commit();
+            }
+            catch
+            {
+                tx.Rollback();
+                throw;
+            }
+        }
+
+        private static string? NormalizeTrack(string? targetExam)
+        {
+            if (string.IsNullOrWhiteSpace(targetExam)) return null;
+            var t = targetExam.Trim().ToUpperInvariant();
+            return t is "SAY" or "EA" or "SOZ" or "ORTAOKUL" ? t : null;
         }
     }
 }

@@ -3,9 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
+import Modal from '../../../components/common/Modal/Modal';
 import CoachGroupsPage from '../groups/CoachGroupsPage';
-import { Users, FolderGit2, BookOpen, CheckCircle2, AlertCircle, School, Mail, Search } from 'lucide-react';
+import { Users, FolderGit2, BookOpen, CheckCircle2, AlertCircle, School, Mail, Search, UserPlus } from 'lucide-react';
 import { useStudents, useSendInvite, usePendingInvites } from '../coachApi';
+import { useCreateStudent, useInviteStudent } from '../studentFlexibilityApi';
+import AddStudentModal from './AddStudentModal';
 import { usePrograms } from '../coachSchoolApi';
 import styles from './CoachStudents.module.css';
 
@@ -25,6 +28,43 @@ const CoachStudents = () => {
   const [inviteProgramId, setInviteProgramId] = useState('');
   const [inviteMsg, setInviteMsg] = useState('');
   const [copiedCode, setCopiedCode] = useState(null);
+  const [showAddStudent, setShowAddStudent] = useState(false);
+  const [inviteTarget, setInviteTarget] = useState(null);
+  const [targetEmail, setTargetEmail] = useState('');
+  const [targetError, setTargetError] = useState('');
+  const [targetSuccess, setTargetSuccess] = useState('');
+
+  const activeProgramId = (programs && programs.length > 0) ? programs[0].id : null;
+  const createStudent = useCreateStudent(activeProgramId);
+  const inviteStudent = useInviteStudent(activeProgramId);
+
+  const handleCreateStudent = async (payload) => {
+    await createStudent.mutateAsync(payload);
+    setShowAddStudent(false);
+  };
+
+  const handleOpenInviteModal = (student) => {
+    setInviteTarget(student);
+    setTargetEmail(student.email || '');
+    setTargetError('');
+    setTargetSuccess('');
+  };
+
+  const handleSendInviteSubmit = async (e) => {
+    e.preventDefault();
+    if (!targetEmail.trim() || !inviteTarget) return;
+    setTargetError('');
+    try {
+      await inviteStudent.mutateAsync({ studentId: inviteTarget.id, email: targetEmail.trim() });
+      setTargetSuccess('Davet bağlantısı oluşturuldu.');
+      setTimeout(() => {
+        setInviteTarget(null);
+        setTargetSuccess('');
+      }, 1200);
+    } catch (err) {
+      setTargetError(err?.response?.data?.error || 'Davet gönderilemedi.');
+    }
+  };
 
   const handleInvite = async (e) => {
     e.preventDefault();
@@ -75,9 +115,15 @@ const CoachStudents = () => {
           <h1 className={styles.title}>Öğrenciler</h1>
           <p className={styles.subtitle}>Tüm öğrencilerinizin performansını ve durumunu yönetin.</p>
         </div>
-        <Button variant="primary" onClick={() => setShowInvite(!showInvite)}>
-          {showInvite ? '✕ İptal' : '+ Yeni Öğrenci Ekle'}
-        </Button>
+        <div className={styles.headerButtons}>
+          <Button variant="secondary" onClick={() => setShowAddStudent(true)}>
+            <UserPlus size={15} />
+            <span>Hızlı Ekle</span>
+          </Button>
+          <Button variant="primary" onClick={() => setShowInvite(!showInvite)}>
+            {showInvite ? '✕ İptal' : '+ Davet Gönder'}
+          </Button>
+        </div>
       </header>
 
       {/* 2'li Sekme: Öğrenciler | Gruplar */}
@@ -216,21 +262,38 @@ const CoachStudents = () => {
                       {student.grade != null ? `${student.grade}. Sınıf` : ''}
                       {student.track ? ` • ${student.track}` : ''}
                       {student.programName && (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                        <span className={styles.programMeta}>
                           {' • '}<School size={12} /> {student.programName}
                         </span>
                       )}
                     </span>
-                    <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.72rem', padding: '2px 8px', borderRadius: 999, background: '#eef2ff', color: '#4f46e5', fontWeight: 600 }}>
+                    <div className={styles.hwBadgeRow}>
+                      <span className={`${styles.hwBadge} ${styles.hwBadgeActive}`}>
                         <BookOpen size={12} /> {student.activeHomeworkCount} Aktif Ödev
                       </span>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.72rem', padding: '2px 8px', borderRadius: 999, background: '#f0fdf4', color: '#16a34a', fontWeight: 600 }}>
+                      <span className={`${styles.hwBadge} ${styles.hwBadgeCompleted}`}>
                         <CheckCircle2 size={12} /> {student.completedHomeworkCount} Tamamlanan
                       </span>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.72rem', padding: '2px 8px', borderRadius: 999, background: student.overdueHomeworkCount > 0 ? '#fef2f2' : '#f8fafc', color: student.overdueHomeworkCount > 0 ? '#dc2626' : '#94a3b8', fontWeight: 600 }}>
+                      <span className={`${styles.hwBadge} ${student.overdueHomeworkCount > 0 ? styles.hwBadgeOverdue : styles.hwBadgeNeutral}`}>
                         <AlertCircle size={12} /> {student.overdueHomeworkCount} Geciken
                       </span>
+                    </div>
+                    <div className={styles.badgeRow}>
+                      {student.inviteStatus === 'NOT_INVITED' && (
+                        <span className={`${styles.tagBadge} ${styles.tagBadgeWarning}`}>
+                          <Mail size={12} /> E-posta Yok
+                        </span>
+                      )}
+                      {student.groupName && (
+                        <span className={`${styles.tagBadge} ${styles.tagBadgeInfo}`}>
+                          <FolderGit2 size={12} /> {student.groupName}
+                        </span>
+                      )}
+                      {student.hasIndividualCourse && (
+                        <span className={`${styles.tagBadge} ${styles.tagBadgePurple}`}>
+                          <Users size={12} /> Bireysel
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className={`${styles.statusBadge} ${student.isActive ? styles.active : styles.inactive}`}>
@@ -240,6 +303,9 @@ const CoachStudents = () => {
                 <div className={styles.cardFooter}>
                   <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/coach/students/${student.id}`); }}>Profili Gör</Button>
                   <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/coach/students/${student.id}`); }}>Ödev Ata</Button>
+                  {student.inviteStatus === 'NOT_INVITED' && (
+                    <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); handleOpenInviteModal(student); }}>Davet Et</Button>
+                  )}
                 </div>
               </Card>
             ))}
@@ -247,7 +313,7 @@ const CoachStudents = () => {
 
           {filtered.length === 0 && (
             <div className={styles.emptyState}>
-              <div className={styles.emptyIcon} style={{ display: 'flex', justifyContent: 'center' }}>
+              <div className={styles.emptyIcon}>
                 <Search size={36} color="var(--text-color-muted)" />
               </div>
               <h3>Öğrenci Bulunamadı</h3>
@@ -256,6 +322,44 @@ const CoachStudents = () => {
           )}
         </>
       )}
+
+      <AddStudentModal open={showAddStudent} onClose={() => setShowAddStudent(false)} onSubmit={handleCreateStudent} />
+
+      {/* Öğrenciye Özel Davet Gönderme Modalı (window.prompt yerine) */}
+      <Modal
+        isOpen={Boolean(inviteTarget)}
+        onClose={() => { setInviteTarget(null); setTargetError(''); setTargetSuccess(''); }}
+        title={inviteTarget ? `${inviteTarget.fullName} — Davet Gönder` : 'Davet Gönder'}
+        maxWidth="440px"
+      >
+        <form onSubmit={handleSendInviteSubmit} className={styles.inviteModalForm}>
+          <p className={styles.inviteModalDesc}>
+            Öğrencinin sisteme giriş yapabilmesi için e-posta adresini girin veya güncelleyin:
+          </p>
+          <Input
+            label="Öğrenci E-postası *"
+            type="email"
+            placeholder="ogrenci@ornek.com"
+            value={targetEmail}
+            onChange={(e) => setTargetEmail(e.target.value)}
+            required
+            error={targetError}
+          />
+          {targetSuccess && (
+            <p className={styles.inviteSuccessMsg}>
+              <CheckCircle2 size={16} /> <span>{targetSuccess}</span>
+            </p>
+          )}
+          <div className={styles.modalActions}>
+            <Button variant="ghost" type="button" onClick={() => setInviteTarget(null)}>
+              İptal
+            </Button>
+            <Button variant="primary" type="submit" isLoading={inviteStudent.isPending}>
+              Daveti Gönder
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

@@ -203,6 +203,48 @@
   font-size: 1rem;
 }
 
+/* Group / Individual Management */
+.groupManageControls {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.groupSelect {
+  flex: 1;
+  min-width: 200px;
+  height: 38px;
+  padding: 6px 12px;
+  border-radius: var(--radius-btn, 8px);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-color-surface);
+  color: var(--text-color-main);
+  font-size: 0.85rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.groupSelect:focus {
+  border-color: var(--color-primary);
+}
+
+.groupStatsNote {
+  margin-top: var(--spacing-md);
+  font-size: 0.825rem;
+  color: var(--text-color-muted);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.statsSeparator {
+  color: var(--text-color-muted);
+  opacity: 0.6;
+}
+
 .addParentCard {
   border: 1px dashed var(--color-primary) !important;
   background: rgba(99, 102, 241, 0.02) !important;

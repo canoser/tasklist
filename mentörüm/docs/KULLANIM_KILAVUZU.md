@@ -207,3 +207,25 @@ Veli, yalnızca kendi çocuğunun/çocuklarının verisini, koçun izin verdiği
 - **Veri kalıcılığı:** Hiçbir kayıt gerçekten silinmez; pasife alma (`is_active=0` / `CANCELLED`) kullanılır (denetim izi korunur).
 
 
+
+---
+
+## V13 — Öğrenci Ekleme Esnekliği & Bireysel/Grup Geçişi
+
+### Öğrenci Ekleme (Gölge Profil)
+- Koç, **Öğrenciler** sayfasında **"+ Hızlı Ekle"** ile öğrenciyi **e-posta olmadan** ekleyebilir (Gölge Profil).
+- **Ad** ve **Soyad** zorunludur; **Sınıf** ve **Hedef Sınav** opsiyoneldir.
+- E-posta girilirse öğrenciye otomatik davet oluşturulur; davet linkiyle şifre belirleyip girer.
+- E-posta boş bırakılırsa öğrenci **"E-posta Yok / Kayıt Bekliyor"** durumunda görünür; sonradan karttaki **"Davet Et"** butonuyla davet gönderilebilir.
+
+### Öğrenci Kartı Rozetleri
+- **E-posta Yok (kırmızı):** Gölge profil, henüz davet edilmemiş.
+- **Grup adı (mavi):** Öğrencinin bağlı olduğu aktif grup.
+- **Bireysel (mor):** Öğrencinin aktif birebir (ÖZEL DERS) kaydı var.
+
+### Bireysel ↔ Grup Geçişi
+- Öğrenci detay sayfasında **"Grup / Bireysel Yönetimi"** kartı:
+  - **Gruba Taşı:** Bir grup seçilir; öğrenci gruba eklenir, bireysel ders kayıtları pasife alınır.
+  - **Bireysele Çek:** Öğrenci tüm gruplardan çıkarılır; kendisine özel **"Bireysel Koçluk"** dersi açılır.
+- Geçmiş ödev/sınav verileri **silinmez**; detay sayfasında **"Güncel Bireysel Ödevler"** ve **"Geçmiş Grup Ödevleri"** sayıları görünür.
+

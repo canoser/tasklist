@@ -254,6 +254,7 @@ V9, V10 ve V11 sürümleriyle sistemin backend, veritabanı, güvenlik (IDOR) ve
 6. **Aşama 6 (V12.1 Ek İyileştirmeler):** T13 + T14 + T15 + T16 [Tamamlandı].
 7. **Aşama 7 (V12.2 Tema Sekmeleri, Sistem Modu & Derslerim Tikleme):** T17 + T18 [Tamamlandı].
 8. **Aşama 8 (V12.3 Koç Mobil Arayüzü & Sadeleştirme):** T19 + T20 + T21 + T22 + T23 + T24 [Tamamlandı].
+9. **Aşama 9 (V12.4 Öğrenci Ekleme & Yönetim Tasarımı):** T25 + T26 + T27 [Planlandı].
 
 ---
 
@@ -325,3 +326,43 @@ V9, V10 ve V11 sürümleriyle sistemin backend, veritabanı, güvenlik (IDOR) ve
   3. **Emoji Temizliği & Buton Standartları:**
      - `icon="📄"`, `icon="✏️"`, `icon="📝"`, `icon="←"` emojileri temizlenip Lucide SVG ikonlarına (`FileText`, `Edit3`, `Plus`, `ArrowLeft`) geçirilecek.
      - `[ PDF Rapor ]`, `[ Düzenle ]`, `[ Ödev Ata ]` butonları eşit genişlikte ve modern SaaS hiyerarşisinde düzenlenecek.
+
+---
+
+### BÖLÜM 9: V12.4 Öğrenci Ekleme Alanı & Yönetim UI/UX Tasarımı
+
+#### [ ] T25 — Öğrenci Ekleme Alanı İkili Mod Tasarımı (Doğrudan Ekleme vs. E-posta ile Davet)
+- **Dosyalar:**
+  - `Frontend/src/features/coach/students/CoachStudents.jsx`
+  - `Frontend/src/features/coach/students/CoachStudents.module.css`
+- **Tasarım & UI Hedefleri:**
+  1. `+ Yeni Öğrenci Ekle` butonuna tıklandığında açılan forma **2'li Segment Sekme (Segmented Switch)** eklenmesi:
+     - **Sekme 1: `[ ⚡ Doğrudan Ekle (E-postasız / Hızlı Kayıt) ]` (Varsayılan):**
+       - **Ad Soyad** (Metin kutusu, zorunlu)
+       - **Program Seçin** (Açılır kutu, zorunlu)
+       - **Sınıf Seviyesi** (Açılır kutu: 8. Sınıf / LGS, 9, 10, 11, 12, Mezun)
+       - **Alan / Branş** (Açılır kutu: SAY, EA, SÖZ — sınıfa göre opsiyonel)
+       - **E-posta / Telefon** (İsteğe bağlı metin kutusu — "Boş bırakılabilir, öğrenciye e-posta gönderilmez")
+       - **Aksiyon Butonu:** `[ + Öğrenciyi Doğrudan Ekle ]`
+       - **Bilgi Notu:** "Öğrenciye e-posta daveti gönderilmez; öğrenci anında koçun aktif listesine eklenir ve hemen ödev/planlama yapılabilir."
+     - **Sekme 2: `[ ✉️ E-posta ile Davet Gönder ]`:**
+       - Öğrencinin e-posta adresine davet bağlantısı göndermek isteyen koçlar için mevcut davet akışını temiz bir alt sekmede korur.
+  2. Başarılı ekleme sonrası form altında yeşil bilgilendirme kartı ve gerektiğinde öğrenciyle elden/WhatsApp üzerinden paylaşılabilecek şık bir "Giriş / Davet Bilgisi Kopyala" kutusu sunulması.
+
+#### [ ] T26 — Öğrenci Arama, Filtreleme ve Kart Hiyerarşisi UI İyileştirmesi
+- **Dosyalar:**
+  - `Frontend/src/features/coach/students/CoachStudents.jsx`
+  - `Frontend/src/features/coach/students/CoachStudents.module.css`
+- **Tasarım & UI Hedefleri:**
+  1. **Filtre Çubuğu Hizalaması:** `Öğrenci ara`, `Tüm Programlar` ve `Tüm Sınıflar` filtrelerinin hem masaüstünde hem mobilde eşit yükseklik (`height: 42px`), dengeli boşluk ve grid düzenine kavuşturulması.
+  2. **Öğrenci Kartları Rozetleri:** Kart üstündeki `Kayıtlı / Aktif` veya `Pasif` rozetlerinin tema zemin rengiyle çakışmayan ferah kontrastta düzenlenmesi; ödev istatistik haplarının (`Aktif`, `Tamamlanan`, `Geciken`) mobil ekranda taşma yapmadan sarmalanması (`flex-wrap`).
+  3. **Bekleyen Davetler Kartı:** Bekleyen davetler listesinin açılır/kapanır (`collapsible`) kompakt bir akordeon veya rozet haline getirilerek ana öğrenci listesini aşağı itmesinin önlenmesi.
+
+#### [ ] T27 — Güneş Dekoru & Aksiyon Butonları Katman Koruması (Z-Index & Opaque Shield)
+- **Dosyalar:**
+  - `Frontend/src/features/coach/students/CoachStudents.module.css`
+  - `Frontend/src/components/common/ThemeDecor/SkyDecor.module.css`
+- **Tasarım & UI Hedefleri:**
+  1. Doğa veya açık temalarda sağ üstte yer alan Güneş dekorunun form açıldığında `[ ✕ İptal ]` ve `[ Davet Gönder / Ekle ]` butonlarının hemen arkasına denk gelip buton metinlerinin okunmasını zorlaştırması engellenir.
+  2. Form kartına ve aksiyon butonlarına opak yüzey (`background-color: var(--bg-color-surface)`) ve net `z-index` hiyerarşisi verilerek güneş ışığının butonların okunabilirliğini bozması tamamen önlenir.
+

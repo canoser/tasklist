@@ -133,10 +133,12 @@ namespace MentorumApi.Data
                         ELSE h.status 
                     END as Status,
                     s.name as SubjectName,
-                    ct.topic_name as TopicName
+                    ct.topic_name as TopicName,
+                    c.type as CourseType
                 FROM homework_assignments h
                 LEFT JOIN subjects s ON s.id = h.subject_id
                 LEFT JOIN curriculum_topics ct ON ct.id = h.curriculum_topic_id
+                LEFT JOIN courses c ON c.id = h.course_id
                 WHERE h.student_id = @StudentId
                   AND h.program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)
                 ORDER BY h.due_date DESC";

@@ -224,6 +224,7 @@ try
     app.MapStorageEndpoints();
     app.MapDeviceEndpoints();
     app.MapQuestionCollectionEndpoints();
+    app.MapStudentFlexibilityEndpoints();
 
     app.MapGet("/", () => "Mentorum API Auth/Authz Katmanı Devrede!");
 

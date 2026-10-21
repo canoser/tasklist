@@ -13,6 +13,13 @@
   gap: var(--spacing-md);
 }
 
+.headerButtons {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
 .segmentedTabs {
   display: inline-flex;
   background-color: var(--bg-color-surface-elevated, var(--bg-app));
@@ -305,13 +312,96 @@
   font-weight: 400;
 }
 
+.programMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.hwBadgeRow {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.hwBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.hwBadgeActive {
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--color-primary, #6366f1);
+}
+
+.hwBadgeCompleted {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--color-success, #16a34a);
+}
+
+.hwBadgeOverdue {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger, #dc2626);
+}
+
+.hwBadgeNeutral {
+  background: var(--bg-color-surface-elevated, #f8fafc);
+  color: var(--text-color-muted);
+}
+
+.badgeRow {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.tagBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm, 6px);
+  font-weight: 600;
+}
+
+.tagBadgeWarning {
+  background-color: rgba(245, 158, 11, 0.12);
+  color: var(--color-warning, #d97706);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.tagBadgeInfo {
+  background-color: rgba(59, 130, 246, 0.12);
+  color: var(--color-info, #2563eb);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.tagBadgePurple {
+  background-color: rgba(139, 92, 246, 0.12);
+  color: #7c3aed;
+  border: 1px solid rgba(139, 92, 246, 0.25);
+}
+
 .cardFooter {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--spacing-sm);
   padding: var(--spacing-md);
   border-top: 1px solid var(--border-color);
   background-color: var(--bg-color-surface-elevated);
+}
+
+.cardFooter > * {
+  flex: 1 1 calc(50% - var(--spacing-sm));
+  min-width: 90px;
 }
 
 .emptyState {
@@ -331,6 +421,40 @@
   font-size: 3rem;
   margin-bottom: var(--spacing-md);
   opacity: 0.5;
+  display: flex;
+  justify-content: center;
+}
+
+/* Modal styles for invite */
+.inviteModalForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-sm);
+}
+
+.inviteModalDesc {
+  font-size: 0.875rem;
+  color: var(--text-color-muted);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.inviteSuccessMsg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-success, #16a34a);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
 }
 
 @media (min-width: 768px) {

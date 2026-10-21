@@ -1,0 +1,110 @@
+using MentorumApi.Data;
+using MentorumApi.DTOs;
+using MentorumApi.Services;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+
+namespace MentorumApi.Endpoints
+{
+    /// <summary>V13: Öğrenci ekleme esnekliği (gölge profil) & bireysel/grup geçişi.</summary>
+    public static class StudentFlexibilityEndpoints
+    {
+        public static void MapStudentFlexibilityEndpoints(this IEndpointRouteBuilder app)
+        {
+            var group = app.MapGroup("/api/v1/programs/{programId:guid}/students").RequireAuthorization("RequireCoachRole");
+
+            // B1: Öğrenci ekleme (e-postasız gölge profil destekli)
+            group.MapPost("/", async (
+                Guid programId,
+                [FromBody] CreateStudentRequest req,
+                [FromServices] StudentRepository repo,
+                [FromServices] ProgramAccessGuard guard,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = GetUserId(user);
+                if (coachId == null) return Results.Unauthorized();
+                if (string.IsNullOrWhiteSpace(req.FirstName) || string.IsNullOrWhiteSpace(req.LastName))
+                    return Results.BadRequest(new { error = "Ad ve soyad zorunludur." });
+
+                try { await guard.EnsureCoachInProgramAsync(coachId.Value, programId); }
+                catch (UnauthorizedAccessException) { return Results.Json(new { error = "Program bulunamadı." }, statusCode: 403); }
+
+                if (!string.IsNullOrWhiteSpace(req.Email) && await repo.EmailExistsAsync(req.Email.ToLowerInvariant()))
+                    return Results.BadRequest(new { error = "Bu e-posta zaten kullanımda." });
+
+                var studentId = await repo.CreateStudentAsync(programId, req);
+                return Results.Ok(new { studentId });
+            });
+
+            // B2: Sonradan e-posta ile davet gönderme
+            group.MapPost("/{studentId:guid}/invite", async (
+                Guid programId,
+                Guid studentId,
+                [FromBody] InviteStudentRequest req,
+                [FromServices] StudentRepository repo,
+                [FromServices] ProgramAccessGuard guard,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = GetUserId(user);
+                if (coachId == null) return Results.Unauthorized();
+                if (string.IsNullOrWhiteSpace(req.Email)) return Results.BadRequest(new { error = "E-posta gerekli." });
+
+                try { await guard.EnsureCoachOwnsStudentAsync(coachId.Value, studentId); }
+                catch (UnauthorizedAccessException) { return Results.Json(new { error = "Öğrenci bulunamadı." }, statusCode: 403); }
+
+                if (await repo.EmailExistsAsync(req.Email.ToLowerInvariant()))
+                    return Results.BadRequest(new { error = "Bu e-posta zaten kullanımda." });
+
+                var invite = await repo.InviteStudentAsync(programId, studentId, req.Email);
+                return invite == null
+                    ? Results.NotFound(new { error = "Öğrenci bu programda bulunamadı." })
+                    : Results.Ok(new { code = invite.Value.Code, expiresAt = invite.Value.ExpiresAt });
+            });
+
+            // B3: Bireyselden gruba taşı
+            group.MapPost("/{studentId:guid}/move-to-group", async (
+                Guid programId,
+                Guid studentId,
+                [FromBody] MoveToGroupRequest req,
+                [FromServices] StudentRepository repo,
+                [FromServices] ProgramAccessGuard guard,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = GetUserId(user);
+                if (coachId == null) return Results.Unauthorized();
+
+                try { await guard.EnsureCoachOwnsStudentAsync(coachId.Value, studentId); }
+                catch (UnauthorizedAccessException) { return Results.Json(new { error = "Öğrenci bulunamadı." }, statusCode: 403); }
+
+                var ok = await repo.MoveToGroupAsync(programId, studentId, req.GroupId);
+                return ok
+                    ? Results.Ok(new { message = "Öğrenci gruba taşındı." })
+                    : Results.BadRequest(new { error = "Grup bulunamadı." });
+            });
+
+            // B4: Gruptan bireysele çek
+            group.MapPost("/{studentId:guid}/move-to-individual", async (
+                Guid programId,
+                Guid studentId,
+                [FromServices] StudentRepository repo,
+                [FromServices] ProgramAccessGuard guard,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = GetUserId(user);
+                if (coachId == null) return Results.Unauthorized();
+
+                try { await guard.EnsureCoachOwnsStudentAsync(coachId.Value, studentId); }
+                catch (UnauthorizedAccessException) { return Results.Json(new { error = "Öğrenci bulunamadı." }, statusCode: 403); }
+
+                await repo.MoveToIndividualAsync(programId, studentId);
+                return Results.Ok(new { message = "Öğrenci bireysel koçluğa çekildi." });
+            });
+        }
+
+        private static Guid? GetUserId(ClaimsPrincipal user)
+        {
+            var idStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            return Guid.TryParse(idStr, out var id) ? id : null;
+        }
+    }
+}

@@ -6,7 +6,7 @@ namespace MentorumApi.DTOs
     {
         public Guid Id { get; set; }
         public required string FullName { get; set; }
-        public required string Email { get; set; }
+        public string? Email { get; set; }
         public string? AvatarUrl { get; set; }
         public int? Grade { get; set; }
         public string? Track { get; set; }
@@ -14,6 +14,9 @@ namespace MentorumApi.DTOs
         public int IsActive { get; set; }
         public Guid? ProgramId { get; set; }
         public string? ProgramName { get; set; }
+        public string InviteStatus { get; set; } = "NOT_INVITED";
+        public string? GroupName { get; set; }
+        public bool HasIndividualCourse { get; set; }
         public int ActiveHomeworkCount { get; set; }
         public int CompletedHomeworkCount { get; set; }
         public int OverdueHomeworkCount { get; set; }
@@ -134,5 +137,25 @@ namespace MentorumApi.DTOs
         public string? Summary { get; set; }
         public string Visibility { get; set; } = "";
         public DateTime CreatedAt { get; set; }
+    }
+
+    public class CreateStudentRequest
+    {
+        public string FirstName { get; set; } = "";
+        public string LastName { get; set; } = "";
+        public string? Email { get; set; }
+        public int? ClassLevel { get; set; }
+        public string? TargetExam { get; set; }
+        public Guid? GroupId { get; set; }
+    }
+
+    public class InviteStudentRequest
+    {
+        public string Email { get; set; } = "";
+    }
+
+    public class MoveToGroupRequest
+    {
+        public Guid GroupId { get; set; }
     }
 }

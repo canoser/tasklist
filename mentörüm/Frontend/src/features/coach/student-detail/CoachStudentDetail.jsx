@@ -6,6 +6,8 @@ import Input from '../../../components/common/Input/Input';
 import AssignHomeworkModal from '../homework/AssignHomeworkModal';
 import styles from './CoachStudentDetail.module.css';
 import { useStudent, useStudentNotes, useUpdateCoachNotes, useAddExamResult, useSendInvite, useCoachStudentHomework, useCoachStudentCurriculum, useCoachStudentEvents, useCoachStudentSessions, useCreateCoachingSession, useStudentTeacherNotes } from '../coachApi';
+import { useGroups } from '../coachSchoolApi';
+import { useMoveToGroup, useMoveToIndividual } from '../studentFlexibilityApi';
 import { apiClient } from '../../../api/apiClient';
 import InviteSharePanel from '../../../components/common/InviteSharePanel/InviteSharePanel';
 import ParentPermissionsPanel from './ParentPermissionsPanel';
@@ -35,6 +37,10 @@ const CoachStudentDetail = () => {
   const [sessionDate, setSessionDate] = useState('');
   const [sessionNotes, setSessionNotes] = useState('');
   const [sessionActions, setSessionActions] = useState('');
+  const moveToGroup = useMoveToGroup(student?.programId);
+  const moveToIndividual = useMoveToIndividual(student?.programId);
+  const { data: groups = [] } = useGroups(student?.programId);
+  const [selectedGroupId, setSelectedGroupId] = useState('');
 
   const getGroupForTab = (tab) => {
     if (['info', 'timeBudget', 'events'].includes(tab)) return 'general';
@@ -295,6 +301,40 @@ const CoachStudentDetail = () => {
                   <span className={styles.infoValue}>{student.targetScore}</span>
                 </div>
               )}
+            </Card>
+
+            <Card title="Grup / Bireysel Yönetimi">
+              <div className={styles.groupManageControls}>
+                <select 
+                  className={styles.groupSelect}
+                  value={selectedGroupId} 
+                  onChange={(e) => setSelectedGroupId(e.target.value)}
+                >
+                  <option value="">Gruba taşımak için grup seçin</option>
+                  {groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+                </select>
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  disabled={!selectedGroupId || moveToGroup.isPending} 
+                  onClick={() => moveToGroup.mutate({ studentId: id, groupId: selectedGroupId })}
+                >
+                  Gruba Taşı
+                </Button>
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  disabled={moveToIndividual.isPending}
+                  onClick={() => moveToIndividual.mutate(id)}
+                >
+                  Bireysele Çek
+                </Button>
+              </div>
+              <div className={styles.groupStatsNote}>
+                <span><strong>Güncel Bireysel Ödevler:</strong> {(studentHomeworks || []).filter((h) => h.courseType === 'OZEL_DERS').length}</span>
+                <span className={styles.statsSeparator}>•</span>
+                <span><strong>Geçmiş Grup Ödevleri:</strong> {(studentHomeworks || []).filter((h) => h.courseType !== 'OZEL_DERS').length}</span>
+              </div>
             </Card>
           </div>
         )}
