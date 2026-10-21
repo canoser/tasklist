@@ -166,6 +166,51 @@ const StudentHome = () => {
     );
   };
 
+  // Ortak: 4'lü Kompakt KPI Izgarası
+  const renderCompactKpis = () => (
+    <div className={styles.compactKpiGrid}>
+      <div className={styles.compactKpiItem}>
+        <div className={styles.kpiMiniIcon} style={{ background: 'rgba(99, 102, 241, 0.15)', color: '#6366f1' }}>
+          <BookOpen size={17} />
+        </div>
+        <div className={styles.kpiTextCol}>
+          <span className={styles.kpiVal}>{isLoading ? '...' : pendingHomeworks.length}</span>
+          <span className={styles.kpiLbl}>Bekleyen Ödev</span>
+        </div>
+      </div>
+
+      <div className={styles.compactKpiItem}>
+        <div className={styles.kpiMiniIcon} style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e' }}>
+          <Target size={17} />
+        </div>
+        <div className={styles.kpiTextCol}>
+          <span className={styles.kpiVal}>{isLoading ? '...' : `%${completionRate}`}</span>
+          <span className={styles.kpiLbl}>Tamamlama</span>
+        </div>
+      </div>
+
+      <div className={styles.compactKpiItem}>
+        <div className={styles.kpiMiniIcon} style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b' }}>
+          <FlaskConical size={17} />
+        </div>
+        <div className={styles.kpiTextCol}>
+          <span className={styles.kpiVal}>{lastExam?.totalNet ?? '—'}</span>
+          <span className={styles.kpiLbl}>Son Net</span>
+        </div>
+      </div>
+
+      <div className={styles.compactKpiItem}>
+        <div className={styles.kpiMiniIcon} style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#8b5cf6' }}>
+          <BookMarked size={17} />
+        </div>
+        <div className={styles.kpiTextCol}>
+          <span className={styles.kpiVal}>{`${completedTopics}/${totalTopics}`}</span>
+          <span className={styles.kpiLbl}>Biten Konu</span>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className={styles.pageContainer}>
       <header className={styles.header}>
@@ -177,80 +222,50 @@ const StudentHome = () => {
 
       {/* =========================================================
           RESPONSIVE DASHBOARD (Mobil Tek Sütun, Tablet/PC 2 Kolon)
+          studentHomeLayout ('compact' | 'widget') tercihine duyarlıdır
           ========================================================= */}
       <div className={styles.dashboardGrid}>
-        {/* Sol Kolon: Odak & Çalışma Alanı */}
-        <div className={styles.mainCol}>
-          {/* Canlı Kronometre Kartı */}
-          <StudyTimerCard compact={true} />
-
-          {/* Günlük Mod / Check-in Kartı */}
-          <MoodCheckinCard compact={true} />
-
-          {/* Sekmeli Not & Soru Kartı */}
-          {renderTabbedNotesAndQuestions()}
-        </div>
-
-        {/* Sağ Kolon: Durum, Ödevler & Görevler */}
-        <div className={styles.sideCol}>
-          {/* 1. Tek Satır Kompakt Streak & Sınav Şeridi */}
-          <GoalStreakCard variant="strip" />
-
-          {/* 2. Kompakt Inline KPI Izgarası */}
-          <div className={styles.compactKpiGrid}>
-            <div className={styles.compactKpiItem}>
-              <div className={styles.kpiMiniIcon} style={{ background: 'rgba(99, 102, 241, 0.15)', color: '#6366f1' }}>
-                <BookOpen size={17} />
-              </div>
-              <div className={styles.kpiTextCol}>
-                <span className={styles.kpiVal}>{isLoading ? '...' : pendingHomeworks.length}</span>
-                <span className={styles.kpiLbl}>Bekleyen Ödev</span>
-              </div>
+        {studentHomeLayout === 'widget' ? (
+          <>
+            {/* Görev & Ödev Öncelikli Düzen (Widget / Bento) */}
+            <div className={styles.mainCol}>
+              {renderUpcomingHomeworks()}
+              {renderCompactKpis()}
+              <MoodCheckinCard compact={true} />
+              {renderUpcomingSession()}
             </div>
 
-            <div className={styles.compactKpiItem}>
-              <div className={styles.kpiMiniIcon} style={{ background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e' }}>
-                <Target size={17} />
-              </div>
-              <div className={styles.kpiTextCol}>
-                <span className={styles.kpiVal}>{isLoading ? '...' : `%${completionRate}`}</span>
-                <span className={styles.kpiLbl}>Tamamlama</span>
-              </div>
-            </div>
-
-            <div className={styles.compactKpiItem}>
-              <div className={styles.kpiMiniIcon} style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b' }}>
-                <FlaskConical size={17} />
-              </div>
-              <div className={styles.kpiTextCol}>
-                <span className={styles.kpiVal}>{lastExam?.totalNet ?? '—'}</span>
-                <span className={styles.kpiLbl}>Son Net</span>
+            <div className={styles.sideCol}>
+              <GoalStreakCard variant="strip" />
+              <StudyTimerCard compact={true} />
+              {renderTabbedNotesAndQuestions()}
+              <div className={styles.motivationBanner}>
+                <p>"Başarı, her gün tekrarlanan küçük çabaların toplamıdır."</p>
+                <span>- Robert Collier</span>
               </div>
             </div>
+          </>
+        ) : (
+          <>
+            {/* Odak & Çalışma Öncelikli Düzen (Kompakt / Standart) */}
+            <div className={styles.mainCol}>
+              <StudyTimerCard compact={true} />
+              <MoodCheckinCard compact={true} />
+              {renderTabbedNotesAndQuestions()}
+            </div>
 
-            <div className={styles.compactKpiItem}>
-              <div className={styles.kpiMiniIcon} style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#8b5cf6' }}>
-                <BookMarked size={17} />
-              </div>
-              <div className={styles.kpiTextCol}>
-                <span className={styles.kpiVal}>{`${completedTopics}/${totalTopics}`}</span>
-                <span className={styles.kpiLbl}>Biten Konu</span>
+            <div className={styles.sideCol}>
+              <GoalStreakCard variant="strip" />
+              {renderCompactKpis()}
+              {renderUpcomingHomeworks()}
+              {renderUpcomingSession()}
+              <div className={styles.motivationBanner}>
+                <p>"Başarı, her gün tekrarlanan küçük çabaların toplamıdır."</p>
+                <span>- Robert Collier</span>
               </div>
             </div>
-          </div>
-
-          {/* 3. Öncelikli Aksiyon: Yaklaşan Ödevler */}
-          {renderUpcomingHomeworks()}
-
-          {/* 4. Görüşme Hazırlığı (M-157 & T07: Varsa görünür) */}
-          {renderUpcomingSession()}
-
-          {/* 5. Motivasyon Sözü */}
-          <div className={styles.motivationBanner}>
-            <p>"Başarı, her gün tekrarlanan küçük çabaların toplamıdır."</p>
-            <span>- Robert Collier</span>
-          </div>
-        </div>
+          </>
+        )}
       </div>
     </div>
   );

@@ -175,19 +175,56 @@ V9, V10 ve V11 sürümleriyle sistemin backend, veritabanı, güvenlik (IDOR) ve
 
 #### [x] T12 — Build, Mobil Simülasyon & Regresyon Testleri
 - **İşlemler:**
-  - `cd Frontend && npm run build` (0 hata, 0 uyarı ile tamamlanmalı).
-  - Mobil viewport (375px, 390px, 414px) üzerinde test:
-    - Alt menünün 5 sekme olarak tam oturması ve hiçbir metnin birbirine girmemesi.
-    - Ana sayfada hiçbir arka plan dekorunun yazıları ve kartları kapatmaması.
-    - Tüm butonların koyu tema paletine uyması.
+  - `cd Frontend && npm run build` (0 hata, 0 uyarı ile tamamlandı).
+  - Mobil viewport (375px, 390px, 414px) üzerinde test edildi.
   - Backend entegrasyonu ve testleri: `dotnet test` (64/64 test yeşil).
+
+---
+
+### BÖLÜM 6: Ek UX İyileştirmeleri (Depolama Güvenliği, Yerleşim Uyumu & Gökyüzü Dekoru)
+
+#### [x] T13 — Dosyalarım Virüs Uyarısı Ergonomisi & Güvenlik Psikolojisi
+- **Dosya:** `Frontend/src/features/storage/StoragePage.jsx` (+ `.module.css`)
+- **İşlemler:**
+  - "Dosya Yükle" / gönderme alanında yer alan *"Dosyalar otomatik virüs taramasından geçmez..."* metni, yükleme yapan tarafta güvenlik açığı veya suiistimal çağrışımı uyandırmaması için yükleme butonunun altından kaldırıldı.
+  - Bu uyarı yalnızca gelen/indirilebilir dosyalar alanına yuvarlak bilgi ikonu (`<Info size={14} />`) eşliğinde zarif bir güvenlik ipucu olarak eklendi (*"İndirilen dosyalar otomatik virüs taramasından geçmez; güvenmediğiniz kaynaklardan gelen dosyaları açarken dikkatli olunuz."*).
+- **Kabul:** Yükleme alanında açık kapı çağrışımı yapan virüs uyarısı kalmadı; indirilen dosyalarda yuvarlak bilgi ikonu (`i`) ile alıcı taraf uyarıldı.
+
+#### [x] T14 — Profil & Görünüm Sayfasındaki "Ana Sayfa Yerleşim Düzeni" Uyumsuzluğunun Düzeltilmesi
+- **Dosyalar:** 
+  - `Frontend/src/features/student/home/StudentHome.jsx`
+  - `Frontend/src/features/student/theme/StudentThemePage.jsx` (+ `.module.css`)
+- **İşlemler:**
+  1. `StudentHome.jsx`, `studentHomeLayout` (`compact` | `widget`) seçimine dinamik olarak bağlandı:
+     - **`compact` (Önerilen / Odak Öncelikli):** Sol/üst kolonda Canlı Kronometre + Mod Check-in + Kişisel Notlar/Sorular; Sağ/alt kolonda Hedef/Streak Şeridi + 4'lü KPI + Yaklaşan Ödevler.
+     - **`widget` (Görev & Aksiyon Öncelikli):** Sol/üst kolonda Yaklaşan Ödevler + 4'lü KPI + Mod Check-in; Sağ/alt kolonda Canlı Kronometre + Kişisel Notlar + Hedef/Streak.
+  2. `StudentThemePage.jsx` içindeki şematik önizlemeler ve kart metinleri bu gerçek responsive ızgaraya göre güncellendi.
+- **Kabul:** Öğrenci profil/tema ayarlarından düzeni değiştirdiğinde ana sayfadaki kartların dizilimi anında güncellenir.
+
+#### [x] T15 — Gökyüzü Dekoru (Ay & Güneş) Sağ Üst Konumlandırma & Gerçek SVG `<mask`> Astronomik Hassasiyeti (Argon İyileştirmesi)
+- **Dosyalar:** 
+  - `Frontend/src/components/common/ThemeDecor/SkyDecor.jsx`
+  - `Frontend/src/components/common/ThemeDecor/SkyDecor.module.css`
+- **İşlemler:**
+  1. **Gerçek SVG Maskeleme (`<mask id="moonPhaseMask">`):** Koyu moddaki Ay çiziminde gerçek SVG mask yapısına geçildi; karanlık alan aydınlık hilali/şişkin ayı pürüzsüzce kesti, çift daire/gri leke görüntüsü ortadan kaldırıldı.
+  2. **Sağ Üst Gökyüzü Boşluğuna Taşıma:** Ay ve Güneş, sol üstteki sayfa başlıklarının ve sekmelerin arkasından çıkarılarak sağ üst gökyüzü alanına (`top: 56px-64px`, `right: 12px-40px`, `pointer-events: none`, `z-index: 0`) taşındı.
+  3. **Ay Işıması (Moonlight Glow) & Güneş Efekti:** 
+     - Ay yüzeyine gümüş-mavi tonlarda yumuşak `radialGradient` (#FFFFFF $\rightarrow$ #CBD5E1) ve `drop-shadow(0 0 24px rgba(226, 232, 240, 0.22))` ay ışığı halesi verildi.
+     - Açık moddaki Güneş aynı sağ üst konuma hizalanıp altın sarısı/kehribar (#FDE047 $\rightarrow$ #D97706) corona geçişiyle güncellendi.
+- **Kabul:** Ay ve Güneş hiçbir metni veya sekmeyi kapatmaz; sağ üst gökyüzü boşluğunda parlar; ay evresi gerçek astronomik hilal/dolunay formunda keskin ve zarif görünür.
+
+#### [x] T16 — Build, Responsive Simülasyon & Doğrulama (V12.1)
+- **İşlemler:**
+  - `cd Frontend && npm run build` (0 hata ile derlendi).
+  - Mobil, tablet ve masaüstünde sağ üst Ay/Güneş konumunun, dosya bilgi ikonunun ve yerleşim geçişlerinin test edilmesi.
 
 ---
 
 ## 2. Uygulama Sırası Özeti
 
-1. **Aşama 1 (Navigasyon, Tablet Izgarası & Gök Cisimleri):** T01 (Alt menü 5 sekme) + T01-B (Tablet/PC 2 kolonlu grid) + T02 (Ay sol kenarda %70 boyutta, mobilde dal sayısı yarıya indirgenmiş).
-2. **Aşama 2 (Görsel Tutarlılık):** T03 (Beyaz butonların düzeltilmesi) + T04 (Emojilerin Lucide SVG ikonlara dönüştürülmesi).
-3. **Aşama 3 (Ana Sayfa Ergonomisi):** T05 (Check-in küçülme) + T06 (Sayaç ders seçimi) + T07 (Boş kart gizleme & motivasyon kartı) + T08 (Kişisel notlar pill butonları).
-4. **Aşama 4 (Ödev, Takvim & Dosyalar):** T09 (Ödev akordeon) + T10 (Takvim/Programım birleştirme) + T11 (Dosyalar sayfa sadeleştirmesi & "Bu Cihazı Tanı" butonunun kaldırılması).
-5. **Aşama 5 (Doğrulama):** T12 (Vite build, mobil & tablet kontrolleri ve testler).
+1. **Aşama 1 (Navigasyon, Tablet Izgarası & Gök Cisimleri):** T01 + T01-B + T02 [Tamamlandı].
+2. **Aşama 2 (Görsel Tutarlılık):** T03 + T04 [Tamamlandı].
+3. **Aşama 3 (Ana Sayfa Ergonomisi):** T05 + T06 + T07 + T08 [Tamamlandı].
+4. **Aşama 4 (Ödev, Takvim & Dosyalar):** T09 + T10 + T11 [Tamamlandı].
+5. **Aşama 5 (Doğrulama & Commit):** T12 [Tamamlandı].
+6. **Aşama 6 (V12.1 Ek İyileştirmeler):** T13 (Dosyalarım virüs uyarısı & `i` ikonu) + T14 (Profil ana sayfa yerleşim uyumsuzluğu düzeltmesi) + T15 (Sağ üst gökyüzü, SVG mask ay ve parıltı) + T16 (Doğrulama & Derleme) [Tamamlandı].

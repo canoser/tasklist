@@ -16,23 +16,22 @@
   transition: all 0.4s ease;
 }
 
-/* ── MOBIL: Ekranın solunda ve %70 boyutta (~182px) ── */
+/* ── MOBIL: Sağ üst gökyüzü boşluğu (Başlıkları ve sekmeleri kapatmaz) ── */
 @media (max-width: 767px) {
   .celestialContainer {
-    left: 16px;
-    top: 68px;
-    width: 182px;
-    height: 182px;
-    opacity: 0.35;
+    right: 12px;
+    top: 56px;
+    width: 140px;
+    height: 140px;
   }
 }
 
-/* ── TABLET & MASAÜSTÜ: Sidebar (250px) yanında dengeli ofset ── */
+/* ── TABLET & MASAÜSTÜ: Sağ üst gökyüzü boşluğu (Ferah ve engelsiz görünüm) ── */
 @media (min-width: 768px) {
   .celestialContainer {
-    left: 270px;
-    top: 72px;
-    width: 260px;
-    height: 260px;
+    right: 40px;
+    top: 64px;
+    width: 210px;
+    height: 210px;
   }
 }

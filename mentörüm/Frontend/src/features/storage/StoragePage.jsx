@@ -9,7 +9,7 @@ import { useStudents } from '../coach/coachApi';
 import { useTeacherCourses, useTeacherCourseStudents } from '../teacher/teacherApi';
 import LocalImageViewer from '../../components/common/LocalImageViewer/LocalImageViewer';
 import DevicePickerModal from '../../components/common/DevicePickerModal/DevicePickerModal';
-import { Settings, Upload, Image as ImageIcon, FileText, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Settings, Upload, Image as ImageIcon, FileText, AlertTriangle, ExternalLink, Info } from 'lucide-react';
 import styles from './StoragePage.module.css';
 
 const IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
@@ -243,7 +243,7 @@ export default function StoragePage() {
                     />
                 </div>
                 <p className={styles.disclaimer}>
-                    Dosyalar otomatik virüs taramasından geçmez; sorumluluk kullanıcıya aittir. Resimler otomatik olarak WebP formatına sıkıştırılır.
+                    Resimler otomatik olarak WebP formatına optimize edilir.
                 </p>
             </div>
 
@@ -262,6 +262,11 @@ export default function StoragePage() {
                 >
                     <FileText size={15} /> Belgeler ({uploads.filter((u) => DOC_TYPES.includes(u.contentType)).length})
                 </button>
+            </div>
+
+            <div className={styles.receiveNotice}>
+                <Info size={14} className={styles.infoIcon} />
+                <span>İndirilen dosyalar otomatik virüs taramasından geçmez; güvenmediğiniz kaynaklardan gelen dosyaları açarken dikkatli olunuz.</span>
             </div>
 
             <div className={styles.grid}>

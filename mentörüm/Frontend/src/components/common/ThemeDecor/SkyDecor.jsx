@@ -127,59 +127,102 @@ export default function SkyDecor() {
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
-          {isDark ? (
-            /* ── KOYU TEMA: GERÇEK AY VE KRATERLERİ (260px Çap) ── */
-            <g style={{ animation: 'skyMoonAura 16s ease-in-out infinite', transformOrigin: '130px 130px' }}>
-              {/* Ayın Dış Parıltı Halesi */}
-              <circle cx="130" cy="130" r="118" fill="#BAE6FD" opacity="0.04" />
-              {/* Ay Arka Plan Dairesi (Karanlık Yüz) */}
-              <circle cx="130" cy="130" r="100" fill="#BAE6FD" opacity="0.08" />
+          <defs>
+            {/* ── Gerçek SVG Maskeleme: Yalnızca aydınlık evreyi gösterir, leke yapmaz ── */}
+            <mask id="moonPhaseMask">
+              <rect x="0" y="0" width="260" height="260" fill="#000000" />
+              {isFullMoon ? (
+                <circle cx="130" cy="130" r="100" fill="#FFFFFF" />
+              ) : moonArcPath ? (
+                <path d={moonArcPath} fill="#FFFFFF" />
+              ) : null}
+            </mask>
 
-              {/* Ay Denizleri & Krater Haritası (260px ölçekli) */}
-              <g opacity="0.32">
-                {/* Oceanus Procellarum & Mare Imbrium */}
-                <path d="M 75 112 Q 92 68 116 88 T 130 144 Q 100 178 75 144 Z" fill="#94A3B8" />
-                {/* Mare Serenitatis & Tranquillitatis */}
-                <path d="M 138 86 Q 170 78 186 112 T 170 160 Q 146 136 138 86 Z" fill="#94A3B8" />
-                {/* Mare Crisium */}
-                <ellipse cx="198" cy="100" rx="11" ry="15" fill="#94A3B8" />
-                {/* Mare Fecunditatis */}
-                <path d="M 175 168 Q 204 182 204 152 T 184 142 Z" fill="#94A3B8" />
-                {/* Mare Nubium & Humorum */}
-                <path d="M 100 182 Q 124 206 148 182 T 124 160 Z" fill="#94A3B8" />
+            {/* Ay Aydınlık Yüzey Gradyanı (Gümüş-Mavi Ay Işığı) */}
+            <radialGradient id="moonSurfaceGrad" cx="35%" cy="35%" r="65%">
+              <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.95" />
+              <stop offset="45%" stopColor="#F1F5F9" stopOpacity="0.85" />
+              <stop offset="85%" stopColor="#CBD5E1" stopOpacity="0.75" />
+              <stop offset="100%" stopColor="#94A3B8" stopOpacity="0.65" />
+            </radialGradient>
+
+            {/* Güneş Çekirdek ve Corona Gradyanları */}
+            <radialGradient id="sunSurfaceGrad" cx="45%" cy="45%" r="55%">
+              <stop offset="0%" stopColor="#FFFBEB" stopOpacity="1" />
+              <stop offset="35%" stopColor="#FDE047" stopOpacity="0.95" />
+              <stop offset="75%" stopColor="#F59E0B" stopOpacity="0.90" />
+              <stop offset="100%" stopColor="#D97706" stopOpacity="0.80" />
+            </radialGradient>
+            <radialGradient id="sunCoronaGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#FEF08A" stopOpacity="0.40" />
+              <stop offset="65%" stopColor="#FDE047" stopOpacity="0.16" />
+              <stop offset="100%" stopColor="#F59E0B" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+
+          {isDark ? (
+            /* ── KOYU TEMA: GERÇEK SVG MASKELİ AY & AY IŞIĞI HALESİ (260px Çap) ── */
+            <g 
+              style={{ 
+                animation: 'skyMoonAura 16s ease-in-out infinite', 
+                transformOrigin: '130px 130px',
+                filter: 'drop-shadow(0 0 24px rgba(226, 232, 240, 0.22))'
+              }}
+            >
+              {/* Dış Ay Işığı Parıltı Halesi */}
+              <circle cx="130" cy="130" r="114" fill="#BAE6FD" opacity="0.04" />
+              
+              {/* Ayın görünmeyen karanlık silueti (Ultra hafif saydam küre) */}
+              <circle cx="130" cy="130" r="100" fill="#BAE6FD" opacity="0.03" />
+
+              {/* Gerçek SVG Maskeli Aydınlık Evre & Krater Haritası */}
+              <g mask="url(#moonPhaseMask)">
+                {/* Işıldayan Ay Yüzeyi */}
+                <circle cx="130" cy="130" r="100" fill="url(#moonSurfaceGrad)" />
+
+                {/* Yalnızca aydınlık evreye denk gelen Krater ve Denizler */}
+                <g opacity="0.22">
+                  {/* Oceanus Procellarum & Mare Imbrium */}
+                  <path d="M 75 112 Q 92 68 116 88 T 130 144 Q 100 178 75 144 Z" fill="#475569" />
+                  {/* Mare Serenitatis & Tranquillitatis */}
+                  <path d="M 138 86 Q 170 78 186 112 T 170 160 Q 146 136 138 86 Z" fill="#475569" />
+                  {/* Mare Crisium */}
+                  <ellipse cx="198" cy="100" rx="11" ry="15" fill="#475569" />
+                  {/* Mare Fecunditatis */}
+                  <path d="M 175 168 Q 204 182 204 152 T 184 142 Z" fill="#475569" />
+                  {/* Mare Nubium & Humorum */}
+                  <path d="M 100 182 Q 124 206 148 182 T 124 160 Z" fill="#475569" />
+                </g>
               </g>
 
-              {/* Dinamik Astronomik Aydınlık Yüz (Bugünün Gerçek Ay Fazı) */}
-              {isFullMoon ? (
-                <circle cx="130" cy="130" r="100" fill="#F0F9FF" opacity="0.82" />
-              ) : moonArcPath ? (
-                <path d={moonArcPath} fill="#F0F9FF" opacity="0.80" />
-              ) : null}
-
-              {/* Ay Yanındaki Yıldızlar */}
-              <circle cx="245" cy="55" r="2.2" fill="#FFFFFF" opacity="0.75" />
-              <circle cx="230" cy="210" r="1.8" fill="#FFFFFF" opacity="0.65" />
-              <circle cx="18" cy="180" r="1.8" fill="#FFFFFF" opacity="0.60" />
+              {/* Ay Yanındaki İnce Mikro Yıldızlar */}
+              <circle cx="245" cy="55" r="2" fill="#FFFFFF" opacity="0.65" />
+              <circle cx="230" cy="210" r="1.5" fill="#FFFFFF" opacity="0.55" />
+              <circle cx="18" cy="180" r="1.5" fill="#FFFFFF" opacity="0.50" />
             </g>
           ) : (
             /* ── AÇIK TEMA: SICAK PARLAYAN GÜNEŞ & NEFES ALAN IŞIK HALESİ ── */
-            <g style={{ transformOrigin: '130px 130px' }}>
-              {/* Dış Hale (Corona) - 9s sakin soluk */}
+            <g 
+              style={{ 
+                transformOrigin: '130px 130px',
+                filter: 'drop-shadow(0 0 28px rgba(245, 158, 11, 0.32))'
+              }}
+            >
+              {/* Dış Corona - Nefes Alan Hale */}
               <circle
                 cx="130"
                 cy="130"
                 r="125"
-                fill="#FEF08A"
+                fill="url(#sunCoronaGrad)"
                 style={{
                   animation: 'skySunCorona 9s ease-in-out infinite',
                   transformOrigin: '130px 130px',
                 }}
               />
               {/* Orta Işıma Katmanı */}
-              <circle cx="130" cy="130" r="95" fill="#FDE047" opacity="0.35" />
+              <circle cx="130" cy="130" r="92" fill="#FDE047" opacity="0.25" />
               {/* Güneş Çekirdeği */}
-              <circle cx="130" cy="130" r="68" fill="#FACC15" opacity="0.75" />
-              <circle cx="130" cy="130" r="46" fill="#EAB308" opacity="0.90" />
+              <circle cx="130" cy="130" r="68" fill="url(#sunSurfaceGrad)" />
             </g>
           )}
         </svg>
