@@ -27,22 +27,72 @@ export default function StudentNotesCard() {
   };
 
   return (
-    <Card padding="md">
-      <h3 style={{ margin: '0 0 10px', fontSize: '0.95rem' }}>Kişisel Notlar</h3>
-
+    <div style={{ padding: '4px 0' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
         <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Başlık (opsiyonel)" style={inputStyle} />
         <textarea value={content} onChange={(e) => setContent(e.target.value)} rows={2} placeholder="Notun..." style={inputStyle} />
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <label style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', cursor: 'pointer' }}>
-            <input type="radio" checked={visibility === 'PRIVATE'} onChange={() => setVisibility('PRIVATE')} />
-            <Lock size={13} /> Sadece Ben
-          </label>
-          <label style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem', cursor: 'pointer' }}>
-            <input type="radio" checked={visibility === 'COACH'} onChange={() => setVisibility('COACH')} />
-            <Eye size={13} /> Koçum da Görsün
-          </label>
-          <button type="button" onClick={handleAdd} style={{ marginLeft: 'auto', padding: '6px 14px', borderRadius: '8px', border: 'none', background: 'var(--color-primary)', color: '#fff', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+          {/* Şık Segmented Pill Butonları (T08) */}
+          <div style={{ display: 'inline-flex', padding: 2, background: 'var(--bg-app)', borderRadius: 8, border: '1px solid var(--border-color)' }}>
+            <button
+              type="button"
+              onClick={() => setVisibility('PRIVATE')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                padding: '4px 8px',
+                borderRadius: 6,
+                border: 'none',
+                cursor: 'pointer',
+                background: visibility === 'PRIVATE' ? 'var(--bg-card)' : 'transparent',
+                color: visibility === 'PRIVATE' ? 'var(--color-primary)' : 'var(--text-secondary)',
+                boxShadow: visibility === 'PRIVATE' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <Lock size={12} /> Sadece Ben
+            </button>
+            <button
+              type="button"
+              onClick={() => setVisibility('COACH')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                padding: '4px 8px',
+                borderRadius: 6,
+                border: 'none',
+                cursor: 'pointer',
+                background: visibility === 'COACH' ? 'var(--bg-card)' : 'transparent',
+                color: visibility === 'COACH' ? 'var(--color-primary)' : 'var(--text-secondary)',
+                boxShadow: visibility === 'COACH' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <Eye size={12} /> Koçum da Görsün
+            </button>
+          </div>
+
+          <button 
+            type="button" 
+            onClick={handleAdd} 
+            style={{ 
+              padding: '6px 14px', 
+              borderRadius: '8px', 
+              border: 'none', 
+              background: 'var(--color-primary, #10B981)', 
+              color: '#fff', 
+              cursor: 'pointer', 
+              fontSize: '0.8rem', 
+              fontWeight: 600,
+              transition: 'opacity 0.15s'
+            }}
+          >
             Ekle
           </button>
         </div>
@@ -69,6 +119,6 @@ export default function StudentNotesCard() {
         </div>
       ))}
       {notes.length === 0 && <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Henüz not yok.</p>}
-    </Card>
+    </div>
   );
 }

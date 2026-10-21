@@ -6,6 +6,15 @@ import { Trash2, Plus } from 'lucide-react';
 import styles from './StudentSchedulePage.module.css';
 
 const DAYS = ['', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
+const DAY_PILLS = [
+  { id: 1, label: 'Pzt' },
+  { id: 2, label: 'Sal' },
+  { id: 3, label: 'Çar' },
+  { id: 4, label: 'Per' },
+  { id: 5, label: 'Cum' },
+  { id: 6, label: 'Cts' },
+  { id: 7, label: 'Paz' },
+];
 const fmt = (t) => (t ? t.slice(0, 5) : '');
 
 const inputStyle = { padding: '8px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-app)', color: 'var(--text-primary)', colorScheme: 'dark' };
@@ -16,7 +25,7 @@ const StudentSchedulePage = () => {
   const createSchedule = useCreateSchoolSchedule();
   const deleteSchedule = useDeleteSchoolSchedule();
 
-  const [day, setDay] = useState(1);
+  const [selectedDays, setSelectedDays] = useState([1, 2, 3, 4, 5]);
   const [start, setStart] = useState('08:30');
   const [end, setEnd] = useState('15:30');
   const [label, setLabel] = useState('Okul');
@@ -27,9 +36,19 @@ const StudentSchedulePage = () => {
     grouped[s.dayOfWeek].push(s);
   });
 
-  const handleAdd = () => {
-    if (!start || !end) return;
-    createSchedule.mutate({ dayOfWeek: Number(day), startTime: start, endTime: end, label: label.trim() || 'Okul' });
+  const toggleDay = (d) => {
+    setSelectedDays((prev) => 
+      prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d].sort((a, b) => a - b)
+    );
+  };
+
+  const selectWeekdays = () => setSelectedDays([1, 2, 3, 4, 5]);
+
+  const handleAdd = async () => {
+    if (!start || !end || selectedDays.length === 0) return;
+    for (const d of selectedDays) {
+      createSchedule.mutate({ dayOfWeek: Number(d), startTime: start, endTime: end, label: label.trim() || 'Okul' });
+    }
   };
 
   return (
@@ -38,15 +57,57 @@ const StudentSchedulePage = () => {
 
       <Card className={styles.card} padding="md">
         <h2 style={{ margin: '0 0 10px', fontSize: '1rem' }}>Okul Saatlerim (Haftalık Tekrarlayan Şablon)</h2>
+        
+        {/* Çoklu Gün Seçim Butonları (T10) */}
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '12px' }}>
+          <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginRight: '4px' }}>Günler:</span>
+          {DAY_PILLS.map((d) => {
+            const isSel = selectedDays.includes(d.id);
+            return (
+              <button
+                key={d.id}
+                type="button"
+                onClick={() => toggleDay(d.id)}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  border: isSel ? '1px solid var(--color-primary, #10B981)' : '1px solid var(--border-color)',
+                  background: isSel ? 'rgba(16, 185, 129, 0.15)' : 'var(--bg-app)',
+                  color: isSel ? 'var(--color-primary, #10B981)' : 'var(--text-secondary)',
+                  fontSize: '0.8rem',
+                  fontWeight: isSel ? 700 : 500,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                {d.label}
+              </button>
+            );
+          })}
+          <button
+            type="button"
+            onClick={selectWeekdays}
+            style={{
+              padding: '5px 10px',
+              borderRadius: '6px',
+              border: '1px dashed var(--border-color)',
+              background: 'transparent',
+              color: 'var(--text-secondary)',
+              fontSize: '0.75rem',
+              cursor: 'pointer',
+              marginLeft: '4px'
+            }}
+          >
+            Hafta İçi (Pzt-Cum)
+          </button>
+        </div>
+
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '10px' }}>
-          <select value={day} onChange={(e) => setDay(e.target.value)} style={inputStyle}>
-            {DAYS.map((d, i) => i > 0 && <option key={i} value={i} style={{ background: '#0f172a', color: '#f8fafc' }}>{d}</option>)}
-          </select>
-          <input type="time" value={start} onChange={(e) => setStart(e.target.value)} style={inputStyle} />
-          <input type="time" value={end} onChange={(e) => setEnd(e.target.value)} style={inputStyle} />
+          <input type="time" value={start} onChange={(e) => setStart(e.target.value)} style={inputStyle} title="Başlangıç Saati" />
+          <input type="time" value={end} onChange={(e) => setEnd(e.target.value)} style={inputStyle} title="Bitiş Saati" />
           <input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Etiket (örn. Okul)" style={{ ...inputStyle, minWidth: '140px' }} />
-          <button type="button" onClick={handleAdd} style={{ padding: '8px 14px', borderRadius: '8px', border: 'none', background: 'var(--color-primary)', color: '#fff', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '5px', fontWeight: 600 }}>
-            <Plus size={15} /> Ekle
+          <button type="button" onClick={handleAdd} disabled={createSchedule.isPending || selectedDays.length === 0} style={{ padding: '8px 14px', borderRadius: '8px', border: 'none', background: 'var(--color-primary)', color: '#fff', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '5px', fontWeight: 600 }}>
+            <Plus size={15} /> {selectedDays.length > 1 ? `${selectedDays.length} Güne Ekle` : 'Ekle'}
           </button>
         </div>
 

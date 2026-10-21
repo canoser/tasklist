@@ -91,7 +91,7 @@ const StudentHome = () => {
           ))
         ) : (
           <div style={{ padding: '10px 12px', background: 'var(--bg-card)', borderRadius: '10px', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
-            Şu anda bekleyen veya yaklaşan bir ödevin yok! 🎉
+            Şu anda bekleyen veya yaklaşan bir ödevin yok!
           </div>
         )}
       </div>
@@ -128,15 +128,16 @@ const StudentHome = () => {
     </div>
   );
 
-  // Ortak: Görüşme Hazırlığı
-  const renderUpcomingSession = () => (
-    <section className={styles.section}>
-      <div className={styles.sectionHeader}>
-        <h2 className={styles.sectionTitle}>
-          <MessageSquare size={16} /> Koç Görüşmesi Hazırlığı
-        </h2>
-      </div>
-      {upcomingSession ? (
+  // Ortak: Görüşme Hazırlığı (T07: Boşsa tamamen gizlenir)
+  const renderUpcomingSession = () => {
+    if (!upcomingSession) return null;
+    return (
+      <section className={styles.section}>
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>
+            <MessageSquare size={16} /> Koç Görüşmesi Hazırlığı
+          </h2>
+        </div>
         <Card className={styles.homeworkCard} padding="sm">
           <h3 style={{ margin: '0 0 4px', fontSize: '0.9rem' }}>{upcomingSession.title}</h3>
           {upcomingSession.sessionDate && (
@@ -161,11 +162,9 @@ const StudentHome = () => {
             {updatePrep.isSuccess && <span style={{ marginLeft: 8, color: '#16a34a', fontSize: '0.78rem' }}>✓ Kaydedildi</span>}
           </div>
         </Card>
-      ) : (
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', margin: 0 }}>Planlanmış yaklaşan görüşme bulunmuyor.</p>
-      )}
-    </section>
-  );
+      </section>
+    );
+  };
 
   return (
     <div className={styles.pageContainer}>
@@ -177,14 +176,27 @@ const StudentHome = () => {
       </header>
 
       {/* =========================================================
-          DÜZEN 1: KOMPAKT & ODAKLI AKIŞ (studentHomeLayout === 'compact')
+          RESPONSIVE DASHBOARD (Mobil Tek Sütun, Tablet/PC 2 Kolon)
           ========================================================= */}
-      {studentHomeLayout !== 'widget' ? (
-        <>
+      <div className={styles.dashboardGrid}>
+        {/* Sol Kolon: Odak & Çalışma Alanı */}
+        <div className={styles.mainCol}>
+          {/* Canlı Kronometre Kartı */}
+          <StudyTimerCard compact={true} />
+
+          {/* Günlük Mod / Check-in Kartı */}
+          <MoodCheckinCard compact={true} />
+
+          {/* Sekmeli Not & Soru Kartı */}
+          {renderTabbedNotesAndQuestions()}
+        </div>
+
+        {/* Sağ Kolon: Durum, Ödevler & Görevler */}
+        <div className={styles.sideCol}>
           {/* 1. Tek Satır Kompakt Streak & Sınav Şeridi */}
           <GoalStreakCard variant="strip" />
 
-          {/* 2. Kompakt 2x2 Inline KPI Izgarası */}
+          {/* 2. Kompakt Inline KPI Izgarası */}
           <div className={styles.compactKpiGrid}>
             <div className={styles.compactKpiItem}>
               <div className={styles.kpiMiniIcon} style={{ background: 'rgba(99, 102, 241, 0.15)', color: '#6366f1' }}>
@@ -230,64 +242,15 @@ const StudentHome = () => {
           {/* 3. Öncelikli Aksiyon: Yaklaşan Ödevler */}
           {renderUpcomingHomeworks()}
 
-          {/* 4. Kompakt Canlı Kronometre Kartı */}
-          <StudyTimerCard compact={true} />
+          {/* 4. Görüşme Hazırlığı (M-157 & T07: Varsa görünür) */}
+          {renderUpcomingSession()}
 
-          {/* 5. Tek Satır 4'lü Mood Barı */}
-          <MoodCheckinCard compact={true} />
-
-          {/* 6. Sekmeli Not & Soru Kartı */}
-          {renderTabbedNotesAndQuestions()}
-        </>
-      ) : (
-        /* =========================================================
-           DÜZEN 2: MINI-BAR & MODÜLER WIDGET (studentHomeLayout === 'widget')
-           ========================================================= */
-        <>
-          {/* 1. 4'lü Tek Satır Mikro Stat Barı */}
-          <div className={styles.statBar4}>
-            <div className={styles.statBarCol}>
-              <span className={styles.statBarVal} style={{ color: '#6366f1' }}>{isLoading ? '...' : pendingHomeworks.length}</span>
-              <span className={styles.statBarLbl}>Ödev</span>
-            </div>
-            <div className={styles.statBarCol}>
-              <span className={styles.statBarVal} style={{ color: '#22c55e' }}>%{completionRate}</span>
-              <span className={styles.statBarLbl}>Biten</span>
-            </div>
-            <div className={styles.statBarCol}>
-              <span className={styles.statBarVal} style={{ color: '#f59e0b' }}>{streak.currentStreak}g</span>
-              <span className={styles.statBarLbl}>Seri</span>
-            </div>
-            <div className={styles.statBarCol}>
-              <span className={styles.statBarVal} style={{ color: '#3b82f6' }}>{daysLeft}g</span>
-              <span className={styles.statBarLbl}>Sınav</span>
-            </div>
+          {/* 5. Motivasyon Sözü */}
+          <div className={styles.motivationBanner}>
+            <p>"Başarı, her gün tekrarlanan küçük çabaların toplamıdır."</p>
+            <span>- Robert Collier</span>
           </div>
-
-          {/* 2. Hero Hedef Plan Kartı */}
-          <GoalStreakCard variant="hero" />
-
-          {/* 3. Akıllı Katlanabilir Kronometre Çubuğu */}
-          <StudyTimerCard compact={true} collapsible={true} />
-
-          {/* 4. Yaklaşan Ödevler */}
-          {renderUpcomingHomeworks()}
-
-          {/* 5. Mood Check-in */}
-          <MoodCheckinCard compact={true} />
-
-          {/* 6. Sekmeli Notlarım & Sorularım */}
-          {renderTabbedNotesAndQuestions()}
-        </>
-      )}
-
-      {/* Görüşme Hazırlığı (M-157) */}
-      {renderUpcomingSession()}
-
-      {/* Motivasyon Sözü */}
-      <div className={styles.motivationBanner}>
-        <p>"Başarı, her gün tekrarlanan küçük çabaların toplamıdır."</p>
-        <span>- Robert Collier</span>
+        </div>
       </div>
     </div>
   );

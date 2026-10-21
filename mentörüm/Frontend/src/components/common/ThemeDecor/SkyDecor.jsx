@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { useUIStore } from '../../../store/uiStore';
+import styles from './SkyDecor.module.css';
 
 /**
  * Gerçek astronomik ay evresini hesaplar (0: Yeni Ay, 0.25: İlk Dördün, 0.5: Dolunay, 0.75: Son Dördün)
@@ -93,14 +94,7 @@ export default function SkyDecor() {
       {/* ── 1. TÜM EKRANA DAĞILMIŞ YILDIZLAR (Her temada ve kutucuk arkalarında parıldar) ── */}
       {isDark && (
         <svg
-          style={{
-            position: 'fixed',
-            inset: 0,
-            width: '100vw',
-            height: '100vh',
-            pointerEvents: 'none',
-            zIndex: 0,
-          }}
+          className={styles.starsLayer}
           xmlns="http://www.w3.org/2000/svg"
         >
           {STATIC_STARS.map((s, idx) => (
@@ -122,16 +116,9 @@ export default function SkyDecor() {
 
       {/* ── 2. GÖK CİSMİ: KULLANICININ İSTEDİĞİ YERDE VE BÜYÜKLÜKTE (Dashboard sol-üst) ── */}
       <div
+        className={styles.celestialContainer}
         style={{
-          position: 'fixed',
-          top: '72px',
-          left: '280px',
-          width: '260px',
-          height: '260px',
-          pointerEvents: 'none',
-          zIndex: 0,
           opacity: isDark ? 0.75 : 0.85,
-          transition: 'opacity 0.5s ease',
         }}
       >
         <svg

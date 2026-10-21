@@ -1,0 +1,76 @@
+/* NatureDecor.module.css - Responsive Branch Density */
+
+.container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.branchMid1 {
+  position: absolute;
+  top: -30px;
+  left: 40%;
+  height: 100%;
+  width: 105px;
+  transform-origin: top center;
+  animation: natureSwayMid1 21s ease-in-out infinite;
+  opacity: 0.22;
+}
+
+.branchMid2 {
+  position: absolute;
+  top: -60px;
+  left: 56%;
+  height: 100%;
+  width: 115px;
+  transform-origin: top center;
+  animation: natureSwayMid2 25s ease-in-out infinite;
+  opacity: 0.26;
+}
+
+.branchMid3 {
+  position: absolute;
+  top: -20px;
+  left: 72%;
+  height: 100%;
+  width: 120px;
+  transform-origin: top center;
+  animation: natureSwayMid3 17s ease-in-out infinite;
+  opacity: 0.28;
+}
+
+.branchBackRight {
+  position: absolute;
+  top: 0;
+  right: 30px;
+  height: 100%;
+  width: 120px;
+  transform-origin: top right;
+  animation: natureSwayBack 20s ease-in-out infinite;
+  opacity: 0.35;
+}
+
+.branchMainRight {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 140px;
+  transform-origin: top right;
+  animation: natureSwayMain 14s ease-in-out infinite;
+  opacity: 0.7;
+}
+
+/* Mobilde (≤ 768px) ortadaki 3 dal gizlenir, dal yoğunluğu yarıya düşer */
+@media (max-width: 768px) {
+  .branchMid1,
+  .branchMid2,
+  .branchMid3 {
+    display: none !important;
+  }
+}

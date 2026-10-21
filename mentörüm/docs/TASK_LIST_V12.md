@@ -1,0 +1,193 @@
+# 🧭 Mentörüm — V12 Görev Listesi (Öğrenci Mobil Arayüzü & UX Sadeleştirmesi)
+
+> **Tarih:** 21 Ekim 2026  
+> **Kapsam:** Öğrenci Portalı (Student UX & UI) — Mobil Ergonomi, Görsel İnce Ayar (Visual Polish) ve Sadeleştirme  
+> **Gelecek Uyumluluk:** Bu sürümde kurulan arayüz ve sadeleştirme standartları, sonraki aşamalarda Koç, Öğretmen ve Veli panellerine de uygulanacaktır.  
+> **Temel Kurallar:** Hardcoded Türkçe Serbest (BÖLÜM A2), Sıfır Emoji (Yalnızca Lucide SVG), Tema CSS Değişkenleri (`var(--bg-app)`, `var(--bg-card)`, `var(--border-color)`), Temiz Arka Plan (Dekor Kirliliği Yok).
+
+---
+
+## 0. Giriş ve Sorun Tanımı
+
+V9, V10 ve V11 sürümleriyle sistemin backend, veritabanı, güvenlik (IDOR) ve hibrit depolama altyapısı eksiksiz tamamlanmıştır (tüm testler yeşil). Ancak öğrenci mobil ekran görüntüleri incelendiğinde aşağıdaki kritik UI/UX darboğazları tespit edilmiştir:
+1. **Alt Menü (Bottom Nav) Sıkışması:** Alt barda 8 sekme yan yana konulduğu için metinler ("ProgramımDerslerim") birbirine yapışmış, dokunma alanları ergonomik sınırların altına inmiştir.
+2. **Arka Plan Kirliliği:** Arka plandaki hareketli tema dekoru (`ThemeDecorContainer`), devasa beyaz daireler ve polen noktacıkları metin ve rozetlerin üzerini örterek okunabilirliği düşürmektedir. Kullanıcı talebi doğrultusunda ana sayfada dekoratif tema öğeleri kaldırılacak ve sade koyu zemine geçilecektir.
+3. **Stilsiz (Varsayılan HTML) Butonlar:** Koyu yeşil tema üzerinde `Tümünü Gör (1)`, `Sıfırla`, `Ek / Çözüm` ve `Çıkış` butonları tarayıcı varsayılan beyaz buton stiliyle parlamakta; modern SaaS tasarımını bozmaktadır.
+4. **Emoji İhlali:** Arayüzde kural dışı renkli işletim sistemi emojileri (`📱`, `⚙️`, `📥`, `🖼️`, `📄`, `📎`) kalmıştır.
+5. **Aşırı Yüklü Kartlar:** Günlük durum bildirimi (check-in), ödev kartları ve boş koçluk kartı mobil ekranı gereksiz yere dikeyde uzatmakta ve zihinsel yük yaratmaktadır.
+
+---
+
+## 1. Görev Dağılımı ve İş Listesi
+
+### BÖLÜM 1: Navigasyon & Yerleşim (Layout & Bottom Nav)
+
+#### [x] T01 — Alt Menüyü (Bottom Nav) 8 Sekmeden 5 Temiz Sekmeye İndirme
+- **Dosya:** `Frontend/src/components/layout/StudentLayout/StudentLayout.jsx` (+ `.module.css`)
+- **Mevcut Durum (8 Sekme):** Ana Sayfa, Takvim, Programım, Derslerim, Ödevler, Dosyalar, Temalar, Profil.
+- **Hedef Durum (Tam 5 Sekme):**
+  1. **Ana Sayfa** (`/student/home` — `Home`)
+  2. **Takvim** (`/student/calendar` — `Calendar`)
+  3. **Derslerim** (`/student/courses` — `BookOpen`)
+  4. **Ödevler** (`/student/homework` — `CheckSquare`)
+  5. **Profil** (`/student/profile` — `User`)
+- **Taşınan & Birleştirilen Sekmeler:**
+  - `Temalar`: Alt menüden tamamen çıkarılır. `Profil` sayfası içerisine veya üst bar bildirim ikonunun yanına zarif bir palet ikonu olarak taşınır.
+  - `Programım` (`StudentSchedulePage`): Bağımsız bir alt sekme olmaktan çıkarılır; `Takvim` ekranı içine üst sekme ([📅 Takvim] | [🗓️ Okul & Haftalık Şablon]) olarak entegre edilir.
+  - `Dosyalar` (`StoragePage`): Alt barda yer kaplamaz; `Derslerim` sayfası üstünden ("Tüm Dosyalarım" butonu) veya `Profil` ekranından erişilebilir hale getirilir.
+- **Kabul:** Mobil ekranda (375px–430px) 5 sekme eşit aralıkla yerleşir, metinler asla birbirine yapışmaz veya taşmaz.
+
+#### [x] T01-B — Tablet ve PC İçin 2 Kolonlu Dashboard Izgarası (Responsive Grid)
+- **Dosyalar:** `Frontend/src/features/student/home/StudentHome.jsx` (+ `.module.css`)
+- **İşlem:**
+  - Mobilde tek sütun olan dikey akış korunur.
+  - Tablet ve PC ekranlarında (`@media (min-width: 768px)`):
+    - **Sol Sütun:** Karşılama, Canlı Sayaç (Kronometre / Hızlı Kayıt), Bugün Nasılsın?, Kişisel Notlar & Sorular.
+    - **Sağ Sütun:** Hedef/Streak/Sınav İstatistik Kartları, Yaklaşan Ödevler Özeti, Motivasyon Sözü.
+  - Bu 2 kolonlu yapı sayesinde içerik tablet ekranında dikeyde aşırı uzamaz ve sağdaki geniş boş alan verimli kullanılır.
+- **Kabul:** Tablette (768px - 1024px) ve PC'de (>1024px) çift kolonlu ferah ızgara görünümüne geçilir.
+
+#### [x] T02 — Gök Cisimleri (Tüm Temalar) ve Doğa Dalları (Yalnızca Doğa Teması) Mobil/Tablet Ergonomisi
+- **Dosyalar:** 
+  - `Frontend/src/components/common/ThemeDecor/SkyDecor.jsx` (Tüm temalarda ortaktır)
+  - `Frontend/src/components/common/ThemeDecor/NatureDecor.jsx` (Yalnızca Doğa temasında aktiftir)
+- **Tema Kapsam Ayrımı & İşlemler:**
+  1. **Ay / Güneş / Yıldızlar (`SkyDecor`) — TÜM TEMALARI İLGİLENDİRİR:**
+     - `SkyDecor` tüm temalarda (`nature`, `ocean`, `cyber`, `formal`) daima aktiftir ve efektler **kesinlikle korunacaktır**.
+     - **Mobilde Ay Pozisyonu:** Sabit `left: 280px` mobilde ekran dışına taştığı için mobil görünümde (`< 768px`) ay **ekranın soluna** (`left: 16px` – `20px`) hizalanacaktır.
+     - **Mobilde Ay Boyutu:** Mobilde ay boyutu **%70** seviyesine küçülecektir (260px $\rightarrow$ ~182px, `scale(0.7)` veya `width/height: 182px`).
+     - **Tablet / PC Ay Konumu:** Tablette başlıkların arkasını kapatmayacak şekilde sol menünün bitişiğinden dengeli bir ofsetle konumlandırılacaktır.
+  2. **Dallar (`NatureDecor`) — YALNIZCA DOĞA (NATURE) TEMASINI İLGİLENDİRİR:**
+     - Diğer temalarda (ör. okyanus dalgaları, siber ızgara) dal bulunmaz; bu düzenleme yalnızca `NatureDecor.jsx` içindir.
+     - `NatureDecor` içindeki 5 daldan ortadaki 3 dal mobilde (`@media (max-width: 768px)`) gizlenecek; mobilde dal yoğunluğu **yarıya düşürülecek**, yalnızca 2 kenar dalı bırakılacaktır.
+  3. **İkonlar (Lucide SVG Standardı) — TÜM TEMALARI İLGİLENDİRİR:**
+     - Emojilerin Lucide ikonlarla değiştirilmesi seçili temadan bağımsız olarak tüm ekranlarda geçerli genel kuraldır.
+- **Kabul:** Tüm temalarda ay mobilde sol kenarda %70 boyutta görünür; Doğa temasında mobilde dal sayısı yarıya iner; diğer temaların kendi dekorları bozulmaz; ikonlar temadan bağımsız SVG kalır.
+
+---
+
+### BÖLÜM 2: Buton Stilleri, İkonlar & Tasarım Tutarlılığı
+
+#### [x] T03 — Stilsiz (Beyaz Patlayan) Butonların Temaya Uyarlanması
+- **Dosyalar:** 
+  - `Frontend/src/features/student/home/StudentHome.jsx`
+  - `Frontend/src/features/student/home/StudyTimerCard.jsx`
+  - `Frontend/src/features/student/homework/StudentHomework.jsx`
+  - `Frontend/src/components/layout/StudentLayout/StudentLayout.jsx`
+- **İşlemler:**
+  - `Tümünü Gör (1)`: Bembeyaz arka plan kaldırılır; `background: rgba(255, 255, 255, 0.05)`, `border: 1px solid var(--border-color)`, `color: var(--text-primary)` ghost/secondary stili verilir.
+  - `🔄 Sıfırla`: Koyu cam yüzey (`rgba(255, 255, 255, 0.06)`), hover efekti ve temaya uygun metin rengi uygulanır.
+  - `📎 Ek / Çözüm`: Buton stili ghost button (`var(--border-color)`) formatına çekilir.
+  - `Sağ Üst Çıkış Butonu`: Beyaz parlak yuvarlak buton yerine `background: rgba(255, 255, 255, 0.05)`, ince kenarlık ve hafif hover efekti olan modern bir buton yapılır.
+- **Kabul:** Hiçbir ekranda tarayıcının varsayılan beyaz buton stili kalmaz; tüm butonlar tema değişkenlerini kullanır.
+
+#### [x] T04 — Emojilerin Lucide SVG İkonları ile Değiştirilmesi
+- **Dosyalar:**
+  - `Frontend/src/features/storage/StoragePage.jsx`
+  - `Frontend/src/features/student/homework/StudentHomework.jsx`
+  - `Frontend/src/features/student/home/StudyTimerCard.jsx`
+  - `Frontend/src/features/student/home/GoalStreakCard.jsx`
+- **Değişim Tablosu:**
+  | Eski Emoji | Yeni Lucide İkon | Kullanıldığı Yer |
+  | :--- | :--- | :--- |
+  | `📱 Bu Cihazı Tanı` | `<Smartphone size={15} /> Bu Cihazı Tanı` | Dosyalarım üst aksiyonlar |
+  | `⚙️ İndirme Cihazı Seç` | `<Settings size={15} /> İndirme Cihazı` | Dosyalarım üst aksiyonlar |
+  | `📤 Dosya Yükle` | `<Upload size={15} /> Dosya Yükle` | Dosyalarım yükleme butonu |
+  | `🖼️ Resimler` | `<Image size={15} /> Resimler` | Dosyalarım sekmesi |
+  | `📄 Belgeler` | `<FileText size={15} /> Belgeler` | Dosyalarım sekmesi |
+  | `📎 Ek / Çözüm` | `<Paperclip size={14} /> Ek / Çözüm` | Ödev teslim kartı |
+  | `🔄 Sıfırla` | `<RotateCcw size={14} /> Sıfırla` | Kronometre kartı |
+  | `🔥 Seri / 📅 Sınav / 🎯 Hedef` | `<Flame />`, `<Calendar />`, `<Target />` | Hedef şeridi |
+- **Kabul:** UI üzerinde hiçbir işletim sistemi emojisi yer almaz.
+
+---
+
+### BÖLÜM 3: Ana Sayfa Ergonomisi (StudentHome Polish)
+
+#### [x] T05 — "Bugün Nasılsın?" Check-in Kartının Akıllı Küçülmesi (Collapsible)
+- **Dosya:** `Frontend/src/features/student/home/MoodCheckinCard.jsx` (+ `.module.css`)
+- **İşlem:**
+  - Öğrenci o gün için durumunu (Çok Verimli, Normal, Yorgun, Stresli) seçtikten sonra 4 büyük kutu ekranda dikey yer kaplamaya devam etmez.
+  - Seçim yapıldıktan sonra kart tek satırlık kompakt bir banda küçülür:
+    `"Bugünkü modun: [İkon + Çok Verimli] · [Değiştir]"`
+  - "[Değiştir]" tıklandığında 4 durum kutucuğu yeniden açılır.
+- **Kabul:** Sayfa açılışında seçim yapılmışsa ekran gereksiz dikey kaydırmadan kurtulur.
+
+#### [x] T06 — Kronometreye Hızlı Ders Seçimi Chip'i
+- **Dosya:** `Frontend/src/features/student/home/StudyTimerCard.jsx`
+- **İşlem:**
+  - Kronometre sayacının (`00:00`) hemen üstüne veya yanına öğrencinin kayıtlı derslerini listeleyen kompakt bir chip/dropdown eklenir ("Ders Seç: Matematik, Fizik...").
+  - Sayaç başlatılıp bittiğinde çalışma oturumu doğrudan o derse atanır.
+- **Kabul:** Öğrenci sayaç başlatmadan önce tek tıkla çalıştığı dersi seçebilir.
+
+#### [x] T07 — Boş Koç Görüşmesi ve Motivasyon Sözü Sadeleştirmesi
+- **Dosya:** `Frontend/src/features/student/home/StudentHome.jsx` (+ `.module.css`)
+- **İşlemler:**
+  - **Koç Görüşmesi Hazırlığı:** Yaklaşan aktif bir görüşme yoksa ("Planlanmış yaklaşan görüşme bulunmuyor.") bu kart ana sayfada tamamen gizlenir; yalnızca koçla randevu olduğunda aktifleşir.
+  - **Motivasyon Kartı:** Parlak neon yeşil-mavi gradyan kaldırılır; koyu cam (glassmorphism: `background: rgba(255, 255, 255, 0.03)`, `border: 1px solid rgba(255, 255, 255, 0.08)`) ve zarif açık renk alıntı tipografisi uygulanır.
+- **Kabul:** Ana sayfa gereksiz boş kartlardan arınır ve göz yormayan bir renk uyumuna kavuşur.
+
+#### [x] T08 — Kişisel Notlar & Takıldıklarım Kartı İnce Ayarı
+- **Dosya:** `Frontend/src/features/student/home/StudentNotesCard.jsx`
+- **İşlemler:**
+  - "Kişisel Notlarım" sekmesinin altında tekrar büyük puntolarla yazan "Kişisel Notlar" başlık tekrarı kaldırılır.
+  - "Sadece Ben" ve "Koçum da Görsün" seçeneklerindeki ilkel mavi tarayıcı radyo butonları (`<input type="radio">`) yerine şık hap/segmented (pill) buton seçici uygulanır.
+  - Üst hedef bandında (`GoalStreakCard`) dar ekranda metinlerin ("Hedef Belirlen...") kesilmemesi için flex düzeni optimize edilir.
+- **Kabul:** Notlar sekmesinde başlık tekrarı kalkar; butonlar ve gizlilik kontrolleri modern segmented pill haline gelir.
+
+---
+
+### BÖLÜM 4: Ödevler, Takvim & Programım İnce Ayarı
+
+#### [x] T09 — Ödev Kartı Sadeleştirmesi (Akordeon / İsteğe Bağlı Detay)
+- **Dosya:** `Frontend/src/features/student/homework/StudentHomework.jsx` (+ `.module.css`)
+- **İşlemler:**
+  - Ödev kartında not textarea'sı ve dosya ekleme alanı varsayılan olarak kapalı (akordeon) tutulur.
+  - Kart üzerinde sadece: Başlık, etiket, gecikmiş/bekliyor rozeti, % ilerleme slider'ı ve "Kaydet / Tamamla" butonu görünür.
+  - Not veya dosya eklemek isteyen öğrenci için `[+ Not / Dosya Ekle]` ve `[Ek Süre İste]` butonları yer alır; tıklandığında ilgili alt form açılır.
+  - "Son Teslim: 16 Eki 2026, 00:00" metnindeki gereksiz `, 00:00` saat ifadesi temizlenir (yalnızca özel bir saat girilmişse saat gösterilir).
+- **Kabul:** Bir öğrencinin 5–10 ödevi olduğunda bile ödev listesi temiz bir şekilde taranabilir.
+
+#### [x] T10 — Takvim & Okul Saatleri Şablonu Birleşimi
+- **Dosyalar:** 
+  - `Frontend/src/features/student/calendar/StudentCalendarPage.jsx`
+  - `Frontend/src/features/student/schedule/StudentSchedulePage.jsx`
+- **İşlemler:**
+  - `StudentCalendarPage` içine üst sekme eklenir:
+    - `[📅 Takvimim]`
+    - `[🗓️ Okul & Haftalık Şablon]` (Eski `Programım` sayfası buraya entegre edilir).
+  - Mobil dar ekranda ay görünümündeki kesilen ödev metinleri ("kar...", "inte...") yerine renkli noktalar (`●`) gösterilir; güne tıklandığında etkinlikler takvimin altında tam metin olarak listelenir.
+  - Okul saatleri şablonu girişinde gün seçimi açılır liste yerine `[Pzt] [Sal] [Çar] [Per] [Cum] [Cts] [Paz]` çoklu gün seçim butonları sunularak hafta içi günler tek tıkla şablona eklenebilir.
+- **Kabul:** Programım sekmesi Takvim içine entegre olur; mobil takvim okunabilir hale gelir.
+
+#### [x] T11 — Dosyalarım Sayfası Başlık ve Cihaz Sadeleşmesi
+- **Dosya:** `Frontend/src/features/storage/StoragePage.jsx` (+ `.module.css`)
+- **İşlemler:**
+  - Sayfanın en üstünde yer alan ve öğrenci için kafa karıştırıcı olan `Bu Cihazı Tanı` ve `İndirme Cihazı Seç` büyük butonları kaldırılır.
+  - Cihaz tanıma işlemi uygulama açılışında arka planda sessizce çalışır (T14).
+  - İndirme cihazı seçimi, başlığın yanına tek bir ayar çarkı / senkronizasyon ikonu (`<Settings size={18} />`) olarak küçültülür.
+  - Öğrenci sayfaya girdiğinde doğrudan dosya yükleme ve listeleme alanına odaklanır.
+- **Kabul:** Sayfa üstündeki teknik buton kalabalığı temizlenir.
+
+---
+
+### BÖLÜM 5: Test & Doğrulama
+
+#### [x] T12 — Build, Mobil Simülasyon & Regresyon Testleri
+- **İşlemler:**
+  - `cd Frontend && npm run build` (0 hata, 0 uyarı ile tamamlanmalı).
+  - Mobil viewport (375px, 390px, 414px) üzerinde test:
+    - Alt menünün 5 sekme olarak tam oturması ve hiçbir metnin birbirine girmemesi.
+    - Ana sayfada hiçbir arka plan dekorunun yazıları ve kartları kapatmaması.
+    - Tüm butonların koyu tema paletine uyması.
+  - Backend entegrasyonu ve testleri: `dotnet test` (64/64 test yeşil).
+
+---
+
+## 2. Uygulama Sırası Özeti
+
+1. **Aşama 1 (Navigasyon, Tablet Izgarası & Gök Cisimleri):** T01 (Alt menü 5 sekme) + T01-B (Tablet/PC 2 kolonlu grid) + T02 (Ay sol kenarda %70 boyutta, mobilde dal sayısı yarıya indirgenmiş).
+2. **Aşama 2 (Görsel Tutarlılık):** T03 (Beyaz butonların düzeltilmesi) + T04 (Emojilerin Lucide SVG ikonlara dönüştürülmesi).
+3. **Aşama 3 (Ana Sayfa Ergonomisi):** T05 (Check-in küçülme) + T06 (Sayaç ders seçimi) + T07 (Boş kart gizleme & motivasyon kartı) + T08 (Kişisel notlar pill butonları).
+4. **Aşama 4 (Ödev, Takvim & Dosyalar):** T09 (Ödev akordeon) + T10 (Takvim/Programım birleştirme) + T11 (Dosyalar sayfa sadeleştirmesi & "Bu Cihazı Tanı" butonunun kaldırılması).
+5. **Aşama 5 (Doğrulama):** T12 (Vite build, mobil & tablet kontrolleri ve testler).

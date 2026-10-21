@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
-import { Timer, Zap, Play, Pause, RotateCcw, Check } from 'lucide-react';
+import { Timer, Zap, Play, Pause, RotateCcw, Check, BookOpen } from 'lucide-react';
 import { useCreateStudySession, useStudentCurriculum } from '../studentApi';
 
 import { ChevronDown, ChevronUp } from 'lucide-react';
@@ -93,7 +93,7 @@ export default function StudyTimerCard({ compact = false, collapsible = false })
       onSuccess: () => {
         setShowLogModal(false);
         handleReset();
-        setSuccessMsg('Çalışma oturumu başarıyla kaydedildi! 🎯');
+        setSuccessMsg('Çalışma oturumu başarıyla kaydedildi!');
         setTimeout(() => setSuccessMsg(''), 3000);
       }
     });
@@ -113,7 +113,7 @@ export default function StudyTimerCard({ compact = false, collapsible = false })
       endedAt: new Date().toISOString(),
     }, {
       onSuccess: () => {
-        setSuccessMsg('Hızlı kayıt başarıyla eklendi! ⚡');
+        setSuccessMsg('Hızlı kayıt başarıyla eklendi!');
         setTimeout(() => setSuccessMsg(''), 3000);
       }
     });
@@ -233,7 +233,29 @@ export default function StudyTimerCard({ compact = false, collapsible = false })
       </div>
 
       {activeTab === 'timer' && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: compact ? '0.6rem' : '1rem', padding: compact ? '0.4rem 0' : '1rem 0' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: compact ? '0.5rem' : '0.8rem', padding: compact ? '0.2rem 0' : '0.6rem 0' }}>
+          {/* Hızlı Ders / Konu Seçimi Çipi (T06) */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', maxWidth: '320px', width: '100%' }}>
+            <BookOpen size={14} style={{ color: 'var(--color-primary, #10B981)', flexShrink: 0 }} />
+            <select
+              value={topicId}
+              onChange={(e) => setTopicId(e.target.value)}
+              style={{
+                flex: 1,
+                padding: '4px 8px',
+                borderRadius: '8px',
+                border: '1px solid var(--border-color)',
+                background: 'var(--bg-app)',
+                color: 'var(--text-primary)',
+                fontSize: '0.78rem',
+                outline: 'none',
+              }}
+            >
+              <option value="">Çalışılacak ders/konu seç (opsiyonel)</option>
+              {topics.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
+            </select>
+          </div>
+
           <div style={{
             fontSize: compact ? '2.3rem' : '3.5rem',
             fontFamily: 'monospace',
@@ -408,8 +430,8 @@ export default function StudyTimerCard({ compact = false, collapsible = false })
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <Button type="submit" variant="primary" size="md" isLoading={createSessionMutation.isPending}>
-              ⚡ 5 Saniyede Kaydet
+            <Button type="submit" variant="primary" size="md" isLoading={createSessionMutation.isPending} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <Zap size={15} /> 5 Saniyede Kaydet
             </Button>
           </div>
         </form>

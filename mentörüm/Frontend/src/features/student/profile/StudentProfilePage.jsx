@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   useStudentProfile, 
   useStudentExams, 
@@ -10,11 +11,13 @@ import {
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
+import { Palette, FolderOpen, CheckCircle2, Circle, ChevronRight, Clock, FileText } from 'lucide-react';
 import styles from './StudentProfilePage.module.css';
 
 const fmt = (d) => (d ? String(d).slice(0, 10) : '');
 
 const StudentProfilePage = () => {
+  const navigate = useNavigate();
   const { data: profile, isLoading } = useStudentProfile();
   const { data: exams } = useStudentExams();
   const { data: curriculum } = useStudentCurriculum();
@@ -85,6 +88,65 @@ const StudentProfilePage = () => {
         )}
       </Card>
 
+      {/* Hızlı Erişim: Temalar ve Dosyalar */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+        <button
+          type="button"
+          onClick={() => navigate('/student/theme')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '12px 14px',
+            borderRadius: '12px',
+            border: '1px solid var(--border-color)',
+            background: 'var(--bg-color-surface, var(--bg-card))',
+            color: 'var(--text-color-main)',
+            cursor: 'pointer',
+            textAlign: 'left'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: 34, height: 34, borderRadius: 8, background: 'rgba(16, 185, 129, 0.12)', color: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Palette size={17} />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>Görünüm & Tema</div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-color-muted)' }}>Renkler ve Efektler</div>
+            </div>
+          </div>
+          <ChevronRight size={16} color="var(--text-color-muted)" />
+        </button>
+
+        <button
+          type="button"
+          onClick={() => navigate('/student/storage')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '12px 14px',
+            borderRadius: '12px',
+            border: '1px solid var(--border-color)',
+            background: 'var(--bg-color-surface, var(--bg-card))',
+            color: 'var(--text-color-main)',
+            cursor: 'pointer',
+            textAlign: 'left'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: 34, height: 34, borderRadius: 8, background: 'rgba(59, 130, 246, 0.12)', color: '#3B82F6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <FolderOpen size={17} />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>Dosyalarım</div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-color-muted)' }}>Bulut Depolama</div>
+            </div>
+          </div>
+          <ChevronRight size={16} color="var(--text-color-muted)" />
+        </button>
+      </div>
+
       {/* Hedef */}
       <Card className={styles.card} padding="lg">
         <h3 className={styles.sectionTitle}>Hedefim</h3>
@@ -131,7 +193,7 @@ const StudentProfilePage = () => {
           {curriculum?.map((t) => (
             <div key={t.id} className={styles.topicRow}>
               <span className={t.isCompleted ? styles.topicDone : styles.topicOpen}>
-                {t.isCompleted ? '✅' : '⬜'}
+                {t.isCompleted ? <CheckCircle2 size={16} style={{ color: 'var(--color-success, #10B981)' }} /> : <Circle size={16} style={{ color: 'var(--text-color-muted, #94A3B8)' }} />}
               </span>
               <div className={styles.topicInfo}>
                 <span className={styles.topicName}>{t.topicName}</span>
@@ -151,10 +213,12 @@ const StudentProfilePage = () => {
             <Card key={idx} className={styles.row} padding="md" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <strong>{st.subjectName} — {st.topicName}</strong>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                  ⏱️ Toplam {st.totalMinutes || 0} dk · 📝 {st.totalQuestions || 0} Soru
-                  <span style={{ marginLeft: '8px' }}>
-                    (✅ {st.totalCorrect || 0} D / ❌ {st.totalWrong || 0} Y / ⭕ {st.totalBlank || 0} B)
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><Clock size={13} /> {st.totalMinutes || 0} dk</span>
+                  <span>·</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><FileText size={13} /> {st.totalQuestions || 0} Soru</span>
+                  <span style={{ marginLeft: '4px', fontSize: '0.78rem' }}>
+                    ({st.totalCorrect || 0} D / {st.totalWrong || 0} Y / {st.totalBlank || 0} B)
                   </span>
                 </div>
               </div>

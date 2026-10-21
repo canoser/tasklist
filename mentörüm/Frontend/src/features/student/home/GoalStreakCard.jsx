@@ -29,27 +29,26 @@ export default function GoalStreakCard({ variant = 'default' }) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        background: 'var(--bg-card)',
+        background: 'var(--bg-color-surface, var(--bg-card))',
         border: '1px solid var(--border-color)',
         borderRadius: '12px',
         padding: '8px 12px',
         gap: '8px',
-        overflowX: 'auto',
         fontSize: '0.78rem'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, color: '#f59e0b', whiteSpace: 'nowrap' }}>
-          <Flame size={16} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 700, color: '#f59e0b', whiteSpace: 'nowrap', flexShrink: 0 }}>
+          <Flame size={15} />
           <span>{streak.currentStreak} Gün Seri</span>
         </div>
         <div style={{ width: 1, height: 16, background: 'var(--border-color)', flexShrink: 0 }} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, color: '#3b82f6', whiteSpace: 'nowrap' }}>
-          <CalendarClock size={16} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 600, color: '#3b82f6', whiteSpace: 'nowrap', flexShrink: 0 }}>
+          <CalendarClock size={15} />
           <span>{daysLeft} Gün Sınava</span>
         </div>
         <div style={{ width: 1, height: 16, background: 'var(--border-color)', flexShrink: 0 }} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, color: 'var(--color-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          <Target size={15} />
-          <span style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{targetSummary}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 600, color: 'var(--color-primary)', minWidth: 0, flex: 1, overflow: 'hidden' }}>
+          <Target size={14} style={{ flexShrink: 0 }} />
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{targetSummary}</span>
         </div>
       </div>
     );

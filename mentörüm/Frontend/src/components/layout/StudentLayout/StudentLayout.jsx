@@ -30,7 +30,7 @@ const StudentLayout = () => {
     navigate('/login');
   };
 
-  const tabs = [
+  const sidebarTabs = [
     { path: '/student/home', label: 'Ana Sayfa', icon: Home },
     { path: '/student/calendar', label: 'Takvim', icon: Calendar },
     { path: '/student/schedule', label: 'Programım', icon: CalendarDays },
@@ -38,6 +38,14 @@ const StudentLayout = () => {
     { path: '/student/homework', label: 'Ödevler', icon: CheckSquare },
     { path: '/student/storage', label: 'Dosyalar', icon: FolderOpen },
     { path: '/student/theme', label: 'Temalar', icon: Palette },
+    { path: '/student/profile', label: 'Profil', icon: User },
+  ];
+
+  const bottomNavTabs = [
+    { path: '/student/home', label: 'Ana Sayfa', icon: Home },
+    { path: '/student/calendar', label: 'Takvim', icon: Calendar },
+    { path: '/student/courses', label: 'Derslerim', icon: BookOpen },
+    { path: '/student/homework', label: 'Ödevler', icon: CheckSquare },
     { path: '/student/profile', label: 'Profil', icon: User },
   ];
 
@@ -62,7 +70,7 @@ const StudentLayout = () => {
         </div>
 
         <nav className={styles.sidebarNav}>
-          {tabs.map((tab) => {
+          {sidebarTabs.map((tab) => {
             const IconComponent = tab.icon;
             return (
               <NavLink
@@ -107,6 +115,9 @@ const StudentLayout = () => {
           </div>
 
           <div className={styles.topbarActions}>
+            <NavLink to="/student/theme" className={styles.themeBtn} title="Temayı Değiştir">
+              <Palette size={18} />
+            </NavLink>
             <NotificationDropdown />
             <button className={styles.mobileLogoutBtn} onClick={handleLogout} title="Çıkış Yap">
               <LogOut size={18} />
@@ -119,9 +130,9 @@ const StudentLayout = () => {
           <Outlet />
         </main>
 
-        {/* Mobil Alt Menü Barı (< 768px) */}
+        {/* Mobil Alt Menü Barı (< 768px - Tam 5 Ergonomik Sekme) */}
         <nav className={styles.bottomNav}>
-          {tabs.map((tab) => {
+          {bottomNavTabs.map((tab) => {
             const IconComponent = tab.icon;
             return (
               <NavLink

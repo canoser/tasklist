@@ -1,0 +1,38 @@
+/* SkyDecor.module.css - Responsive Celestial Positioning & Twinkle Effects */
+
+.starsLayer {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.celestialContainer {
+  position: fixed;
+  pointer-events: none;
+  z-index: 0;
+  transition: all 0.4s ease;
+}
+
+/* ── MOBIL: Ekranın solunda ve %70 boyutta (~182px) ── */
+@media (max-width: 767px) {
+  .celestialContainer {
+    left: 16px;
+    top: 68px;
+    width: 182px;
+    height: 182px;
+    opacity: 0.35;
+  }
+}
+
+/* ── TABLET & MASAÜSTÜ: Sidebar (250px) yanında dengeli ofset ── */
+@media (min-width: 768px) {
+  .celestialContainer {
+    left: 270px;
+    top: 72px;
+    width: 260px;
+    height: 260px;
+  }
+}

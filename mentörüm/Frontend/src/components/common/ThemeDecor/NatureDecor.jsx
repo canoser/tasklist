@@ -1,19 +1,9 @@
 import React from 'react';
+import styles from './NatureDecor.module.css';
  
- export default function NatureDecor() {
-   return (
-     <div
-       style={{
-         position: 'fixed',
-         top: 0,
-         left: 0,
-         width: '100%',
-         height: '100%',
-         pointerEvents: 'none',
-         zIndex: 0,
-         overflow: 'hidden',
-       }}
-     >
+export default function NatureDecor() {
+  return (
+    <div className={styles.container}>
 
 
       {/* Yavaş Doğal Salınım Animasyonları */}
@@ -94,19 +84,10 @@ import React from 'react';
         </defs>
       </svg>
 
-      {/* ── ORTA BÖLGE DALLARI (Kutuların arkasından süzülür) ── */}
+      {/* ── ORTA BÖLGE DALLARI (Mobilde gizlenerek dal yoğunluğu yarıya iner) ── */}
       {/* 1. Orta-Sol Dal */}
       <svg
-        style={{
-          position: 'absolute',
-          top: '-30px',
-          left: '40%',
-          height: '100%',
-          width: '105px',
-          transformOrigin: 'top center',
-          animation: 'natureSwayMid1 21s ease-in-out infinite',
-          opacity: 0.22,
-        }}
+        className={styles.branchMid1}
         viewBox="0 0 140 852"
         fill="none"
         preserveAspectRatio="none"
@@ -116,16 +97,7 @@ import React from 'react';
 
       {/* 2. Orta Dal (Aynalanmış) */}
       <svg
-        style={{
-          position: 'absolute',
-          top: '-60px',
-          left: '56%',
-          height: '100%',
-          width: '115px',
-          transformOrigin: 'top center',
-          animation: 'natureSwayMid2 25s ease-in-out infinite',
-          opacity: 0.26,
-        }}
+        className={styles.branchMid2}
         viewBox="0 0 140 852"
         fill="none"
         preserveAspectRatio="none"
@@ -135,16 +107,7 @@ import React from 'react';
 
       {/* 3. Orta-Sağ Dal */}
       <svg
-        style={{
-          position: 'absolute',
-          top: '-20px',
-          left: '72%',
-          height: '100%',
-          width: '120px',
-          transformOrigin: 'top center',
-          animation: 'natureSwayMid3 17s ease-in-out infinite',
-          opacity: 0.28,
-        }}
+        className={styles.branchMid3}
         viewBox="0 0 140 852"
         fill="none"
         preserveAspectRatio="none"
@@ -152,19 +115,10 @@ import React from 'react';
         <use href="#natureBotanicalBranch" />
       </svg>
 
-      {/* ── SAĞ BÖLGE DALLARI ── */}
-      {/* Arka Plan Dalı (Daha saydam, hafif kaydırılmış, 20s yavaş salınım) */}
+      {/* ── SAĞ BÖLGE DALLARI (Her ekranda zarif kenar dekoru olarak kalır) ── */}
+      {/* Arka Plan Dalı */}
       <svg
-        style={{
-          position: 'absolute',
-          top: 0,
-          right: '30px',
-          height: '100%',
-          width: '120px',
-          transformOrigin: 'top right',
-          animation: 'natureSwayBack 20s ease-in-out infinite',
-          opacity: 0.35,
-        }}
+        className={styles.branchBackRight}
         viewBox="0 0 140 852"
         fill="none"
         preserveAspectRatio="none"
@@ -172,18 +126,9 @@ import React from 'react';
         <use href="#natureBotanicalBranch" />
       </svg>
 
-      {/* Ön Plan Dalı (Ana dal, 14s yavaş salınım) */}
+      {/* Ön Plan Dalı */}
       <svg
-        style={{
-          position: 'absolute',
-          top: 0,
-          right: 0,
-          height: '100%',
-          width: '140px',
-          transformOrigin: 'top right',
-          animation: 'natureSwayMain 14s ease-in-out infinite',
-          opacity: 0.7,
-        }}
+        className={styles.branchMainRight}
         viewBox="0 0 140 852"
         fill="none"
         preserveAspectRatio="none"

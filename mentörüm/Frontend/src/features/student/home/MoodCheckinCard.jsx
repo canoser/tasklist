@@ -14,6 +14,7 @@ export default function MoodCheckinCard({ compact = false }) {
   const { data: checkins = [] } = useStudentCheckins();
   const saveCheckin = useSaveCheckin();
   const [msg, setMsg] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
 
   const latest = checkins[0];
   const isToday = !!latest && new Date(latest.checkinDate).toDateString() === new Date().toDateString();
@@ -22,12 +23,47 @@ export default function MoodCheckinCard({ compact = false }) {
     try {
       await saveCheckin.mutateAsync({ mood });
       setMsg('Durumun kaydedildi.');
+      setIsEditing(false);
       setTimeout(() => setMsg(''), 2500);
     } catch {
       setMsg('Kaydedilemedi.');
       setTimeout(() => setMsg(''), 2500);
     }
   };
+
+  // Eğer bugün check-in yapılmışsa ve düzenleme modunda değilse tek satırlık kompakt bant göster
+  if (isToday && !isEditing) {
+    const currentMood = MOODS.find((m) => m.id === latest.mood) || MOODS[1];
+    const Icon = currentMood.icon;
+    return (
+      <Card padding="sm" style={{ border: '1px solid var(--border-color)', background: 'var(--bg-color-surface, var(--bg-card))' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '0.78rem', color: 'var(--text-color-muted, var(--text-secondary))' }}>Bugünkü modun:</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '0.82rem', fontWeight: 700, color: currentMood.color }}>
+              <Icon size={15} /> {currentMood.label}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsEditing(true)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'var(--color-primary, #10B981)',
+              fontSize: '0.75rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              padding: '4px 8px',
+              borderRadius: '6px',
+            }}
+          >
+            Değiştir
+          </button>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card padding={compact ? 'sm' : 'md'}>

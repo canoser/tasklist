@@ -78,15 +78,15 @@ export default function StudentThemePage() {
             {/* Minyatür Şema Önizlemesi */}
             <div className={styles.miniPreview}>
               <div className="miniStrip" style={{ height: 14, background: 'rgba(245, 158, 11, 0.2)', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-around', fontSize: '9px', color: '#fbbf24', fontWeight: 700 }}>
-                <span>🔥 0G Seri</span>
-                <span>⏳ 243G Sınav</span>
+                <span>0G Seri</span>
+                <span>243G Sınav</span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
-                <div style={{ height: 20, background: 'rgba(255,255,255,0.08)', borderRadius: 4, display: 'flex', alignItems: 'center', padding: '0 4px', fontSize: '8px' }}>📖 1 Ödev</div>
-                <div style={{ height: 20, background: 'rgba(255,255,255,0.08)', borderRadius: 4, display: 'flex', alignItems: 'center', padding: '0 4px', fontSize: '8px' }}>🎯 %50 Oran</div>
+                <div style={{ height: 20, background: 'rgba(255,255,255,0.08)', borderRadius: 4, display: 'flex', alignItems: 'center', padding: '0 4px', fontSize: '8px' }}>1 Bekleyen Ödev</div>
+                <div style={{ height: 20, background: 'rgba(255,255,255,0.08)', borderRadius: 4, display: 'flex', alignItems: 'center', padding: '0 4px', fontSize: '8px' }}>%50 Tamamlama</div>
               </div>
               <div style={{ height: 22, background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, display: 'flex', alignItems: 'center', padding: '0 6px', fontSize: '8px', color: '#34d399' }}>
-                📝 Yaklaşan Ödevler (Hemen İncele)
+                Yaklaşan Ödevler (Hemen İncele)
               </div>
             </div>
           </div>
@@ -119,10 +119,10 @@ export default function StudentThemePage() {
                 <div style={{ height: 20, background: 'rgba(59,130,246,0.2)', borderRadius: 3, textAlign: 'center', fontSize: '8px', lineHeight: '20px', color: '#60a5fa', fontWeight: 700 }}>243g</div>
               </div>
               <div style={{ height: 22, background: 'rgba(255,255,255,0.06)', borderRadius: 4, display: 'flex', alignItems: 'center', padding: '0 6px', fontSize: '8px' }}>
-                🎯 Hedef: SAY · 95 Net
+                Hedef: SAY · 95 Net
               </div>
               <div style={{ height: 22, background: 'rgba(255,255,255,0.06)', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 6px', fontSize: '8px' }}>
-                <span>⏱️ Kronometre Hazır</span>
+                <span>Kronometre Hazır</span>
                 <span style={{ color: '#10b981', fontWeight: 700 }}>Başlat</span>
               </div>
             </div>

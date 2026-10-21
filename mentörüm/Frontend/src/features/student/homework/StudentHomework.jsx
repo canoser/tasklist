@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import axios from 'axios';
-import { Clock, Paperclip, X, Image as ImageIcon } from 'lucide-react';
+import { Clock, Paperclip, X, Image as ImageIcon, MessageSquare, Check, ChevronUp } from 'lucide-react';
 import { useStudentHomework, useCompleteHomework, useRequestExtension } from '../studentApi';
 import { useCreateUploadUrl, useConfirmUpload } from '../../storage/storageApi';
 import { compressImage } from '../../../utils/imageCompressor';
@@ -9,9 +9,18 @@ import Button from '../../../components/common/Button/Button';
 import { formatDate } from '../../../utils/dateUtils';
 import styles from './StudentHomework.module.css';
 
+// 00:00 saatlerini temizleyen akıllı tarih formatlayıcı (T09)
+const formatDueDate = (dateStr) => {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  const hasTime = d.getHours() !== 0 || d.getMinutes() !== 0;
+  return formatDate(dateStr, hasTime ? 'dd MMM yyyy, HH:mm' : 'dd MMM yyyy');
+};
+
 const HomeworkCard = ({ hw, onComplete, onRequestExtension }) => {
   const [percentage, setPercentage] = useState(hw.completionPercentage || 0);
   const [note, setNote] = useState(hw.studentNote || '');
+  const [showNoteDetails, setShowNoteDetails] = useState(Boolean(hw.studentNote));
   const [showExtension, setShowExtension] = useState(false);
   const [reason, setReason] = useState('');
   const [attachments, setAttachments] = useState([]);
@@ -39,6 +48,7 @@ const HomeworkCard = ({ hw, onComplete, onRequestExtension }) => {
       await axios.put(res.uploadUrl, fileToUpload, { headers: { 'Content-Type': fileToUpload.type } });
       await confirmUpload.mutateAsync(res.uploadId);
       setAttachments((prev) => [...prev, { id: res.uploadId, name: fileToUpload.name }]);
+      setShowNoteDetails(true);
     } catch (err) {
       alert('Dosya yüklenemedi: ' + (err?.message || 'Hata'));
     } finally {
@@ -82,13 +92,49 @@ const HomeworkCard = ({ hw, onComplete, onRequestExtension }) => {
         />
       </div>
 
-      <textarea
-        value={note}
-        onChange={(e) => setNote(e.target.value)}
-        rows={2}
-        placeholder="Zorlandığın noktalar / koçuna not (opsiyonel)"
-        style={{ width: '100%', marginTop: '8px', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'rgba(255, 255, 255, 0.03)', color: 'var(--text-primary)', colorScheme: 'dark', resize: 'vertical', fontSize: '0.85rem' }}
-      />
+      {/* İsteğe Bağlı Not & Dosya Ekleme Akordeonu (T09) */}
+      {showNoteDetails ? (
+        <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-color-muted, var(--text-secondary))', fontWeight: 600 }}>Ödev Notu & Ekleri</span>
+            <button
+              type="button"
+              onClick={() => setShowNoteDetails(false)}
+              style={{ background: 'none', border: 'none', color: 'var(--text-color-muted)', cursor: 'pointer', fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: '2px' }}
+            >
+              <ChevronUp size={14} /> Kapat
+            </button>
+          </div>
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            rows={2}
+            placeholder="Zorlandığın noktalar / koçuna not (opsiyonel)"
+            style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-app)', color: 'var(--text-primary)', resize: 'vertical', fontSize: '0.82rem' }}
+          />
+        </div>
+      ) : (
+        <div style={{ marginTop: '6px' }}>
+          <button
+            type="button"
+            onClick={() => setShowNoteDetails(true)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'var(--color-primary, #10B981)',
+              fontSize: '0.78rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              padding: '2px 0',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            <MessageSquare size={13} /> {note ? 'Notu / Ekleri Düzenle' : '+ Not veya Dosya Ekle'}
+          </button>
+        </div>
+      )}
 
       {/* Eklenen Dosyalar Çipleri */}
       {attachments.length > 0 && (
@@ -126,7 +172,7 @@ const HomeworkCard = ({ hw, onComplete, onRequestExtension }) => {
 
       <div className={styles.cardFooter}>
         <div className={styles.dueDate}>
-          Son Teslim: {formatDate(hw.dueDate, 'dd MMM yyyy, HH:mm')}
+          Son Teslim: {formatDueDate(hw.dueDate)}
         </div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <input
@@ -243,8 +289,8 @@ const StudentHomework = () => {
                     )}
                     <h3 className={styles.hwTitleCompleted}>{hw.snapshotTitle}</h3>
                   </div>
-                  <span className={styles.statusBadgeDone}>
-                    ✓ Tamamlandı
+                  <span className={styles.statusBadgeDone} style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                    <Check size={13} /> Tamamlandı
                   </span>
                 </div>
                 <div className={styles.dueDate}>

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import axios from 'axios';
 import { useUploads, useRecipients, useStorageUsage, useCreateUploadUrl, useConfirmUpload, useRegisterDevice, useDownloadUrl } from './storageApi';
 import { compressImage } from '../../utils/imageCompressor';
@@ -9,6 +9,7 @@ import { useStudents } from '../coach/coachApi';
 import { useTeacherCourses, useTeacherCourseStudents } from '../teacher/teacherApi';
 import LocalImageViewer from '../../components/common/LocalImageViewer/LocalImageViewer';
 import DevicePickerModal from '../../components/common/DevicePickerModal/DevicePickerModal';
+import { Settings, Upload, Image as ImageIcon, FileText, AlertTriangle, ExternalLink } from 'lucide-react';
 import styles from './StoragePage.module.css';
 
 const IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
@@ -30,6 +31,13 @@ export default function StoragePage() {
     const [pickerOpen, setPickerOpen] = useState(false);
     const [uploading, setUploading] = useState(false);
     const fileRef = useRef(null);
+
+    // Cihaz tanıma: Kullanıcı sayfaya geldiğinde arka planda sessizce kaydedilir (T11 & T14)
+    useEffect(() => {
+        registerCurrentDevice()
+            .then((d) => registerDevice.mutate(d))
+            .catch(() => {});
+    }, []);
 
     // Öğrenci için ders listesi ve alıcı seçenekleri
     const { data: studentCourses = [] } = useStudentCourses();
@@ -93,37 +101,43 @@ export default function StoragePage() {
         }
     }
 
-    async function handleRegisterDevice() {
-        try {
-            const d = await registerCurrentDevice();
-            await registerDevice.mutateAsync(d);
-            alert('Bu cihaz başarıyla kaydedildi.');
-        } catch {
-            alert('Cihaz kaydedilemedi.');
-        }
-    }
-
     return (
         <div className={styles.page}>
             <div className={styles.header}>
                 <div>
-                    <h2 className={styles.heading}>Dosyalarım</h2>
-                    <p className={styles.subheading}>Resimler, ödev ekleri ve paylaşılan ders belgeleri</p>
-                </div>
-                <div className={styles.headerActions}>
-                    <button className={styles.btnSecondary} onClick={handleRegisterDevice}>
-                        📱 Bu Cihazı Tanı
-                    </button>
-                    <button className={styles.btnSecondary} onClick={() => setPickerOpen(true)}>
-                        ⚙️ İndirme Cihazı Seç
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <h2 className={styles.heading} style={{ margin: 0 }}>Dosyalarım</h2>
+                        <button 
+                            type="button" 
+                            className={styles.settingsIconBtn} 
+                            onClick={() => setPickerOpen(true)}
+                            title="İndirme Cihazı Ayarı"
+                            style={{
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                border: '1px solid var(--border-color)',
+                                borderRadius: '8px',
+                                padding: '6px',
+                                color: 'var(--text-color-muted, #94A3B8)',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                            }}
+                        >
+                            <Settings size={17} />
+                        </button>
+                    </div>
+                    <p className={styles.subheading} style={{ marginTop: '4px' }}>Resimler, ödev ekleri ve paylaşılan ders belgeleri</p>
                 </div>
             </div>
 
             {usage?.shouldWarn && (
-                <div className={styles.warn}>
-                    ⚠️ Depolama alanınız %{usage.usedPercent} dolu ({usage.usedMb} MB / {usage.quotaMb} MB).{' '}
-                    {usage.storageMode === 'LOCAL' ? 'Cihazınıza indirerek bulutta yer açabilirsiniz.' : 'Kota sınırına yaklaşıyorsunuz.'}
+                <div className={styles.warn} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <AlertTriangle size={16} style={{ flexShrink: 0 }} />
+                    <span>
+                        Depolama alanınız %{usage.usedPercent} dolu ({usage.usedMb} MB / {usage.quotaMb} MB).{' '}
+                        {usage.storageMode === 'LOCAL' ? 'Cihazınıza indirerek bulutta yer açabilirsiniz.' : 'Kota sınırına yaklaşıyorsunuz.'}
+                    </span>
                 </div>
             )}
 
@@ -215,8 +229,10 @@ export default function StoragePage() {
                         className={styles.btnPrimary} 
                         disabled={uploading} 
                         onClick={() => fileRef.current?.click()}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                     >
-                        {uploading ? 'Yükleniyor…' : '📤 Dosya Yükle'}
+                        <Upload size={15} />
+                        <span>{uploading ? 'Yükleniyor…' : 'Dosya Yükle'}</span>
                     </button>
                     <input 
                         ref={fileRef} 
@@ -235,14 +251,16 @@ export default function StoragePage() {
                 <button 
                     className={tab === 'images' ? styles.tabActive : styles.tab} 
                     onClick={() => setTab('images')}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                 >
-                    🖼️ Resimler ({uploads.filter((u) => IMAGE_TYPES.includes(u.contentType)).length})
+                    <ImageIcon size={15} /> Resimler ({uploads.filter((u) => IMAGE_TYPES.includes(u.contentType)).length})
                 </button>
                 <button 
                     className={tab === 'docs' ? styles.tabActive : styles.tab} 
                     onClick={() => setTab('docs')}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                 >
-                    📄 Belgeler ({uploads.filter((u) => DOC_TYPES.includes(u.contentType)).length})
+                    <FileText size={15} /> Belgeler ({uploads.filter((u) => DOC_TYPES.includes(u.contentType)).length})
                 </button>
             </div>
 
@@ -284,9 +302,11 @@ function DocItem({ upload }) {
 
     return (
         <button className={styles.docBtn} onClick={handleOpen}>
-            <span className={styles.docIcon}>📄</span>
+            <span className={styles.docIcon} style={{ display: 'inline-flex', alignItems: 'center' }}><FileText size={16} /></span>
             <span className={styles.docName}>{upload.originalName}</span>
-            <span className={styles.docAction}>Aç / İndir ↗</span>
+            <span className={styles.docAction} style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                Aç / İndir <ExternalLink size={12} />
+            </span>
         </button>
     );
 }

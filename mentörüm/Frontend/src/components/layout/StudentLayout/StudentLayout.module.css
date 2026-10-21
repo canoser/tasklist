@@ -211,25 +211,36 @@
 .topbarActions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
+.themeBtn,
 .notificationBtn,
 .mobileLogoutBtn {
   position: relative;
-  font-size: 1.15rem;
-  color: var(--text-color-muted, #64748B);
+  font-size: 1.1rem;
+  color: var(--text-color-muted, #94A3B8);
   padding: 8px;
   border-radius: 50%;
-  background-color: #F1F5F9;
-  border: none;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  text-decoration: none;
 }
 
+.themeBtn:hover,
+.notificationBtn:hover,
+.mobileLogoutBtn:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+  color: var(--text-color-main, #FFFFFF);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.themeBtn:active,
 .notificationBtn:active,
 .mobileLogoutBtn:active {
   transform: scale(0.95);
@@ -249,7 +260,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  border: 2px solid #FFFFFF;
+  border: 2px solid var(--bg-color-surface, #1E293B);
 }
 
 /* ===============================
@@ -263,7 +274,7 @@
 }
 
 /* ===============================
-   MOBILE BOTTOM NAV (< 768px)
+   MOBILE BOTTOM NAV (< 768px - 5 Ergonomik Sekme)
    =============================== */
 .bottomNav {
   position: fixed;
@@ -272,7 +283,10 @@
   right: 0;
   height: 64px;
   background-color: var(--bg-color-surface, #FFFFFF);
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -281,13 +295,6 @@
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
   z-index: 50;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-
-.bottomNav::-webkit-scrollbar {
-  display: none;
 }
 
 .tab {
@@ -296,40 +303,40 @@
   align-items: center;
   justify-content: center;
   flex: 1;
-  min-width: 46px;
-  flex-shrink: 0;
+  min-width: 0;
   height: 100%;
-  color: var(--text-color-muted, #64748B);
-  transition: all 0.2s;
+  color: var(--text-color-muted, #94A3B8);
+  transition: all 0.2s ease;
   text-decoration: none;
-  padding: 4px 2px;
+  padding: 4px 1px;
 }
 
 .tabIcon {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
   transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .tabLabel {
-  font-size: 0.65rem;
+  font-size: 0.68rem;
   font-weight: 500;
   white-space: nowrap;
+  letter-spacing: -0.2px;
 }
 
 .tabActive {
-  color: #10B981;
+  color: var(--color-primary, #10B981);
 }
 
 .tabActive .tabIcon {
-  transform: translateY(-3px);
-  color: #10B981;
+  transform: translateY(-2px);
+  color: var(--color-primary, #10B981);
 }
 
 .tabActive .tabLabel {
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* ===============================
