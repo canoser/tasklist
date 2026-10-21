@@ -220,6 +220,29 @@ V9, V10 ve V11 sürümleriyle sistemin backend, veritabanı, güvenlik (IDOR) ve
 
 ---
 
+### BÖLÜM 7: V12.2 İnce Ayarları (Tema Sekmeleri, Sistem Modu, Konu Takibi & Video/Kaynak Tikleme)
+
+#### [x] T17 — Görünüm & Tema Sayfasının Sekmeli Hale Getirilmesi, Sistem Modu & Birebir Gerçekçi Önizleme
+- **Dosyalar:** 
+  - `Frontend/src/store/uiStore.js`
+  - `Frontend/src/features/student/theme/StudentThemePage.jsx` (+ `.module.css`)
+- **İşlemler:**
+  - Sayfa üstüne 3 sekmeli navigasyon eklendi: `[ 📐 Yerleşim Düzeni ]` | `[ 🌓 Görünüm Modu ]` | `[ 🎨 Tema & Stil ]`. Sayfa gereksiz dikey uzamadan kurtarıldı.
+  - Görünüm modu seçeneklerine `[ 💻 Cihazla Aynı (Sistem) ]` modu eklendi; `window.matchMedia('(prefers-color-scheme: dark)')` ile gerçek zamanlı senkronize edildi.
+  - *Yerleşim Düzeni* sekmesindeki minyatür şemalar, gerçek ana sayfadaki kart hiyerarşisiyle (Kronometre $\rightarrow$ Mod $\rightarrow$ Notlar $\rightarrow$ Alt Seri/Sınav Şeridi) birebir örtüşecek şekilde güncellendi.
+
+#### [x] T18 — Konu Takibinin "Derslerim" Ekranına Taşınması & Kaynak/Video Ders Tikleme
+- **Dosyalar:**
+  - `Frontend/src/features/student/profile/StudentProfilePage.jsx`
+  - `Frontend/src/features/student/courses/StudentCoursesPage.jsx` (+ `.module.css`)
+- **İşlemler:**
+  - `StudentProfilePage` içinden "Konu Takibi" sekmesi kaldırıldı.
+  - `StudentCoursesPage` içine iki üst sekme eklendi: `[ 📚 Derslerim, Kaynaklar & Video Dersler ]` ve `[ 🎯 Müfredat & Konu Takibi ]`.
+  - Müfredat sekmesinde genel ilerleme çubuğu (`{completedTopics}/{totalTopics}`), ders filtreleme butonları ve konu listesi sunuldu.
+  - Kaynaklar ve video dersler listesine interaktif tamamlama tik butonu (`<CheckCircle2 />` / `<Circle />`) eklendi; öğrenci tek tıkla kaynağı veya video dersi tamamlandı olarak işaretleyebilir.
+
+---
+
 ## 2. Uygulama Sırası Özeti
 
 1. **Aşama 1 (Navigasyon, Tablet Izgarası & Gök Cisimleri):** T01 + T01-B + T02 [Tamamlandı].
@@ -227,4 +250,5 @@ V9, V10 ve V11 sürümleriyle sistemin backend, veritabanı, güvenlik (IDOR) ve
 3. **Aşama 3 (Ana Sayfa Ergonomisi):** T05 + T06 + T07 + T08 [Tamamlandı].
 4. **Aşama 4 (Ödev, Takvim & Dosyalar):** T09 + T10 + T11 [Tamamlandı].
 5. **Aşama 5 (Doğrulama & Commit):** T12 [Tamamlandı].
-6. **Aşama 6 (V12.1 Ek İyileştirmeler):** T13 (Dosyalarım virüs uyarısı & `i` ikonu) + T14 (Profil ana sayfa yerleşim uyumsuzluğu düzeltmesi) + T15 (Sağ üst gökyüzü, SVG mask ay ve parıltı) + T16 (Doğrulama & Derleme) [Tamamlandı].
+6. **Aşama 6 (V12.1 Ek İyileştirmeler):** T13 + T14 + T15 + T16 [Tamamlandı].
+7. **Aşama 7 (V12.2 Tema Sekmeleri, Sistem Modu & Derslerim Tikleme):** T17 + T18 [Tamamlandı].

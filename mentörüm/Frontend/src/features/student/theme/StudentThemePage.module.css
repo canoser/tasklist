@@ -184,10 +184,51 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
-/* Mod Değiştirici (Açık/Koyu) */
+/* Sekmeli Navigasyon (Açılır Sekmeler) */
+.themeTabs {
+  display: flex;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  margin-bottom: var(--spacing-sm, 8px);
+}
+
+.themeTabBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-color-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.themeTabBtn:hover {
+  color: var(--text-color-main);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.themeTabBtnActive {
+  background: var(--bg-color-surface, var(--bg-card)) !important;
+  color: var(--text-color-main) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border-color);
+}
+
+/* Mod Değiştirici (Açık / Koyu / Sistem) */
 .modeSelector {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 12px;
 }
 

@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { 
   useStudentProfile, 
   useStudentExams, 
-  useStudentCurriculum, 
   useStudentGoal, 
   useUpdateStudentGoal,
   useStudentSubjectStats 
@@ -11,7 +10,7 @@ import {
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
-import { Palette, FolderOpen, CheckCircle2, Circle, ChevronRight, Clock, FileText } from 'lucide-react';
+import { Palette, FolderOpen, ChevronRight, Clock, FileText } from 'lucide-react';
 import styles from './StudentProfilePage.module.css';
 
 const fmt = (d) => (d ? String(d).slice(0, 10) : '');
@@ -20,7 +19,6 @@ const StudentProfilePage = () => {
   const navigate = useNavigate();
   const { data: profile, isLoading } = useStudentProfile();
   const { data: exams } = useStudentExams();
-  const { data: curriculum } = useStudentCurriculum();
   const { data: subjectStats = [] } = useStudentSubjectStats();
   const { data: goal } = useStudentGoal();
   const updateGoal = useUpdateStudentGoal();
@@ -53,10 +51,6 @@ const StudentProfilePage = () => {
       setGoalMsg('Güncelleme başarısız.');
     }
   };
-
-  // Konu takibi: tamamlanan / toplam
-  const completed = curriculum?.filter((t) => t.isCompleted)?.length || 0;
-  const total = curriculum?.length || 0;
 
   if (isLoading) return <div className={styles.container}><p>Yükleniyor...</p></div>;
 
@@ -164,9 +158,6 @@ const StudentProfilePage = () => {
         <button className={tab === 'exams' ? `${styles.tab} ${styles.tabActive}` : styles.tab} onClick={() => setTab('exams')}>
           Sınav Sonuçları
         </button>
-        <button className={tab === 'curriculum' ? `${styles.tab} ${styles.tabActive}` : styles.tab} onClick={() => setTab('curriculum')}>
-          Konu Takibi ({completed}/{total})
-        </button>
         <button className={tab === 'subjectStats' ? `${styles.tab} ${styles.tabActive}` : styles.tab} onClick={() => setTab('subjectStats')}>
           Konu İstatistikleri ({subjectStats.length})
         </button>
@@ -183,23 +174,6 @@ const StudentProfilePage = () => {
               </div>
               <span className={styles.net}>Net: {e.totalNet ?? '-'}</span>
             </Card>
-          ))}
-        </div>
-      )}
-
-      {tab === 'curriculum' && (
-        <div>
-          {curriculum?.length === 0 && <p className={styles.empty}>Sınıfınıza ait müfredat bulunamadı.</p>}
-          {curriculum?.map((t) => (
-            <div key={t.id} className={styles.topicRow}>
-              <span className={t.isCompleted ? styles.topicDone : styles.topicOpen}>
-                {t.isCompleted ? <CheckCircle2 size={16} style={{ color: 'var(--color-success, #10B981)' }} /> : <Circle size={16} style={{ color: 'var(--text-color-muted, #94A3B8)' }} />}
-              </span>
-              <div className={styles.topicInfo}>
-                <span className={styles.topicName}>{t.topicName}</span>
-                <span className={styles.meta}>{t.subjectName} · {t.grade}</span>
-              </div>
-            </div>
           ))}
         </div>
       )}

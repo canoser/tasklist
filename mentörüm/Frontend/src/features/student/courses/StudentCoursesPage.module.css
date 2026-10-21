@@ -1,10 +1,310 @@
-.container { padding: var(--spacing-md); }
-.title { font-size: 1.5rem; font-weight: 700; margin-bottom: var(--spacing-md); }
-.list { display: flex; flex-direction: column; gap: var(--spacing-sm); }
-.card { margin: 0 0 var(--spacing-sm) 0; cursor: pointer; }
-.type { font-size: 0.8rem; color: var(--text-color-muted); margin-left: 8px; }
-.resList { display: flex; flex-direction: column; gap: var(--spacing-sm); margin-top: var(--spacing-sm); }
-.progressBar { height: 8px; background: #E2E8F0; border-radius: 4px; margin: 8px 0; overflow: hidden; }
-.progressFill { height: 100%; background: var(--color-success); border-radius: 4px; }
-.actions { display: flex; align-items: center; justify-content: space-between; }
-.pct { font-size: 0.85rem; color: var(--text-color-muted); }
+/* StudentCoursesPage.module.css - Tabs, Resources, Video Lessons & Curriculum Topic Tracking */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md, 16px);
+  padding: var(--spacing-md, 16px);
+  padding-bottom: 96px; /* safe-area for mobile bottom bar */
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: var(--spacing-xs, 4px);
+}
+
+.title {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--text-color-main);
+  margin-bottom: 2px;
+}
+
+.subtitle {
+  font-size: 0.82rem;
+  color: var(--text-color-muted);
+}
+
+/* Üst Sekmeli Navigasyon */
+.topTabs {
+  display: flex;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  margin-bottom: var(--spacing-sm, 8px);
+}
+
+.topTabBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-color-muted);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.topTabBtn:hover {
+  color: var(--text-color-main);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.topTabBtnActive {
+  background: var(--bg-color-surface, var(--bg-card)) !important;
+  color: var(--text-color-main) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border-color);
+}
+
+/* Ders Listesi Izgarası */
+.courseGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.courseCard {
+  background: var(--bg-color-surface, var(--bg-card)) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 14px;
+  padding: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+}
+
+.courseCard:hover {
+  border-color: var(--color-primary, #10B981) !important;
+  transform: translateY(-2px);
+}
+
+.courseInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.courseIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--color-primary, #6366f1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.courseName {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-color-main);
+  margin-bottom: 2px;
+}
+
+.courseType {
+  font-size: 0.75rem;
+  color: var(--text-color-muted);
+}
+
+/* Ders Detay & Kaynak Listesi */
+.backBtnRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.selectedCourseTitle {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-color-main);
+}
+
+.resourceList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.resourceCard {
+  background: var(--bg-color-surface, var(--bg-card)) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+
+.resourceHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.resourceLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.resourceIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.resourceTitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-color-main);
+  word-break: break-word;
+}
+
+.tickBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.tickBtn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tickLabelDone {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-success, #10B981);
+}
+
+.tickLabelTodo {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-color-muted, #94A3B8);
+}
+
+.progressBar {
+  height: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--color-success, #10B981);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+/* Müfredat & Konu Takibi */
+.curriculumStats {
+  background: var(--bg-color-surface, var(--bg-card));
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.statsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+.subjectFilterBar {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.filterChip {
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-color-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.filterChip:hover {
+  color: var(--text-color-main);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.filterChipActive {
+  background: var(--color-primary, #10B981) !important;
+  color: #ffffff !important;
+  border-color: var(--color-primary, #10B981) !important;
+}
+
+.topicList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.topicCard {
+  background: var(--bg-color-surface, var(--bg-card)) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.topicLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.topicName {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-color-main);
+}
+
+.topicMeta {
+  font-size: 0.75rem;
+  color: var(--text-color-muted);
+}

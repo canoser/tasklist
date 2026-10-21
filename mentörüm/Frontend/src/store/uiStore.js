@@ -1,14 +1,23 @@
 import { create } from 'zustand';
 
+const getSystemPreference = () => {
+  if (typeof window !== 'undefined' && window.matchMedia) {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  return 'dark';
+};
+
+const resolveEffectiveMode = (mode) => {
+  if (mode === 'system') return getSystemPreference();
+  return mode === 'light' ? 'light' : 'dark';
+};
+
 const getInitialThemeMode = () => {
   if (typeof window !== 'undefined') {
     const saved = localStorage.getItem('mentorum_theme_mode') || localStorage.getItem('mentorum_theme');
-    if (saved === 'dark' || saved === 'light') return saved;
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark';
-    }
+    if (saved === 'dark' || saved === 'light' || saved === 'system') return saved;
   }
-  return 'light';
+  return 'dark';
 };
 
 const getInitialThemeStyle = () => {
@@ -29,12 +38,31 @@ const getInitialStudentHomeLayout = () => {
 
 const applyThemeToDom = (style, mode) => {
   if (typeof document !== 'undefined') {
+    const effectiveMode = resolveEffectiveMode(mode);
     const root = document.documentElement;
-    root.setAttribute('data-theme', mode); // Geriye dönük uyumluluk
-    root.setAttribute('data-theme-mode', mode);
+    root.setAttribute('data-theme', effectiveMode); // Geriye dönük uyumluluk
+    root.setAttribute('data-theme-mode', effectiveMode);
+    root.setAttribute('data-theme-preference', mode);
     root.setAttribute('data-theme-style', style);
   }
 };
+
+// Cihaz tema değişikliğini gerçek zamanlı dinleme
+if (typeof window !== 'undefined' && window.matchMedia) {
+  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  const listener = () => {
+    const saved = localStorage.getItem('mentorum_theme_mode');
+    if (saved === 'system') {
+      const style = localStorage.getItem('mentorum_theme_style') || 'classic';
+      applyThemeToDom(style, 'system');
+    }
+  };
+  if (mediaQuery.addEventListener) {
+    mediaQuery.addEventListener('change', listener);
+  } else if (mediaQuery.addListener) {
+    mediaQuery.addListener(listener);
+  }
+}
 
 const initialMode = getInitialThemeMode();
 const initialStyle = getInitialThemeStyle();
