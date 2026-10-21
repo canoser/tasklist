@@ -295,3 +295,66 @@
   color: var(--text-color-muted);
   font-size: 0.875rem;
 }
+
+@media (max-width: 640px) {
+  .headerRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .headerRow > div:last-child {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .programSelector {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .selectInput {
+    flex: 1;
+  }
+
+  .kpiGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .kpiCard {
+    padding: 12px 10px;
+    gap: 4px;
+  }
+
+  .kpiLabel {
+    font-size: 0.68rem;
+  }
+
+  .kpiValue {
+    font-size: 1.25rem;
+  }
+
+  .kpiSubtext {
+    font-size: 0.68rem;
+  }
+
+  /* List boşken üstteki mükerrer yeşil butonu gizle */
+  .topCreateBtnWhenEmpty {
+    display: none !important;
+  }
+
+  .filterTabs {
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
+
+  .filterBtn {
+    flex-shrink: 0;
+  }
+}
+

@@ -21,8 +21,9 @@
   .celestialContainer {
     right: 12px;
     top: 56px;
-    width: 140px;
-    height: 140px;
+    width: 130px;
+    height: 130px;
+    opacity: 0.28; /* Su damgası/atmosfer ışığı havası, butonların arkasında kalabalık yapmaz */
   }
 }
 

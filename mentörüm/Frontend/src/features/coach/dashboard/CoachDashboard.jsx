@@ -183,20 +183,12 @@ const CoachDashboard = () => {
   return (
     <div className={styles.dashboardContainer}>
       {programs.length > 1 && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
+        <div className={styles.dashboardFilterBar}>
+          <span className={styles.filterBarLabel}>Program:</span>
           <select
             value={selectedProgramId}
             onChange={(e) => setSelectedProgramId(e.target.value)}
-            style={{
-              padding: '8px 12px',
-              borderRadius: '8px',
-              border: '1px solid var(--border-color)',
-              background: 'var(--bg-card)',
-              color: 'var(--text-primary)',
-              fontSize: '0.875rem',
-              fontWeight: 600,
-              cursor: 'pointer'
-            }}
+            className={styles.programSelect}
           >
             <option value="all">Tüm Programlar</option>
             {programs.map((p) => (

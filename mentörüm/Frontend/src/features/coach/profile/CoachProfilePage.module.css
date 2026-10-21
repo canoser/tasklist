@@ -1,8 +1,189 @@
-.container { padding: var(--spacing-md); max-width: 720px; margin: 0 auto; }
-.title { font-size: 1.4rem; font-weight: 700; margin-bottom: var(--spacing-md); }
-.card { display: flex; flex-direction: column; gap: 8px; text-align: center; }
-.avatar { width: 72px; height: 72px; border-radius: 50%; background: var(--color-primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto var(--spacing-sm); }
-.name { font-size: 1.2rem; font-weight: 600; }
-.meta { color: var(--text-color-muted); font-size: 0.9rem; }
-.sectionTitle { font-size: 1rem; font-weight: 600; margin: 0 0 8px; text-align: left; }
-.item { padding: 4px 0; font-size: 0.9rem; text-align: left; }
+.container {
+  padding: var(--spacing-md);
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-color-main);
+  margin-bottom: 4px;
+}
+
+.profileHeaderCard {
+  background-color: var(--bg-color-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+}
+
+.headerAvatarWrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.headerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: flex-start;
+}
+
+.name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-color-main);
+  margin: 0;
+}
+
+.metaEmail {
+  color: var(--text-color-muted);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.roleBadge {
+  display: inline-block;
+  padding: 2px 8px;
+  background-color: var(--bg-color-surface-elevated, rgba(0, 0, 0, 0.05));
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-top: 2px;
+}
+
+.formCard {
+  background-color: var(--bg-color-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-color-main);
+  margin: 0 0 4px;
+  text-align: left;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.formLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-color-main);
+  text-align: left;
+}
+
+.textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-color-surface);
+  color: var(--text-color-main);
+  font-size: 0.875rem;
+  font-family: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.formActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.successMessage {
+  color: var(--color-success, #16a34a);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.programList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.programItem {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background-color: var(--bg-color-surface-elevated, rgba(0, 0, 0, 0.02));
+  border: 1px solid var(--border-color);
+  text-align: left;
+}
+
+.programName {
+  font-size: 0.925rem;
+  color: var(--text-color-main);
+}
+
+.programMeta {
+  font-size: 0.8rem;
+  color: var(--text-color-muted);
+  margin-top: 2px;
+}
+
+.emptyMeta {
+  color: var(--text-color-muted);
+  font-size: 0.85rem;
+  margin: 0;
+  text-align: left;
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: var(--spacing-sm);
+  }
+
+  .avatar {
+    width: 50px;
+    height: 50px;
+    font-size: 1.3rem;
+  }
+
+  .formActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .formActions button {
+    width: 100%;
+  }
+}
+

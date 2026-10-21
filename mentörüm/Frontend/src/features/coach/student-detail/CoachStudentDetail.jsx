@@ -10,7 +10,20 @@ import { apiClient } from '../../../api/apiClient';
 import InviteSharePanel from '../../../components/common/InviteSharePanel/InviteSharePanel';
 import ParentPermissionsPanel from './ParentPermissionsPanel';
 import WeeklyTimeBudgetCard from './WeeklyTimeBudgetCard';
-import { CheckCircle2, Square } from 'lucide-react';
+import { 
+  CheckCircle2, 
+  Square, 
+  ArrowLeft, 
+  FileDown, 
+  Edit3, 
+  PlusCircle, 
+  Clock, 
+  BookOpen, 
+  MessageSquare, 
+  Users, 
+  GraduationCap, 
+  ShieldAlert 
+} from 'lucide-react';
 
 const CoachStudentDetail = () => {
   const { id } = useParams();
@@ -22,6 +35,22 @@ const CoachStudentDetail = () => {
   const [sessionDate, setSessionDate] = useState('');
   const [sessionNotes, setSessionNotes] = useState('');
   const [sessionActions, setSessionActions] = useState('');
+
+  const getGroupForTab = (tab) => {
+    if (['info', 'timeBudget', 'events'].includes(tab)) return 'general';
+    if (['homework', 'exams', 'topics'].includes(tab)) return 'academic';
+    if (['sessions', 'notes', 'teacherNotes'].includes(tab)) return 'sessions';
+    return 'parents';
+  };
+
+  const activeGroup = getGroupForTab(activeTab);
+
+  const handleSelectGroup = (groupId) => {
+    if (groupId === 'general') setActiveTab('info');
+    else if (groupId === 'academic') setActiveTab('homework');
+    else if (groupId === 'sessions') setActiveTab('sessions');
+    else if (groupId === 'parents') setActiveTab('parents');
+  };
 
   const { data: student, isLoading, isError } = useStudent(id);
   const { data: notesList, isLoading: isNotesLoading } = useStudentNotes(id);
@@ -83,8 +112,9 @@ const CoachStudentDetail = () => {
     <div className={styles.pageContainer}>
       {/* Üst Bilgi Başlığı */}
       <div className={styles.topHeader}>
-        <Button variant="ghost" onClick={() => navigate('/coach/students')} icon="←">
-          Öğrencilere Dön
+        <Button variant="ghost" onClick={() => navigate('/coach/students')}>
+          <ArrowLeft size={16} />
+          <span>Öğrencilere Dön</span>
         </Button>
       </div>
 
@@ -99,75 +129,142 @@ const CoachStudentDetail = () => {
           </div>
         </div>
         <div className={styles.actions}>
-          <Button variant="ghost" icon="📄" onClick={handleDownloadReport}>PDF Rapor</Button>
-          <Button variant="secondary" icon="✏️">Düzenle</Button>
-          <Button variant="primary" icon="📝" onClick={() => setIsHomeworkModalOpen(true)}>Ödev Ata</Button>
+          <Button variant="outline" onClick={handleDownloadReport}>
+            <FileDown size={15} />
+            <span>PDF Rapor</span>
+          </Button>
+          <Button variant="secondary">
+            <Edit3 size={15} />
+            <span>Düzenle</span>
+          </Button>
+          <Button variant="primary" onClick={() => setIsHomeworkModalOpen(true)}>
+            <PlusCircle size={15} />
+            <span>Ödev Ata</span>
+          </Button>
         </div>
       </header>
 
-      {/* Sekmeler */}
-      <div className={styles.tabs}>
-        <button 
-          className={`${styles.tab} ${activeTab === 'info' ? styles.activeTab : ''}`}
-          onClick={() => setActiveTab('info')}
+      {/* 4 Akıllı Grup Sekmesi */}
+      <div className={styles.groupTabs}>
+        <button
+          type="button"
+          className={`${styles.groupTab} ${activeGroup === 'general' ? styles.groupTabActive : ''}`}
+          onClick={() => handleSelectGroup('general')}
         >
-          Kişisel Bilgiler
+          <Clock size={16} />
+          <span>Genel & Zaman</span>
         </button>
-        <button 
-          className={`${styles.tab} ${activeTab === 'parents' ? styles.activeTab : ''}`}
-          onClick={() => setActiveTab('parents')}
+        <button
+          type="button"
+          className={`${styles.groupTab} ${activeGroup === 'academic' ? styles.groupTabActive : ''}`}
+          onClick={() => handleSelectGroup('academic')}
         >
-          Veli Bilgileri
+          <BookOpen size={16} />
+          <span>Akademik</span>
         </button>
-        <button 
-          className={`${styles.tab} ${activeTab === 'timeBudget' ? styles.activeTab : ''}`}
-          onClick={() => setActiveTab('timeBudget')}
+        <button
+          type="button"
+          className={`${styles.groupTab} ${activeGroup === 'sessions' ? styles.groupTabActive : ''}`}
+          onClick={() => handleSelectGroup('sessions')}
         >
-          Zaman Bütçesi
+          <MessageSquare size={16} />
+          <span>Seans & Notlar</span>
+          {teacherNotes.length > 0 && (
+            <span className={styles.miniBadge}>{teacherNotes.length}</span>
+          )}
         </button>
-        <button 
-          className={`${styles.tab} ${activeTab === 'teacherNotes' ? styles.activeTab : ''}`}
-          onClick={() => setActiveTab('teacherNotes')}
+        <button
+          type="button"
+          className={`${styles.groupTab} ${activeGroup === 'parents' ? styles.groupTabActive : ''}`}
+          onClick={() => handleSelectGroup('parents')}
         >
-          Öğretmen Notları ({teacherNotes.length})
-        </button>
-        <button 
-          className={`${styles.tab} ${activeTab === 'notes' ? styles.activeTab : ''}`}
-          onClick={() => setActiveTab('notes')}
-        >
-          Koç Özel Notları
-        </button>
-        <button 
-          className={`${styles.tab} ${activeTab === 'exams' ? styles.activeTab : ''}`}
-          onClick={() => setActiveTab('exams')}
-        >
-          Sınav Geçmişi
-        </button>
-        <button 
-          className={`${styles.tab} ${activeTab === 'homework' ? styles.activeTab : ''}`}
-          onClick={() => setActiveTab('homework')}
-        >
-          Ödevler
-        </button>
-        <button 
-          className={`${styles.tab} ${activeTab === 'topics' ? styles.activeTab : ''}`}
-          onClick={() => setActiveTab('topics')}
-        >
-          Konular
-        </button>
-        <button 
-          className={`${styles.tab} ${activeTab === 'events' ? styles.activeTab : ''}`}
-          onClick={() => setActiveTab('events')}
-        >
-          Takvim
-        </button>
-        <button 
-          className={`${styles.tab} ${activeTab === 'sessions' ? styles.activeTab : ''}`}
-          onClick={() => setActiveTab('sessions')}
-        >
-          Görüşmeler
+          <Users size={16} />
+          <span>Veli & İletişim</span>
         </button>
       </div>
+
+      {/* Seçili Gruba Ait Alt Hap Sekmeler (Pills) */}
+      {activeGroup !== 'parents' && (
+        <div className={styles.subPills}>
+          {activeGroup === 'general' && (
+            <>
+              <button
+                type="button"
+                className={`${styles.subPill} ${activeTab === 'info' ? styles.subPillActive : ''}`}
+                onClick={() => setActiveTab('info')}
+              >
+                Kişisel Bilgiler & Hedef
+              </button>
+              <button
+                type="button"
+                className={`${styles.subPill} ${activeTab === 'timeBudget' ? styles.subPillActive : ''}`}
+                onClick={() => setActiveTab('timeBudget')}
+              >
+                Zaman Bütçesi
+              </button>
+              <button
+                type="button"
+                className={`${styles.subPill} ${activeTab === 'events' ? styles.subPillActive : ''}`}
+                onClick={() => setActiveTab('events')}
+              >
+                Kişisel Takvim
+              </button>
+            </>
+          )}
+
+          {activeGroup === 'academic' && (
+            <>
+              <button
+                type="button"
+                className={`${styles.subPill} ${activeTab === 'homework' ? styles.subPillActive : ''}`}
+                onClick={() => setActiveTab('homework')}
+              >
+                Ödevler
+              </button>
+              <button
+                type="button"
+                className={`${styles.subPill} ${activeTab === 'exams' ? styles.subPillActive : ''}`}
+                onClick={() => setActiveTab('exams')}
+              >
+                Sınav Geçmişi
+              </button>
+              <button
+                type="button"
+                className={`${styles.subPill} ${activeTab === 'topics' ? styles.subPillActive : ''}`}
+                onClick={() => setActiveTab('topics')}
+              >
+                Konu Takibi
+              </button>
+            </>
+          )}
+
+          {activeGroup === 'sessions' && (
+            <>
+              <button
+                type="button"
+                className={`${styles.subPill} ${activeTab === 'sessions' ? styles.subPillActive : ''}`}
+                onClick={() => setActiveTab('sessions')}
+              >
+                Koçluk Görüşmeleri
+              </button>
+              <button
+                type="button"
+                className={`${styles.subPill} ${activeTab === 'notes' ? styles.subPillActive : ''}`}
+                onClick={() => setActiveTab('notes')}
+              >
+                Koç Özel Notları
+              </button>
+              <button
+                type="button"
+                className={`${styles.subPill} ${activeTab === 'teacherNotes' ? styles.subPillActive : ''}`}
+                onClick={() => setActiveTab('teacherNotes')}
+              >
+                Öğretmen Notları {teacherNotes.length > 0 && `(${teacherNotes.length})`}
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
       {/* Sekme İçerikleri */}
       <div className={styles.tabContent}>
@@ -188,7 +285,8 @@ const CoachStudentDetail = () => {
 
             <Card title="Akademik Hedef">
               <div className={styles.targetBanner}>
-                🎓 {student.targetUniversity || student.target || 'Hedef girilmemiş'}
+                <GraduationCap size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} />
+                <span>{student.targetUniversity || student.target || 'Hedef girilmemiş'}</span>
                 {student.targetDepartment ? ` · ${student.targetDepartment}` : ''}
               </div>
               {student.targetScore != null && (
@@ -306,7 +404,8 @@ const CoachStudentDetail = () => {
         {activeTab === 'notes' && (
           <Card title="Gizli Notlar (Öğrenci Göremez)" className={styles.notesCard}>
             <div className={styles.notesWarning}>
-              ⚠️ Bu sekmedeki notlar tamamen size özeldir. Öğrenci veya veli paneline yansımaz.
+              <ShieldAlert size={16} style={{ flexShrink: 0 }} />
+              <span>Bu sekmedeki notlar tamamen size özeldir. Öğrenci veya veli paneline yansımaz.</span>
             </div>
             {/* Geçmiş Notların Listesi */}
             <div style={{ marginBottom: '20px', maxHeight: '300px', overflowY: 'auto' }}>
@@ -481,7 +580,12 @@ const CoachStudentDetail = () => {
                     <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{s.sessionDate ? new Date(s.sessionDate).toLocaleDateString('tr-TR') : '-'}</span>
                   </div>
                   {s.notes && <p style={{ fontSize: '0.85rem', color: '#475569', margin: '4px 0' }}>{s.notes}</p>}
-                  {s.actionItems && <p style={{ fontSize: '0.8rem', color: '#b45309', margin: 0 }}>📌 {s.actionItems}</p>}
+                  {s.actionItems && (
+                    <p style={{ fontSize: '0.8rem', color: '#b45309', margin: '4px 0 0', display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <CheckCircle2 size={13} style={{ flexShrink: 0 }} />
+                      <span>{s.actionItems}</span>
+                    </p>
+                  )}
                 </div>
               ))
             ) : (

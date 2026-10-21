@@ -71,11 +71,11 @@ const CoachReports = () => {
           <p className={styles.subtitle}>Öğrenci performanslarını detaylı olarak inceleyin.</p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+        <div className={styles.headerActions}>
           <select
             value={selectedStudentId}
             onChange={(e) => setSelectedStudentId(e.target.value)}
-            style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-color-surface)', color: 'var(--text-color-main)', fontSize: '0.85rem' }}
+            className={styles.studentSelect}
           >
             <option value="">Tüm Öğrenciler</option>
             {students?.map((s) => (
@@ -87,7 +87,7 @@ const CoachReports = () => {
             variant="outline" 
             onClick={handleDownloadPdf}
             isLoading={isPdfDownloading}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+            className={styles.pdfDownloadBtn}
           >
             <FileDown size={15} />
             <span>Veli Raporu İndir (PDF)</span>

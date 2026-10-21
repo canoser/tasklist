@@ -44,6 +44,7 @@ const CoachLayout = () => {
   const searchInputRef = useRef(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isViewAsModalOpen, setIsViewAsModalOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   // Süper yönetici onay sayacı
   const { data: pendingApprovals } = usePendingApprovals();
@@ -52,6 +53,20 @@ const CoachLayout = () => {
   // Koç bekleyen onayları sayacı (tüm programlar)
   const { data: coachApprovals = [] } = useApprovals(undefined, 'PENDING');
   const coachPendingCount = coachApprovals?.length || 0;
+
+  // Mobil Alt Bar Sekmeleri (4 Sık Kullanılan + 1 Menü Çekmecesi)
+  const bottomNavTabs = [
+    { path: '/coach/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/coach/students', label: 'Öğrenciler', icon: Users },
+    { path: '/coach/calendar', label: 'Takvim', icon: Calendar },
+    { 
+      path: '/coach/approvals', 
+      label: 'Onaylar', 
+      icon: ShieldCheck, 
+      badge: coachPendingCount > 0 ? coachPendingCount : null 
+    },
+    { isDrawer: true, label: 'Menü', icon: Menu }
+  ];
 
   // ⌘K / Ctrl+K Global Kısayol Dinleyicisi
   useEffect(() => {
@@ -205,6 +220,30 @@ const CoachLayout = () => {
           ))}
         </nav>
 
+        {/* Mobil Çekmece Hızlı Aksiyonları (PWA, Tema, Gözüyle Gör) */}
+        <div className={styles.drawerQuickActions}>
+          {user?.isAdmin && (
+            <button 
+              type="button" 
+              onClick={() => { closeSidebar(); setIsViewAsModalOpen(true); }}
+              className={styles.drawerActionBtn}
+              style={{
+                color: viewAs ? '#f59e0b' : 'var(--text-color-main)',
+                background: viewAs ? 'rgba(245, 158, 11, 0.15)' : 'rgba(255, 255, 255, 0.05)'
+              }}
+            >
+              <Eye size={18} />
+              <span>{viewAs ? 'Gözüyle Gör: Aktif' : 'Rol Gözüyle Gör'}</span>
+            </button>
+          )}
+          <div className={styles.drawerInstallRow}>
+            <InstallAppButton />
+          </div>
+          <div className={styles.drawerThemeRow}>
+            <ThemeSelector />
+          </div>
+        </div>
+
         {/* Alt Kullanıcı Kartı (Kompakt Tekil Kart) */}
         <div className={styles.sidebarFooter}>
           <div className={styles.userCard}>
@@ -249,8 +288,6 @@ const CoachLayout = () => {
 
       {/* Ana İçerik Alanı */}
       <div className={styles.mainWrapper}>
-        {/* View-As banner'ı artık global ViewAsBanner bileşeninde */}
-
         {/* Sticky Üst Bar (64px) */}
         <header className={styles.topbar}>
           <div className={styles.topbarLeft}>
@@ -264,10 +301,11 @@ const CoachLayout = () => {
                 <span className={styles.crumbCurrent}>{getPageTitle()}</span>
               </div>
               <span className={styles.todayDate}>{currentDateFormatted}</span>
+              <h1 className={styles.mobileTitle}>{getPageTitle()}</h1>
             </div>
           </div>
 
-          {/* Orta Arama Çubuğu */}
+          {/* Orta Arama Çubuğu (Masaüstü) */}
           <form className={styles.searchBox} onSubmit={handleSearchSubmit}>
             <Search size={16} strokeWidth={1.75} className={styles.searchIcon} />
             <input
@@ -283,10 +321,23 @@ const CoachLayout = () => {
 
           {/* Sağ Aksiyonlar */}
           <div className={styles.topbarRight}>
+            {/* Mobilde Arama Modalı Açıcı */}
+            <button
+              type="button"
+              className={styles.mobileSearchBtn}
+              onClick={() => setIsMobileSearchOpen(true)}
+              title="Arama Yap"
+              aria-label="Arama Yap"
+            >
+              <Search size={18} />
+            </button>
+
+            {/* Masaüstü: Gözüyle Gör */}
             {user?.isAdmin && (
               <button 
                 type="button" 
                 onClick={() => setIsViewAsModalOpen(true)}
+                className={styles.desktopViewAsBtn}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -307,28 +358,110 @@ const CoachLayout = () => {
               </button>
             )}
 
-            <InstallAppButton />
+            {/* Masaüstü: Uygulama İndir */}
+            <div className={styles.desktopInstallWrap}>
+              <InstallAppButton />
+            </div>
 
+            {/* Hızlı Aksiyon (Ödev / Program Ata) */}
             <button
               type="button"
               className={styles.quickActionBtn}
               onClick={() => navigate('/coach/students')}
               title="Öğrenci veya Ödev İşlemleri"
             >
-              <Plus size={16} strokeWidth={2.2} />
+              <Plus size={18} strokeWidth={2.2} />
               <span>Ödev / Program Ata</span>
             </button>
 
-            <ThemeSelector />
+            {/* Masaüstü: Tema Seçici */}
+            <div className={styles.desktopThemeWrap}>
+              <ThemeSelector />
+            </div>
 
-            <NotificationDropdown />
+            {/* Bildirimler (Taşma engellendi) */}
+            <div className={styles.notificationWrap}>
+              <NotificationDropdown />
+            </div>
           </div>
         </header>
+
+        {/* Mobil Arama Modalı */}
+        {isMobileSearchOpen && (
+          <div className={styles.mobileSearchOverlay} onClick={() => setIsMobileSearchOpen(false)}>
+            <div className={styles.mobileSearchModal} onClick={(e) => e.stopPropagation()}>
+              <form 
+                className={styles.mobileSearchForm}
+                onSubmit={(e) => { 
+                  handleSearchSubmit(e); 
+                  setIsMobileSearchOpen(false); 
+                }}
+              >
+                <Search size={18} className={styles.mobileSearchIcon} />
+                <input
+                  autoFocus
+                  type="text"
+                  placeholder="Öğrenci, program veya ödev ara..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className={styles.mobileSearchInput}
+                />
+                <button 
+                  type="button" 
+                  onClick={() => setIsMobileSearchOpen(false)} 
+                  className={styles.mobileSearchClose}
+                  aria-label="Kapat"
+                >
+                  <X size={18} />
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
 
         {/* Dinamik Sayfa İçeriği */}
         <main className={styles.pageContent}>
           <Outlet />
         </main>
+
+        {/* Mobil Alt Menü Barı (< 768px - 5 Ergonomik Sekme) */}
+        <nav className={styles.bottomNav}>
+          {bottomNavTabs.map((tab) => {
+            const IconComponent = tab.icon;
+            if (tab.isDrawer) {
+              return (
+                <button
+                  key="drawer-menu"
+                  type="button"
+                  className={styles.tab}
+                  onClick={toggleSidebar}
+                  aria-label="Tüm Menüler"
+                >
+                  <span className={styles.tabIcon}>
+                    <IconComponent size={20} />
+                    {coachPendingCount > 0 && <span className={styles.tabBadgeDot} />}
+                  </span>
+                  <span className={styles.tabLabel}>{tab.label}</span>
+                </button>
+              );
+            }
+            return (
+              <NavLink
+                key={tab.path}
+                to={tab.path}
+                className={({ isActive }) => 
+                  isActive ? `${styles.tab} ${styles.tabActive}` : styles.tab
+                }
+              >
+                <span className={styles.tabIcon}>
+                  <IconComponent size={20} />
+                  {tab.badge != null && <span className={styles.tabCounterBadge}>{tab.badge}</span>}
+                </span>
+                <span className={styles.tabLabel}>{tab.label}</span>
+              </NavLink>
+            );
+          })}
+        </nav>
       </div>
 
       {user?.isAdmin && (

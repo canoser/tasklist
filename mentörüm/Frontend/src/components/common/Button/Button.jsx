@@ -10,6 +10,7 @@ const Button = ({
   disabled = false,
   type = 'button',
   onClick,
+  className = '',
   ...props 
 }) => {
   const classNames = [
@@ -18,6 +19,7 @@ const Button = ({
     styles[`size-${size}`],
     fullWidth ? styles.fullWidth : '',
     isLoading ? styles.loading : '',
+    className,
   ].filter(Boolean).join(' ');
 
   return (

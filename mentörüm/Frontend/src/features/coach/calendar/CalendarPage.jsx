@@ -11,7 +11,7 @@ import '../../../components/common/Calendar/CalendarOverrides.css';
 import Card from '../../../components/common/Card/Card';
 import PersonalEventModal from '../../../components/common/PersonalEventModal/PersonalEventModal';
 import WeeklySchedulePage from '../schedule/WeeklySchedulePage';
-import { Calendar as CalendarIcon, Clock } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, SlidersHorizontal, ChevronDown, ChevronUp, RotateCcw } from 'lucide-react';
 import { useCalendarEvents, useStudents } from '../coachApi';
 import { usePrograms, useCourses, useTeachers } from '../coachSchoolApi';
 import styles from './CalendarPage.module.css';
@@ -40,6 +40,7 @@ const CalendarPage = () => {
   const [teacherFilter, setTeacherFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
   const { data: programs = [] } = usePrograms();
   const { data: students = [] } = useStudents();
@@ -131,6 +132,22 @@ const CalendarPage = () => {
     };
   };
 
+  const activeFiltersCount = [
+    Boolean(programFilter),
+    Boolean(studentFilter),
+    Boolean(courseFilter),
+    Boolean(teacherFilter),
+    typeFilter !== 'all'
+  ].filter(Boolean).length;
+
+  const handleResetFilters = () => {
+    setProgramFilter('');
+    setStudentFilter('');
+    setCourseFilter('');
+    setTeacherFilter('');
+    setTypeFilter('all');
+  };
+
   return (
     <div className={styles.pageContainer}>
       <header className={styles.header}>
@@ -189,7 +206,35 @@ const CalendarPage = () => {
               </button>
             </div>
 
-            <div className={styles.filters}>
+            {/* Mobil Filtre Toggle Bar */}
+            <div className={styles.mobileFilterBar}>
+              <button
+                type="button"
+                className={styles.mobileFilterToggle}
+                onClick={() => setIsFiltersOpen(!isFiltersOpen)}
+                aria-expanded={isFiltersOpen}
+              >
+                <SlidersHorizontal size={15} />
+                <span>Filtreler</span>
+                {activeFiltersCount > 0 && (
+                  <span className={styles.filterBadge}>{activeFiltersCount}</span>
+                )}
+                {isFiltersOpen ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+              </button>
+
+              {activeFiltersCount > 0 && (
+                <button
+                  type="button"
+                  className={styles.resetFiltersBtn}
+                  onClick={handleResetFilters}
+                >
+                  <RotateCcw size={13} />
+                  <span>Temizle</span>
+                </button>
+              )}
+            </div>
+
+            <div className={`${styles.filters} ${isFiltersOpen ? styles.filtersOpen : ''}`}>
               {programs.length > 0 && (
                 <select value={programFilter} onChange={(e) => setProgramFilter(e.target.value)} className={styles.select}>
                   <option value="">Tüm Programlar</option>

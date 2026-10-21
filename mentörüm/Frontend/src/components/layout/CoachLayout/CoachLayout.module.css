@@ -439,22 +439,266 @@
   z-index: 1;
 }
 
+/* Mobil Başlık */
+.mobileTitle {
+  display: none;
+}
+
+/* Mobil Arama Butonu */
+.mobileSearchBtn {
+  display: none;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-color-surface);
+  color: var(--text-color-main);
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mobileSearchBtn:hover {
+  background-color: var(--bg-color-surface-elevated);
+  border-color: var(--color-primary);
+}
+
+/* Masaüstü Sarmalayıcılar */
+.desktopViewAsBtn,
+.desktopInstallWrap,
+.desktopThemeWrap {
+  display: flex;
+  align-items: center;
+}
+
+.notificationWrap {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Çekmece Hızlı Aksiyonları */
+.drawerQuickActions {
+  display: none;
+  padding: 12px 14px;
+  border-top: 1px solid var(--bg-color-sidebar-border);
+  gap: 10px;
+  flex-direction: column;
+}
+
+.drawerActionBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--radius-btn);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.drawerInstallRow,
+.drawerThemeRow {
+  display: flex;
+  width: 100%;
+}
+
+/* Mobil Arama Modalı */
+.mobileSearchOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 70;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 16px;
+  padding-top: 20px;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.mobileSearchModal {
+  width: 100%;
+  max-width: 500px;
+  background-color: var(--bg-color-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  padding: 12px;
+}
+
+.mobileSearchForm {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+}
+
+.mobileSearchIcon {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.mobileSearchInput {
+  flex: 1;
+  height: 40px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-btn);
+  padding: 0 12px;
+  background-color: var(--bg-color-main);
+  color: var(--text-color-main);
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.mobileSearchInput:focus {
+  border-color: var(--color-primary);
+}
+
+.mobileSearchClose {
+  background: transparent;
+  border: none;
+  color: var(--text-color-muted);
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+}
+
+/* ===============================
+   MOBİL ALT MENÜ BAR (BOTTOM NAV — < 768px)
+   =============================== */
+.bottomNav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background-color: var(--bg-color-surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border-color);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.12);
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 4px;
+  padding-bottom: env(safe-area-inset-bottom);
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  z-index: 50;
+}
+
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  color: var(--text-color-muted, #94A3B8);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  padding: 4px 2px;
+}
+
+.tabIcon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 3px;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tabLabel {
+  font-size: 0.68rem;
+  font-weight: 500;
+  white-space: nowrap;
+  letter-spacing: -0.2px;
+}
+
+.tabActive {
+  color: var(--color-primary) !important;
+}
+
+.tabActive .tabIcon {
+  transform: translateY(-2px);
+  color: var(--color-primary);
+}
+
+.tabActive .tabLabel {
+  font-weight: 700;
+}
+
+.tabBadgeDot {
+  position: absolute;
+  top: -2px;
+  right: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #F43F5E;
+  border: 1.5px solid var(--bg-color-surface);
+}
+
+.tabCounterBadge {
+  position: absolute;
+  top: -5px;
+  right: -8px;
+  background-color: #F43F5E;
+  color: #FFFFFF;
+  font-size: 0.625rem;
+  font-weight: 700;
+  padding: 0 4px;
+  min-width: 15px;
+  height: 15px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--bg-color-surface);
+}
+
 /* Mobil Overlay & Responsive */
 .overlay {
   position: fixed;
   inset: 0;
   background-color: rgba(15, 23, 42, 0.6);
   backdrop-filter: blur(2px);
-  z-index: 45;
+  z-index: 55;
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ===============================
+   TABLET RESPONSIVE (max-width: 1024px)
+   =============================== */
 @media (max-width: 1024px) {
   .sidebar {
     position: fixed;
     top: 0;
     bottom: 0;
     left: 0;
+    width: 85vw;
+    max-width: 320px;
     transform: translateX(-100%);
+    z-index: 60;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.35);
   }
 
   .sidebarOpen {
@@ -469,19 +713,91 @@
     display: flex;
   }
 
+  .drawerQuickActions {
+    display: flex;
+  }
+
   .searchBox {
-    display: none; /* Mobilde gizle veya kompakt ikona dönüştür */
+    display: none;
+  }
+
+  .mobileSearchBtn {
+    display: flex;
+  }
+}
+
+/* ===============================
+   MOBIL RESPONSIVE (max-width: 767px)
+   =============================== */
+@media (max-width: 767px) {
+  /* Sol üstteki [ ≡ ] butonu kaldırılır, çift menü karmaşası biter */
+  .menuBtn {
+    display: none !important;
+  }
+
+  /* 3 satıra bölünen karmaşık breadcrumbs gizlenir, net tek satır başlık gelir */
+  .breadcrumbs,
+  .todayDate {
+    display: none !important;
+  }
+
+  .mobileTitle {
+    display: block;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-color-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+  }
+
+  /* Üst barda kalabalık yapan butonlar çekmeceye taşındığı için mobilde gizlenir */
+  .desktopViewAsBtn,
+  .desktopInstallWrap,
+  .desktopThemeWrap {
+    display: none !important;
   }
 
   .topbar {
-    padding: 0 16px;
+    padding: 0 12px;
+    gap: 8px;
   }
 
-  .pageContent {
-    padding: 16px;
+  .topbarLeft {
+    gap: 0;
+  }
+
+  .topbarRight {
+    gap: 6px;
+  }
+
+  .quickActionBtn {
+    padding: 0 10px;
+    height: 36px;
   }
 
   .quickActionBtn span {
     display: none; /* Mobilde sadece + ikonu */
+  }
+
+  .mobileSearchBtn {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* Bildirim çanı ekran dışına taşmaz, hizalanır */
+  .notificationWrap {
+    margin-right: 2px;
+  }
+
+  /* Sayfa altı güvenli alan & alt menü */
+  .pageContent {
+    padding: 14px;
+    padding-bottom: 88px; /* Alt bar için ergonomik pay */
+  }
+
+  .bottomNav {
+    display: flex;
   }
 }

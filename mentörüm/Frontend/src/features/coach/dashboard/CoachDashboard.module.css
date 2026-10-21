@@ -7,6 +7,32 @@
   width: 100%;
 }
 
+.dashboardFilterBar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: -12px;
+}
+
+.filterBarLabel {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-color-muted);
+}
+
+.programSelect {
+  padding: 6px 12px;
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-color-surface);
+  color: var(--text-color-main);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+}
+
 /* ── 1. ÜST ÖZET (KPI) KARTLARI (4 NET SÜTUN) ───────────── */
 .kpiGrid {
   display: grid;
@@ -185,6 +211,12 @@
   padding: 4px;
   border-radius: var(--radius-btn);
   border: 1px solid var(--border-color);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabButtonsGroup::-webkit-scrollbar {
+  display: none;
 }
 
 .tabBtn {
@@ -200,6 +232,8 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .tabBtnActive {
@@ -966,8 +1000,49 @@
 }
 
 @media (max-width: 640px) {
+  .dashboardContainer {
+    gap: 16px;
+  }
+  .dashboardFilterBar {
+    justify-content: flex-start;
+  }
   .kpiGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .kpiCard {
+    padding: 12px 14px;
+    border-radius: 12px;
+  }
+  .kpiHeader {
+    margin-bottom: 6px;
+  }
+  .kpiLabel {
+    font-size: 0.62rem;
+  }
+  .kpiIconWrap {
+    width: 28px;
+    height: 28px;
+  }
+  .kpiIconWrap svg {
+    width: 15px;
+    height: 15px;
+  }
+  .kpiValue {
+    font-size: 1.25rem;
+    margin-bottom: 4px;
+  }
+  .kpiSubtext {
+    font-size: 0.68rem;
+    line-height: 1.3;
+  }
+  .tabButtonsGroup {
+    width: 100%;
+    gap: 4px;
+  }
+  .tabBtn {
+    padding: 6px 9px;
+    font-size: 0.75rem;
   }
   .radarGrid {
     grid-template-columns: 1fr;

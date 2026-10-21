@@ -3,7 +3,8 @@
 > **Tarih:** 21 Ekim 2026  
 > **Kapsam:** Öğrenci Portalı (Student UX & UI) — Mobil Ergonomi, Görsel İnce Ayar (Visual Polish) ve Sadeleştirme  
 > **Gelecek Uyumluluk:** Bu sürümde kurulan arayüz ve sadeleştirme standartları, sonraki aşamalarda Koç, Öğretmen ve Veli panellerine de uygulanacaktır.  
-> **Temel Kurallar:** Hardcoded Türkçe Serbest (BÖLÜM A2), Sıfır Emoji (Yalnızca Lucide SVG), Tema CSS Değişkenleri (`var(--bg-app)`, `var(--bg-card)`, `var(--border-color)`), Temiz Arka Plan (Dekor Kirliliği Yok).
+> **Temel Kurallar:** Hardcoded Türkçe Serbest (BÖLÜM A2), Sıfır Emoji (Yalnızca Lucide SVG), Tema CSS Değişkenleri (`var(--bg-app)`, `var(--bg-card)`, `var(--border-color)`), Temiz Arka Plan (Dekor Kirliliği Yok).  
+> **Görev Durum Kuralı:** Henüz bitmemiş maddeler `[ ]`, bitmiş maddeler ise `[x]` ile işaretlenecektir.
 
 ---
 
@@ -252,3 +253,75 @@ V9, V10 ve V11 sürümleriyle sistemin backend, veritabanı, güvenlik (IDOR) ve
 5. **Aşama 5 (Doğrulama & Commit):** T12 [Tamamlandı].
 6. **Aşama 6 (V12.1 Ek İyileştirmeler):** T13 + T14 + T15 + T16 [Tamamlandı].
 7. **Aşama 7 (V12.2 Tema Sekmeleri, Sistem Modu & Derslerim Tikleme):** T17 + T18 [Tamamlandı].
+8. **Aşama 8 (V12.3 Koç Mobil Arayüzü & Sadeleştirme):** T19 + T20 + T21 + T22 + T23 + T24 [Tamamlandı].
+
+---
+
+### BÖLÜM 8: V12.3 Koç Mobil Arayüzü, Ergonomi & Sadeleştirme
+
+#### [x] T19 — Üst Bar Temizliği, Çift Menü Kaldırma & 5-Sekmeli Mobil Alt Bar (Bottom Nav)
+- **Dosyalar:**
+  - `Frontend/src/components/layout/CoachLayout/CoachLayout.jsx`
+  - `Frontend/src/components/layout/CoachLayout/CoachLayout.module.css`
+- **İşlemler:**
+  1. **Çift Menü Hatasının Giderilmesi:** Alt barda zaten `[ ☰ Menü ]` bulunacağından, mobilde sol üstteki `[ ≡ ]` hamburger butonu kaldırılacak. Sol üstte 3 satıra bölünüp taşan breadcrumb yerine yalnızca o anki sayfanın net, tek satır başlığı (`Dashboard`, `Takvim`, `Öğrenciler`, `Raporlar`) gösterilecek.
+  2. **Mobil Üst Bar Taşma ve Dağılım Çözümü:**
+     - Sağ taraftaki ekran dışına taşan buton kalabalığı temizlenecek. Sağda yalnızca 3 kompakt ve taşmayan ikon yer alacak: `[ 🔍 Arama ]` (tıklanınca Global Arama modalı açılır), `[ + Hızlı Ekle ]` ve `[ 🔔 Bildirimler ]` (ekrandan taşması engellenecek, tam görünür olacak).
+     - Mobilde kaybolma riski olan özellikler güvenle **Soldan Açılan Çekmece Menü (Drawer)** içine taşınacak: `[ 👁️ Rol Gözüyle Gör ]`, `[ 📥 Uygulamayı Cihaza Kur (PWA) ]` ve `[ 🎨 Tema Seçici ]` çekmecenin üst/alt aksiyon alanlarına entegre edilecek.
+  3. **Ergonomik Mobil Alt Bar (Bottom Nav — `< 768px`):**
+     - `[ 📊 Dashboard ]` (`/coach/dashboard` — `LayoutDashboard`)
+     - `[ 👥 Öğrenciler ]` (`/coach/students` — `Users`)
+     - `[ 📅 Takvim ]` (`/coach/calendar` — `Calendar`)
+     - `[ 🛡️ Onaylar ]` (`/coach/approvals` — `ShieldCheck` — canlı rozetli `coachPendingCount`)
+     - `[ ☰ Menü ]` (`Menu` — sol çekmeceyi açar)
+  4. **Sayfa Altı Güvenli Boşluk:** `pageContent` alanına mobilde `padding-bottom: 84px` verilerek kartların alt bar arkasında kalması engellenecek.
+
+#### [x] T20 — Güneş Opaklığı & Buton Arka Plan Koruması (Background Shield)
+- **Dosyalar:**
+  - `Frontend/src/components/common/ThemeDecor/SkyDecor.jsx`
+  - `Frontend/src/components/common/ThemeDecor/SkyDecor.module.css`
+- **İşlemler:**
+  1. Mobilde (`< 768px`) sağ üstteki Güneş opaklığı `opacity: 0.28` seviyesine çekilecek; corona halesi yumuşatılarak su damgası/atmosfer ışığı havasına kavuşturulacak.
+  2. `Veli Raporu İndir (PDF)` ve `Gözüyle Gör` gibi ikincil (outline/ghost) butonlara `background: var(--bg-card)` opak zemin verilecek; arkalarından geçen sarı Güneş dekorunun buton metinlerini yutması engellenecek.
+
+#### [x] T21 — Koç Dashboard Mobil Bento Izgara (2x2 KPI) & Tek Satır Sekmeler
+- **Dosyalar:**
+  - `Frontend/src/features/coach/dashboard/CoachDashboard.jsx`
+  - `Frontend/src/features/coach/dashboard/CoachDashboard.module.css`
+- **İşlemler:**
+  1. Tüm mobil ekranı dikeyde tek başına kaplayan 4 dev KPI kartı, 2x2 kompakt bento ızgaraya (`grid-template-columns: 1fr 1fr; gap: 10px;`) dönüştürülecek; iç boşluk ve yazı boyutları küçültülecek. Koç sayfayı açtığında kaydırmadan alttaki görev listesini görebilecek.
+  2. `Tüm Programlar` seçicisi başlık satırıyla hizalanacak.
+  3. `[ Acil & Gecikenler (2) ]`, `[ Onay Bekleyenler (0) ]`, `[ Öğretmen Notları (0) ]` sekmelerinde metinlerin iki satıra kırılması `white-space: nowrap` ve `overflow-x: auto` ile tek satırlık yatay kaydırılabilir modern hap (pill) butonlara çevrilecek.
+
+#### [x] T22 — Takvim Ekranı Açılır/Kapanır Filtre Paneli (Collapsible Sheet)
+- **Dosyalar:**
+  - `Frontend/src/features/coach/calendar/CalendarPage.jsx`
+  - `Frontend/src/features/coach/calendar/CalendarPage.module.css`
+- **İşlemler:**
+  1. Takvim ızgarasını ekranın en altına iten 5 adet açık dropdown filtre (Program, Öğrenci, Ders, Öğretmen, Etkinlik Türü), mobilde tek bir `[ ⚡ Filtrele ]` (aktif filtre varsa `Filtrele (X)`) butonuyla açılıp kapanan şık bir akordeon / panel içerisine alınacak. Takvim ızgarası doğrudan ekranın üstünde başlayacak.
+  2. Lejant renk noktaları tek satırda yatay kaydırılabilir yapılacak.
+  3. Mobilde görünüm butonları sıkışmadan ergonomik dokunma alanlarına kavuşturulacak.
+
+#### [x] T23 — Finans Çift Buton Sadeleştirmesi & Raporlar Kart Hizalaması
+- **Dosyalar:**
+  - `Frontend/src/features/coach/payments/CoachPaymentsPage.jsx` (+ `.module.css`)
+  - `Frontend/src/features/coach/reports/CoachReports.jsx` (+ `.module.css`)
+- **İşlemler:**
+  1. **Finans:** Liste boşken (Empty State) hem üstte hem altta tekrar eden yeşil `+ Ödeme Planı Oluştur` butonundan üstteki mobilde başlık alanından sadeleştirilecek; çift buton karmaşası bitecek. 4'lü finans KPI kartı Dashboard gibi 2x2 kompakt ızgaraya alınacak.
+  2. **Raporlar:** "Bu Hafta Genel Durum" kartındaki başlıklar ve altındaki kaymış rakamlar (`1`, `1`, `0`, `1`) ortalanmış, hizalı 2x2 kutucuklara dönüştürülecek. Veli Raporu İndir butonu Güneş çakışmasından kurtarılıp opak zeminle netleştirilecek.
+
+#### [x] T24 — Profil Sayfası Sola Hizalama & Öğrenci Detay 10 Sekmenin 4 Gruba Birleştirilmesi
+- **Dosyalar:**
+  - `Frontend/src/features/coach/profile/CoachProfilePage.jsx` (+ `.module.css`)
+  - `Frontend/src/features/coach/student-detail/CoachStudentDetail.jsx` (+ `.module.css`)
+- **İşlemler:**
+  1. **Profil Sayfası:** `CoachProfilePage` içindeki dikeyde aşırı yer kaplayan kullanıcı kartı mobilde yatay kompakt karta dönüştürülecek; ortalanmış (`text-align: center`) form etiketleri (Uzmanlık Alanı, Biyografi vb.) modern SaaS standardına uygun olarak sola hizalanacak.
+  2. **Öğrenci Detay 10 Sekmenin 4 Ana Gruba Birleştirilmesi:**
+     Mobilde yatayda kayarak kullanımı zorlaştıran 10 ayrı sekme, 4 ana akıllı sekme (ve içlerindeki düzenli alt kartlar/bölümler) halinde birleştirilecek:
+     - **1. Genel & Zaman:** `info` (İletişim & Akademik Hedefler) + `timeBudget` (Haftalık Zaman Bütçesi) + `events` (Öğrenci Takvimi).
+     - **2. Akademik (Ödev & Sınav):** `homework` (Ödev Takibi & Ata) + `exams` (Sınav Geçmişi & Netler) + `topics` (Müfredat & Konu Takibi).
+     - **3. Seans & Notlar:** `sessions` (Birebir Koçluk Görüşmeleri) + `notes` (Koç Özel Notları) + `teacherNotes` (Öğretmen Ders Notları).
+     - **4. Veli & İletişim:** `parents` (Veli İletişim Bilgileri, İzinler & Veli Davet Etme Paneli).
+  3. **Emoji Temizliği & Buton Standartları:**
+     - `icon="📄"`, `icon="✏️"`, `icon="📝"`, `icon="←"` emojileri temizlenip Lucide SVG ikonlarına (`FileText`, `Edit3`, `Plus`, `ArrowLeft`) geçirilecek.
+     - `[ PDF Rapor ]`, `[ Düzenle ]`, `[ Ödev Ata ]` butonları eşit genişlikte ve modern SaaS hiyerarşisinde düzenlenecek.

@@ -154,7 +154,11 @@ export default function CoachPaymentsPage() {
             </div>
           )}
 
-          <Button variant="primary" onClick={handleOpenCreateModal}>
+          <Button
+            variant="primary"
+            onClick={handleOpenCreateModal}
+            className={plans.length === 0 ? styles.topCreateBtnWhenEmpty : ''}
+          >
             <Plus size={16} />
             <span>Ödeme Planı Oluştur</span>
           </Button>

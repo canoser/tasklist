@@ -27,52 +27,72 @@ const CoachProfilePage = () => {
     <div className={styles.container}>
       <h1 className={styles.title}>Profilim</h1>
 
-      <Card className={styles.card} padding="lg">
-        <div className={styles.avatar}>{me?.fullName?.charAt(0) || 'K'}</div>
-        <h2 className={styles.name}>{me?.fullName || 'Koç'}</h2>
-        <p className={styles.meta}>{me?.email}</p>
-        <p className={styles.meta}>Rol: {me?.role === 'Admin' ? 'Yönetici' : 'Koç'}</p>
+      <Card className={styles.profileHeaderCard} padding="lg">
+        <div className={styles.headerAvatarWrapper}>
+          <div className={styles.avatar}>{me?.fullName?.charAt(0) || 'K'}</div>
+          <div className={styles.headerInfo}>
+            <h2 className={styles.name}>{me?.fullName || 'Koç'}</h2>
+            <p className={styles.metaEmail}>{me?.email}</p>
+            <span className={styles.roleBadge}>{me?.role === 'Admin' ? 'Yönetici' : 'Koç'}</span>
+          </div>
+        </div>
       </Card>
 
-      <Card className={styles.card} padding="lg">
+      <Card className={styles.formCard} padding="lg">
         <h3 className={styles.sectionTitle}>Hakkımda</h3>
-        <Input
-          label="Uzmanlık Alanı"
-          value={specialty}
-          onChange={(e) => setSpecialty(e.target.value)}
-          placeholder="örn. YKS Sayısal, LGS"
-        />
-        <div style={{ marginTop: 12 }}>
-          <label className={styles.meta} style={{ display: 'block', marginBottom: 6 }}>Biyografi</label>
+        <div className={styles.formGroup}>
+          <Input
+            label="Uzmanlık Alanı"
+            value={specialty}
+            onChange={(e) => setSpecialty(e.target.value)}
+            placeholder="örn. YKS Sayısal, LGS"
+          />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>Biyografi</label>
           <textarea
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             rows={4}
             placeholder="Kendiniz ve koçluk yaklaşımınız hakkında kısa bir açıklama..."
-            style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: '0.9rem' }}
+            className={styles.textarea}
           />
         </div>
-        <div style={{ marginTop: 12 }}>
-          <Button variant="primary" size="sm" onClick={() => updateProfile.mutate({ bio, specialty })} disabled={updateProfile.isPending}>
-            {updateProfile.isPending ? 'Kaydediliyor...' : 'Kaydet'}
+        <div className={styles.formActions}>
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => updateProfile.mutate({ bio, specialty })}
+            disabled={updateProfile.isPending}
+          >
+            {updateProfile.isPending ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
           </Button>
-          {updateProfile.isSuccess && <span style={{ marginLeft: 10, color: '#16a34a' }}>✓ Kaydedildi</span>}
+          {updateProfile.isSuccess && (
+            <span className={styles.successMessage}>✓ Profil güncellendi</span>
+          )}
         </div>
       </Card>
 
-      <Card className={styles.card} padding="lg">
+      <Card className={styles.formCard} padding="lg">
         <h3 className={styles.sectionTitle}>Programlarım ({programs?.length || 0})</h3>
-        {programs?.length > 0 ? (
-          programs.map((p) => (
-            <div key={p.id} className={styles.item}>
-              <strong>{p.name}</strong>
-              <span className={styles.meta}> · {p.role === 'YONETICI' ? 'Yönetici' : 'Yardımcı'}</span>
-              <span className={styles.meta}> · {p.studentCount || 0} öğrenci</span>
-            </div>
-          ))
-        ) : (
-          <p className={styles.meta}>Henüz program oluşturmadınız.</p>
-        )}
+        <div className={styles.programList}>
+          {programs?.length > 0 ? (
+            programs.map((p) => (
+              <div key={p.id} className={styles.programItem}>
+                <div>
+                  <strong className={styles.programName}>{p.name}</strong>
+                  <div className={styles.programMeta}>
+                    <span>{p.role === 'YONETICI' ? 'Yönetici' : 'Yardımcı'}</span>
+                    <span> · </span>
+                    <span>{p.studentCount || 0} öğrenci</span>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className={styles.emptyMeta}>Henüz program oluşturmadınız.</p>
+          )}
+        </div>
       </Card>
     </div>
   );
