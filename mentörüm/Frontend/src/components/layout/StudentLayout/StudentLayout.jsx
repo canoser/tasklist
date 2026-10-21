@@ -115,9 +115,6 @@ const StudentLayout = () => {
           </div>
 
           <div className={styles.topbarActions}>
-            <NavLink to="/student/theme" className={styles.themeBtn} title="Temayı Değiştir">
-              <Palette size={18} />
-            </NavLink>
             <NotificationDropdown />
             <button className={styles.mobileLogoutBtn} onClick={handleLogout} title="Çıkış Yap">
               <LogOut size={18} />

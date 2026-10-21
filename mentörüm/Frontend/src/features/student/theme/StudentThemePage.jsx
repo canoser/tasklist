@@ -138,7 +138,7 @@ export default function StudentThemePage() {
               <div className={styles.layoutCardHeader}>
                 <div>
                   <div className={styles.layoutTitle}>2. Görev & Ödev Öncelikli</div>
-                  <div style={{ fontSize: '0.72rem', color: '#818cf8', fontWeight: 600 }}>Bento / Aksiyon Odaklı</div>
+                  <div style={{ fontSize: '0.72rem', color: '#6366f1', fontWeight: 600 }}>Bento / Aksiyon Odaklı</div>
                 </div>
                 {studentHomeLayout === 'widget' && (
                   <span className={styles.layoutBadge}><Check size={13} /> Seçildi</span>

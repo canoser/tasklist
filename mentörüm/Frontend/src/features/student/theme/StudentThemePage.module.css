@@ -95,8 +95,8 @@
 }
 
 .layoutBadge {
-  background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
+  background: var(--color-primary-light, rgba(16, 185, 129, 0.15));
+  color: var(--color-primary, #10b981);
   font-size: 0.7rem;
   font-weight: 700;
   padding: 3px 8px;
@@ -104,7 +104,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  border: 1px solid var(--color-primary-border, rgba(16, 185, 129, 0.3));
 }
 
 .layoutDesc {
@@ -254,8 +254,9 @@
 
 .modeBtnActive {
   border-color: var(--color-primary, #10b981);
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--color-primary-light, #34d399);
+  background: var(--color-primary-light, rgba(16, 185, 129, 0.12));
+  color: var(--color-primary, #10b981);
+  font-weight: 700;
 }
 
 /* Tema Stilleri Listesi */

@@ -67,6 +67,9 @@
 /* Koyu / Slate Tema (Dark: Slate-900 / Classic) */
 [data-theme='dark'],
 [data-theme-mode='dark'] {
+  --color-primary: #818CF8;
+  --color-primary-hover: #6366F1;
+
   --bg-color-main: #0F172A;
   --bg-color-surface: rgba(30, 41, 59, 0.85);
   --bg-color-surface-elevated: rgba(51, 65, 85, 0.88);
