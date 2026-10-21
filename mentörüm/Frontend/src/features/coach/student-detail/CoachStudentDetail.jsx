@@ -455,7 +455,7 @@ const CoachStudentDetail = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {notesList.map(note => (
                     <div key={note.id} style={{ padding: '10px', backgroundColor: '#f8fafc', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
-                      <div style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '5px' }}>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-color-muted)', marginBottom: '5px' }}>
                         {new Date(note.createdAt).toLocaleString()}
                       </div>
                       <div style={{ whiteSpace: 'pre-wrap', color: '#334155' }}>{note.content}</div>
@@ -463,7 +463,7 @@ const CoachStudentDetail = () => {
                   ))}
                 </div>
               ) : (
-                <p style={{ color: '#64748b' }}>Henüz not eklenmemiş.</p>
+                <p style={{ color: 'var(--text-color-muted)' }}>Henüz not eklenmemiş.</p>
               )}
             </div>
 
@@ -556,11 +556,11 @@ const CoachStudentDetail = () => {
                 <div key={hw.id} style={{ padding: '8px 0', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
                   <div>
                     <strong>{hw.snapshotTitle}</strong>
-                    {hw.subjectName && <span style={{ marginLeft: 8, fontSize: '0.8rem', color: '#64748b' }}>{hw.subjectName}</span>}
+                    {hw.subjectName && <span style={{ marginLeft: 8, fontSize: '0.8rem', color: 'var(--text-color-muted)' }}>{hw.subjectName}</span>}
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{hw.dueDate ? new Date(hw.dueDate).toLocaleDateString('tr-TR') : '-'}</div>
-                    <span style={{ fontSize: '0.8rem', fontWeight: 600, color: hw.status === 'OVERDUE' ? '#ef4444' : hw.status === 'DONE' ? '#22c55e' : '#64748b' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-color-muted)' }}>{hw.dueDate ? new Date(hw.dueDate).toLocaleDateString('tr-TR') : '-'}</div>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 600, color: hw.status === 'OVERDUE' ? '#ef4444' : hw.status === 'DONE' ? '#22c55e' : 'var(--text-color-muted)' }}>
                       {hw.status === 'OVERDUE' ? 'Gecikmiş' : hw.status === 'DONE' ? 'Tamamlandı' : 'Bekliyor'}
                       {hw.completionPercentage != null ? ` · %${hw.completionPercentage}` : ''}
                     </span>
@@ -583,7 +583,7 @@ const CoachStudentDetail = () => {
                     {t.isCompleted ? <CheckCircle2 size={14} color="#16a34a" /> : <Square size={14} color="#94a3b8" />}
                     <span>{t.topicName}</span>
                   </span>
-                  <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{t.subjectName}</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-color-muted)' }}>{t.subjectName}</span>
                 </div>
               ))
             ) : (
@@ -598,7 +598,7 @@ const CoachStudentDetail = () => {
               studentEvents.map((ev) => (
                 <div key={ev.id} style={{ padding: '6px 0', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', gap: 10 }}>
                   <span>{ev.title}</span>
-                  <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-color-muted)' }}>
                     {ev.startAt ? new Date(ev.startAt).toLocaleString('tr-TR') : '-'} · {ev.eventType}
                   </span>
                 </div>
@@ -617,11 +617,11 @@ const CoachStudentDetail = () => {
                 <div key={s.id} style={{ padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <strong>{s.title}</strong>
-                    <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{s.sessionDate ? new Date(s.sessionDate).toLocaleDateString('tr-TR') : '-'}</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-color-muted)' }}>{s.sessionDate ? new Date(s.sessionDate).toLocaleDateString('tr-TR') : '-'}</span>
                   </div>
-                  {s.notes && <p style={{ fontSize: '0.85rem', color: '#475569', margin: '4px 0' }}>{s.notes}</p>}
+                  {s.notes && <p style={{ fontSize: '0.85rem', color: 'var(--text-color-muted)', margin: '4px 0' }}>{s.notes}</p>}
                   {s.actionItems && (
-                    <p style={{ fontSize: '0.8rem', color: '#b45309', margin: '4px 0 0', display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--color-warning)', margin: '4px 0 0', display: 'flex', alignItems: 'center', gap: 5 }}>
                       <CheckCircle2 size={13} style={{ flexShrink: 0 }} />
                       <span>{s.actionItems}</span>
                     </p>
@@ -637,11 +637,11 @@ const CoachStudentDetail = () => {
               <Input label="Başlık" value={sessionTitle} onChange={(e) => setSessionTitle(e.target.value)} placeholder="örn. Hedef gözden geçirme" />
               <Input label="Tarih" type="datetime-local" value={sessionDate} onChange={(e) => setSessionDate(e.target.value)} />
               <div style={{ marginTop: 12 }}>
-                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#475569', display: 'block', marginBottom: 6 }}>Görüşme Notları</label>
+                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-color-muted)', display: 'block', marginBottom: 6 }}>Görüşme Notları</label>
                 <textarea value={sessionNotes} onChange={(e) => setSessionNotes(e.target.value)} rows={3} style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0' }} />
               </div>
               <div style={{ marginTop: 12 }}>
-                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#475569', display: 'block', marginBottom: 6 }}>Aksiyon Öğeleri</label>
+                <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-color-muted)', display: 'block', marginBottom: 6 }}>Aksiyon Öğeleri</label>
                 <textarea value={sessionActions} onChange={(e) => setSessionActions(e.target.value)} rows={2} placeholder="örn. Bu hafta 3 deneme çözecek" style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0' }} />
               </div>
               <div style={{ marginTop: 12 }}>

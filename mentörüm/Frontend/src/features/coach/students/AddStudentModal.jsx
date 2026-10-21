@@ -9,6 +9,8 @@ export default function AddStudentModal({ open, onClose, groupId, groupName, onS
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [email, setEmail] = useState('');
+    const [classLevel, setClassLevel] = useState('');
+    const [targetExam, setTargetExam] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState('');
 

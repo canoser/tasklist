@@ -84,6 +84,22 @@
 ## 5. Kodlama Sonrası Görev
 - [x] `KULLANIM_KILAVUZU.md`'e bu V13 özelliklerinin kullanımı eklenir: gölge profil (e-postasız) öğrenci ekleme, sonradan davet gönderme, bireysel↔grup geçişi ve geçmiş/güncel ödev görünümü.
 
+## 6. Düzeltmeler (Hatalar ve Çözümler)
+
+### 🔴 HATA-1 (Kritik — Beyaz Ekran): `AddStudentModal`'da tanımsız state
+- **Hata:** Gemini'nin tasarım refactor'ünde `classLevel` ve `targetExam` state tanımları silinmiş, ancak dosyada referansları kalmış (satır 25, 26, 32, 33, 75, 76, 85, 86). `/coach/students` render edilirken `Uncaught ReferenceError: classLevel is not defined` fırlatıyor → beyaz ekran.
+- **Çözüm:** `AddStudentModal.jsx` içinde `email` state'inden sonra şu iki satır geri eklendi:
+  `const [classLevel, setClassLevel] = useState('');`
+  `const [targetExam, setTargetExam] = useState('');`
+
+### 🟡 HATA-2 (Tasarım — kısmi): `CoachStudentDetail` sessions sekmesinde hardcoded stiller
+- **Hata:** "Koçluk Görüşmeleri" sekmesinde `#f1f5f9`, `#94a3b8`, `#475569`, `#e2e8f0`, `#b45309` hardcoded renkler + inline stiller (V13 öncesi mevcut kod; tasarım düzeltmesi henüz uygulanmadı).
+- **Çözüm:** Inline stilleri `CoachStudentDetail.module.css`'e taşı; `var(--border-color)` / `var(--text-color-muted)` değişkenlerine bağla.
+
+### 🟡 HATA-3 (İkincil — ayrı): 401/403 auth hataları
+- **Hata:** Konsolda `/api/v1/students`, `/api/v1/programs` → 401; `/api/v1/me/theme`, `/api/v1/devices` → 403. Muhtemelen "Rol Gözüyle Gör" (View-As) modu veya süresi dolmuş token.
+- **Çözüm:** `classLevel` düzeltildikten sonra ayrıca incelenecek (View-As state sıfırlama veya token yenileme).
+
 ---
 
 ## 6. V13.1 Tasarım Kuralları & UI/UX İyileştirmeleri (Design System Uyumu)
