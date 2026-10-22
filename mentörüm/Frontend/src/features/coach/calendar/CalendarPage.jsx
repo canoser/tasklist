@@ -235,7 +235,7 @@ const CalendarPage = () => {
             </div>
 
             <div className={`${styles.filters} ${isFiltersOpen ? styles.filtersOpen : ''}`}>
-              {programs.length > 0 && (
+              {programs && programs.length > 1 && (
                 <select value={programFilter} onChange={(e) => setProgramFilter(e.target.value)} className={styles.select}>
                   <option value="">Tüm Programlar</option>
                   {programs.map((p) => (

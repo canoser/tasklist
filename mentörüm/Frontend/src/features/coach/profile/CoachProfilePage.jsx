@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useMe, usePrograms } from '../coachSchoolApi';
+import { useMe } from '../coachSchoolApi';
 import { useUpdateCoachProfile } from '../coachApi';
 import { apiClient } from '../../../api/apiClient';
 import Card from '../../../components/common/Card/Card';
@@ -9,7 +9,6 @@ import styles from './CoachProfilePage.module.css';
 
 const CoachProfilePage = () => {
   const { data: me, isLoading } = useMe();
-  const { data: programs } = usePrograms();
   const updateProfile = useUpdateCoachProfile();
 
   const [bio, setBio] = useState('');
@@ -123,28 +122,6 @@ const CoachProfilePage = () => {
             {pwError && <span style={{ color: 'var(--color-danger)' }}>{pwError}</span>}
           </div>
         </form>
-      </Card>
-
-      <Card className={styles.formCard} padding="lg">
-        <h3 className={styles.sectionTitle}>Programlarım ({programs?.length || 0})</h3>
-        <div className={styles.programList}>
-          {programs?.length > 0 ? (
-            programs.map((p) => (
-              <div key={p.id} className={styles.programItem}>
-                <div>
-                  <strong className={styles.programName}>{p.name}</strong>
-                  <div className={styles.programMeta}>
-                    <span>{p.role === 'YONETICI' ? 'Yönetici' : 'Yardımcı'}</span>
-                    <span> · </span>
-                    <span>{p.studentCount || 0} öğrenci</span>
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className={styles.emptyMeta}>Henüz program oluşturmadınız.</p>
-          )}
-        </div>
       </Card>
     </div>
   );

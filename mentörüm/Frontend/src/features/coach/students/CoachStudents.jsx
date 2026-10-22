@@ -483,16 +483,18 @@ const CoachStudents = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <select
-                className={styles.select}
-                value={programFilter}
-                onChange={(e) => setProgramFilter(e.target.value)}
-              >
-                <option value="">Tüm Programlar</option>
-                {programs?.map((p) => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
+              {programs && programs.length > 1 && (
+                <select
+                  className={styles.select}
+                  value={programFilter}
+                  onChange={(e) => setProgramFilter(e.target.value)}
+                >
+                  <option value="">Tüm Programlar</option>
+                  {programs?.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              )}
               <select
                 className={styles.select}
                 value={gradeFilter}

@@ -361,7 +361,7 @@ const CoachLayout = () => {
               <InstallAppButton />
             </div>
 
-            {/* Hızlı Aksiyon (Ödev / Program Ata) */}
+            {/* Hızlı Aksiyon (Ödev Ata) */}
             <button
               type="button"
               className={styles.quickActionBtn}
@@ -369,7 +369,7 @@ const CoachLayout = () => {
               title="Öğrenci veya Ödev İşlemleri"
             >
               <Plus size={18} strokeWidth={2.2} />
-              <span>Ödev / Program Ata</span>
+              <span>Ödev Ata</span>
             </button>
 
             {/* Masaüstü: Tema Seçici */}
