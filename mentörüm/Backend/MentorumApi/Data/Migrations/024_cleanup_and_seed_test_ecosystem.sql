@@ -93,7 +93,7 @@ BEGIN
     DELETE FROM coach_question_collection_items;
     DELETE FROM coach_question_collections;
     DELETE FROM upload_deliveries;
-    DELETE FROM uploads WHERE uploaded_by != v_coach_id;
+    DELETE FROM uploads;
 
     DELETE FROM program_coaches;
     DELETE FROM coaching_programs;
