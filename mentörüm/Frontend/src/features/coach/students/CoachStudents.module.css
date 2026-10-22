@@ -538,3 +538,46 @@
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+.filterCard {
+  background-color: var(--bg-color-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  position: relative;
+  z-index: 2;
+}
+
+.filterGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.select {
+  height: 42px;
+  width: 100%;
+  padding: 0 14px;
+  border-radius: var(--radius-btn);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-color-surface);
+  color: var(--text-color-main);
+  font-size: 0.875rem;
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.select option {
+  background-color: var(--bg-color-surface);
+  color: var(--text-color-main);
+}
+

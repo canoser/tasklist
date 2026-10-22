@@ -19,6 +19,28 @@ namespace MentorumApi.Endpoints
                 return Results.Ok(await repo.GetTeachersAsync(programId, coachId.Value));
             });
 
+            group.MapPost("/", async (
+                Guid programId,
+                [FromBody] DirectCreateTeacherRequest req,
+                [FromServices] TeacherRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = GetCoachId(user);
+                if (coachId == null) return Results.Unauthorized();
+                if (string.IsNullOrWhiteSpace(req.FirstName) || string.IsNullOrWhiteSpace(req.LastName))
+                    return Results.BadRequest(new { error = "Ad ve soyad zorunludur." });
+
+                try
+                {
+                    var teacherId = await repo.DirectCreateTeacherAsync(programId, req, coachId.Value);
+                    return Results.Ok(new { teacherId, message = "Öğretmen başarıyla eklendi." });
+                }
+                catch (InvalidOperationException ex)
+                {
+                    return Results.BadRequest(new { error = ex.Message });
+                }
+            });
+
             group.MapGet("/{teacherId:guid}", async (Guid programId, Guid teacherId, [FromServices] TeacherRepository repo, ClaimsPrincipal user) =>
             {
                 var coachId = GetCoachId(user);

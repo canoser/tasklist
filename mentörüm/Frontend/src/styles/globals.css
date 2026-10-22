@@ -324,3 +324,31 @@ button, a, [role="button"], select, .clickable {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-color-muted);
 }
+
+/* Temaya Duyarlı Form Kontrolleri (Select, Option, Textarea, Input) */
+select, textarea, input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]) {
+  font-family: inherit;
+  font-size: 0.875rem;
+  color: var(--text-color-main);
+  background-color: var(--bg-color-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-btn);
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+select:focus, textarea:focus, input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+select option {
+  background-color: var(--bg-color-surface);
+  color: var(--text-color-main);
+  padding: 8px;
+}
+
+textarea {
+  resize: vertical;
+}
+

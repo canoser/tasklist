@@ -30,6 +30,17 @@ export const useDeactivateTeacher = () => {
   });
 };
 
+export const useDirectCreateTeacher = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ programId, data }) => apiClient.post(`/programs/${programId}/teachers`, data),
+    onSuccess: (_, v) => {
+      qc.invalidateQueries({ queryKey: ['coach', 'program', v.programId, 'teachers'] });
+      qc.invalidateQueries({ queryKey: ['coach', 'teachers'] });
+    },
+  });
+};
+
 export const useTeacherDetail = (programId, teacherId) => useQuery({
   queryKey: ['coach', 'program', programId, 'teacher', teacherId],
   queryFn: async () => (await apiClient.get(`/programs/${programId}/teachers/${teacherId}`)) || null,

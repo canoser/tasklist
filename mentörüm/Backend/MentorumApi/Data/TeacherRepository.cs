@@ -11,15 +11,55 @@ namespace MentorumApi.Data
         public async Task<IEnumerable<TeacherDto>> GetTeachersAsync(Guid programId, Guid coachId)
         {
             using var conn = _connectionFactory.CreateConnection();
-            return await conn.QueryAsync<TeacherDto>(@"
+            var teachers = (await conn.QueryAsync<TeacherDto>(@"
                 SELECT t.id, u.full_name AS FullName, u.email AS Email, u.avatar_url AS AvatarUrl,
+                       t.branch AS Branch, t.phone AS Phone,
                        t.is_active AS IsActive, t.created_at AS CreatedAt
                 FROM teachers t
                 JOIN users u ON u.id = t.id
                 WHERE t.program_id = @ProgramId
                   AND EXISTS (SELECT 1 FROM program_coaches pc WHERE pc.program_id = @ProgramId AND pc.coach_id = @CoachId)
                 ORDER BY u.full_name",
-                new { ProgramId = programId, CoachId = coachId });
+                new { ProgramId = programId, CoachId = coachId })).ToList();
+
+            if (teachers.Count == 0) return teachers;
+
+            // Öğretmenlerin bu programdaki derslerini çek
+            var courses = await conn.QueryAsync<(Guid TeacherId, Guid Id, string Name, string? Type)>(@"
+                SELECT c.teacher_id AS TeacherId, c.id AS Id, c.name AS Name, c.type AS Type
+                FROM courses c
+                WHERE c.program_id = @ProgramId AND c.teacher_id IS NOT NULL AND c.is_active = 1
+                ORDER BY c.name",
+                new { ProgramId = programId });
+
+            // Öğretmenlerin sorumlu olduğu tekil öğrenci sayılarını çek
+            var studentCounts = await conn.QueryAsync<(Guid TeacherId, int Count)>(@"
+                SELECT c.teacher_id AS TeacherId, COUNT(DISTINCT sid) AS Count
+                FROM (
+                    SELECT c.teacher_id, cs.student_id AS sid
+                    FROM course_students cs
+                    JOIN courses c ON c.id = cs.course_id
+                    WHERE c.program_id = @ProgramId AND cs.is_active = 1 AND c.teacher_id IS NOT NULL
+                    UNION
+                    SELECT c.teacher_id, sgm.student_id AS sid
+                    FROM course_groups cg
+                    JOIN courses c ON c.id = cg.course_id
+                    JOIN student_group_members sgm ON sgm.group_id = cg.group_id
+                    WHERE c.program_id = @ProgramId AND c.teacher_id IS NOT NULL
+                ) c
+                GROUP BY c.teacher_id",
+                new { ProgramId = programId });
+
+            var courseLookup = courses.ToLookup(c => c.TeacherId, c => new TeacherCourseInfoDto { Id = c.Id, Name = c.Name, Type = c.Type });
+            var countMap = studentCounts.ToDictionary(sc => sc.TeacherId, sc => sc.Count);
+
+            foreach (var t in teachers)
+            {
+                t.Courses = courseLookup[t.Id].ToList();
+                t.StudentCount = countMap.TryGetValue(t.Id, out var count) ? count : 0;
+            }
+
+            return teachers;
         }
 
         public async Task<TeacherDto?> GetTeacherAsync(Guid programId, Guid teacherId, Guid coachId)
@@ -27,12 +67,79 @@ namespace MentorumApi.Data
             using var conn = _connectionFactory.CreateConnection();
             return await conn.QuerySingleOrDefaultAsync<TeacherDto>(@"
                 SELECT t.id, u.full_name AS FullName, u.email AS Email, u.avatar_url AS AvatarUrl,
+                       t.branch AS Branch, t.phone AS Phone,
                        t.is_active AS IsActive, t.created_at AS CreatedAt
                 FROM teachers t
                 JOIN users u ON u.id = t.id
                 WHERE t.id = @TeacherId AND t.program_id = @ProgramId
                   AND EXISTS (SELECT 1 FROM program_coaches pc WHERE pc.program_id = @ProgramId AND pc.coach_id = @CoachId)",
                 new { ProgramId = programId, TeacherId = teacherId, CoachId = coachId });
+        }
+
+        public async Task<Guid> DirectCreateTeacherAsync(Guid programId, DirectCreateTeacherRequest req, Guid coachId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            conn.Open();
+            using var tx = conn.BeginTransaction();
+            try
+            {
+                var isCoach = await conn.ExecuteScalarAsync<int?>(@"
+                    SELECT 1 FROM program_coaches 
+                    WHERE program_id = @ProgramId AND coach_id = @CoachId",
+                    new { ProgramId = programId, CoachId = coachId }, tx);
+
+                if (isCoach == null)
+                    throw new UnauthorizedAccessException("Program bulunamadı veya yetkiniz yok.");
+
+                var fullName = $"{req.FirstName.Trim()} {req.LastName.Trim()}";
+                var email = !string.IsNullOrWhiteSpace(req.Email) 
+                    ? req.Email.Trim().ToLowerInvariant() 
+                    : $"ogretmen_{Guid.NewGuid():N}.{DateTime.UtcNow.Ticks}@mentorum.internal";
+
+                var exists = await conn.ExecuteScalarAsync<int>(
+                    "SELECT COUNT(1) FROM users WHERE LOWER(email) = @Email",
+                    new { Email = email }, tx);
+
+                if (exists > 0)
+                    throw new InvalidOperationException("Bu e-posta adresi zaten kullanımda.");
+
+                var rawPw = string.IsNullOrWhiteSpace(req.Password) ? "123456" : req.Password.Trim();
+                var hash = BCrypt.Net.BCrypt.HashPassword(rawPw);
+
+                var teacherId = Guid.NewGuid();
+
+                // 1. users tablosuna ekle
+                await conn.ExecuteAsync(@"
+                    INSERT INTO users (id, email, password_hash, role, full_name, is_admin, approval_status, is_active, created_at, updated_at)
+                    VALUES (@Id, @Email, @Hash, 'Teacher', @FullName, false, 'APPROVED', 1, NOW(), NOW())",
+                    new { Id = teacherId, Email = email, Hash = hash, FullName = fullName }, tx);
+
+                // 2. teachers tablosuna ekle
+                await conn.ExecuteAsync(@"
+                    INSERT INTO teachers (id, program_id, branch, phone, is_active, created_at)
+                    VALUES (@Id, @ProgramId, @Branch, @Phone, 1, NOW())",
+                    new { Id = teacherId, ProgramId = programId, Branch = req.Branch?.Trim(), Phone = req.Phone?.Trim() }, tx);
+
+                // 3. program_teachers tablosuna ekle
+                await conn.ExecuteAsync(@"
+                    INSERT INTO program_teachers (id, program_id, teacher_id, is_active, added_by, created_at)
+                    VALUES (@Id, @ProgramId, @TeacherId, 1, @CoachId, NOW())",
+                    new { Id = Guid.NewGuid(), ProgramId = programId, TeacherId = teacherId, CoachId = coachId }, tx);
+
+                // 4. Eğer ders atandıysa güncelle
+                if (req.CourseIds != null && req.CourseIds.Count > 0)
+                {
+                    await conn.ExecuteAsync(@"
+                        UPDATE courses 
+                        SET teacher_id = @TeacherId, updated_at = NOW()
+                        WHERE id = ANY(@CourseIds) AND program_id = @ProgramId",
+                        new { TeacherId = teacherId, CourseIds = req.CourseIds.ToArray(), ProgramId = programId }, tx);
+                }
+
+                tx.Commit();
+                return teacherId;
+            }
+            catch { tx.Rollback(); throw; }
         }
 
         public async Task<string> DeactivateTeacherAsync(Guid programId, Guid teacherId, Guid coachId, string? reason = null)
@@ -111,6 +218,7 @@ namespace MentorumApi.Data
             using var conn = _connectionFactory.CreateConnection();
             var teacher = await conn.QuerySingleOrDefaultAsync<TeacherDetailDto>(@"
                 SELECT t.id, u.full_name AS FullName, u.email AS Email, u.avatar_url AS AvatarUrl,
+                       t.branch AS Branch, t.phone AS Phone,
                        t.is_active AS IsActive, t.created_at AS CreatedAt
                 FROM teachers t
                 JOIN users u ON u.id = t.id

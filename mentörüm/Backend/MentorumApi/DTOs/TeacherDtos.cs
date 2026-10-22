@@ -8,8 +8,12 @@ namespace MentorumApi.DTOs
         public required string FullName { get; set; }
         public required string Email { get; set; }
         public string? AvatarUrl { get; set; }
+        public string? Branch { get; set; }
+        public string? Phone { get; set; }
         public int IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
+        public List<TeacherCourseInfoDto> Courses { get; set; } = new();
+        public int StudentCount { get; set; }
     }
 
     public class TeacherCourseInfoDto
@@ -17,6 +21,21 @@ namespace MentorumApi.DTOs
         public Guid Id { get; set; }
         public required string Name { get; set; }
         public string? Type { get; set; }
+    }
+
+    public class DirectCreateTeacherRequest
+    {
+        [Required]
+        public required string FirstName { get; set; }
+
+        [Required]
+        public required string LastName { get; set; }
+
+        public string? Branch { get; set; }
+        public string? Phone { get; set; }
+        public string? Email { get; set; }
+        public string? Password { get; set; }
+        public List<Guid>? CourseIds { get; set; }
     }
 
     public class TeacherProfileDto
@@ -31,8 +50,6 @@ namespace MentorumApi.DTOs
 
     public class TeacherDetailDto : TeacherDto
     {
-        public List<TeacherCourseInfoDto> Courses { get; set; } = new();
-        public int StudentCount { get; set; }
     }
 
     public class TeacherCreateHomeworkRequest

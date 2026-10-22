@@ -1,53 +1,263 @@
 .container {
-  padding: var(--spacing-md);
-  max-width: 900px;
+  padding: 0;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
-.title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: var(--spacing-md);
-  color: var(--text-color-main);
-}
-
-.card {
-  margin-bottom: var(--spacing-md);
-}
-
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
-.msg {
-  font-size: 0.85rem;
-  color: var(--color-success);
-}
-
-.list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
-.item {
-  margin: 0;
-}
-
-.itemHeader {
+.header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-color-main);
   margin-bottom: 4px;
 }
 
-.email {
-  font-size: 0.85rem;
+.subtitle {
   color: var(--text-color-muted);
-  margin-bottom: var(--spacing-sm);
+  font-size: 0.875rem;
 }
 
-.active { color: var(--color-success); font-size: 0.8rem; }
-.inactive { color: var(--text-color-muted); font-size: 0.8rem; }
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-btn, 8px);
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 2px rgba(79, 70, 229, 0.2);
+}
+
+.addBtn:hover {
+  opacity: 0.95;
+  transform: translateY(-1px);
+}
+
+.loading {
+  padding: var(--spacing-xl);
+  text-align: center;
+  color: var(--text-color-muted);
+}
+
+.emptyCard {
+  text-align: center;
+  padding: var(--spacing-xl) !important;
+  color: var(--text-color-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.teachersGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-md);
+  position: relative;
+  z-index: 2;
+}
+
+@media (min-width: 768px) {
+  .teachersGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1100px) {
+  .teachersGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.teacherCard {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-color-surface) !important;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card, 12px);
+  padding: var(--spacing-md) !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  gap: var(--spacing-sm);
+  position: relative;
+  z-index: 2;
+}
+
+.teacherCard:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.metaInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-color-main);
+  margin: 0;
+}
+
+.branchBadge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: rgba(14, 165, 233, 0.12);
+  color: var(--color-accent, #0ea5e9);
+  border: 1px solid rgba(14, 165, 233, 0.25);
+}
+
+.statusActive {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: rgba(34, 197, 94, 0.12);
+  color: #16a34a;
+  border: 1px solid rgba(34, 197, 94, 0.25);
+}
+
+.statusInactive {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: rgba(148, 163, 184, 0.12);
+  color: var(--text-color-muted);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.contactGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 0;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.contactItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8125rem;
+  color: var(--text-color-muted);
+}
+
+.contactItem strong {
+  color: var(--text-color-main);
+  font-weight: 500;
+}
+
+.coursesSection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 48px;
+}
+
+.coursesLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-color-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.courseBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.courseBadge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--bg-color-surface-elevated, rgba(255, 255, 255, 0.05));
+  color: var(--text-color-main);
+  border: 1px solid var(--border-color);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.courseBadgeType {
+  font-size: 0.68rem;
+  color: var(--text-color-muted);
+  font-weight: 400;
+}
+
+.noCourses {
+  font-size: 0.8rem;
+  color: var(--text-color-muted);
+  font-style: italic;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--spacing-xs);
+  gap: 8px;
+}
+
+.studentCount {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-color-muted);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

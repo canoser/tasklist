@@ -673,11 +673,22 @@ const CoachStudentDetail = () => {
               <Input label="Tarih" type="datetime-local" value={sessionDate} onChange={(e) => setSessionDate(e.target.value)} />
               <div style={{ marginTop: 12 }}>
                 <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-color-muted)', display: 'block', marginBottom: 6 }}>Görüşme Notları</label>
-                <textarea value={sessionNotes} onChange={(e) => setSessionNotes(e.target.value)} rows={3} style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0' }} />
+                <textarea 
+                  value={sessionNotes} 
+                  onChange={(e) => setSessionNotes(e.target.value)} 
+                  rows={3} 
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color-main)', color: 'var(--text-color-main)' }} 
+                />
               </div>
               <div style={{ marginTop: 12 }}>
                 <label style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-color-muted)', display: 'block', marginBottom: 6 }}>Aksiyon Öğeleri</label>
-                <textarea value={sessionActions} onChange={(e) => setSessionActions(e.target.value)} rows={2} placeholder="örn. Bu hafta 3 deneme çözecek" style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid #e2e8f0' }} />
+                <textarea 
+                  value={sessionActions} 
+                  onChange={(e) => setSessionActions(e.target.value)} 
+                  rows={2} 
+                  placeholder="örn. Bu hafta 3 deneme çözecek" 
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color-main)', color: 'var(--text-color-main)' }} 
+                />
               </div>
               <div style={{ marginTop: 12 }}>
                 <Button variant="primary" size="sm" onClick={handleCreateSession} disabled={createSession.isPending}>

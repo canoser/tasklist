@@ -1,92 +1,154 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useTeachers, useDeactivateTeacher, usePrograms } from '../coachSchoolApi';
-import { useSendInvite } from '../coachApi';
+import { useParams } from 'react-router-dom';
+import { useTeachers, useDeactivateTeacher, usePrograms, useCourses } from '../coachSchoolApi';
 import Button from '../../../components/common/Button/Button';
-import Input from '../../../components/common/Input/Input';
 import Card from '../../../components/common/Card/Card';
 import Modal from '../../../components/common/Modal/Modal';
-import { Trash2 } from 'lucide-react';
+import AddTeacherModal from './AddTeacherModal';
+import { Trash2, Plus, Mail, Phone, BookOpen, Users, GraduationCap } from 'lucide-react';
 import styles from './CoachTeachersPage.module.css';
 
 const CoachTeachersPage = () => {
   const { programId: routeProgramId } = useParams();
-  const navigate = useNavigate();
   const { data: programs = [] } = usePrograms();
-  const [selectedProgramId, setSelectedProgramId] = useState('');
+  const [selectedProgramId] = useState('');
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [teacherToDelete, setTeacherToDelete] = useState(null);
-  
+
   const programId = routeProgramId || selectedProgramId || (programs.length > 0 ? programs[0].id : null);
-  const { data: teachers, isLoading } = useTeachers(programId);
+  const { data: teachers = [], isLoading } = useTeachers(programId);
+  const { data: courses = [] } = useCourses(programId);
   const deactivateTeacher = useDeactivateTeacher();
-  const sendInvite = useSendInvite();
-
-  const [email, setEmail] = useState('');
-  const [inviteMsg, setInviteMsg] = useState('');
-  const [sendEmail, setSendEmail] = useState(false);
-
-  const handleInvite = async (e) => {
-    e.preventDefault();
-    if (!email.trim()) return;
-    const res = await sendInvite.mutateAsync({ email: email.trim(), role: 'Teacher', relatedId: programId, sendEmail });
-    setInviteMsg(sendEmail ? `Davet oluşturuldu ve e-posta gönderildi. Kod: ${res.code}` : `Davet oluşturuldu. Kod: ${res.code}`);
-    setEmail('');
-  };
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Öğretmenler</h1>
+      <header className={styles.header}>
+        <div>
+          <h1 className={styles.title}>Öğretmenler</h1>
+          <p className={styles.subtitle}>
+            Programınızda ders veren öğretmenler, branşları ve ders atamaları.
+          </p>
+        </div>
+        <button
+          type="button"
+          className={styles.addBtn}
+          onClick={() => setIsAddModalOpen(true)}
+        >
+          <Plus size={16} strokeWidth={2.2} />
+          <span>+ Yeni Öğretmen Ekle</span>
+        </button>
+      </header>
 
-      <Card className={styles.card} padding="md">
-        <form onSubmit={handleInvite} className={styles.form}>
-          <Input label="Öğretmen E-postası" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ogretmen@ornek.com" type="email" />
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.85rem', color: 'var(--text-color-main)' }}>
-            <input type="checkbox" checked={sendEmail} onChange={(e) => setSendEmail(e.target.checked)} /> E-posta ile de gönder
-          </label>
-          <Button type="submit" isLoading={sendInvite.isPending}>Davet Gönder</Button>
-          {inviteMsg && <p className={styles.msg}>{inviteMsg}</p>}
-        </form>
-      </Card>
+      {isLoading ? (
+        <div className={styles.loading}>Öğretmen listesi yükleniyor...</div>
+      ) : teachers.length === 0 ? (
+        <Card className={styles.emptyCard} padding="lg">
+          <GraduationCap size={44} strokeWidth={1.5} color="var(--text-color-muted)" />
+          <div>
+            <h3 style={{ margin: '0 0 6px', color: 'var(--text-color-main)' }}>Henüz Öğretmen Eklenmedi</h3>
+            <p style={{ margin: 0, fontSize: '0.875rem' }}>
+              Derslerinize öğretmen atamak için yeni bir öğretmen ekleyebilir veya e-posta daveti gönderebilirsiniz.
+            </p>
+          </div>
+          <Button variant="primary" onClick={() => setIsAddModalOpen(true)}>
+            + İlk Öğretmeni Ekle
+          </Button>
+        </Card>
+      ) : (
+        <div className={styles.teachersGrid}>
+          {teachers.map((t) => (
+            <Card key={t.id} className={styles.teacherCard} padding="md">
+              <div className={styles.cardTop}>
+                <div className={styles.avatar}>
+                  {t.fullName?.charAt(0)?.toUpperCase() || 'Ö'}
+                </div>
+                <div className={styles.metaInfo}>
+                  <div className={styles.nameRow}>
+                    <h3 className={styles.name}>{t.fullName}</h3>
+                    {t.branch && (
+                      <span className={styles.branchBadge}>{t.branch}</span>
+                    )}
+                    <span className={t.isActive ? styles.statusActive : styles.statusInactive}>
+                      {t.isActive ? 'Aktif' : 'Pasif'}
+                    </span>
+                  </div>
+                </div>
+              </div>
 
-      <div className={styles.list}>
-        {isLoading && <p>Yükleniyor...</p>}
-        {teachers?.map((t) => (
-          <Card key={t.id} className={styles.item} padding="md" interactive onClick={() => navigate(`/coach/programs/${programId}/teachers/${t.id}`)}>
-            <div className={styles.itemHeader}>
-              <strong>{t.fullName}</strong>
-              <span className={t.isActive ? styles.active : styles.inactive}>{t.isActive ? 'Aktif' : 'Pasif'}</span>
-            </div>
-            <div className={styles.email}>{t.email}</div>
-            <div style={{ display: 'flex', gap: '8px', marginTop: '12px', alignItems: 'center' }}>
-              {t.isActive === 1 && (
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  onClick={(e) => { 
-                    e.stopPropagation(); 
-                    deactivateTeacher.mutateAsync({ programId, teacherId: t.id }); 
-                  }}
-                >
-                  Pasife Al
-                </Button>
-              )}
-              <Button 
-                size="sm" 
-                variant="ghost" 
-                style={{ color: 'var(--color-danger, #ef4444)', marginLeft: 'auto' }}
-                onClick={(e) => { 
-                  e.stopPropagation(); 
-                  setTeacherToDelete(t); 
-                }}
-                title="Öğretmeni Sil"
-              >
-                <Trash2 size={14} />
-                <span>Sil</span>
-              </Button>
-            </div>
-          </Card>
-        ))}
-      </div>
+              {/* İletişim Bilgileri (Mail & Telefon) */}
+              <div className={styles.contactGrid}>
+                <div className={styles.contactItem}>
+                  <Mail size={14} />
+                  <span>{t.email || 'E-posta belirtilmemiş'}</span>
+                </div>
+                <div className={styles.contactItem}>
+                  <Phone size={14} />
+                  <span>{t.phone || 'Telefon belirtilmemiş'}</span>
+                </div>
+              </div>
+
+              {/* Girdiği Dersler */}
+              <div className={styles.coursesSection}>
+                <span className={styles.coursesLabel}>
+                  <BookOpen size={13} />
+                  <span>Girdiği Dersler ({t.courses?.length || 0})</span>
+                </span>
+                {t.courses && t.courses.length > 0 ? (
+                  <div className={styles.courseBadges}>
+                    {t.courses.map((c) => (
+                      <span key={c.id} className={styles.courseBadge}>
+                        <strong>{c.name}</strong>
+                        {c.type && <span className={styles.courseBadgeType}>({c.type})</span>}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <span className={styles.noCourses}>Henüz ders atanmamış</span>
+                )}
+              </div>
+
+              {/* Alt Bilgi & Aksiyonlar */}
+              <div className={styles.cardFooter}>
+                <span className={styles.studentCount}>
+                  <Users size={14} />
+                  <span>{t.studentCount ?? 0} Aktif Öğrenci</span>
+                </span>
+
+                <div className={styles.actions}>
+                  {t.isActive === 1 && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => deactivateTeacher.mutateAsync({ programId, teacherId: t.id })}
+                      isLoading={deactivateTeacher.isPending}
+                    >
+                      Pasife Al
+                    </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    style={{ color: 'var(--color-danger, #ef4444)' }}
+                    onClick={() => setTeacherToDelete(t)}
+                    title="Öğretmeni Sil"
+                  >
+                    <Trash2 size={15} />
+                    <span>Sil</span>
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Doğrudan Ekleme & Davet Modalı */}
+      <AddTeacherModal
+        open={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        programId={programId}
+        courses={courses}
+      />
 
       {/* Öğretmen Silme Onay Modalı */}
       <Modal
@@ -102,8 +164,8 @@ const CoachTeachersPage = () => {
           <Button variant="ghost" onClick={() => setTeacherToDelete(null)}>
             Vazgeç
           </Button>
-          <Button 
-            variant="danger" 
+          <Button
+            variant="danger"
             isLoading={deactivateTeacher.isPending}
             onClick={async () => {
               if (teacherToDelete) {

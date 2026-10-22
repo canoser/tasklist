@@ -155,29 +155,32 @@ const CalendarPage = () => {
           <h1 className={styles.title}>Takvim & Program</h1>
           <p className={styles.subtitle}>Öğrencilerinizin ödevleri, ders programları ve sınavları.</p>
         </div>
+      </header>
+
+      {/* Kontrol Çubuğu: 2'li Sekme + Yeni Etkinlik Ekle */}
+      <div className={styles.actionBar}>
+        <div className={styles.segmentedTabs}>
+          <button
+            type="button"
+            className={`${styles.segmentedBtn} ${activeTab === 'CALENDAR' ? styles.segmentedBtnActive : ''}`}
+            onClick={() => setActiveTab('CALENDAR')}
+          >
+            <CalendarIcon size={16} />
+            <span>Akademik Takvim</span>
+          </button>
+          <button
+            type="button"
+            className={`${styles.segmentedBtn} ${activeTab === 'SCHEDULE' ? styles.segmentedBtnActive : ''}`}
+            onClick={() => setActiveTab('SCHEDULE')}
+          >
+            <Clock size={16} />
+            <span>Haftalık Ders Programı</span>
+          </button>
+        </div>
+
         {activeTab === 'CALENDAR' && (
           <button className={styles.addBtn} onClick={() => setIsEventModalOpen(true)}>+ Yeni Etkinlik</button>
         )}
-      </header>
-
-      {/* 2'li Sekme: Akademik Takvim | Haftalık Ders Programı */}
-      <div className={styles.segmentedTabs}>
-        <button
-          type="button"
-          className={`${styles.segmentedBtn} ${activeTab === 'CALENDAR' ? styles.segmentedBtnActive : ''}`}
-          onClick={() => setActiveTab('CALENDAR')}
-        >
-          <CalendarIcon size={16} />
-          <span>Akademik Takvim</span>
-        </button>
-        <button
-          type="button"
-          className={`${styles.segmentedBtn} ${activeTab === 'SCHEDULE' ? styles.segmentedBtnActive : ''}`}
-          onClick={() => setActiveTab('SCHEDULE')}
-        >
-          <Clock size={16} />
-          <span>Haftalık Ders Programı</span>
-        </button>
       </div>
 
       {activeTab === 'SCHEDULE' ? (

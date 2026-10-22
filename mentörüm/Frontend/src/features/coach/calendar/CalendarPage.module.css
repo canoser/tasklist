@@ -26,6 +26,15 @@
   width: 100%;
 }
 
+.actionBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: var(--spacing-sm);
+}
+
 .segmentedTabs {
   display: inline-flex;
   background-color: var(--bg-color-surface-elevated, var(--bg-app));
@@ -33,7 +42,6 @@
   border-radius: var(--radius-btn);
   padding: 4px;
   gap: 4px;
-  margin-bottom: var(--spacing-sm);
   width: fit-content;
 }
 
