@@ -3,9 +3,23 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
+import Modal from '../../../components/common/Modal/Modal';
 import AssignHomeworkModal from '../homework/AssignHomeworkModal';
 import styles from './CoachStudentDetail.module.css';
-import { useStudent, useStudentNotes, useUpdateCoachNotes, useAddExamResult, useSendInvite, useCoachStudentHomework, useCoachStudentCurriculum, useCoachStudentEvents, useCoachStudentSessions, useCreateCoachingSession, useStudentTeacherNotes } from '../coachApi';
+import { 
+  useStudent, 
+  useDeleteStudent,
+  useStudentNotes, 
+  useUpdateCoachNotes, 
+  useAddExamResult, 
+  useSendInvite, 
+  useCoachStudentHomework, 
+  useCoachStudentCurriculum, 
+  useCoachStudentEvents, 
+  useCoachStudentSessions, 
+  useCreateCoachingSession, 
+  useStudentTeacherNotes 
+} from '../coachApi';
 import { useGroups } from '../coachSchoolApi';
 import { useMoveToGroup, useMoveToIndividual } from '../studentFlexibilityApi';
 import { apiClient } from '../../../api/apiClient';
@@ -24,12 +38,19 @@ import {
   MessageSquare, 
   Users, 
   GraduationCap, 
-  ShieldAlert 
+  ShieldAlert,
+  Trash2
 } from 'lucide-react';
 
 const CoachStudentDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  // 1. Önce öğrenci verisini çek (TDZ hatasını önler)
+  const { data: student, isLoading, isError } = useStudent(id);
+  const deleteStudentMutation = useDeleteStudent();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   const [activeTab, setActiveTab] = useState('info');
   const [isHomeworkModalOpen, setIsHomeworkModalOpen] = useState(false);
   const [localNotes, setLocalNotes] = useState('');
@@ -37,6 +58,8 @@ const CoachStudentDetail = () => {
   const [sessionDate, setSessionDate] = useState('');
   const [sessionNotes, setSessionNotes] = useState('');
   const [sessionActions, setSessionActions] = useState('');
+
+  // 2. Öğrenciye bağımlı kancalar
   const moveToGroup = useMoveToGroup(student?.programId);
   const moveToIndividual = useMoveToIndividual(student?.programId);
   const { data: groups = [] } = useGroups(student?.programId);
@@ -58,7 +81,6 @@ const CoachStudentDetail = () => {
     else if (groupId === 'parents') setActiveTab('parents');
   };
 
-  const { data: student, isLoading, isError } = useStudent(id);
   const { data: notesList, isLoading: isNotesLoading } = useStudentNotes(id);
   const { data: studentHomeworks } = useCoachStudentHomework(id);
   const { data: curriculum } = useCoachStudentCurriculum(id);
@@ -71,6 +93,7 @@ const CoachStudentDetail = () => {
   const sendInviteMutation = useSendInvite();
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteResult, setInviteResult] = useState(null);
+  const [inviteSendEmail, setInviteSendEmail] = useState(false);
 
   if (isLoading) return <div className={styles.pageContainer}>Yükleniyor...</div>;
   if (isError || !student) return <div className={styles.pageContainer}>Öğrenci bulunamadı.</div>;
@@ -146,6 +169,15 @@ const CoachStudentDetail = () => {
           <Button variant="primary" onClick={() => setIsHomeworkModalOpen(true)}>
             <PlusCircle size={15} />
             <span>Ödev Ata</span>
+          </Button>
+          <Button 
+            variant="ghost" 
+            style={{ color: 'var(--color-danger, #ef4444)', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+            onClick={() => setShowDeleteConfirm(true)}
+            title="Öğrenciyi Sil"
+          >
+            <Trash2 size={15} />
+            <span>Sil</span>
           </Button>
         </div>
       </header>
@@ -369,13 +401,16 @@ const CoachStudentDetail = () => {
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                 />
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.85rem', color: 'var(--text-color-main)' }}>
+                  <input type="checkbox" checked={inviteSendEmail} onChange={(e) => setInviteSendEmail(e.target.checked)} /> E-posta ile de gönder
+                </label>
                 <Button
                   variant="primary"
                   size="sm"
                   disabled={sendInviteMutation.isPending || !inviteEmail.trim()}
                   onClick={() => {
                     sendInviteMutation.mutate(
-                      { email: inviteEmail, role: 'Parent', relatedId: id },
+                      { email: inviteEmail, role: 'Parent', relatedId: id, sendEmail: inviteSendEmail },
                       { onSuccess: (data) => setInviteResult(data) }
                     );
                   }}
@@ -659,6 +694,34 @@ const CoachStudentDetail = () => {
         onClose={() => setIsHomeworkModalOpen(false)}
         selectedStudent={student}
       />
+
+      {/* Öğrenci Silme Onay Modalı */}
+      <Modal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        title="Öğrenciyi Sil"
+        maxWidth="440px"
+      >
+        <p style={{ fontSize: '0.9rem', color: 'var(--text-color-main)', marginBottom: '16px', lineHeight: 1.5 }}>
+          <strong>{student.fullName}</strong> adlı öğrenciyi sistemden silmek istediğinize emin misiniz? Öğrenci ve ilişkili tüm aktif kayıtları arşive alınacaktır.
+        </p>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+          <Button variant="ghost" onClick={() => setShowDeleteConfirm(false)}>
+            Vazgeç
+          </Button>
+          <Button 
+            variant="danger" 
+            isLoading={deleteStudentMutation.isPending}
+            onClick={async () => {
+              await deleteStudentMutation.mutateAsync(id);
+              setShowDeleteConfirm(false);
+              navigate('/coach/students');
+            }}
+          >
+            Evet, Öğrenciyi Sil
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 };

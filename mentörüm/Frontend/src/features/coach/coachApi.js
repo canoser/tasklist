@@ -115,6 +115,19 @@ export const useStudent = (id) => {
   });
 };
 
+export const useDeleteStudent = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (studentId) => {
+      return await apiClient.delete(`/students/${studentId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['coach', 'students'] });
+      queryClient.invalidateQueries({ queryKey: ['coach', 'student'] });
+    },
+  });
+};
+
 export const useStudentNotes = (studentId) => {
   return useQuery({
     queryKey: ['coach', 'student', studentId, 'notes'],

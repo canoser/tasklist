@@ -5,8 +5,8 @@ import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
 import Modal from '../../../components/common/Modal/Modal';
 import CoachGroupsPage from '../groups/CoachGroupsPage';
-import { Users, FolderGit2, BookOpen, CheckCircle2, AlertCircle, School, Mail, Search, UserPlus, Zap, ChevronDown, Copy, Check } from 'lucide-react';
-import { useStudents, useSendInvite, usePendingInvites } from '../coachApi';
+import { Users, FolderGit2, BookOpen, CheckCircle2, AlertCircle, School, Mail, Search, UserPlus, Zap, ChevronDown, Copy, Check, Trash2 } from 'lucide-react';
+import { useStudents, useSendInvite, usePendingInvites, useDeleteStudent } from '../coachApi';
 import { useCreateStudent, useInviteStudent } from '../studentFlexibilityApi';
 import AddStudentModal from './AddStudentModal';
 import { usePrograms } from '../coachSchoolApi';
@@ -19,6 +19,8 @@ const CoachStudents = () => {
   const { data: programs } = usePrograms();
   const { data: pendingInvites } = usePendingInvites();
   const sendInvite = useSendInvite();
+  const deleteStudentMutation = useDeleteStudent();
+  const [studentToDelete, setStudentToDelete] = useState(null);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [programFilter, setProgramFilter] = useState('');
@@ -44,6 +46,7 @@ const CoachStudents = () => {
   // E-posta ile Davet Gönder Form State
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteProgramId, setInviteProgramId] = useState('');
+  const [inviteSendEmail, setInviteSendEmail] = useState(false);
   const [inviteMsg, setInviteMsg] = useState('');
   const [copiedCode, setCopiedCode] = useState(null);
 
@@ -146,13 +149,14 @@ const CoachStudents = () => {
       const res = await sendInvite.mutateAsync({ 
         email: inviteEmail.trim(), 
         role: 'Student', 
-        relatedId: inviteProgramId 
+        relatedId: inviteProgramId,
+        sendEmail: inviteSendEmail
       });
 
       if (res.directAdded) {
         setInviteMsg(res.message);
       } else {
-        setInviteMsg(`Davet oluşturuldu. Kod: ${res.code} (Bekleyen Davetler listesine eklendi)`);
+        setInviteMsg(inviteSendEmail ? `Davet oluşturuldu ve e-posta gönderildi. Kod: ${res.code}` : `Davet oluşturuldu. Kod: ${res.code} (Bekleyen Davetler listesine eklendi)`);
       }
       setInviteEmail('');
     } catch (err) {
@@ -180,22 +184,23 @@ const CoachStudents = () => {
   return (
     <div className={styles.pageContainer}>
       <header className={styles.header}>
-        <div>
-          <h1 className={styles.title}>Öğrenciler</h1>
+        <div className={styles.titleArea}>
+          <div className={styles.titleRow}>
+            <h1 className={styles.title}>Öğrenciler</h1>
+            <Button 
+              variant={showAddForm ? 'secondary' : 'primary'} 
+              size="sm"
+              onClick={() => {
+                setShowAddForm(!showAddForm);
+                setDirectSuccessData(null);
+                setDirectError('');
+              }}
+            >
+              <UserPlus size={15} />
+              <span>{showAddForm ? '✕ Formu Kapat' : '+ Yeni Öğrenci Ekle'}</span>
+            </Button>
+          </div>
           <p className={styles.subtitle}>Tüm öğrencilerinizin performansını ve durumunu yönetin.</p>
-        </div>
-        <div className={styles.headerButtons}>
-          <Button 
-            variant={showAddForm ? 'secondary' : 'primary'} 
-            onClick={() => {
-              setShowAddForm(!showAddForm);
-              setDirectSuccessData(null);
-              setDirectError('');
-            }}
-          >
-            <UserPlus size={15} />
-            <span>{showAddForm ? '✕ Formu Kapat' : '+ Yeni Öğrenci Ekle'}</span>
-          </Button>
         </div>
       </header>
 
@@ -401,8 +406,12 @@ const CoachStudents = () => {
 
                   <p className={styles.directHint}>
                     <Mail size={14} />
-                    <span>Öğrencinin e-posta adresine sistem bağlantı kodu gönderilir. Şifresini belirleyene dek "Bekleyen Davetler" listesinde görünür.</span>
+                    <span>Davet kodu ve linki oluşturulur (kopyalayıp WhatsApp ile paylaşabilirsiniz). İsterseniz e-posta ile de gönderebilirsiniz.</span>
                   </p>
+
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.85rem', color: 'var(--text-color-main)' }}>
+                    <input type="checkbox" checked={inviteSendEmail} onChange={(e) => setInviteSendEmail(e.target.checked)} /> E-posta ile de gönder
+                  </label>
 
                   {inviteMsg && (
                     <p className={styles.inviteSuccessInline}>
@@ -565,6 +574,19 @@ const CoachStudents = () => {
                   {student.inviteStatus === 'NOT_INVITED' && (
                     <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); handleOpenInviteModal(student); }}>Davet Et</Button>
                   )}
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    style={{ color: 'var(--color-danger, #ef4444)', marginLeft: 'auto' }} 
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      setStudentToDelete(student); 
+                    }}
+                    title="Öğrenciyi Sil"
+                  >
+                    <Trash2 size={14} />
+                    <span>Sil</span>
+                  </Button>
                 </div>
               </Card>
             ))}
@@ -618,6 +640,35 @@ const CoachStudents = () => {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* Öğrenci Silme Onay Modalı */}
+      <Modal
+        isOpen={Boolean(studentToDelete)}
+        onClose={() => setStudentToDelete(null)}
+        title="Öğrenciyi Sil"
+        maxWidth="440px"
+      >
+        <p style={{ fontSize: '0.9rem', color: 'var(--text-color-main)', marginBottom: '16px', lineHeight: 1.5 }}>
+          <strong>{studentToDelete?.fullName}</strong> adlı öğrenciyi silmek istediğinize emin misiniz? Bu işlem öğrenciyi ve ilişkili tüm aktif kayıtlarını arşive alacaktır.
+        </p>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+          <Button variant="ghost" onClick={() => setStudentToDelete(null)}>
+            Vazgeç
+          </Button>
+          <Button 
+            variant="danger" 
+            isLoading={deleteStudentMutation.isPending}
+            onClick={async () => {
+              if (studentToDelete) {
+                await deleteStudentMutation.mutateAsync(studentToDelete.id);
+                setStudentToDelete(null);
+              }
+            }}
+          >
+            Evet, Öğrenciyi Sil
+          </Button>
+        </div>
       </Modal>
     </div>
   );

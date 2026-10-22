@@ -46,6 +46,7 @@ import CoachPaymentsPage from './features/coach/payments/CoachPaymentsPage';
 import ViewAsBanner from './components/common/ViewAsBanner/ViewAsBanner';
 import ThemeSync from './components/common/ThemeSync/ThemeSync';
 import StoragePage from './features/storage/StoragePage';
+import ErrorBoundary from './components/common/ErrorBoundary/ErrorBoundary';
 
 // Korumalı Route Bileşeni
 const PrivateRoute = ({ children, allowedRoles, requireAdmin }) => {
@@ -102,7 +103,8 @@ function App() {
     <Router>
       <ViewAsBanner />
       <ThemeSync />
-      <Routes>
+      <ErrorBoundary>
+        <Routes>
         <Route path="/login" element={
           user ? (
             <Navigate to={
@@ -203,8 +205,9 @@ function App() {
         {/* 404 Catch All */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
-    </Router>
-  );
+    </ErrorBoundary>
+  </Router>
+);
 }
 
 export default App;

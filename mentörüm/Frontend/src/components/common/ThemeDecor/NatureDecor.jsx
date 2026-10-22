@@ -6,37 +6,6 @@ export default function NatureDecor() {
     <div className={styles.container}>
 
 
-      {/* Yavaş Doğal Salınım Animasyonları */}
-      <style>
-        {`
-          @keyframes natureSwayMain {
-            0% { transform: rotate(0deg); }
-            50% { transform: rotate(1.2deg); }
-            100% { transform: rotate(0deg); }
-          }
-          @keyframes natureSwayBack {
-            0% { transform: rotate(0.4deg); }
-            50% { transform: rotate(-0.8deg); }
-            100% { transform: rotate(0.4deg); }
-          }
-          @keyframes natureSwayMid1 {
-            0% { transform: rotate(-0.5deg); }
-            50% { transform: rotate(1.4deg); }
-            100% { transform: rotate(-0.5deg); }
-          }
-          @keyframes natureSwayMid2 {
-            0% { transform: scaleX(-1) rotate(0.8deg); }
-            50% { transform: scaleX(-1) rotate(-1.1deg); }
-            100% { transform: scaleX(-1) rotate(0.8deg); }
-          }
-          @keyframes natureSwayMid3 {
-            0% { transform: rotate(0.2deg); }
-            50% { transform: rotate(-1.3deg); }
-            100% { transform: rotate(0.2deg); }
-          }
-        `}
-      </style>
-
       {/* Yeniden kullanılabilir Dal ve Yaprak Şablonu */}
       <svg width="0" height="0" style={{ position: 'absolute' }}>
         <defs>

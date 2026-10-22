@@ -41,6 +41,20 @@ namespace MentorumApi.Endpoints
                 return Results.Ok(student);
             });
 
+            group.MapDelete("/{id:guid}", async (
+                Guid id,
+                [FromServices] StudentRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var coachIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(coachIdStr, out var coachId)) return Results.Unauthorized();
+
+                var success = await repo.DeleteStudentAsync(coachId, id);
+                if (!success) return Results.NotFound(new { error = "Öğrenci bulunamadı veya silme yetkiniz yok." });
+
+                return Results.Ok(new { message = "Öğrenci başarıyla silindi." });
+            });
+
             group.MapGet("/{id:guid}/curriculum", async (
                 Guid id,
                 [FromServices] StudentRepository studentRepo,

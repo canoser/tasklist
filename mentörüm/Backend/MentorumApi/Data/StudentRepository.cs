@@ -30,7 +30,7 @@ namespace MentorumApi.Data
                 /**where**/ 
                 ORDER BY u.full_name";
             
-            return await QueryWithTenantAsync<StudentListDto>(sql, new {}, coachId, tableAlias: "s");
+            return await QueryWithTenantAsync<StudentListDto>(sql, new {}, coachId, additionalWhere: "s.is_active = 1", tableAlias: "s");
         }
 
         public virtual async Task<StudentDetailDto?> GetStudentDetailAsync(Guid coachId, Guid studentId)
@@ -39,12 +39,12 @@ namespace MentorumApi.Data
                 SELECT u.id, u.full_name AS FullName, u.email, u.avatar_url AS AvatarUrl, 
                        s.grade, s.track, s.target_university AS TargetUniversity, s.is_active AS IsActive,
                        s.coaching_start_date AS CoachingStartDate, s.target_department AS TargetDepartment,
-                       s.target_score AS TargetScore
+                       s.target_score AS TargetScore, s.program_id AS ProgramId
                 FROM users u 
                 JOIN students s ON u.id = s.id 
                 /**where**/";
             
-            return await QuerySingleOrDefaultWithTenantAsync<StudentDetailDto>(sql, new { StudentId = studentId }, coachId, "s.id = @StudentId", tableAlias: "s");
+            return await QuerySingleOrDefaultWithTenantAsync<StudentDetailDto>(sql, new { StudentId = studentId }, coachId, "s.id = @StudentId AND s.is_active = 1", tableAlias: "s");
         }
 
         public async Task<IEnumerable<StudentNoteDto>> GetStudentNotesAsync(Guid coachId, Guid studentId)
@@ -341,6 +341,60 @@ namespace MentorumApi.Data
                     new { Id = Guid.NewGuid(), CourseId = courseId, StudentId = studentId, ProgramId = programId }, tx);
 
                 tx.Commit();
+            }
+            catch
+            {
+                tx.Rollback();
+                throw;
+            }
+        }
+
+        public async Task<bool> DeleteStudentAsync(Guid coachId, Guid studentId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            conn.Open();
+            using var tx = conn.BeginTransaction();
+            try
+            {
+                // IDOR Kontrolü: Öğrenci bu koçun yetkili olduğu bir programa mı kayıtlı?
+                var owned = await conn.ExecuteScalarAsync<int?>(@"
+                    SELECT 1 FROM students s
+                    WHERE s.id = @StudentId
+                      AND s.program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)",
+                    new { StudentId = studentId, CoachId = coachId }, tx);
+
+                if (owned == null) return false;
+
+                // 1. Grup üyeliklerini pasife al
+                await conn.ExecuteAsync(@"
+                    UPDATE student_group_members 
+                    SET is_active = 0 
+                    WHERE student_id = @StudentId",
+                    new { StudentId = studentId }, tx);
+
+                // 2. Özel ders ve kurs kayıtlarını pasife al
+                await conn.ExecuteAsync(@"
+                    UPDATE course_students 
+                    SET is_active = 0 
+                    WHERE student_id = @StudentId",
+                    new { StudentId = studentId }, tx);
+
+                // 3. Öğrenci tablosunda pasife al
+                await conn.ExecuteAsync(@"
+                    UPDATE students 
+                    SET is_active = 0, updated_at = NOW() 
+                    WHERE id = @StudentId",
+                    new { StudentId = studentId }, tx);
+
+                // 4. Kullanıcı tablosunda pasife al
+                await conn.ExecuteAsync(@"
+                    UPDATE users 
+                    SET is_active = 0 
+                    WHERE id = @StudentId",
+                    new { StudentId = studentId }, tx);
+
+                tx.Commit();
+                return true;
             }
             catch
             {
