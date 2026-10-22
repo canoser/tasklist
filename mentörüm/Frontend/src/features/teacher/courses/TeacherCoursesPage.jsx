@@ -16,6 +16,7 @@ import Input from '../../../components/common/Input/Input';
 import { useDownloadUrl } from '../../storage/storageApi';
 import TeacherStudentNotesModal from './TeacherStudentNotesModal';
 import styles from './TeacherCoursesPage.module.css';
+import { useLevels, useSubjects, useUnits, useTopics } from '../../coach/coachApi';
 
 const fmt = (d) => (d ? String(d).slice(0, 10) : '');
 
@@ -35,6 +36,11 @@ const TeacherCoursesPage = () => {
   const createExam = useCreateTeacherExam();
   const reviewHomework = useReviewTeacherHomework();
   const createNoteMutation = useCreateTeacherNote();
+
+  const { data: hwLevels = [] } = useLevels();
+  const { data: hwSubjects = [] } = useSubjects(hwLevel || undefined);
+  const { data: hwUnits = [] } = useUnits(hwSubject || undefined, hwLevel || undefined);
+  const { data: hwTopics = [] } = useTopics(hwSubject || undefined, hwLevel || undefined, hwUnit || undefined);
 
   const [reviewTarget, setReviewTarget] = useState(null);
   const [reviewFeedback, setReviewFeedback] = useState('');
@@ -60,6 +66,11 @@ const TeacherCoursesPage = () => {
   const [hwTitle, setHwTitle] = useState('');
   const [hwDesc, setHwDesc] = useState('');
   const [hwDue, setHwDue] = useState('');
+  const [hwLevel, setHwLevel] = useState('');
+  const [hwSubject, setHwSubject] = useState('');
+  const [hwUnit, setHwUnit] = useState('');
+  const [hwTopic, setHwTopic] = useState('');
+  const [hwFreeTopic, setHwFreeTopic] = useState('');
 
   const [showExamForm, setShowExamForm] = useState(false);
   const [exStudentId, setExStudentId] = useState('');
@@ -67,13 +78,25 @@ const TeacherCoursesPage = () => {
   const [exDate, setExDate] = useState('');
   const [exNet, setExNet] = useState('');
 
-  const resetHomework = () => { setHwStudentId(''); setHwAllStudents(false); setHwTitle(''); setHwDesc(''); setHwDue(''); setShowHomeworkForm(false); };
+  const resetHomework = () => { setHwStudentId(''); setHwAllStudents(false); setHwTitle(''); setHwDesc(''); setHwDue(''); setHwLevel(''); setHwSubject(''); setHwUnit(''); setHwTopic(''); setHwFreeTopic(''); setShowHomeworkForm(false); };
   const resetExam = () => { setExStudentId(''); setExName(''); setExDate(''); setExNet(''); setShowExamForm(false); };
 
   const submitHomework = async (e) => {
     e.preventDefault();
     if ((!hwAllStudents && !hwStudentId) || !hwTitle || !hwDue) return;
-    await createHomework.mutateAsync({ courseId: selected, data: { ...(hwAllStudents ? {} : { studentId: hwStudentId }), title: hwTitle, description: hwDesc || null, dueDate: hwDue } });
+    if (hwTopic === '__other__' && !hwFreeTopic.trim()) { alert("Lütfen serbest konu başlığı giriniz."); return; }
+    await createHomework.mutateAsync({
+      courseId: selected,
+      data: {
+        ...(hwAllStudents ? {} : { studentId: hwStudentId }),
+        subjectId: hwSubject || null,
+        curriculumTopicId: hwTopic && hwTopic !== '__other__' ? hwTopic : null,
+        freeTopic: hwTopic === '__other__' ? hwFreeTopic.trim() : null,
+        title: hwTitle,
+        description: hwDesc || null,
+        dueDate: hwDue
+      }
+    });
     resetHomework();
   };
 
@@ -264,6 +287,26 @@ const TeacherCoursesPage = () => {
                           <option value="">Öğrenci seç</option>
                           {students?.map((s) => <option key={s.id} value={s.id}>{s.fullName}</option>)}
                         </select>
+                      )}
+                      <select className={styles.select} value={hwLevel} onChange={(e) => { setHwLevel(e.target.value); setHwSubject(''); setHwUnit(''); setHwTopic(''); setHwFreeTopic(''); }}>
+                        <option value="">Seviye seç</option>
+                        {hwLevels.map((l) => <option key={l} value={l}>{l}</option>)}
+                      </select>
+                      <select className={styles.select} value={hwSubject} onChange={(e) => { setHwSubject(e.target.value); setHwUnit(''); setHwTopic(''); setHwFreeTopic(''); }} disabled={!hwLevel}>
+                        <option value="">Ders seç</option>
+                        {hwSubjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                      </select>
+                      <select className={styles.select} value={hwUnit} onChange={(e) => { setHwUnit(e.target.value); setHwTopic(''); setHwFreeTopic(''); }} disabled={!hwSubject}>
+                        <option value="">Tema (opsiyonel)</option>
+                        {hwUnits.map((u) => <option key={u.unitNumber} value={u.unitNumber}>{u.unitNumber}{u.unitName ? `. ${u.unitName}` : ''}</option>)}
+                      </select>
+                      <select className={styles.select} value={hwTopic} onChange={(e) => { setHwTopic(e.target.value); setHwFreeTopic(''); }} disabled={!hwSubject}>
+                        <option value="">Konu (opsiyonel)</option>
+                        {hwTopics.map((t) => <option key={t.id} value={t.id}>{t.unitName ? `${t.unitName} → ` : ''}{t.topicName}</option>)}
+                        <option value="__other__">➕ Bunun dışında (serbest konu)</option>
+                      </select>
+                      {hwTopic === '__other__' && (
+                        <Input label="Serbest Konu Başlığı" value={hwFreeTopic} onChange={(e) => setHwFreeTopic(e.target.value)} placeholder="Örn: Karmaşık Sayılar" />
                       )}
                       <Input label="Başlık" value={hwTitle} onChange={(e) => setHwTitle(e.target.value)} placeholder="Ödev başlığı" />
                       <Input label="Açıklama" value={hwDesc} onChange={(e) => setHwDesc(e.target.value)} placeholder="Açıklama (opsiyonel)" />

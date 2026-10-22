@@ -49,7 +49,7 @@ Koç takviminde **her şey** görünür ve filtrelenebilir:
 
 ### 2.3 Öğrenciler ve Öğrenci Detayı
 - Öğrenci listesi; karta tıklayınca detay açılır. Detayda:
-  - **Ödev atama** (seviye→ders→konu veya serbest; son teslim tarihi).
+  - **Ödev atama** (seviye→ders→tema→konu veya serbest; son teslim tarihi).
   - **Sınav sonucu/not** girme.
   - **Koç notları** (yalnızca koç görür).
   - **Öğretmen notları** sekmesi: öğretmenlerin öğrenci hakkında yazdığı pedagojik notları görme.
@@ -91,7 +91,7 @@ Koç takviminde **her şey** görünür ve filtrelenebilir:
 ### 3.1 Derslerim
 - Ders listesi; derse tıklayınca sekmeler açılır:
   - **Öğrenciler:** derse bağlı öğrenciler.
-  - **Ödevler:** ders ödevi oluştur, "Onayla / Geri Bildir" ile öğrenci ödevini tamamlandı işaretle.
+  - **Ödevler:** ders ödevi oluştur (seviye→ders→tema→konu müfredat seçimi veya serbest konu), "Onayla / Geri Bildir" ile öğrenci ödevini tamamlandı işaretle.
   - **Sınavlar:** ders sınavı/notu gir.
   - **Kaynaklar:** derse tanımlı kitap/video/dokümanları gör.
   - **Ders Notları:** her öğrenci için pedagojik not ekle/geçmişi gör. Not iki tiptir: **öğrenciye görünür özet** ve **yalnızca koça özel tam not**.
@@ -190,7 +190,7 @@ Veli, yalnızca kendi çocuğunun/çocuklarının verisini, koçun izin verdiği
 ### 7.1 Kullanıcı Yönetimi
 - **Onay Bekleyenler:** Koç kayıtlarını onayla/reddet; onaylarken rol (Koç) ve program limiti belirle.
 - **Tüm Kullanıcılar:** listele, role göre filtrele, ada/e-postaya göre ara; **şifre değiştir** (eski oturumları kapatır); manuel kullanıcı ekle.
-- **Müfredat:** JSON şablonu indir / doldurulmuş müfredatı içe aktar.
+- **Müfredat:** Sınıf bazlı JSON şablonu indir / doldurulmuş müfredatı içe aktar (bkz. §7.4).
 
 ### 7.2 Güvenlik & Kota Denetimi
 - **Hız Limiti Kuralları:** her endpoint için 5 dakikada izin verilen azami istek sayısı görünür. Admin değeri düzenleyip **"Güncelle"** ile değiştirir (30 saniye içinde geçerli olur, yeniden başlatma gerekmez).
@@ -206,6 +206,15 @@ Veli, yalnızca kendi çocuğunun/çocuklarının verisini, koçun izin verdiği
 - **Şifre sıfırlama güvenliği:** Token 1 saat geçerli, tek kullanımlık; aynı e-postaya 5 dk'da 1 sıfırlama.
 - **Veri kalıcılığı:** Hiçbir kayıt gerçekten silinmez; pasife alma (`is_active=0` / `CANCELLED`) kullanılır (denetim izi korunur).
 
+
+
+### 7.4 Müfredat Yönetimi (Sınıf Bazlı)
+- Müfredat sekmesinde **"Sınıf / Seviye"** seçilerek (1–12, TYT, AYT veya "Tümü") o sınıfın müfredatı **ayrı ayrı** yönetilir:
+  1. **Şablonu İndir (JSON):** Seçili sınıfın mevcut konularını içeren şablonu indirir (örn. `mufredat_5.json`).
+  2. Şablonu bir yapay zekâya yapıştırıp gerçek MEB müfredatıyla doldurursunuz.
+  3. **İçe Aktar (JSON):** Aynı sınıf seçiliyken doldurulmuş dosyayı yüklersiniz; satırlarda `grade` yazmasa bile seçilen sınıfa yazılır.
+- İçe aktarma **silmez**: var olan konular güncellenir, olmayanlar eklenir; ödev bağlantıları korunur.
+- Öğretmen/koç ödev atarken **Seviye → Ders → Tema → Konu** açılır listelerinden müfredattaki konuları seçer. Listede yoksa **"➕ Bunun dışında"** ile serbest konu başlığı girilir.
 
 
 ---

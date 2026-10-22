@@ -3,13 +3,15 @@ import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
 import styles from './AssignHomeworkModal.module.css';
-import { useAssignHomework, useLevels, useSubjects, useTopics } from '../coachApi';
+import { useAssignHomework, useLevels, useSubjects, useUnits, useTopics } from '../coachApi';
 import { usePrograms, useCourses } from '../coachSchoolApi';
 
 const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
   const [level, setLevel] = useState('');
   const [subject, setSubject] = useState('');
   const [topic, setTopic] = useState('');
+  const [unit, setUnit] = useState('');
+  const [freeTopic, setFreeTopic] = useState('');
   const [courseId, setCourseId] = useState('');
   const [title, setTitle] = useState('');
   const [desc, setDesc] = useState('');
@@ -18,7 +20,8 @@ const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
   const assignHomeworkMutation = useAssignHomework();
   const { data: levels = [] } = useLevels();
   const { data: subjects = [] } = useSubjects(level || undefined);
-  const { data: topics = [] } = useTopics(subject || undefined, level || undefined);
+  const { data: units = [] } = useUnits(subject || undefined, level || undefined);
+  const { data: topics = [] } = useTopics(subject || undefined, level || undefined, unit || undefined);
   const { data: programs = [] } = usePrograms();
   const activeProgramId = programs[0]?.id;
   const { data: courses = [] } = useCourses(activeProgramId);
@@ -31,10 +34,16 @@ const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
       return;
     }
 
+    if (topic === '__other__' && !freeTopic.trim()) {
+      alert("Lütfen serbest konu başlığı giriniz.");
+      return;
+    }
+
     assignHomeworkMutation.mutate({
       studentId: selectedStudent?.id,
       subjectId: subject || null,
-      curriculumTopicId: topic || null,
+      curriculumTopicId: topic && topic !== '__other__' ? topic : null,
+      freeTopic: topic === '__other__' ? freeTopic.trim() : null,
       courseId: courseId || null,
       title,
       description: desc,
@@ -45,6 +54,8 @@ const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
         setLevel('');
         setSubject('');
         setTopic('');
+        setUnit('');
+        setFreeTopic('');
         setCourseId('');
         setTitle('');
         setDesc('');
@@ -75,7 +86,9 @@ const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
               onChange={e => {
                 setLevel(e.target.value);
                 setSubject('');
+                setUnit('');
                 setTopic('');
+                setFreeTopic('');
               }}
               disabled={assignHomeworkMutation.isPending}
             >
@@ -91,7 +104,9 @@ const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
               value={subject} 
               onChange={e => {
                 setSubject(e.target.value);
+                setUnit('');
                 setTopic('');
+                setFreeTopic('');
               }}
               disabled={!level || assignHomeworkMutation.isPending}
             >
@@ -101,17 +116,45 @@ const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
           </div>
 
           <div className={styles.formGroup}>
+            <label className={styles.label}>Tema / Ünite (Opsiyonel)</label>
+            <select 
+              className={styles.select} 
+              value={unit} 
+              onChange={e => {
+                setUnit(e.target.value);
+                setTopic('');
+                setFreeTopic('');
+              }}
+              disabled={!subject || assignHomeworkMutation.isPending}
+            >
+              <option value="">-- Tüm Temalar --</option>
+              {units.map(u => <option key={u.unitNumber} value={u.unitNumber}>{u.unitNumber}{u.unitName ? `. ${u.unitName}` : ''}</option>)}
+            </select>
+          </div>
+
+          <div className={styles.formGroup}>
             <label className={styles.label}>Konu (Opsiyonel)</label>
             <select 
               className={styles.select} 
               value={topic} 
-              onChange={e => setTopic(e.target.value)}
+              onChange={e => { setTopic(e.target.value); setFreeTopic(''); }}
               disabled={!subject || assignHomeworkMutation.isPending}
             >
               <option value="">-- Konu Seç --</option>
-              {topics.map(t => <option key={t.id} value={t.id}>{t.unitName} → {t.topicName}</option>)}
+              {topics.map(t => <option key={t.id} value={t.id}>{t.unitName ? `${t.unitName} → ` : ''}{t.topicName}</option>)}
+              <option value="__other__">➕ Bunun dışında (serbest konu)</option>
             </select>
           </div>
+
+          {topic === '__other__' && (
+            <Input 
+              label="Serbest Konu Başlığı" 
+              placeholder="Örn: Karmaşık Sayılar" 
+              value={freeTopic} 
+              onChange={e => setFreeTopic(e.target.value)} 
+              disabled={assignHomeworkMutation.isPending}
+            />
+          )}
 
           {courses.length > 0 && (
             <div className={styles.formGroup}>

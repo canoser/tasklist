@@ -24,6 +24,12 @@ namespace MentorumApi.DTOs
         public int SortOrder { get; set; }
     }
 
+    public class CurriculumUnitDto
+    {
+        public int UnitNumber { get; set; }
+        public string? UnitName { get; set; }
+    }
+
     public class CurriculumSubjectRefDto
     {
         public required string Name { get; set; }

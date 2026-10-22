@@ -26,26 +26,32 @@ public static class CurriculumEndpoints
             return Results.Ok(subjects);
         });
 
-        group.MapGet("/subjects/{subjectId:guid}/topics", async (Guid subjectId, [FromServices] CurriculumRepository repo, [FromQuery] string? grade) =>
+        group.MapGet("/subjects/{subjectId:guid}/units", async (Guid subjectId, [FromServices] CurriculumRepository repo, [FromQuery] string? grade) =>
         {
-            var topics = await repo.GetTopicsBySubjectAsync(subjectId, grade);
+            var units = await repo.GetUnitsBySubjectAsync(subjectId, grade);
+            return Results.Ok(units);
+        });
+
+        group.MapGet("/subjects/{subjectId:guid}/topics", async (Guid subjectId, [FromServices] CurriculumRepository repo, [FromQuery] string? grade, [FromQuery] int? unit) =>
+        {
+            var topics = await repo.GetTopicsBySubjectAsync(subjectId, grade, unit);
             return Results.Ok(topics);
         });
 
         // Müfredatı dışa aktar: AI ile doldurulacak JSON şablonu üretir (mevcut konular örnek olarak eklenir).
-        group.MapGet("/export", async ([FromServices] CurriculumRepository repo) =>
+        group.MapGet("/export", async ([FromServices] CurriculumRepository repo, [FromQuery] string? grade) =>
         {
-            var payload = await repo.ExportAsync();
+            var payload = await repo.ExportAsync(grade);
             return Results.Ok(payload);
         }).RequireAuthorization();
 
         // Müfredatı içe aktar: doldurulmuş JSON'u alır, konuları upsert eder (silmez).
-        group.MapPost("/import", async ([FromBody] CurriculumExportDto payload, [FromServices] CurriculumRepository repo) =>
+        group.MapPost("/import", async ([FromBody] CurriculumExportDto payload, [FromServices] CurriculumRepository repo, [FromQuery] string? grade) =>
         {
             if (payload == null || payload.Topics == null || payload.Topics.Count == 0)
                 return Results.BadRequest(new { error = "İçe aktarılacak konu bulunamadı. JSON içinde 'topics' dizisi olmalı." });
 
-            var result = await repo.ImportAsync(payload);
+            var result = await repo.ImportAsync(payload, grade);
             return Results.Ok(result);
         }).RequireAuthorization("RequireAdminRole");
     }

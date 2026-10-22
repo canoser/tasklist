@@ -33,7 +33,7 @@ namespace MentorumApi.Data
             return await connection.QueryAsync<SubjectDto>(sql, new { Level = level });
         }
 
-        public async Task<IEnumerable<CurriculumTopicDto>> GetTopicsBySubjectAsync(Guid subjectId, string? grade)
+        public async Task<IEnumerable<CurriculumTopicDto>> GetTopicsBySubjectAsync(Guid subjectId, string? grade, int? unit = null)
         {
             using var connection = _connectionFactory.CreateConnection();
             var sql = @"
@@ -47,10 +47,33 @@ namespace MentorumApi.Data
             {
                 sql += " AND grade = @Grade";
             }
+
+            if (unit.HasValue)
+            {
+                sql += " AND unit_number = @Unit";
+            }
             
             sql += " ORDER BY sort_order";
 
-            return await connection.QueryAsync<CurriculumTopicDto>(sql, new { SubjectId = subjectId, Grade = grade });
+            return await connection.QueryAsync<CurriculumTopicDto>(sql, new { SubjectId = subjectId, Grade = grade, Unit = unit });
+        }
+
+        public async Task<IEnumerable<CurriculumUnitDto>> GetUnitsBySubjectAsync(Guid subjectId, string? grade)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            var sql = @"
+                SELECT DISTINCT unit_number AS UnitNumber, unit_name AS UnitName
+                FROM curriculum_topics
+                WHERE subject_id = @SubjectId AND is_active = 1 AND unit_number IS NOT NULL";
+
+            if (!string.IsNullOrEmpty(grade))
+            {
+                sql += " AND grade = @Grade";
+            }
+
+            sql += " ORDER BY unit_number";
+
+            return await connection.QueryAsync<CurriculumUnitDto>(sql, new { SubjectId = subjectId, Grade = grade });
         }
 
         // Öğrencinin sınıfına göre müfredat + tamamlanma durumu (Aşama 1).
@@ -78,8 +101,10 @@ namespace MentorumApi.Data
         }
 
         /// <summary>Müfredatı AI ile doldurulacak JSON şablonu olarak dışa aktarır.</summary>
-        public async Task<CurriculumExportDto> ExportAsync()
+        public async Task<CurriculumExportDto> ExportAsync(string? grade = null)
         {
+            grade = string.IsNullOrWhiteSpace(grade) ? null : grade.Trim();
+
             using var conn = _connectionFactory.CreateConnection();
 
             var year = await conn.QuerySingleOrDefaultAsync<string?>(
@@ -94,8 +119,8 @@ namespace MentorumApi.Data
                        ct.topic_number AS TopicNumber, ct.topic_name AS TopicName
                 FROM curriculum_topics ct
                 JOIN subjects s ON s.id = ct.subject_id
-                WHERE ct.is_active = 1
-                ORDER BY s.name, ct.sort_order");
+                WHERE ct.is_active = 1 AND (@Grade IS NULL OR ct.grade = @Grade)
+                ORDER BY s.name, ct.sort_order", new { Grade = grade });
 
             return new CurriculumExportDto
             {
@@ -120,7 +145,7 @@ namespace MentorumApi.Data
         /// Doldurulmuş müfredatı içe aktarır (upsert). Var olan konular güncellenir,
         /// olmayanlar eklenir; hiçbir konu silinmez (ödev bağlantıları korunur).
         /// </summary>
-        public async Task<CurriculumImportResultDto> ImportAsync(CurriculumExportDto payload)
+        public async Task<CurriculumImportResultDto> ImportAsync(CurriculumExportDto payload, string? overrideGrade = null)
         {
             var result = new CurriculumImportResultDto();
             using var conn = _connectionFactory.CreateConnection();
@@ -188,7 +213,9 @@ namespace MentorumApi.Data
                     continue;
                 }
 
-                var grade = (t.Grade ?? "").Trim();
+                var grade = string.IsNullOrWhiteSpace(overrideGrade)
+                    ? (t.Grade ?? "").Trim()
+                    : overrideGrade.Trim();
                 if (grade.Length == 0)
                 {
                     result.Skipped++;

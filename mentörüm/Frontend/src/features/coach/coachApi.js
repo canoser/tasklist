@@ -57,11 +57,26 @@ export const useSubjects = (level) => {
   });
 };
 
-export const useTopics = (subjectId, grade) => {
+export const useUnits = (subjectId, grade) => {
   return useQuery({
-    queryKey: ['curriculum', 'topics', subjectId, grade],
+    queryKey: ['curriculum', 'units', subjectId, grade],
     queryFn: async () => {
       const qs = grade ? `?grade=${encodeURIComponent(grade)}` : '';
+      const response = await apiClient.get(`/curriculum/subjects/${subjectId}/units${qs}`);
+      return response || [];
+    },
+    enabled: !!subjectId,
+  });
+};
+
+export const useTopics = (subjectId, grade, unit) => {
+  return useQuery({
+    queryKey: ['curriculum', 'topics', subjectId, grade, unit],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (grade) params.append('grade', grade);
+      if (unit) params.append('unit', unit);
+      const qs = params.toString() ? `?${params.toString()}` : '';
       const response = await apiClient.get(`/curriculum/subjects/${subjectId}/topics${qs}`);
       return response || [];
     },

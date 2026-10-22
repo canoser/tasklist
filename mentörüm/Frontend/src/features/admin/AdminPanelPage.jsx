@@ -6,6 +6,8 @@ import Card from '../../components/common/Card/Card';
 import styles from './AdminPanelPage.module.css';
 import { apiClient } from '../../api/apiClient';
 
+const CURRICULUM_GRADES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 'TYT', 'AYT'];
+
 const ROLE_LABEL = { 
   Student: 'Öğrenci', 
   Parent: 'Veli', 
@@ -60,6 +62,7 @@ const AdminPanelPage = () => {
   const [curriculumBusy, setCurriculumBusy] = useState(false);
   const [curriculumResult, setCurriculumResult] = useState(null);
   const [curriculumError, setCurriculumError] = useState('');
+  const [curriculumGrade, setCurriculumGrade] = useState('');
 
   const handleApprove = (userId, defaultRole) => {
     const role = roles[userId] || defaultRole;
@@ -85,12 +88,13 @@ const AdminPanelPage = () => {
     setCurriculumResult(null);
     setCurriculumBusy(true);
     try {
-      const data = await apiClient.get('/curriculum/export');
+      const qs = curriculumGrade ? `?grade=${encodeURIComponent(curriculumGrade)}` : '';
+      const data = await apiClient.get(`/curriculum/export${qs}`);
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'mufredat_sablonu.json';
+      a.download = curriculumGrade ? `mufredat_${curriculumGrade}.json` : 'mufredat_sablonu.json';
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -111,7 +115,8 @@ const AdminPanelPage = () => {
     try {
       const text = await file.text();
       const payload = JSON.parse(text);
-      const res = await apiClient.post('/curriculum/import', payload);
+      const qs = curriculumGrade ? `?grade=${encodeURIComponent(curriculumGrade)}` : '';
+      const res = await apiClient.post(`/curriculum/import${qs}`, payload);
       setCurriculumResult(res);
     } catch (err) {
       setCurriculumError('İçe aktarma başarısız: ' + (err?.response?.data?.error || err?.message || 'JSON biçimi geçersiz olabilir'));
@@ -325,9 +330,23 @@ const AdminPanelPage = () => {
           <Card padding="md">
             <h3 className={styles.cardSectionTitle}>📚 Müfredat Yönetimi</h3>
             <p style={{ color: '#555', marginBottom: 12 }}>
-              Müfredatı dışa aktararak JSON şablonunu indirin; bu şablonu bir yapay zekâya yapıştırıp
-              gerçek MEB müfredatıyla doldurun, ardından doldurulmuş dosyayı içe aktarın.
+              Her sınıfın müfredatını ayrı ayrı yönetin. Üstten bir sınıf/seviye seçip yalnızca o sınıfın JSON şablonunu indirin;
+              şablonu bir yapay zekâya yapıştırıp gerçek MEB müfredatıyla doldurun, ardından doldurulmuş dosyayı aynı sınıf için içe aktarın.
+              (Sınıf seçmezseniz tüm müfredat tek dosyada işlenir.)
             </p>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12 }}>
+              <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 13, color: '#555' }}>
+                Sınıf / Seviye
+                <select
+                  value={curriculumGrade}
+                  onChange={(e) => setCurriculumGrade(e.target.value)}
+                  style={{ padding: '7px 10px', borderRadius: 6, border: '1px solid #ccc', minWidth: 120 }}
+                >
+                  <option value="">-- Tümü --</option>
+                  {CURRICULUM_GRADES.map((g) => <option key={g} value={g}>{g}</option>)}
+                </select>
+              </label>
+            </div>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
               <Button onClick={handleExportCurriculum} disabled={curriculumBusy}>📥 Şablonu İndir (JSON)</Button>
               <label style={{ display: 'inline-block', cursor: 'pointer' }}>
