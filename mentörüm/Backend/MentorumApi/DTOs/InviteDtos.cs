@@ -12,6 +12,9 @@ namespace MentorumApi.DTOs
 
         // StudentId for parent invite, or CoachId for student invite
         public Guid? RelatedId { get; set; }
+
+        // true ise davet kodu/linki e-posta ile de gönderilir; false ise yalnızca kod döner (manuel paylaşım).
+        public bool SendEmail { get; set; }
     }
 
     public class InviteAcceptRequest

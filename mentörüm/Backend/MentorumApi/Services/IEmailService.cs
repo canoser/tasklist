@@ -12,5 +12,8 @@ namespace MentorumApi.Services
 
         /// <summary>Yeni oluşturulan kullanıcıya karşılama ve geçici şifre e-postası gönderir.</summary>
         Task SendWelcomeEmailAsync(string email, string role, string tempPassword);
+
+        /// <summary>Davet kodunu ve linkini e-posta ile gönderir.</summary>
+        Task SendInviteEmailAsync(string email, string inviteCode, string inviteLink, string role);
     }
 }

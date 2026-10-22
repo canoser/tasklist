@@ -869,33 +869,45 @@ Dosya silindi ama şifre bir kez yazılmış olduğu için güvenli sayılmaz; m
 
 ---
 
-### 12.3 — E-posta servisi kur (Şifremi Unuttum + kullanıcı ekleme şifresi)
+### 12.3 — E-posta servisi (Resend) — Davet + Şifre Sıfırlama + Hoş Geldin
 
-**Durum:** Backend'de `/auth/forgot-password` bir reset token'ı üretiyor ve şu an
-sadece **konsola log'luyor**; manuel kullanıcı ekleme şifresi de şu an sadece **UI'da** gösteriliyor.
-Gerçek e-posta göndermek için bir sağlayıcı bağlanmalı.
+**Durum:** ✅ Kod hazır. Backend `ResendEmailService` ile 3 tip e-posta gönderir:
+- **Davet** (öğrenci / veli / öğretmen) → davet kodu + link + "Daveti Kabul Et" butonu.
+- **Şifre sıfırlama** → sıfırlama linki.
+- **Hoş geldin** → manuel eklenen kullanıcının geçici şifresi.
 
-Önerilen sağlayıcı: **Resend** (basit HTTP API, ücretsiz tier günde 100 e-posta).
+Önemli: `RESEND_API_KEY` tanımlı değilse e-posta **gönderilmez**, içerik konsola (Serilog) loglanır. Lokal geliştirmede bu davranış normaldir.
 
 **A) Resend hesabı ve API anahtarı:**
-1. https://resend.com adresine gir, hesap oluştur.
-2. **API Keys** bölümünden yeni bir key oluştur (ör. `re_xxxxxx`).
-3. (Production için) kendi domain'ini ekle: **Domains → Add Domain** → `dersmatris.com`
-   DNS doğrulamasını (SPF + DKIM) Cloudflare'a ekle. Test için Resend'in `onboarding@resend.dev`
-   adresini kullanabilirsin.
+1. https://resend.com adresine gir, hesap oluştur (GitHub / Google / e-posta).
+2. E-postanı doğrula (Resend sana doğrulama maili atar, linke tıkla).
+3. Dashboard → **API Keys** → **Create API Key** → izin: **Sending access**.
+4. Üretilen key `re_xxxxxxxx...` formatındadır (bir daha gösterilmez, kopyala).
 
-**B) Backend'e bağla (kod değişikliği — sonraki adım):**
-- Yeni bir `Services/EmailService.cs` (veya `IEmailService`) eklenir:
-  - `POST https://api.resend.com/emails` → `Authorization: Bearer <RESEND_API_KEY>`
-  - `from: "Mentörüm <onboarding@resend.dev>"`, `to`, `subject`, `html`.
-- `RESEND_API_KEY` env/secret olarak tanımlanır.
-- `AuthEndpoints.cs` içinde `[PASSWORD RESET]` log'unun olduğu yere
-  `emailService.SendPasswordReset(user.Email, resetLink)` çağrısı eklenir.
-- Manuel kullanıcı eklemede (Admin → Kullanıcı Ekle) üretilen şifre, aynı servisle
-  e-posta ile kullanıcıya gönderilir.
+**B) Domain doğrulama (ZORUNLU — gerçek kişilere göndermek için):**
+- `onboarding@resend.dev` adresiyle **yalnızca kendi hesap e-postana** test maili atabilirsin.
+- Öğrenci/veli/öğretmene gerçekten göndermek için kendi domain'ini doğrula:
+  1. Dashboard → **Domains** → **Add Domain** → `dersmatris.com`.
+  2. Resend'in verdiği **SPF + DKIM** TXT kayıtlarını Cloudflare'a ekle (dersmatris.com → DNS → Records).
+  3. Resend'de **Verify** butonuna bas (DNS yayılımı 5-10 dk sürebilir).
+  4. Doğrulanınca `from` adresinde kendi domain'ini kullan: `Mentörüm <no-reply@dersmatris.com>`.
 
-> Bu kodu ben (Cline) yazabilirim — sadece `RESEND_API_KEY`'i (veya hangi sağlayıcıyı
-> seçtiğini) söylemen yeterli.
+**C) Backend nasıl çalışıyor (kod hazır):**
+- `Services/ResendEmailService.cs` → `POST https://api.resend.com/emails` → `Authorization: Bearer <RESEND_API_KEY>`.
+- `IEmailService` metotları: `SendInviteEmailAsync`, `SendPasswordResetEmailAsync`, `SendWelcomeEmailAsync`.
+- Davet ucunda (`POST /api/v1/invites/send`) istekte `sendEmail=true` gönderilirse e-posta da atılır; aksi hâlde yalnızca kod/link döner (manuel paylaşım — WhatsApp/kopyala).
+
+**D) Ortam değişkenleri:**
+- `RESEND_API_KEY` (zorunlu) — Resend API anahtarı (`re_...`).
+- `RESEND_FROM_EMAIL` (opsiyonel) — Gönderen adresi; varsayılan: `Mentörüm <onboarding@resend.dev>`.
+- `APP_BASE_URL` (opsiyonel) — Mail içindeki linklerin tabanı; varsayılan: `https://mentorum.dersmatris.com`.
+
+**E) Test:**
+1. Lokalde `Backend/.env` dosyasına `RESEND_API_KEY=re_...` ekle.
+2. Uygulamayı çalıştır → koç panelinden bir davet oluştur → **"E-posta ile de gönder"** kutusunu işaretle.
+3. Maili kontrol et; Resend Dashboard → **Emails** altında teslim (delivered) / açılma durumunu gör.
+
+> 💡 Free tier **günde 100 e-posta**dır; aşılınca pay-as-you-go (~$20/ay 50.000 mail civarı).
 
 ---
 
@@ -909,8 +921,9 @@ fly secrets set SUPER_ADMIN_EMAILS="canoser@gmail.com,canoser@hotmail.com" --app
 # Google ile giriş (zaten tanımlıysa atla; yeni değeri gir)
 fly secrets set GOOGLE_CLIENT_ID="<google oauth client id>.apps.googleusercontent.com" --app mentorum-api
 
-# (EmailService eklenince) Resend/SMTP anahtarı
+# E-posta servisi (Resend) — davet / şifre sıfırlama / hoş geldin mailleri
 fly secrets set RESEND_API_KEY="re_xxxxxx" --app mentorum-api
+fly secrets set RESEND_FROM_EMAIL="Mentörüm <no-reply@dersmatris.com>" --app mentorum-api
 ```
 Kontrol:
 ```powershell

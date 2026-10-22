@@ -31,6 +31,9 @@ namespace MentorumApi.Services
         public Task SendWelcomeEmailAsync(string email, string role, string tempPassword)
             => SendAsync(email, "Mentörüm'e Hoş Geldiniz! 🎉", BuildWelcomeHtml(email, role, tempPassword));
 
+        public Task SendInviteEmailAsync(string email, string inviteCode, string inviteLink, string role)
+            => SendAsync(email, $"Mentörüm Daveti — {RoleLabel(role)}", BuildInviteHtml(inviteCode, inviteLink, role));
+
         private async Task SendAsync(string to, string subject, string html)
         {
             var apiKey = ApiKey;
@@ -100,6 +103,23 @@ namespace MentorumApi.Services
       <p style='margin:24px 0 0;font-size:13px;color:#6B7280;line-height:1.6;'>Güvenliğiniz için ilk girişinizden sonra şifrenizi değiştirmenizi öneririz.</p>
       <p style='margin:16px 0 0;font-size:12px;color:#9CA3AF;'>Site adresi: <a href='{BaseUrl}' style='color:#6366F1;'>{BaseUrl}</a></p>";
             return Layout("Hesabınız Oluşturuldu", inner);
+        }
+
+        private static string BuildInviteHtml(string code, string link, string role)
+        {
+            var roleLabel = RoleLabel(role);
+            var inner = $@"
+      <h1 style='margin:0 0 8px;font-size:20px;color:#111827;'>Mentörüm'e Davet Edildiniz</h1>
+      <p style='margin:0 0 24px;font-size:15px;color:#4B5563;line-height:1.6;'>Bir koç sizi <strong>{roleLabel}</strong> olarak Mentörüm'e davet etti. Aşağıdaki butona tıklayarak hesabınızı oluşturabilirsiniz.</p>
+      <table role='presentation' cellspacing='0' cellpadding='0' style='margin-bottom:24px;'><tr><td align='center' style='background:#6366F1;border-radius:8px;'>
+        <a href='{link}' target='_blank' style='display:inline-block;padding:14px 28px;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;background:#6366F1;border-radius:8px;'>Daveti Kabul Et</a>
+      </td></tr></table>
+      <div style='background:#EEF2FF;border:1px dashed #6366F1;border-radius:10px;padding:14px 16px;text-align:center;'>
+        <div style='font-size:12px;color:#6366F1;font-weight:600;letter-spacing:1px;text-transform:uppercase;'>Davet Kodunuz</div>
+        <div style='margin-top:6px;font-family:Consolas,Monaco,monospace;font-size:20px;font-weight:700;letter-spacing:2px;color:#4F46E5;'>{code}</div>
+      </div>
+      <p style='margin:24px 0 0;font-size:13px;color:#6B7280;line-height:1.6;'>Bu davet 48 saat geçerlidir. Linke tıklayamıyorsanız giriş sayfasındaki davet alanına yukarıdaki kodu girebilirsiniz.</p>";
+            return Layout("Mentörüm Daveti", inner);
         }
 
         private static string Layout(string title, string bodyInnerHtml)

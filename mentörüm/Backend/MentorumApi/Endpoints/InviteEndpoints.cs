@@ -19,6 +19,7 @@ namespace MentorumApi.Endpoints
             group.MapPost("/send", async (
                 [FromBody] InviteRequest req,
                 [FromServices] DbConnectionFactory db,
+                [FromServices] IEmailService emailService,
                 System.Security.Claims.ClaimsPrincipal user) =>
             {
                 var coachIdStr = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -61,28 +62,27 @@ namespace MentorumApi.Endpoints
 
                         if (existingProgramId != null)
                         {
-                            if (existingProgramId.Value == req.RelatedId)
-                            {
-                                return Results.Conflict(new { error = "Bu öğrenci zaten bu programınızda kayıtlı." });
-                            }
-                            else
+                            if (existingProgramId.Value != req.RelatedId)
                             {
                                 return Results.Conflict(new { 
                                     error = "Bu öğrenci şu anda aktif başka bir koçluk veya okul programına kayıtlıdır. Transfer işlemi için sistem yöneticisine başvurunuz." 
                                 });
                             }
+                            // Aynı programda zaten kayıtlı: şifre sıfırlama için yeni davet oluştur (re-invite) → aşağıda token üretilir.
                         }
+                        else
+                        {
+                            // Yalnızca sisteme önceden kaydolmuş ama henüz hiçbir programa bağlanmamış öğrenci eklenebilir
+                            await conn.ExecuteAsync(@"
+                                INSERT INTO students (id, program_id, is_active)
+                                VALUES (@Id, @ProgramId, 1)",
+                                new { Id = existingUser.Id, ProgramId = req.RelatedId });
 
-                        // Yalnızca sisteme önceden kaydolmuş ama henüz hiçbir programa bağlanmamış öğrenci eklenebilir
-                        await conn.ExecuteAsync(@"
-                            INSERT INTO students (id, program_id, is_active)
-                            VALUES (@Id, @ProgramId, 1)",
-                            new { Id = existingUser.Id, ProgramId = req.RelatedId });
-
-                        return Results.Ok(new { 
-                            message = $"'{existingUser.FullName}' adlı öğrenci programa başarıyla eklendi.", 
-                            directAdded = true 
-                        });
+                            return Results.Ok(new { 
+                                message = $"'{existingUser.FullName}' adlı öğrenci programa başarıyla eklendi.", 
+                                directAdded = true 
+                            });
+                        }
                     }
                     else
                     {
@@ -108,7 +108,12 @@ namespace MentorumApi.Endpoints
                         ExpiresAt = expiresAt 
                     });
 
-                return Results.Ok(new { message = "Davet başarıyla oluşturuldu.", code, link = inviteLink, expiresAt });
+                if (req.SendEmail)
+                {
+                    await emailService.SendInviteEmailAsync(emailLower, code, inviteLink, req.Role);
+                }
+
+                return Results.Ok(new { message = req.SendEmail ? "Davet oluşturuldu ve e-posta gönderildi." : "Davet başarıyla oluşturuldu.", code, link = inviteLink, expiresAt, emailed = req.SendEmail });
             }).RequireAuthorization("RequireCoachRole")
                 .AddEndpointFilter<MentorumApi.Filters.IdempotencyFilter>(); // Sadece koç davet atabilir; idempotency
 
@@ -176,28 +181,50 @@ namespace MentorumApi.Endpoints
                 using var conn = db.CreateConnection();
                 conn.Open(); // Transaction için bağlantı açık olmalı
 
-                var emailExists = await conn.ExecuteScalarAsync<int>("SELECT COUNT(1) FROM users WHERE email = @Email", new { Email = invite.Email });
-                if (emailExists > 0) return Results.Conflict(new { error = "Bu e-posta zaten kayıtlı." });
+                var existingUserId = await conn.ExecuteScalarAsync<Guid?>("SELECT id FROM users WHERE email = @Email", new { Email = invite.Email });
 
-                var userId = Guid.NewGuid();
-                var user = new User 
+                Guid userId;
+                User user;
+                var isPasswordReset = existingUserId.HasValue;
+
+                if (isPasswordReset)
                 {
-                    Id = userId,
-                    Email = invite.Email,
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.Password),
-                    Role = invite.Role,
-                    FullName = req.FullName,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
+                    userId = existingUserId.Value;
+                    user = await conn.QuerySingleOrDefaultAsync<User>(
+                        "SELECT id AS Id, email AS Email, password_hash AS PasswordHash, google_id AS GoogleId, role AS Role, full_name AS FullName, avatar_url AS AvatarUrl, is_active AS IsActive, is_admin AS IsAdmin, approval_status AS ApprovalStatus, created_at AS CreatedAt, updated_at AS UpdatedAt FROM users WHERE id = @Id",
+                        new { Id = userId })
+                        ?? throw new InvalidOperationException("Kullanıcı bulunamadı.");
+                }
+                else
+                {
+                    userId = Guid.NewGuid();
+                    user = new User 
+                    {
+                        Id = userId,
+                        Email = invite.Email,
+                        PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.Password),
+                        Role = invite.Role,
+                        FullName = req.FullName,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    };
+                }
 
                 using var tx = conn.BeginTransaction();
                 try 
                 {
-                    await conn.ExecuteAsync(@"
-                        INSERT INTO users (id, email, password_hash, role, full_name, created_at, updated_at) 
-                        VALUES (@Id, @Email, @PasswordHash, @Role, @FullName, @CreatedAt, @UpdatedAt)", 
-                        user, tx);
+                    if (isPasswordReset)
+                    {
+                        // Re-invite: mevcut kullanıcının şifresini sıfırla (yeni kayıt açma).
+                        var newHash = BCrypt.Net.BCrypt.HashPassword(req.Password);
+                        await conn.ExecuteAsync("UPDATE users SET password_hash = @Hash, updated_at = NOW() WHERE id = @Id", new { Hash = newHash, Id = userId }, tx);
+                    }
+                    else
+                    {
+                        await conn.ExecuteAsync(@"
+                            INSERT INTO users (id, email, password_hash, role, full_name, created_at, updated_at) 
+                            VALUES (@Id, @Email, @PasswordHash, @Role, @FullName, @CreatedAt, @UpdatedAt)", 
+                            user, tx);
 
                     if (user.Role == "Student")
                     {
@@ -240,6 +267,7 @@ namespace MentorumApi.Endpoints
                             INSERT INTO program_coaches (id, program_id, coach_id, role)
                             VALUES (@Id, @ProgramId, @CoachId, 'YARDIMCI')",
                             new { Id = Guid.NewGuid(), ProgramId = invite.RelatedId, CoachId = userId }, tx);
+                    }
                     }
 
                     // Token'ı kullanıldı işaretle
