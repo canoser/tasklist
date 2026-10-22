@@ -178,4 +178,145 @@ Sayfa içi 2 sekme — bunlar iki AYRI "program tipi" değildir; öğrenci her z
 3. [x] **[Backend] Öğretmen limiti:** öğretmen daveti `max_teachers`'ı kontrol eder.
 4. [x] **[Frontend] Dropdown kaldır:** `CoachStudents.jsx` "Program Seçin *" kalkar.
 5. [x] **[Frontend] Menü/sayfa:** `CoachLayout.jsx` birleştirme + Bireysel/Grup sekmeleri; "Öğretmenler" üst menüde, "Dersler / Haftalık Program / Ayarlar" birleşik sayfa başlığına eklendi (adım tamam).
-6. [x] **[Backend] Hibrit düzeltme:** `MoveToGroupAsync` OZEL_DERS'i pasif etmesin.
+181: 6. [x] **[Backend] Hibrit düzeltme:** `MoveToGroupAsync` OZEL_DERS'i pasif etmesin.
+
+---
+
+## 8. V13.3 Öğretmen Kartları & Kayıt UI, Takvim Buton Düzeni ve Global Tema/Form Onarımı
+
+### [x] T28 — Öğretmen Kartları Zenginleştirmesi & Tıklamasız Bilgi Görünümü
+- **Dosyalar:**
+  - `Backend/MentorumApi/Data/TeacherRepository.cs`
+  - `Backend/MentorumApi/DTOs/TeacherDtos.cs`
+  - `Frontend/src/features/coach/teachers/CoachTeachersPage.jsx`
+  - `Frontend/src/features/coach/teachers/CoachTeachersPage.module.css`
+- **Hedef:**
+  1. Öğretmen kartına tıklandığında detay sayfasına gitme zorunluluğu kaldırılacak; öğretmene ait tüm kritik bilgiler doğrudan kart üzerinde gösterilecek.
+  2. Kart üstünde gösterilecek bilgiler:
+     - Ad Soyad ve Profil Baş Harf Avatarı
+     - E-posta adresi
+     - Telefon numarası
+     - Branş etiketi (`branch` / örn: "Matematik", "Fizik")
+     - Girdiği ders rozetleri (Ders adı ve tipi rozet olarak listelenecek)
+     - Sorumlu olduğu aktif öğrenci sayısı
+     - Durum etiketi (`Aktif` / `Pasif`)
+     - İşlem Butonları: `[ Pasife Al / Aktife Al ]` ve `[ Sil ]`
+  3. `TeacherRepository.GetTeachersAsync` tek bir optimize sorguda öğretmenin derslerini ve öğrenci sayısını döndürecek şekilde güncellenecek.
+
+### [x] T29 — Davet Göndermeden Doğrudan Öğretmen Ekleme Modalı (Hızlı Kayıt vs. Davet)
+- **Dosyalar:**
+  - `Backend/MentorumApi/Data/Migrations/025_teacher_details.sql` (DB: `branch` ve `phone` kolonları)
+  - `Backend/MentorumApi/Endpoints/TeacherEndpoints.cs`
+  - `Backend/MentorumApi/Data/TeacherRepository.cs`
+  - `Frontend/src/features/coach/teachers/CoachTeachersPage.jsx`
+  - `Frontend/src/features/coach/teachers/AddTeacherModal.jsx` (+ `.module.css`)
+  - `Frontend/src/features/coach/coachSchoolApi.js`
+- **Hedef:**
+  1. Öğrencilerde uygulanan doğrudan ekleme mantığı öğretmenler için de hayata geçirilecek.
+  2. `+ Yeni Öğretmen Ekle` modalında 2 mod yer alacak:
+     - **Sekme 1: `[ ⚡ Doğrudan Ekle (Hızlı Kayıt) ]` (Varsayılan):**
+       - Ad, Soyad (Zorunlu)
+       - Branş (Zorunlu / Seçim veya Metin: Matematik, Fizik, Kimya vb.)
+       - Telefon (Opsiyonel)
+       - E-posta (Opsiyonel / Giriş için)
+       - Giriş Şifresi (Varsayılan: `123456`, değiştirilebilir)
+       - Atanacak Dersler (Programdaki mevcut dersler arasından çoklu seçim)
+     - **Sekme 2: `[ ✉️ E-posta ile Davet Gönder ]`:**
+       - Mevcut e-posta davet akışı korunacak.
+  3. Kaydedilen öğretmen anında koçun öğretmen listesine eklenecek, atanmış dersleri ilişkilendirilecek ve sisteme hemen ders/ödev girişi yapabilecek.
+
+### [x] T30 — Takvim & Program Sayfasında Buton ve Ay/Güneş Çakışmasının Çözülmesi
+- **Dosyalar:**
+  - `Frontend/src/features/coach/calendar/CalendarPage.jsx`
+  - `Frontend/src/features/coach/calendar/CalendarPage.module.css`
+  - `Frontend/src/components/common/ThemeDecor/SkyDecor.module.css`
+- **Hedef:**
+  1. `CalendarPage.jsx` başlığında `justify-content: space-between` ile sayfanın en sağına itilen ve arka plandaki Ay/Güneş görselinin tam üzerine denk gelen `+ Yeni Etkinlik` butonu sağ üstteki boşluktan alınacak.
+  2. Buton, `[ Akademik Takvim ] | [ Haftalık Ders Programı ]` sekmeleri veya filtre çubuğu hizasına derli toplu bir aksiyon öğesi olarak yerleştirilecek.
+  3. `SkyDecor.module.css` içerisindeki celestial (ay/güneş) bileşeninin saydamlığı ve konumu optimize edilerek sayfa bileşenlerini örtmesi engellenecek.
+
+### [x] T31 — Global Tema Standartlaştırması: `<select>`, `<option>` ve `<textarea>` Form Bileşenleri
+- **Dosyalar:**
+  - `Frontend/src/styles/globals.css`
+  - `Frontend/src/features/coach/students/CoachStudents.module.css`
+  - `Frontend/src/features/coach/student-detail/CoachStudentDetail.jsx`
+  - `Frontend/src/features/coach/student-detail/CoachStudentDetail.module.css`
+- **Hedef:**
+  1. `globals.css` seviyesinde tüm `select`, `option`, `textarea` ve `input` elemanlarına projenin CSS değişkenleri (`--bg-color-surface`, `--text-color-main`, `--border-color`, vb.) tanımlanacak.
+  2. Tarayıcı ve Windows'un native beyaz form kontrolü (beyaz açılır kutular, siyah metinler) yerine seçili temaya (`dark`, `light`, `nature`, `ocean`, `cyber`, `formal`) tam uyumlu şık ve opak stiller garanti altına alınacak.
+  3. `CoachStudents.module.css` içinde eksik olan `.select` sınıfı tanımlanacak; `Tüm Sınıflar` ve `Tüm Programlar` açılır menüsü tema renklerine bürünecek.
+  4. `CoachStudentDetail.jsx` içerisindeki "Görüşme Notları" ve "Aksiyon Öğeleri" `<textarea>` elemanlarının beyaz kalması düzeltilecek; koyu temada koyu zemin ve beyaz metinle kusursuz görünecek.
+
+### [x] T32 — Haftalık Ders Programı Renk & Kontrast Onarımı (Görünmeyen Metinler)
+- **Dosyalar:**
+  - `Frontend/src/features/coach/schedule/WeeklySchedulePage.jsx`
+  - `Frontend/src/features/coach/schedule/WeeklySchedulePage.module.css`
+- **Hedef:**
+  1. `WeeklySchedulePage.module.css` dosyasında `.dragCard` ve `.slot` sınıflarına hardcoded verilmiş `#EEF2FF` beyaz zeminler kaldırılacak.
+  2. Koyu temada beyaz metin (`#F8FAFC`) ile beyaz zemin çakışması (beyaz üstüne beyaz görünmez yazı) giderilecek.
+  3. Kartlar ve slotlar `var(--bg-color-surface-elevated)` ve temaya uygun yarı saydam mor/indigo zeminle (`rgba(139, 92, 246, 0.15)`) belirgin, okunur ve şık hale getirilecek.
+  4. `.dayHeader`, `.hourLabel`, `.cell`, `.input` bileşenlerinin tamamı tema kurallarına bağlanacak.
+
+---
+
+## 9. V13.4 Kapsamlı Öğretmen Detay Portalı (Öğrenciler, Ödev Dönüşleri, Sınavlar ve Bilgi Düzenleme)
+
+### [x] T33 — Öğretmen Bilgilerini Düzenleme (Ad, Soyad, Branş, Telefon) ve Kart Tıklama Entegrasyonu
+- **Dosyalar:**
+  - `Backend/MentorumApi/DTOs/TeacherDtos.cs`
+  - `Backend/MentorumApi/Data/TeacherRepository.cs`
+  - `Backend/MentorumApi/Endpoints/TeacherEndpoints.cs`
+  - `Frontend/src/features/coach/teachers/CoachTeachersPage.jsx`
+  - `Frontend/src/features/coach/teachers/CoachTeacherDetailPage.jsx` (+ `.module.css`)
+  - `Frontend/src/features/coach/teachers/EditTeacherModal.jsx`
+  - `Frontend/src/features/coach/coachSchoolApi.js`
+- **Hedef:**
+  1. `CoachTeachersPage.jsx` içerisindeki öğretmen kartlarına tıklama (`onClick`) entegre edilerek koçun doğrudan öğretmen detay sayfasına (`/coach/programs/:programId/teachers/:teacherId` veya `/coach/teachers/:teacherId`) gitmesi sağlandı.
+  2. Öğretmen Detay sayfasında profil kartı: Ad Soyad, Branş rozeti, Telefon, E-posta, Aktiflik durumu ve `[ Bilgileri Düzenle ]` butonu eklendi.
+  3. `EditTeacherModal.jsx` üzerinden öğretmenin adı, soyadı, branşı, telefonu ve aktiflik durumu doğrudan güncellenebilir hale getirildi.
+  4. Backend: `PUT /api/v1/programs/{programId}/teachers/{teacherId}` endpoint'i (`UpdateTeacherRequest`) ile veritabanında `users`, `teachers` ve `program_teachers` tabloları transaction içinde güncellendi.
+
+### [x] T34 — Öğretmenin Aktif ve Geçmiş Öğrencileri Listesi
+- **Dosyalar:**
+  - `Backend/MentorumApi/Data/TeacherRepository.cs`
+  - `Backend/MentorumApi/Endpoints/TeacherEndpoints.cs`
+  - `Frontend/src/features/coach/teachers/CoachTeacherDetailPage.jsx`
+  - `Frontend/src/features/coach/coachSchoolApi.js`
+- **Hedef:**
+  1. Öğretmenin detay sayfasında ilk ana sekme olan **"Öğrenciler"**:
+     - **Aktif Öğrenciler:** Öğretmenin atanmış olduğu derslerde veya gruplarda kayıtlı aktif öğrenciler (`course_students.is_active = 1`).
+     - **Geçmiş Öğrenciler:** Öğretmenin derslerinden ayrılmış, tamamlamış veya geçmişteki öğrenciler (`is_active = 0` / `assignment_status = 'ENDED'`).
+  2. Liste alanları: Öğrenci Adı Soyadı, Sınıfı, Alanı (SAY/EA/SÖZ), İletişim bilgileri, Öğretmenden Aldığı Ders Adı ve Durumu.
+  3. Backend: `GET /api/v1/programs/{programId}/teachers/{teacherId}/students` endpoint'i optimize UNION sorgusuyla hem bireysel hem grup derslerini tekilleyerek döndürdü.
+
+### [x] T35 — Öğretmenin Öğrenci Bazlı Ödevleri ve Geri Dönüş / Tamamlama Oranları
+- **Dosyalar:**
+  - `Backend/MentorumApi/Data/TeacherRepository.cs`
+  - `Backend/MentorumApi/Endpoints/TeacherEndpoints.cs`
+  - `Frontend/src/features/coach/teachers/CoachTeacherDetailPage.jsx`
+  - `Frontend/src/features/coach/coachSchoolApi.js`
+- **Hedef:**
+  1. Öğretmenin detay sayfasında ikinci ana sekme olan **"Ödevler & Dönüş Oranları"**:
+     - **Özet Metrik Kartları:** Toplam Atanan Ödev, Tamamlanan Ödev, Bekleyen Ödev ve Genel Geri Dönüş / Tamamlama Oranı (% yüzde ilerleme rozeti).
+     - **Öğrenci Bazında Ödev Dağılım Tablosu:**
+       - Öğrenci Adı
+       - Ders Adı
+       - Atanan Toplam Ödev Sayısı
+       - Tamamlanan Ödev Sayısı
+       - Öğrencinin Dönüş / Başarı Oranı (% bar ve rozet)
+       - Son Ödev Durumu (`Tamamlandı`, `Bekliyor`, `Gecikmiş`)
+       - Son Teslim Tarihi
+  2. Backend: `GET /api/v1/programs/{programId}/teachers/{teacherId}/homework-stats` endpoint'i ile öğrenci bazında ödev metriklerini optimize tek sorguda getirdi.
+
+### [x] T36 — Öğretmenin Sınavları ve Öğrenci Bazında Sınav Sonuçları
+- **Dosyalar:**
+  - `Backend/MentorumApi/Data/TeacherRepository.cs`
+  - `Backend/MentorumApi/Endpoints/TeacherEndpoints.cs`
+  - `Frontend/src/features/coach/teachers/CoachTeacherDetailPage.jsx`
+  - `Frontend/src/features/coach/coachSchoolApi.js`
+- **Hedef:**
+  1. Öğretmenin detay sayfasında üçüncü ana sekme olan **"Sınavlar & Netler"**:
+     - Öğretmenin oluşturduğu veya dersiyle ilişkili sınavların dökümü.
+     - Öğrenci bazında sınav karnesi: Sınav Adı, Sınav Tarihi, Öğrenci Adı, Sınav Türü (TYT/AYT/Deneme), Toplam Net, Ders Adı.
+  2. Backend: `GET /api/v1/programs/{programId}/teachers/{teacherId}/exam-stats` endpoint'i ile sınav ve sonuç dökümünü sağladı.
+

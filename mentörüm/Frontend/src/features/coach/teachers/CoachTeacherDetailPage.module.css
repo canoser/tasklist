@@ -1,8 +1,505 @@
-.container { padding: var(--spacing-md); max-width: 720px; margin: 0 auto; }
-.title { font-size: 1.4rem; font-weight: 700; margin: var(--spacing-sm) 0; }
-.subtitle { font-size: 1.1rem; font-weight: 600; margin: var(--spacing-sm) 0; }
-.card { display: flex; flex-direction: column; gap: 6px; margin-bottom: var(--spacing-sm); }
-.meta { font-size: 0.85rem; color: var(--text-color-muted); }
-.active { color: #16a34a; font-size: 0.8rem; font-weight: 600; }
-.inactive { color: #dc2626; font-size: 0.8rem; font-weight: 600; }
-.stat { font-size: 0.9rem; font-weight: 600; }
+.container {
+  padding: var(--spacing-lg);
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profileCard {
+  background-color: var(--bg-color-surface) !important;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card, 14px);
+  position: relative;
+  z-index: 2;
+}
+
+.profileHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+.avatarLarge {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25);
+}
+
+.profileDetails {
+  flex: 1;
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.teacherName {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-color-main);
+  margin: 0;
+}
+
+.branchBadge {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--color-primary);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.statusActive {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.statusInactive {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.statusOverdue {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.statusPending {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.contactRow {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  font-size: 0.875rem;
+  color: var(--text-color-muted);
+}
+
+.contactItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.editAction {
+  flex-shrink: 0;
+}
+
+.editBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Tab Bar */
+.tabNav {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 2px;
+  overflow-x: auto;
+}
+
+.tabBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-color-muted);
+  font-size: 0.925rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.tabBtn:hover {
+  color: var(--text-color-main);
+}
+
+.tabBtnActive {
+  color: var(--color-primary) !important;
+  border-bottom-color: var(--color-primary);
+}
+
+.tabCounter {
+  font-size: 0.75rem;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+/* Sub Tab Bar */
+.subTabNav {
+  display: flex;
+  gap: 8px;
+  margin-bottom: var(--spacing-sm);
+}
+
+.subTabBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-color-surface);
+  color: var(--text-color-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.subTabBtn:hover {
+  border-color: var(--color-primary);
+}
+
+.subTabBtnActive {
+  background: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: #fff !important;
+}
+
+.tabContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* Metric Grid */
+.metricGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.metricCard {
+  background-color: var(--bg-color-surface) !important;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card, 12px);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.metricIconWrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.metricValue {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-color-main);
+  line-height: 1.1;
+}
+
+.metricLabel {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-color-muted);
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+.rateRow {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.sectionHeading {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-color-main);
+  margin: var(--spacing-sm) 0 4px 0;
+}
+
+/* Tables */
+.tableWrapper {
+  overflow-x: auto;
+  background-color: var(--bg-color-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card, 12px);
+}
+
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.dataTable th {
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-color-muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dataTable td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-color-main);
+  vertical-align: middle;
+}
+
+.dataTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.dataTable tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.studentNameCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.studentAvatarMini {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.boldText {
+  font-weight: 600;
+  color: var(--text-color-main);
+}
+
+.mutedText {
+  color: var(--text-color-muted);
+  font-size: 0.825rem;
+}
+
+.contactMini {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.contactItemMini {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.775rem;
+  color: var(--text-color-muted);
+}
+
+.badgeList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.courseBadgeMini {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--color-primary);
+}
+
+.actionBtnMini {
+  padding: 4px 10px !important;
+  font-size: 0.8rem !important;
+}
+
+.completedBadge {
+  font-weight: 700;
+  color: #10b981;
+}
+
+.progressBarWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 120px;
+}
+
+.progressBarFill {
+  height: 6px;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progressPercent {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-color-main);
+}
+
+.examTypeBadge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(139, 92, 246, 0.15);
+  color: #8b5cf6;
+}
+
+.netScoreBadge {
+  display: inline-block;
+  font-size: 0.85rem;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 8px;
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+/* Courses Grid */
+.coursesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.courseCard {
+  background-color: var(--bg-color-surface) !important;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card, 12px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.courseCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.courseIcon {
+  color: var(--color-primary);
+}
+
+.courseName {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-color-main);
+  margin: 0;
+}
+
+.courseType {
+  font-size: 0.8rem;
+  color: var(--text-color-muted);
+  font-weight: 500;
+}
+
+/* Common */
+.emptyCard {
+  text-align: center;
+  color: var(--text-color-muted);
+  background-color: var(--bg-color-surface) !important;
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-card, 12px);
+}
+
+.loadingContainer {
+  padding: 60px var(--spacing-md);
+  text-align: center;
+  color: var(--text-color-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(99, 102, 241, 0.2);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingText {
+  color: var(--text-color-muted);
+  text-align: center;
+  padding: var(--spacing-md);
+}

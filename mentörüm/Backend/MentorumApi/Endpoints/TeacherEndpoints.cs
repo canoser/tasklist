@@ -61,6 +61,87 @@ namespace MentorumApi.Endpoints
                 }
                 return Results.NotFound(new { error = "Öğretmen bulunamadı." });
             });
+
+            group.MapPut("/{teacherId:guid}", async (
+                Guid programId,
+                Guid teacherId,
+                [FromBody] UpdateTeacherRequest req,
+                [FromServices] TeacherRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = GetCoachId(user);
+                if (coachId == null) return Results.Unauthorized();
+                if (string.IsNullOrWhiteSpace(req.FullName))
+                    return Results.BadRequest(new { error = "Öğretmen adı ve soyadı zorunludur." });
+
+                try
+                {
+                    var ok = await repo.UpdateTeacherAsync(programId, teacherId, req, coachId.Value);
+                    if (!ok) return Results.NotFound(new { error = "Öğretmen bulunamadı veya yetkiniz yok." });
+                    return Results.Ok(new { message = "Öğretmen bilgileri başarıyla güncellendi." });
+                }
+                catch (Exception ex)
+                {
+                    return Results.BadRequest(new { error = ex.Message });
+                }
+            });
+
+            group.MapGet("/{teacherId:guid}/students", async (
+                Guid programId,
+                Guid teacherId,
+                [FromServices] TeacherRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = GetCoachId(user);
+                if (coachId == null) return Results.Unauthorized();
+                try
+                {
+                    var data = await repo.GetTeacherStudentsAsync(programId, teacherId, coachId.Value);
+                    return Results.Ok(data);
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    return Results.NotFound(new { error = ex.Message });
+                }
+            });
+
+            group.MapGet("/{teacherId:guid}/homework-stats", async (
+                Guid programId,
+                Guid teacherId,
+                [FromServices] TeacherRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = GetCoachId(user);
+                if (coachId == null) return Results.Unauthorized();
+                try
+                {
+                    var data = await repo.GetTeacherHomeworkStatsAsync(programId, teacherId, coachId.Value);
+                    return Results.Ok(data);
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    return Results.NotFound(new { error = ex.Message });
+                }
+            });
+
+            group.MapGet("/{teacherId:guid}/exam-stats", async (
+                Guid programId,
+                Guid teacherId,
+                [FromServices] TeacherRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = GetCoachId(user);
+                if (coachId == null) return Results.Unauthorized();
+                try
+                {
+                    var data = await repo.GetTeacherExamStatsAsync(programId, teacherId, coachId.Value);
+                    return Results.Ok(data);
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    return Results.NotFound(new { error = ex.Message });
+                }
+            });
             // Öğretmen tarafı (Aşama 6)
             var me = app.MapGroup("/api/v1/teacher").RequireAuthorization("RequireTeacherRole");
 

@@ -47,6 +47,36 @@ export const useTeacherDetail = (programId, teacherId) => useQuery({
   enabled: !!programId && !!teacherId,
 });
 
+export const useUpdateTeacher = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ programId, teacherId, data }) => apiClient.put(`/programs/${programId}/teachers/${teacherId}`, data),
+    onSuccess: (_, v) => {
+      qc.invalidateQueries({ queryKey: ['coach', 'program', v.programId, 'teachers'] });
+      qc.invalidateQueries({ queryKey: ['coach', 'program', v.programId, 'teacher', v.teacherId] });
+      qc.invalidateQueries({ queryKey: ['coach', 'teachers'] });
+    },
+  });
+};
+
+export const useTeacherStudents = (programId, teacherId) => useQuery({
+  queryKey: ['coach', 'program', programId, 'teacher', teacherId, 'students'],
+  queryFn: async () => (await apiClient.get(`/programs/${programId}/teachers/${teacherId}/students`)) || { activeStudents: [], pastStudents: [] },
+  enabled: !!programId && !!teacherId,
+});
+
+export const useTeacherHomeworkStats = (programId, teacherId) => useQuery({
+  queryKey: ['coach', 'program', programId, 'teacher', teacherId, 'homework-stats'],
+  queryFn: async () => (await apiClient.get(`/programs/${programId}/teachers/${teacherId}/homework-stats`)) || null,
+  enabled: !!programId && !!teacherId,
+});
+
+export const useTeacherExamStats = (programId, teacherId) => useQuery({
+  queryKey: ['coach', 'program', programId, 'teacher', teacherId, 'exam-stats'],
+  queryFn: async () => (await apiClient.get(`/programs/${programId}/teachers/${teacherId}/exam-stats`)) || null,
+  enabled: !!programId && !!teacherId,
+});
+
 export const useMe = () => useQuery({
   queryKey: ['me'],
   queryFn: async () => (await apiClient.get('/me')) || null,

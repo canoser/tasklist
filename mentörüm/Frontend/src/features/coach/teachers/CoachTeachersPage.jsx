@@ -57,7 +57,12 @@ const CoachTeachersPage = () => {
       ) : (
         <div className={styles.teachersGrid}>
           {teachers.map((t) => (
-            <Card key={t.id} className={styles.teacherCard} padding="md">
+            <Card 
+              key={t.id} 
+              className={styles.teacherCard} 
+              padding="md"
+              onClick={() => navigate(programId ? `/coach/programs/${programId}/teachers/${t.id}` : `/coach/teachers/${t.id}`)}
+            >
               <div className={styles.cardTop}>
                 <div className={styles.avatar}>
                   {t.fullName?.charAt(0)?.toUpperCase() || 'Ö'}
@@ -114,12 +119,15 @@ const CoachTeachersPage = () => {
                   <span>{t.studentCount ?? 0} Aktif Öğrenci</span>
                 </span>
 
-                <div className={styles.actions}>
+                <div className={styles.actions} onClick={(e) => e.stopPropagation()}>
                   {t.isActive === 1 && (
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => deactivateTeacher.mutateAsync({ programId, teacherId: t.id })}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deactivateTeacher.mutateAsync({ programId, teacherId: t.id });
+                      }}
                       isLoading={deactivateTeacher.isPending}
                     >
                       Pasife Al
@@ -129,7 +137,10 @@ const CoachTeachersPage = () => {
                     size="sm"
                     variant="ghost"
                     style={{ color: 'var(--color-danger, #ef4444)' }}
-                    onClick={() => setTeacherToDelete(t)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setTeacherToDelete(t);
+                    }}
                     title="Öğretmeni Sil"
                   >
                     <Trash2 size={15} />

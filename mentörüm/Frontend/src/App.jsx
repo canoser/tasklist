@@ -133,6 +133,7 @@ function App() {
           <Route path="calendar" element={<CalendarPage />} />
           <Route path="approvals" element={<ApprovalsPage />} />
           <Route path="teachers" element={<CoachTeachersPage />} />
+          <Route path="teachers/:teacherId" element={<CoachTeacherDetailPage />} />
           <Route path="payments" element={<CoachPaymentsPage />} />
           <Route path="reports" element={<CoachReports />} />
           <Route path="profile" element={<CoachProfilePage />} />
