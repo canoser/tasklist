@@ -41,13 +41,6 @@ const LoginPage = () => {
     setIsLoading(true);
 
     try {
-      if (isForgot) {
-        await apiClient.post('/auth/forgot-password', { email });
-        setSuccessMsg('Eğer e-posta kayıtlıysa şifre sıfırlama bağlantısı gönderildi.');
-        setIsForgot(false);
-        return;
-      }
-
       if (isRegister) {
         const data = await apiClient.post('/auth/register', { email, password, fullName });
         if (data.pendingApproval) {
@@ -192,19 +185,11 @@ const LoginPage = () => {
             {error && <div className={styles.errorBox}>{error}</div>}
             {successMsg && <div className={styles.successBox} style={{ color: 'green', padding: '10px', backgroundColor: '#e6ffe6', borderRadius: '8px', fontSize: '14px', marginBottom: '15px' }}>{successMsg}</div>}
 
-            {!isRegister && !isForgot && (
+            {!isRegister && (
               <div className={styles.forgotPassword}>
-                <a href="#forgot" onClick={(e) => { e.preventDefault(); setIsForgot(true); setError(''); setSuccessMsg(''); }}>
-                  Şifremi Unuttum
-                </a>
-              </div>
-            )}
-
-            {isForgot && (
-              <div className={styles.forgotPassword}>
-                <a href="#login" onClick={(e) => { e.preventDefault(); setIsForgot(false); }}>
-                  ← Girişe Dön
-                </a>
+                <p style={{ fontSize: '12px', color: 'var(--text-color-muted)', margin: 0 }}>
+                  Şifrenizi mi unuttunuz? Öğrenci/Veli/Öğretmen iseniz koçunuza, Koç iseniz yöneticinize başvurun.
+                </p>
               </div>
             )}
 

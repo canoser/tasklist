@@ -475,6 +475,19 @@ var token = jwt.GenerateAccessToken(user);
                 return Results.Ok(new { message = "Profil güncellendi." });
             });
 
+            // Şifre oluştur / değiştir — Google ile girmiş kullanıcılar dahil (e-posta+şifre ile giriş yedeklemesi)
+            meGroup.MapPost("/password", async ([FromBody] SetPasswordRequest req, [FromServices] DbConnectionFactory db, HttpContext ctx) =>
+            {
+                var idStr = ctx.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(idStr, out var id)) return Results.Unauthorized();
+
+                using var conn = db.CreateConnection();
+                var hash = BCrypt.Net.BCrypt.HashPassword(req.NewPassword);
+                await conn.ExecuteAsync("UPDATE users SET password_hash = @Hash WHERE id = @Id", new { Hash = hash, Id = id });
+
+                return Results.Ok(new { message = "Şifreniz oluşturuldu. Artık e-posta ve şifre ile de giriş yapabilirsiniz." });
+            });
+
             // Tema tercihi (açık/koyu mod + stil) — tüm roller
             meGroup.MapPut("/theme", async ([FromBody] UpdateThemeRequest req, [FromServices] DbConnectionFactory db, HttpContext ctx) =>
             {

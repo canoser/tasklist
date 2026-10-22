@@ -55,6 +55,12 @@ namespace MentorumApi.DTOs
         public string? NewPassword { get; set; }
     }
 
+    public class SetPasswordRequest
+    {
+        [Required, MinLength(6)]
+        public required string NewPassword { get; set; }
+    }
+
     public class UserDto
     {
         public Guid Id { get; set; }
