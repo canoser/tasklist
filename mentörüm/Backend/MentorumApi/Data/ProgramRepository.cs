@@ -93,6 +93,43 @@ namespace MentorumApi.Data
             }
         }
 
+        /// <summary>
+        /// V13.2: Koçun tek görünmez çalışma alanını döndürür; yoksa otomatik açar.
+        /// "Program = grup" modelinde koç başına TEK çatı (max_programs=1) vardır.
+        /// </summary>
+        public async Task<Guid> EnsureDefaultWorkspaceAsync(Guid coachId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            conn.Open();
+            using var tx = conn.BeginTransaction();
+            try
+            {
+                var existing = await conn.QuerySingleOrDefaultAsync<Guid?>(
+                    @"SELECT pc.program_id FROM program_coaches pc
+                      JOIN coaching_programs cp ON cp.id = pc.program_id
+                      WHERE pc.coach_id = @CoachId AND pc.role = 'YONETICI' AND cp.is_active = 1
+                      ORDER BY cp.created_at LIMIT 1",
+                    new { CoachId = coachId }, tx);
+                if (existing.HasValue) { tx.Commit(); return existing.Value; }
+
+                var fullName = await conn.QuerySingleOrDefaultAsync<string>(
+                    "SELECT full_name FROM users WHERE id = @CoachId", new { CoachId = coachId }, tx);
+                var name = string.IsNullOrWhiteSpace(fullName) ? "Çalışma Alanı" : $"{fullName.Trim()} Çalışma Alanı";
+
+                var programId = Guid.NewGuid();
+                await conn.ExecuteAsync(
+                    "INSERT INTO coaching_programs (id, name, created_by) VALUES (@Id, @Name, @CreatedBy)",
+                    new { Id = programId, Name = name, CreatedBy = coachId }, tx);
+                await conn.ExecuteAsync(
+                    "INSERT INTO program_coaches (id, program_id, coach_id, role, added_by) VALUES (@Id, @ProgramId, @CoachId, 'YONETICI', @CoachId)",
+                    new { Id = Guid.NewGuid(), ProgramId = programId, CoachId = coachId }, tx);
+
+                tx.Commit();
+                return programId;
+            }
+            catch { tx.Rollback(); throw; }
+        }
+
         public async Task<bool> UpdateProgramAsync(Guid programId, Guid coachId, UpdateProgramRequest req)
         {
             using var conn = _connectionFactory.CreateConnection();
@@ -268,7 +305,7 @@ namespace MentorumApi.Data
                 ORDER BY u.created_at");
         }
 
-        public async Task<bool> ApproveUserAsync(Guid userId, string role, int? maxPrograms, Guid adminId)
+        public async Task<bool> ApproveUserAsync(Guid userId, string role, int? maxStudents, int? maxTeachers, int? storageQuotaMb, Guid adminId)
         {
             using var conn = _connectionFactory.CreateConnection();
             conn.Open();
@@ -282,10 +319,14 @@ namespace MentorumApi.Data
                 if (role == "Coach")
                 {
                     await conn.ExecuteAsync(@"
-                        INSERT INTO coaches (id, plan_type, approval_status, max_programs, approved_by, approved_at)
-                        VALUES (@Id, 'free', 'APPROVED', @MaxPrograms, @AdminId, NOW())
-                        ON CONFLICT (id) DO UPDATE SET approval_status = 'APPROVED', max_programs = COALESCE(@MaxPrograms, coaches.max_programs), approved_by = @AdminId, approved_at = NOW()",
-                        new { Id = userId, MaxPrograms = maxPrograms, AdminId = adminId }, tx);
+                        INSERT INTO coaches (id, plan_type, approval_status, max_students, max_teachers, storage_quota_mb, approved_by, approved_at)
+                        VALUES (@Id, 'free', 'APPROVED', @MaxStudents, @MaxTeachers, @StorageQuotaMb, @AdminId, NOW())
+                        ON CONFLICT (id) DO UPDATE SET approval_status = 'APPROVED',
+                            max_students = COALESCE(@MaxStudents, coaches.max_students),
+                            max_teachers = COALESCE(@MaxTeachers, coaches.max_teachers),
+                            storage_quota_mb = COALESCE(@StorageQuotaMb, coaches.storage_quota_mb),
+                            approved_by = @AdminId, approved_at = NOW()",
+                        new { Id = userId, MaxStudents = maxStudents, MaxTeachers = maxTeachers, StorageQuotaMb = storageQuotaMb, AdminId = adminId }, tx);
                 }
                 else if (role == "Student")
                 {

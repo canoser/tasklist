@@ -3,10 +3,10 @@ import { apiClient } from '../../api/apiClient';
 
 // V13: Öğrenci ekleme esnekliği & bireysel/grup geçişi.
 
-export const useCreateStudent = (programId) => {
+export const useCreateStudent = () => {
     const qc = useQueryClient();
     return useMutation({
-        mutationFn: (data) => apiClient.post(`/programs/${programId}/students`, data),
+        mutationFn: (data) => apiClient.post('/students', data),
         onSuccess: () => qc.invalidateQueries({ queryKey: ['coach', 'students'] }),
     });
 };

@@ -34,7 +34,6 @@ const CoachStudents = () => {
   // Doğrudan Ekleme Form State
   const [directFirstName, setDirectFirstName] = useState('');
   const [directLastName, setDirectLastName] = useState('');
-  const [directProgramId, setDirectProgramId] = useState('');
   const [directClassLevel, setDirectClassLevel] = useState('');
   const [directTargetExam, setDirectTargetExam] = useState('');
   const [directEmail, setDirectEmail] = useState('');
@@ -58,7 +57,7 @@ const CoachStudents = () => {
   const [targetSuccess, setTargetSuccess] = useState('');
 
   const activeProgramId = (programs && programs.length > 0) ? programs[0].id : null;
-  const createStudent = useCreateStudent(activeProgramId);
+  const createStudent = useCreateStudent();
   const inviteStudent = useInviteStudent(activeProgramId);
 
   const handleCreateStudent = async (payload) => {
@@ -72,18 +71,16 @@ const CoachStudents = () => {
     setDirectError('');
     setDirectSubmitting(true);
     try {
-      const selectedProgId = directProgramId || programs?.[0]?.id;
       const res = await createStudent.mutateAsync({
         firstName: directFirstName.trim(),
         lastName: directLastName.trim(),
-        programId: selectedProgId,
         classLevel: directClassLevel ? parseInt(directClassLevel, 10) : undefined,
         targetExam: directTargetExam || undefined,
         email: directEmail.trim() || undefined,
       });
       setDirectSuccessData({
         fullName: `${directFirstName.trim()} ${directLastName.trim()}`,
-        programName: programs?.find((p) => p.id === selectedProgId)?.name || 'Program',
+        programName: 'Bireysel Koçluk',
         email: directEmail.trim() || null,
         classLevel: directClassLevel || null,
         targetExam: directTargetExam || null,
@@ -186,7 +183,7 @@ const CoachStudents = () => {
       <header className={styles.header}>
         <div className={styles.titleArea}>
           <div className={styles.titleRow}>
-            <h1 className={styles.title}>Öğrenciler</h1>
+            <h1 className={styles.title}>Öğrenciler & Programlar</h1>
             <Button 
               variant={showAddForm ? 'secondary' : 'primary'} 
               size="sm"
@@ -200,11 +197,18 @@ const CoachStudents = () => {
               <span>{showAddForm ? '✕ Formu Kapat' : '+ Yeni Öğrenci Ekle'}</span>
             </Button>
           </div>
-          <p className={styles.subtitle}>Tüm öğrencilerinizin performansını ve durumunu yönetin.</p>
+          <p className={styles.subtitle}>Bireysel koçluk yaptığınız öğrencileri ve grup programlarınızı yönetin.</p>
+          {activeProgramId && (
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px' }}>
+              <Button size="sm" variant="outline" onClick={() => navigate(`/coach/programs/${activeProgramId}/courses`)}>📚 Dersler</Button>
+              <Button size="sm" variant="outline" onClick={() => navigate(`/coach/programs/${activeProgramId}/schedule`)}>🗓️ Haftalık Program</Button>
+              <Button size="sm" variant="outline" onClick={() => navigate(`/coach/programs/${activeProgramId}/settings`)}>⚙️ Ayarlar</Button>
+            </div>
+          )}
         </div>
       </header>
 
-      {/* 2'li Sekme: Öğrenciler | Gruplar */}
+      {/* 2'li Sekme: Bireysel Programlar | Grup Programları */}
       <div className={styles.segmentedTabs}>
         <button
           type="button"
@@ -212,7 +216,7 @@ const CoachStudents = () => {
           onClick={() => setActiveTab('STUDENTS')}
         >
           <Users size={16} />
-          <span>Öğrenciler</span>
+          <span>Bireysel Programlar</span>
         </button>
         <button
           type="button"
@@ -220,7 +224,7 @@ const CoachStudents = () => {
           onClick={() => setActiveTab('GROUPS')}
         >
           <FolderGit2 size={16} />
-          <span>Gruplar</span>
+          <span>Grup Programları</span>
         </button>
       </div>
 
@@ -301,20 +305,6 @@ const CoachStudents = () => {
                     </div>
 
                     <div className={styles.directRowThree}>
-                      <div>
-                        <label className={styles.selectLabel}>Program Seçin *</label>
-                        <select
-                          className={styles.select}
-                          value={directProgramId || programs?.[0]?.id || ''}
-                          onChange={(e) => setDirectProgramId(e.target.value)}
-                          required
-                        >
-                          {programs?.map((p) => (
-                            <option key={p.id} value={p.id}>{p.name}</option>
-                          ))}
-                        </select>
-                      </div>
-
                       <div>
                         <label className={styles.selectLabel}>Sınıf Seviyesi</label>
                         <select

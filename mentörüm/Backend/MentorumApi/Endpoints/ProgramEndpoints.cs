@@ -135,7 +135,7 @@ namespace MentorumApi.Endpoints
                 var adminId = GetCoachId(user);
                 if (adminId == null) return Results.Unauthorized();
                 var role = req.Role == "Student" || req.Role == "Parent" || req.Role == "Coach" ? req.Role : "Coach";
-                var ok = await repo.ApproveUserAsync(userId, role, req.MaxPrograms, adminId.Value);
+                var ok = await repo.ApproveUserAsync(userId, role, req.MaxStudents, req.MaxTeachers, req.StorageQuotaMb, adminId.Value);
                 return ok ? Results.Ok(new { message = "Kullanıcı onaylandı." }) : Results.NotFound(new { error = "Kullanıcı bulunamadı." });
             });
 
@@ -255,7 +255,9 @@ namespace MentorumApi.Endpoints
     public class ApproveUserRequest
     {
         public string? Role { get; set; }   // Student / Parent / Coach
-        public int? MaxPrograms { get; set; }
+        public int? MaxStudents { get; set; }
+        public int? MaxTeachers { get; set; }
+        public int? StorageQuotaMb { get; set; }
     }
 
     public class AddUserRequest

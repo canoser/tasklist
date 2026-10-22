@@ -143,7 +143,7 @@ const CoachGroupsPage = ({ programId: propProgramId }) => {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Gruplar</h1>
+      <h1 className={styles.title}>Grup Programları</h1>
 
       <Card className={styles.card} padding="md">
         <form onSubmit={handleCreate} className={styles.form}>

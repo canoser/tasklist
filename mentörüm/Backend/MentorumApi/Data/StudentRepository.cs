@@ -209,6 +209,21 @@ namespace MentorumApi.Data
             using var tx = conn.BeginTransaction();
             try
             {
+                // V13.2: öğrenci limiti kontrolü (program sahibi koçun limiti)
+                var maxStudents = await conn.QuerySingleOrDefaultAsync<int?>(
+                    @"SELECT COALESCE(c.max_students, (SELECT value::int FROM system_settings WHERE key = 'default_max_students'))
+                      FROM coaches c
+                      WHERE c.id = (SELECT coach_id FROM program_coaches WHERE program_id = @ProgramId AND role = 'YONETICI' LIMIT 1)",
+                    new { ProgramId = programId }, tx);
+                if (maxStudents.HasValue)
+                {
+                    var activeStudents = await conn.ExecuteScalarAsync<int>(
+                        "SELECT COUNT(1) FROM students WHERE program_id = @ProgramId AND is_active = 1",
+                        new { ProgramId = programId }, tx);
+                    if (activeStudents >= maxStudents.Value)
+                        throw new InvalidOperationException("STUDENT_LIMIT_EXCEEDED");
+                }
+
                 await conn.ExecuteAsync(@"
                     INSERT INTO users (id, email, role, full_name, is_active)
                     VALUES (@Id, @Email, 'Student', @FullName, 1)",
@@ -235,6 +250,19 @@ namespace MentorumApi.Data
                         SELECT @Id, @GroupId, @StudentId, @ProgramId, 1
                         WHERE EXISTS (SELECT 1 FROM student_groups WHERE id = @GroupId AND program_id = @ProgramId)",
                         new { Id = Guid.NewGuid(), GroupId = req.GroupId.Value, StudentId = studentId, ProgramId = programId }, tx);
+                }
+                else
+                {
+                    // V13.2: gruba eklenmiyorsa otomatik bireysel koçluk (OZEL_DERS) kursu aç
+                    var courseId = Guid.NewGuid();
+                    await conn.ExecuteAsync(@"
+                        INSERT INTO courses (id, program_id, name, type, is_active)
+                        VALUES (@Id, @ProgramId, @Name, 'OZEL_DERS', 1)",
+                        new { Id = courseId, ProgramId = programId, Name = $"{fullName} — Bireysel Koçluk" }, tx);
+                    await conn.ExecuteAsync(@"
+                        INSERT INTO course_students (id, course_id, student_id, program_id, is_active)
+                        VALUES (@Id, @CourseId, @StudentId, @ProgramId, 1)",
+                        new { Id = Guid.NewGuid(), CourseId = courseId, StudentId = studentId, ProgramId = programId }, tx);
                 }
 
                 tx.Commit();
@@ -299,11 +327,9 @@ namespace MentorumApi.Data
                     ON CONFLICT (group_id, student_id) DO UPDATE SET is_active = 1",
                     new { Id = Guid.NewGuid(), GroupId = groupId, StudentId = studentId, ProgramId = programId }, tx);
 
-                await conn.ExecuteAsync(@"
-                    UPDATE course_students SET is_active = 0
-                    WHERE student_id = @StudentId
-                      AND course_id IN (SELECT id FROM courses WHERE type = 'OZEL_DERS' AND program_id = @ProgramId)",
-                    new { StudentId = studentId, ProgramId = programId }, tx);
+                // V13.2 (hibrit): Gruba taşınan öğrencinin bireysel (OZEL_DERS) kursu AKTİF kalır;
+                // böylece öğrenci hem grubun ortak ders/ödevlerini hem bireysel ders/ödevleri alabilir.
+                // Geçmiş (ödev/sınav/not) student_id'ye bağlı olduğu için asla silinmez.
 
                 tx.Commit();
                 return true;

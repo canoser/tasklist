@@ -47,6 +47,24 @@ namespace MentorumApi.Endpoints
                     if (isAdmin == null) return Results.BadRequest(new { error = "Program bulunamadı veya yönetici değilsiniz." });
                 }
 
+                // V13.2: öğretmen limiti kontrolü (program sahibi koçun limiti)
+                if (req.Role == "Teacher")
+                {
+                    var maxTeachers = await conn.QuerySingleOrDefaultAsync<int?>(
+                        @"SELECT COALESCE(c.max_teachers, (SELECT value::int FROM system_settings WHERE key = 'default_max_teachers'))
+                          FROM coaches c
+                          WHERE c.id = (SELECT coach_id FROM program_coaches WHERE program_id = @ProgramId AND role = 'YONETICI' LIMIT 1)",
+                        new { ProgramId = req.RelatedId });
+                    if (maxTeachers.HasValue)
+                    {
+                        var teacherCount = await conn.ExecuteScalarAsync<int>(
+                            "SELECT COUNT(1) FROM teachers WHERE program_id = @ProgramId AND is_active = 1",
+                            new { ProgramId = req.RelatedId });
+                        if (teacherCount >= maxTeachers.Value)
+                            return Results.Conflict(new { error = "Öğretmen limiti aşıldı.", code = "TEACHER_LIMIT_EXCEEDED" });
+                    }
+                }
+
                 var emailLower = req.Email.ToLowerInvariant();
                 var existingUser = await conn.QuerySingleOrDefaultAsync<User>(
                     "SELECT id AS Id, email AS Email, role AS Role, full_name AS FullName FROM users WHERE email = @Email",

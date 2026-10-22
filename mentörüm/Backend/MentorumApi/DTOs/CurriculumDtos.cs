@@ -41,7 +41,7 @@ namespace MentorumApi.DTOs
         public string? Subject { get; set; }   // ders adı veya kısa kodu
         public string? Grade { get; set; }     // '4'..'12', 'TYT', 'AYT'
         public string? Type { get; set; }      // NEW | OLD
-        public int Unit { get; set; }          // ünite numarası
+        public int? Unit { get; set; }         // ünite numarası
         public string? UnitName { get; set; }  // ünite adı
         public string? Topic { get; set; }     // konu no (örn. '1.1')
         public string? TopicName { get; set; } // konu adı
@@ -51,6 +51,7 @@ namespace MentorumApi.DTOs
     {
         public int FormatVersion { get; set; } = 1;
         public string? CurriculumYear { get; set; }
+        public string? Grade { get; set; }        // dışa aktarılan sınıf (opsiyonel; sınıf seçilirse dolu)
         public string? Instructions { get; set; }
         public List<CurriculumSubjectRefDto> Subjects { get; set; } = new();
         public List<CurriculumTopicImportRow> Topics { get; set; } = new();

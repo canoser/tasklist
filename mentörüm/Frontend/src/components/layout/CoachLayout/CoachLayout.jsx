@@ -10,7 +10,6 @@ import {
   LayoutDashboard, 
   Calendar, 
   Users, 
-  BookOpen, 
   BarChart3, 
   ShieldCheck, 
   ShieldAlert,
@@ -92,7 +91,7 @@ const CoachLayout = () => {
   const getPageTitle = () => {
     const p = location.pathname;
     if (p.includes('/dashboard')) return 'Dashboard';
-    if (p.includes('/students')) return 'Öğrenciler';
+    if (p.includes('/students')) return 'Öğrenciler & Programlar';
     if (p.includes('/teachers')) return 'Öğretmenler';
     if (p.includes('/payments')) return 'Finans & Ödemeler';
     if (p.includes('/programs')) return 'Programlar & Dersler';
@@ -125,8 +124,7 @@ const CoachLayout = () => {
     {
       groupTitle: 'AKADEMİK YÖNETİM',
       items: [
-        { path: '/coach/students', label: 'Öğrenciler', icon: Users },
-        { path: '/coach/programs', label: 'Programlar & Dersler', icon: BookOpen },
+        { path: '/coach/students', label: 'Öğrenciler & Programlar', icon: Users },
         { path: '/coach/teachers', label: 'Öğretmenler', icon: GraduationCap },
         { path: '/coach/storage', label: 'Dosyalarım', icon: FolderOpen },
       ],

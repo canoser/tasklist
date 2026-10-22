@@ -66,8 +66,20 @@ const AdminPanelPage = () => {
 
   const handleApprove = (userId, defaultRole) => {
     const role = roles[userId] || defaultRole;
-    const maxPrograms = role === 'Coach' ? (prompt('Program limiti (boş = varsayılan):') || null) : null;
-    approve.mutateAsync({ userId, role, maxPrograms: maxPrograms ? parseInt(maxPrograms, 10) : null });
+    if (role === 'Coach') {
+      const maxStudents = prompt('Öğrenci limiti (boş = varsayılan):') || null;
+      const maxTeachers = prompt('Öğretmen limiti (boş = varsayılan):') || null;
+      const storageQuotaMb = prompt('Depolama limiti (MB, boş = varsayılan):') || null;
+      approve.mutateAsync({
+        userId,
+        role,
+        maxStudents: maxStudents ? parseInt(maxStudents, 10) : null,
+        maxTeachers: maxTeachers ? parseInt(maxTeachers, 10) : null,
+        storageQuotaMb: storageQuotaMb ? parseInt(storageQuotaMb, 10) : null,
+      });
+    } else {
+      approve.mutateAsync({ userId, role });
+    }
   };
 
   const handleAddUser = async () => {

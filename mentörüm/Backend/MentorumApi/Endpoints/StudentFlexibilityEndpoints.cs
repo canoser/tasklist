@@ -11,6 +11,35 @@ namespace MentorumApi.Endpoints
     {
         public static void MapStudentFlexibilityEndpoints(this IEndpointRouteBuilder app)
         {
+            // B0: V13.2 — path'siz öğrenci ekleme (varsayılan çalışma alanı auto-provision + öğrenci limiti)
+            var studentRoot = app.MapGroup("/api/v1/students").RequireAuthorization("RequireCoachRole");
+            studentRoot.MapPost("/", async (
+                [FromBody] CreateStudentRequest req,
+                [FromServices] StudentRepository repo,
+                [FromServices] ProgramRepository programRepo,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = GetUserId(user);
+                if (coachId == null) return Results.Unauthorized();
+                if (string.IsNullOrWhiteSpace(req.FirstName) || string.IsNullOrWhiteSpace(req.LastName))
+                    return Results.BadRequest(new { error = "Ad ve soyad zorunludur." });
+
+                var programId = await programRepo.EnsureDefaultWorkspaceAsync(coachId.Value);
+
+                if (!string.IsNullOrWhiteSpace(req.Email) && await repo.EmailExistsAsync(req.Email.ToLowerInvariant()))
+                    return Results.BadRequest(new { error = "Bu e-posta zaten kullanımda." });
+
+                try
+                {
+                    var studentId = await repo.CreateStudentAsync(programId, req);
+                    return Results.Ok(new { studentId });
+                }
+                catch (InvalidOperationException ex) when (ex.Message == "STUDENT_LIMIT_EXCEEDED")
+                {
+                    return Results.Conflict(new { error = "Öğrenci limiti aşıldı.", code = "STUDENT_LIMIT_EXCEEDED" });
+                }
+            });
+
             var group = app.MapGroup("/api/v1/programs/{programId:guid}/students").RequireAuthorization("RequireCoachRole");
 
             // B1: Öğrenci ekleme (e-postasız gölge profil destekli)

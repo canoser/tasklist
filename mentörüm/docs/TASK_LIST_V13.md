@@ -126,7 +126,6 @@
   - Mobilde başlık altında `+ Hızlı Ekle` ve `+ Davet Gönder` butonları dar alanda sıkışmaktadır.
 - **Uygulanacak:**
   - `window.prompt` yerine projenin standart `<Modal>` bileşeniyle çalışan şık ve temalı bir "Öğrenciye Davet Gönder" mini modalı eklenecek. Hatalar için modal içi geri bildirim sağlanacak.
-  - Rozetlerin arka plan renkleri `rgba(..., 0.15)` veya tema CSS değişkenlerine çevrilerek her 4 temada kusursuz kontrast sağlanacak.
   - Mobil ekranda butonlar ergonomik ve taşmayan esnek düzene kavuşturulacak.
 
 ### [x] D3 — CoachStudentDetail "Grup / Bireysel Yönetimi" Hiyerarşi & Tema Uyumu
@@ -140,3 +139,43 @@
   - "Grup / Bireysel Yönetimi" kartı, öğrencinin aidiyet bilgileriyle doğrudan ilişkili olduğu için **Genel & Zaman** (`info` - Kişisel & Akademik Bilgiler) sekmesinin içine mantıksal bir kart olarak entegre edilecek. Böylece 4 ana akıllı sekme disiplini korunacak.
   - Seçim kutusu ve butonlar mobilde (`<640px`) sarmalanabilir ve dokunmatik uyumlu hale getirilecek.
 
+---
+
+## 7. V13.2 "Öğrenciler & Programlar" — Karar, Plan ve Uygulama
+> **Tarih:** 22 Ekim 2026 · **Kaynak:** Ürün sahibi (karar) + Cline (plan & uygulama)  
+> **Durum:** ✅ Uygulandı — adım durumları aşağıda (§7.4) işaretli.
+> **Kapsam:** "Program" kavram karmaşasının çözümü, "Öğrenciler & Programlar" birleşik sekmesi, sıfır sürtünmeli bireysel öğrenci ekleme ve grup programı yönetimi.
+> **Not:** İlk taslak Gemini (Antigravity) önerisiydi; ürün sahibinin "koçluk programı = öğrenci grubu" netleştirmesiyle §7.2-§7.4 yeniden yazıldı ve uygulandı.
+
+### 7.1. Sorun Tespiti ve Kök Neden (Kavram Karmaşası — karardan ÖNCEKİ durum)
+Sistemde yaşanan temel sürtünme, **"Program"** kelimesinin iki farklı seviyede iki zıt anlamda kullanılmasından kaynaklanmaktadır:
+1. **Veritabanı ve SaaS Seviyesinde (`coaching_programs`):** V5 mimarisinde program, öğrencinin ders planı değil; koçun **"Kurumu / Çatısı / Çalışma Alanı (Tenant)"**dır. Tüm öğretmenler (`teachers`), gruplar (`student_groups`), dersler (`courses`), takvim slotları ve finansal planlar bu çatıya bağlıdır.
+2. **Koçun ve Kullanıcının Dilinde ("Program"):** Öğrenciye atanan bireysel veya grup koçluk sürecidir ("Ali'nin YKS Çalışma Programı" veya "11-A TYT Grup Programı").
+
+**Neden her öğrenci eklendiğinde doğrudan DB'de yeni bir `coaching_programs` açılmadı?**
+- **Öğretmen Yönetimi:** Eğer her öğrenci için ayrı bir `coaching_programs` açılırsa, bir Matematik öğretmeni 20 öğrenciye ders vermek istediğinde 20 farklı programa tek tek davet edilip atanmak zorunda kalır.
+- **Grup ve Veri İzolasyonu (IDOR):** Öğrenci bireysel programdan grup programına geçmek istediğinde veya gruba üye olduğunda `program_id` değişmek zorunda kalır; `program_id` değiştiğinde ise eski programdaki tüm ödev, sınav ve takip verileri yeni programda görünmez hale gelir (Cross-Tenant kısıtlaması).
+- **Paket ve Kota Sınırları:** Sistemde koçların `max_programs` (örn. ücretsiz planda 1 veya 3 program) sınırı vardır. 10 öğrenci ekleyen bir koç anında `409 PROGRAM_LIMIT_EXCEEDED` hatasıyla kilitlenir.
+
+### 7.2. Karar: "Koçluk Programı" = Öğrenci Grubu (Ayrı Tenant Yok)
+Ürün sahibinin netleştirmesiyle kavram şöyle sabitlendi:
+- **Her öğrenci doğuştan bireyseldir.** Ayrı bir "bireysel program oluştur" adımı yoktur; öğrenci eklendiği an kendi bireysel koçluğu başlar.
+- **"Koçluk programı" = öğrenci grubu.** Koç, aynı ders/saatleri paylaşacak öğrencileri istediği zaman gruplar, çıkarır veya taşır.
+- **Ayrı `coaching_programs` (tenant) katmanı pasife alındı:** tek şahsi koç modelinde işlevi yoktur; koç başına TEK görünmez çalışma alanı kalır (`max_programs = 1`). İleride çoklu-koç / çoklu-işletme / fatura-birimi ihtiyacı olursa geri yükseltilir.
+
+### 7.3. Menü ve Ekran Birleştirmesi: `Öğrenciler & Programlar`
+Sol menüde `Öğrenciler` ve `Programlar & Dersler` → tek **`Öğrenciler & Programlar`** (`/coach/students`).
+
+Sayfa içi 2 sekme — bunlar iki AYRI "program tipi" değildir; öğrenci her zaman bireyseldir, grup onun ÜSTÜNE eklenen üyeliktir:
+1. **👤 Bireysel Programlar** = öğrenci listesi. Her kart = bir öğrencinin bireysel koçluğu. Öğrenci burada HER ZAMAN görünür (grupta olsa bile).
+2. **👥 Grup Programları** = `student_groups`. "+ Yeni Grup Oluştur"; ortak ders/saat ve öğrenci kadrosu. Gruptaki öğrenci aynı anda bireysel sekmede de kalır.
+
+**Hibrit kural:** Gruptaki öğrenciye gruptan bağımsız bireysel ders/ödev de atanabilir. Bu yüzden `MoveToGroupAsync` öğrencinin `OZEL_DERS` kursunu pasife almayacak şekilde düzeltilecek.
+
+### 7.4. Uygulama Adımları (V13.2)
+1. [x] **[Backend] Limitler:** `coaches.max_students` + `max_teachers` (yeni kolon) ve `storage_quota_mb` (mevcut) admin onayında belirlenir; `max_programs` = 1'e sabitlenir (silinmez).
+2. [x] **[Backend] Auto-Provision & Bireysel Kurs:** Koçun tek çalışma alanı yoksa otomatik açılır (max 1); `CreateStudentAsync` öğrenci limitini kontrol eder ve gruba eklenmiyorsa otomatik `OZEL_DERS` kursu oluşturur. Yeni `POST /api/v1/students` (path'siz).
+3. [x] **[Backend] Öğretmen limiti:** öğretmen daveti `max_teachers`'ı kontrol eder.
+4. [x] **[Frontend] Dropdown kaldır:** `CoachStudents.jsx` "Program Seçin *" kalkar.
+5. [x] **[Frontend] Menü/sayfa:** `CoachLayout.jsx` birleştirme + Bireysel/Grup sekmeleri; "Öğretmenler" üst menüde, "Dersler / Haftalık Program / Ayarlar" birleşik sayfa başlığına eklendi (adım tamam).
+6. [x] **[Backend] Hibrit düzeltme:** `MoveToGroupAsync` OZEL_DERS'i pasif etmesin.

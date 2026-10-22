@@ -126,14 +126,15 @@ namespace MentorumApi.Data
             {
                 FormatVersion = 1,
                 CurriculumYear = year,
-                Instructions = "Bu JSON, Mentörüm müfredatını doldurmak için şablondur. 'topics' dizisini gerçek MEB müfredatına uygun şekilde eksiksiz doldurun. Her öğe için: subject (ders adı, 'subjects' listesindeki ad), grade ('4'..'12' veya 'TYT'/'AYT'), type ('NEW' = yeni Maarif müfredatı, 'OLD' = eski müfredat), unit (ünite no), unitName (ünite adı), topic (konu no, örn. '1.1'), topicName (konu adı) alanlarını yazın. Mevcut satırlar yalnızca örnektir.",
+                Grade = grade,
+                Instructions = "Bu JSON, Mentörüm müfredatını doldurmak için kullanılan şablondur. 'topics' dizisini gerçek MEB müfredatıyla doldurun (mevcut satırlar yalnızca örnektir). Her konu için alanlar: subject (ders adı — 'subjects' listesindeki ad), grade (sınıf: '1'..'12', 'TYT' veya 'AYT'), type ('NEW' = Maarif, 'OLD' = eski), unit (ünite no), unitName (ünite adı), topic (konu no, örn '1.1'), topicName (konu adı).",
                 Subjects = subjects.Select(s => new CurriculumSubjectRefDto { Name = s.Name, ShortCode = s.ShortCode }).ToList(),
                 Topics = rows.Select(r => new CurriculumTopicImportRow
                 {
                     Subject = r.SubjectName,
                     Grade = r.Grade,
                     Type = r.CurriculumType,
-                    Unit = r.UnitNumber ?? 0,
+                    Unit = r.UnitNumber,
                     UnitName = r.UnitName,
                     Topic = r.TopicNumber,
                     TopicName = r.TopicName
@@ -213,9 +214,12 @@ namespace MentorumApi.Data
                     continue;
                 }
 
-                var grade = string.IsNullOrWhiteSpace(overrideGrade)
-                    ? (t.Grade ?? "").Trim()
-                    : overrideGrade.Trim();
+                // Sınıf çözümü: 1) endpoint overrideGrade, 2) satır grade, 3) şablonun üst seviye grade alanı.
+                var grade = !string.IsNullOrWhiteSpace(overrideGrade)
+                    ? overrideGrade.Trim()
+                    : !string.IsNullOrWhiteSpace(t.Grade)
+                        ? t.Grade.Trim()
+                        : (payload.Grade ?? "").Trim();
                 if (grade.Length == 0)
                 {
                     result.Skipped++;
@@ -224,7 +228,7 @@ namespace MentorumApi.Data
                 }
 
                 var type = string.Equals(t.Type?.Trim(), "OLD", StringComparison.OrdinalIgnoreCase) ? "OLD" : "NEW";
-                var unit = t.Unit > 0 ? t.Unit : 1;
+                var unit = (t.Unit ?? 0) > 0 ? t.Unit.Value : 1;
                 var topicNo = string.IsNullOrWhiteSpace(t.Topic) ? $"{unit}.1" : t.Topic.Trim();
 
                 sortCounter.TryGetValue(subjectId, out var seq);

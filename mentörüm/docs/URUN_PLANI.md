@@ -168,7 +168,9 @@ Müfredat Yılı (ör: 2026-2027)
 
 ### 4.1 Temel Varlıklar Arası İlişki
 
-Koç (1) ──────► Öğrenciler (N)
+Koç (1) ──────► Öğrenciler (N)     ← her öğrenci doğuştan bireyseldir
+Koç (1) ──────► Gruplar (N)        ← "koçluk programı" = grup
+Grup (N) ◄────► Öğrenciler (N)     ← çok-çok (student_group_members)
 Öğrenci (1) ──► Dersler (N) [StudentSubject]
 Ders (1) ──────► Ödev Atamaları (N) [HomeworkAssignment]
 Ödev Şablonu (1) ► Ödev Atamaları (N) [farklı öğrenciler için]
@@ -189,13 +191,13 @@ Müfredat Konusu (1)► Ödev Atamaları (N) [konu referansı]
 
 ### 4.3 Kritik İş Akışları
 
-AKIŞ 1 — Koç → Yeni Öğrenci Ekleme:
+AKIŞ 1 — Koç → Yeni Öğrenci Ekleme (Bireysel):
 1. "Öğrenci Ekle" butonuna tıkla
-2. Ad, soyad, sınıf, alan gir
-3. Veli 1 bilgisini gir (e-posta zorunlu — davet gönderilir)
-4. Veli 2 bilgisini gir (opsiyonel)
-5. Öğrenci için otomatik giriş bilgisi oluşur
-6. Öğrenci aktivasyon e-postasına tıklar, şifre belirler
+2. Ad + Soyad gir (Sınıf / Hedef / E-posta opsiyonel)
+3. "Program seç" YOKTUR — öğrenci otomatik bireysel koçluğa alınır
+4. E-posta girilmezse "gölge profil" açılır (sonradan davet edilebilir)
+5. Öğrenci "Bireysel Programlar" listesinde görünür
+6. İstenirse sonradan bir gruba taşınır (geçmiş korunur)
 
 AKIŞ 2 — Koç → Ödev Atama:
 1. Öğrenci → Ders sayfası → "Ödev Ata"
@@ -216,11 +218,35 @@ AKIŞ 4 — Veli → Sisteme Katılma:
 3. Veli linke tıklar → şifre belirler veya Google ile girer
 4. Veli paneli açılır — yalnızca bağlı çocuğunun verisi
 
+### 4.4 "Koçluk Programı" Kavramı (Önemli Mimari Karar)
+
+> "Program" kelimesinin üründe ne anlama geldiğini ve gelecekte nasıl genişleyebileceğini netleştirir.
+
+**Tanım (ürün dilinde):** "Koçluk programı" = aynı dersleri ve ders saatlerini paylaşan bir **öğrenci grubu**. Koç, öğrencilerini istediği zaman gruplar, gruptan çıkarır veya başka gruba taşır.
+
+**Bireysel öğrenci kuralı:** Sisteme giren her öğrenci doğuştan **bireyseldir** (kendi koçluk süreci). Ayrı bir "bireysel program oluştur" adımı YOKTUR — öğrenci eklendiği an bireysel süreci başlar. Grup, sonradan istenirse eklenen bir katmandır.
+
+**Ne değildir / neden ayrı bir "program/çalışma alanı" katmanı yok:**
+- V5 "okul modeli"nde `coaching_programs` koçun "işletmesi/çatısı" (tenant) olarak kullanıldı ve öğrenci eklerken "Program Seçin *" zorunluluğu doğurdu.
+- Mentörüm **tek şahsi koçun** uygulamasıdır (bir koç, kendi öğrencileri ve küçük grupları). Bu modelde ayrı bir tenant katmanının faydası yoktur; sahiplik zaten `coach_id` ile tutulur.
+- Bu nedenle "koçluk programı" = **grup** olarak yeniden tanımlandı; `coaching_programs` görünmez, koç başına TEK (`max_programs = 1`) kayda indirgendi (pasif).
+
+**Gelecekte tekrar aktifleştirilebileceği durumlar (genişleme yolu):**
+1. **Çoklu koç / ekip:** Birden fazla koçun (yönetici + yardımcı) aynı öğrenci/öğretmen/ders/faturaları ortak paylaşması gerekirse.
+2. **Tek koçun birden fazla izole işletmesi:** Aynı koç iki ayrı marka/şube yönetmek isterse.
+3. **Faturalama/paket birimi "program başına":** Her çalışma alanı = bir abonelik olursa.
+
+Bu üç durumdan biri gündeme gelirse `coaching_programs` katmanı geri yükseltilir; şimdilik pasiftir.
+
+**Veri kaybı garantisi:** Öğrencinin geçmişi (ödev/sınav/not) `student_id`'ye bağlıdır, gruba/programa değil. Öğrenci gruba alınıp çıkarıldığında geçmiş asla silinmez; yalnızca üyelik değişir.
+
 ---
 
 ## 5. Navigasyon Haritası
 
 ### 5.1 Koç Navigasyonu (Tablet/Masaüstü — Sol Sidebar)
+
+> **Not (güncel):** "Öğrenciler" ve "Programlar & Dersler" tek **"Öğrenciler & Programlar"** sekmesinde birleşti; içinde **👤 Bireysel Programlar** (öğrenci listesi) ve **👥 Grup Programları** (gruplar) sekmeleri var. Ayrı "Programlar & Dersler" menüsü kaldırıldı.
 
 GİRİŞ SAYFASI (dersmatris.com)
 └── Koç giriş
@@ -505,6 +531,7 @@ Veritabanı indeksleme + pagination baştan düşünülmeli.
 | 5 | Müfredat kim düzenler?           | Yalnızca sistem / Koç ekleyip çıkarabilir     |
 | 6 | Gecikmeli tamamlanan ayrı renk?  | Evet (turuncu) / Hayır (yeşile çevrilsin)     |
 | 7 | MVP'de dosya eki var mı?         | Hayır (metin) / Evet (resim/PDF)              |
+| 8 | "Koçluk programı" ne demek?      | ✅ Grup (bireysel öğrenci + gruplama) — ayrı tenant YOK |
 
 ---
 

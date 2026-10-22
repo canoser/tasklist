@@ -196,7 +196,7 @@ export const useAdminUsers = (role, search) => useQuery({
 export const useApproveUser = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ userId, role, maxPrograms }) => apiClient.post(`/admin/users/${userId}/approve`, { role, maxPrograms }),
+    mutationFn: ({ userId, role, maxStudents, maxTeachers, storageQuotaMb }) => apiClient.post(`/admin/users/${userId}/approve`, { role, maxStudents, maxTeachers, storageQuotaMb }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', 'pending-approvals'] });
       qc.invalidateQueries({ queryKey: ['admin', 'users'] });
