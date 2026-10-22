@@ -59,37 +59,44 @@ const CoachProfilePage = () => {
 
       <Card className={styles.formCard} padding="lg">
         <h3 className={styles.sectionTitle}>Hakkımda</h3>
-        <div className={styles.formGroup}>
-          <Input
-            label="Uzmanlık Alanı"
-            value={specialty}
-            onChange={(e) => setSpecialty(e.target.value)}
-            placeholder="örn. YKS Sayısal, LGS"
-          />
-        </div>
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel}>Biyografi</label>
-          <textarea
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            rows={4}
-            placeholder="Kendiniz ve koçluk yaklaşımınız hakkında kısa bir açıklama..."
-            className={styles.textarea}
-          />
-        </div>
-        <div className={styles.formActions}>
-          <Button
-            variant="primary"
-            size="md"
-            onClick={() => updateProfile.mutate({ bio, specialty })}
-            disabled={updateProfile.isPending}
-          >
-            {updateProfile.isPending ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
-          </Button>
-          {updateProfile.isSuccess && (
-            <span className={styles.successMessage}>✓ Profil güncellendi</span>
-          )}
-        </div>
+        <form onSubmit={(e) => { e.preventDefault(); updateProfile.mutate({ bio, specialty }); }}>
+          <div className={styles.formGroup}>
+            <Input
+              label="Uzmanlık Alanı"
+              id="coach-specialty"
+              name="coach-specialty"
+              autoComplete="off"
+              value={specialty}
+              onChange={(e) => setSpecialty(e.target.value)}
+              placeholder="örn. YKS Sayısal, LGS"
+            />
+          </div>
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>Biyografi</label>
+            <textarea
+              id="coach-bio"
+              name="coach-bio"
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              rows={4}
+              placeholder="Kendiniz ve koçluk yaklaşımınız hakkında kısa bir açıklama..."
+              className={styles.textarea}
+            />
+          </div>
+          <div className={styles.formActions}>
+            <Button
+              variant="primary"
+              size="md"
+              type="submit"
+              disabled={updateProfile.isPending}
+            >
+              {updateProfile.isPending ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
+            </Button>
+            {updateProfile.isSuccess && (
+              <span className={styles.successMessage}>✓ Profil güncellendi</span>
+            )}
+          </div>
+        </form>
       </Card>
 
       <Card className={styles.formCard} padding="lg">
@@ -97,20 +104,25 @@ const CoachProfilePage = () => {
         <p style={{ fontSize: '13px', color: 'var(--text-color-muted)', marginBottom: '12px' }}>
           Google ile giriş yapmış olsanız bile bir şifre belirleyebilir, dilediğinizde e-posta + şifre ile girebilirsiniz.
         </p>
-        <Input
-          label="Yeni Şifre"
-          type="password"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-          placeholder="En az 6 karakter"
-        />
-        <div className={styles.formActions}>
-          <Button variant="primary" size="md" onClick={handleSetPassword} disabled={pwSaving}>
-            {pwSaving ? 'Kaydediliyor...' : 'Şifreyi Kaydet'}
-          </Button>
-          {pwMsg && <span className={styles.successMessage}>✓ {pwMsg}</span>}
-          {pwError && <span style={{ color: 'var(--color-danger)' }}>{pwError}</span>}
-        </div>
+        <form onSubmit={(e) => { e.preventDefault(); handleSetPassword(); }}>
+          <Input
+            label="Yeni Şifre"
+            type="password"
+            id="coach-new-password"
+            name="new-password"
+            autoComplete="new-password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="En az 6 karakter"
+          />
+          <div className={styles.formActions} style={{ marginTop: '12px' }}>
+            <Button variant="primary" size="md" type="submit" disabled={pwSaving}>
+              {pwSaving ? 'Kaydediliyor...' : 'Şifreyi Kaydet'}
+            </Button>
+            {pwMsg && <span className={styles.successMessage}>✓ {pwMsg}</span>}
+            {pwError && <span style={{ color: 'var(--color-danger)' }}>{pwError}</span>}
+          </div>
+        </form>
       </Card>
 
       <Card className={styles.formCard} padding="lg">

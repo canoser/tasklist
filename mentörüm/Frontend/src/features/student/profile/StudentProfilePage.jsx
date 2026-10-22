@@ -178,12 +178,25 @@ const StudentProfilePage = () => {
         <p style={{ fontSize: '13px', color: 'var(--text-color-muted)', marginBottom: '12px' }}>
           Google ile giriş yapmış olsanız bile bir şifre belirleyebilir, dilediğinizde e-posta + şifre ile girebilirsiniz.
         </p>
-        <Input label="Yeni Şifre" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="En az 6 karakter" />
-        <Button variant="primary" size="md" onClick={handleSetPassword} disabled={pwSaving}>
-          {pwSaving ? 'Kaydediliyor...' : 'Şifreyi Kaydet'}
-        </Button>
-        {pwMsg && <span className={styles.msg}>{pwMsg}</span>}
-        {pwError && <span style={{ color: 'var(--color-danger)' }}>{pwError}</span>}
+        <form onSubmit={(e) => { e.preventDefault(); handleSetPassword(); }}>
+          <Input 
+            label="Yeni Şifre" 
+            type="password" 
+            id="student-new-password"
+            name="new-password"
+            autoComplete="new-password"
+            value={newPassword} 
+            onChange={(e) => setNewPassword(e.target.value)} 
+            placeholder="En az 6 karakter" 
+          />
+          <div style={{ marginTop: '12px' }}>
+            <Button variant="primary" size="md" type="submit" disabled={pwSaving}>
+              {pwSaving ? 'Kaydediliyor...' : 'Şifreyi Kaydet'}
+            </Button>
+          </div>
+          {pwMsg && <span className={styles.msg}>{pwMsg}</span>}
+          {pwError && <span style={{ color: 'var(--color-danger)' }}>{pwError}</span>}
+        </form>
       </Card>
 
       {/* Sekmeler */}
