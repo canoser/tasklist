@@ -301,6 +301,14 @@ input, textarea, [contenteditable="true"] {
   cursor: text !important;
 }
 
+/* Süper Yönetici: Uzun basma menüsü ve metin seçimi serbest (tüm alt elemanlar dahil) */
+body.super-admin-mode,
+body.super-admin-mode * {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -webkit-touch-callout: default !important;
+}
+
 /* Tıklanabilir buton ve linklerde pointer imleci korunur */
 button, a, [role="button"], select, .clickable {
   cursor: pointer;
