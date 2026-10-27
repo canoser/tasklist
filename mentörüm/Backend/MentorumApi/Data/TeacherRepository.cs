@@ -45,7 +45,7 @@ namespace MentorumApi.Data
                     FROM course_groups cg
                     JOIN courses c ON c.id = cg.course_id
                     JOIN student_group_members sgm ON sgm.group_id = cg.group_id
-                    WHERE c.program_id = @ProgramId AND c.teacher_id IS NOT NULL
+                    WHERE c.program_id = @ProgramId AND c.teacher_id IS NOT NULL AND c.is_active = 1 AND sgm.is_active = 1
                 ) c
                 GROUP BY c.teacher_id",
                 new { ProgramId = programId });
@@ -311,8 +311,8 @@ namespace MentorumApi.Data
 
             var rawRows = (await conn.QueryAsync<(Guid StudentId, string StudentName, string? Email, string? Phone, string? TargetExam, int? ClassLevel, string CourseName, int IsActive, DateTime? EnrolledAt)>(@"
                 -- Bireysel veya doğrudan kurs kayıtları
-                SELECT u.id AS StudentId, u.full_name AS StudentName, u.email AS Email, s.phone AS Phone,
-                       s.target_exam AS TargetExam, s.class_level AS ClassLevel, c.name AS CourseName,
+                SELECT u.id AS StudentId, u.full_name AS StudentName, u.email AS Email, NULL AS Phone,
+                       s.track AS TargetExam, s.grade AS ClassLevel, c.name AS CourseName,
                        cs.is_active AS IsActive, cs.created_at AS EnrolledAt
                 FROM course_students cs
                 JOIN courses c ON c.id = cs.course_id
@@ -323,8 +323,8 @@ namespace MentorumApi.Data
                 UNION ALL
 
                 -- Grup üzerinden gelen kayıtlar
-                SELECT u.id AS StudentId, u.full_name AS StudentName, u.email AS Email, s.phone AS Phone,
-                       s.target_exam AS TargetExam, s.class_level AS ClassLevel, c.name AS CourseName,
+                SELECT u.id AS StudentId, u.full_name AS StudentName, u.email AS Email, NULL AS Phone,
+                       s.track AS TargetExam, s.grade AS ClassLevel, c.name AS CourseName,
                        sgm.is_active AS IsActive, sgm.created_at AS EnrolledAt
                 FROM course_groups cg
                 JOIN courses c ON c.id = cg.course_id

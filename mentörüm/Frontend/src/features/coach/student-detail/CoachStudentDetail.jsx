@@ -21,7 +21,8 @@ import {
   useStudentTeacherNotes 
 } from '../coachApi';
 import { useGroups } from '../coachSchoolApi';
-import { useMoveToGroup, useMoveToIndividual } from '../studentFlexibilityApi';
+import { useMoveToGroup, useMoveToIndividual, useUpdateStudent } from '../studentFlexibilityApi';
+import EditStudentModal from './EditStudentModal';
 import { apiClient } from '../../../api/apiClient';
 import InviteSharePanel from '../../../components/common/InviteSharePanel/InviteSharePanel';
 import ParentPermissionsPanel from './ParentPermissionsPanel';
@@ -49,7 +50,9 @@ const CoachStudentDetail = () => {
   // 1. Önce öğrenci verisini çek (TDZ hatasını önler)
   const { data: student, isLoading, isError } = useStudent(id);
   const deleteStudentMutation = useDeleteStudent();
+  const updateStudentMutation = useUpdateStudent();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const [activeTab, setActiveTab] = useState('info');
   const [isHomeworkModalOpen, setIsHomeworkModalOpen] = useState(false);
@@ -162,7 +165,7 @@ const CoachStudentDetail = () => {
             <FileDown size={15} />
             <span>PDF Rapor</span>
           </Button>
-          <Button variant="secondary">
+          <Button variant="secondary" onClick={() => setIsEditModalOpen(true)}>
             <Edit3 size={15} />
             <span>Düzenle</span>
           </Button>
@@ -733,6 +736,16 @@ const CoachStudentDetail = () => {
           </Button>
         </div>
       </Modal>
+
+      {/* Öğrenci Bilgilerini Düzenle Modalı */}
+      <EditStudentModal
+        open={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        student={student}
+        onSubmit={async (payload) => {
+          await updateStudentMutation.mutateAsync({ studentId: id, data: payload });
+        }}
+      />
     </div>
   );
 };

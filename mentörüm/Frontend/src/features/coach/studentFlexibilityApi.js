@@ -23,7 +23,12 @@ export const useMoveToGroup = (programId) => {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: ({ studentId, groupId }) => apiClient.post(`/programs/${programId}/students/${studentId}/move-to-group`, { groupId }),
-        onSuccess: () => qc.invalidateQueries({ queryKey: ['coach', 'students'] }),
+        onSuccess: (_, v) => {
+            qc.invalidateQueries({ queryKey: ['coach', 'students'] });
+            qc.invalidateQueries({ queryKey: ['coach', 'program', programId, 'groups'] });
+            qc.invalidateQueries({ queryKey: ['coach', 'program', programId, 'group'] });
+            qc.invalidateQueries({ queryKey: ['coach', 'student', v.studentId ?? v] });
+        },
     });
 };
 
@@ -31,6 +36,22 @@ export const useMoveToIndividual = (programId) => {
     const qc = useQueryClient();
     return useMutation({
         mutationFn: (studentId) => apiClient.post(`/programs/${programId}/students/${studentId}/move-to-individual`),
-        onSuccess: () => qc.invalidateQueries({ queryKey: ['coach', 'students'] }),
+        onSuccess: (_, v) => {
+            qc.invalidateQueries({ queryKey: ['coach', 'students'] });
+            qc.invalidateQueries({ queryKey: ['coach', 'program', programId, 'groups'] });
+            qc.invalidateQueries({ queryKey: ['coach', 'program', programId, 'group'] });
+            qc.invalidateQueries({ queryKey: ['coach', 'student', v.studentId ?? v] });
+        },
+    });
+};
+
+export const useUpdateStudent = () => {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: ({ studentId, data }) => apiClient.put(`/students/${studentId}`, data),
+        onSuccess: (_, v) => {
+            qc.invalidateQueries({ queryKey: ['coach', 'students'] });
+            qc.invalidateQueries({ queryKey: ['coach', 'student', v.studentId] });
+        },
     });
 };

@@ -1,0 +1,77 @@
+static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092:1  Failed to load resource: net::ERR_FAILED
+01349572-fcd1-46d0-bffc-516589a4d15a:1 Unchecked runtime.lastError: The message port closed before a response was received.
+/coach/students:1 Access to XMLHttpRequest at 'https://mentorum-api.dersmatris.com/api/v1/programs/87675b39-e2cb-42f6-a308-4d33c80c3feb/groups/75d09576-8b37-4b37-b1e1-a987ffe7a92b/members' from origin 'https://mentorum.dersmatris.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+mentorum-api.dersmatris.com/api/v1/programs/87675b39-e2cb-42f6-a308-4d33c80c3feb/groups/75d09576-8b37-4b37-b1e1-a987ffe7a92b/members:1  Failed to load resource: net::ERR_FAILED
+/coach/students:1 Access to XMLHttpRequest at 'https://mentorum-api.dersmatris.com/api/v1/programs/87675b39-e2cb-42f6-a308-4d33c80c3feb/groups/75d09576-8b37-4b37-b1e1-a987ffe7a92b/members' from origin 'https://mentorum.dersmatris.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+mentorum-api.dersmatris.com/api/v1/programs/87675b39-e2cb-42f6-a308-4d33c80c3feb/groups/75d09576-8b37-4b37-b1e1-a987ffe7a92b/members:1  Failed to load resource: net::ERR_FAILED
+/coach/students:1 Access to XMLHttpRequest at 'https://mentorum-api.dersmatris.com/api/v1/programs/87675b39-e2cb-42f6-a308-4d33c80c3feb/groups/75d09576-8b37-4b37-b1e1-a987ffe7a92b/members' from origin 'https://mentorum.dersmatris.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+mentorum-api.dersmatris.com/api/v1/programs/87675b39-e2cb-42f6-a308-4d33c80c3feb/groups/75d09576-8b37-4b37-b1e1-a987ffe7a92b/members:1  Failed to load resource: net::ERR_FAILED
+/coach/students:1 Access to XMLHttpRequest at 'https://mentorum-api.dersmatris.com/api/v1/programs/87675b39-e2cb-42f6-a308-4d33c80c3feb/groups/75d09576-8b37-4b37-b1e1-a987ffe7a92b/members' from origin 'https://mentorum.dersmatris.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+mentorum-api.dersmatris.com/api/v1/programs/87675b39-e2cb-42f6-a308-4d33c80c3feb/groups/75d09576-8b37-4b37-b1e1-a987ffe7a92b/members:1  Failed to load resource: net::ERR_FAILED
+index-DJZeBRwb.js:78 Uncaught ReferenceError: navigate is not defined
+    at onClick (index-DJZeBRwb.js:78:76380)
+    at qf (index-DJZeBRwb.js:8:139348)
+    at index-DJZeBRwb.js:8:144080
+    at En (index-DJZeBRwb.js:8:15190)
+    at $f (index-DJZeBRwb.js:8:140576)
+    at Dh (index-DJZeBRwb.js:9:42643)
+    at Th (index-DJZeBRwb.js:9:42461)
+index-DJZeBRwb.js:78 Uncaught ReferenceError: navigate is not defined
+    at onClick (index-DJZeBRwb.js:78:76380)
+    at qf (index-DJZeBRwb.js:8:139348)
+    at index-DJZeBRwb.js:8:144080
+    at En (index-DJZeBRwb.js:8:15190)
+    at $f (index-DJZeBRwb.js:8:140576)
+    at Dh (index-DJZeBRwb.js:9:42643)
+    at Th (index-DJZeBRwb.js:9:42461)
+index-DJZeBRwb.js:78 Uncaught ReferenceError: navigate is not defined
+    at onClick (index-DJZeBRwb.js:78:76380)
+    at qf (index-DJZeBRwb.js:8:139348)
+    at index-DJZeBRwb.js:8:144080
+    at En (index-DJZeBRwb.js:8:15190)
+    at $f (index-DJZeBRwb.js:8:140576)
+    at Dh (index-DJZeBRwb.js:9:42643)
+    at Th (index-DJZeBRwb.js:9:42461)
+index-DJZeBRwb.js:78 Uncaught ReferenceError: navigate is not defined
+    at onClick (index-DJZeBRwb.js:78:76380)
+    at qf (index-DJZeBRwb.js:8:139348)
+    at index-DJZeBRwb.js:8:144080
+    at En (index-DJZeBRwb.js:8:15190)
+    at $f (index-DJZeBRwb.js:8:140576)
+    at Dh (index-DJZeBRwb.js:9:42643)
+    at Th (index-DJZeBRwb.js:9:42461)
+index-DJZeBRwb.js:78 Uncaught ReferenceError: navigate is not defined
+    at onClick (index-DJZeBRwb.js:78:76380)
+    at qf (index-DJZeBRwb.js:8:139348)
+    at index-DJZeBRwb.js:8:144080
+    at En (index-DJZeBRwb.js:8:15190)
+    at $f (index-DJZeBRwb.js:8:140576)
+    at Dh (index-DJZeBRwb.js:9:42643)
+    at Th (index-DJZeBRwb.js:9:42461)
+index-DJZeBRwb.js:78 Uncaught ReferenceError: navigate is not defined
+    at onClick (index-DJZeBRwb.js:78:76380)
+    at qf (index-DJZeBRwb.js:8:139348)
+    at index-DJZeBRwb.js:8:144080
+    at En (index-DJZeBRwb.js:8:15190)
+    at $f (index-DJZeBRwb.js:8:140576)
+    at Dh (index-DJZeBRwb.js:9:42643)
+    at Th (index-DJZeBRwb.js:9:42461)
+mentorum-api.dersmatris.com/api/v1/teacher/courses:1  Failed to load resource: the server responded with a status of 403 ()
+mentorum-api.dersmatris.com/api/v1/student/courses:1  Failed to load resource: the server responded with a status of 403 ()
+mentorum-api.dersmatris.com/api/v1/teacher/courses:1  Failed to load resource: the server responded with a status of 403 ()
+mentorum-api.dersmatris.com/api/v1/student/courses:1  Failed to load resource: the server responded with a status of 403 ()
+/coach/storage:1 Access to XMLHttpRequest at 'https://mentorum-api.dersmatris.com/api/v1/uploads/url' from origin 'https://mentorum.dersmatris.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+mentorum-api.dersmatris.com/api/v1/uploads/url:1  Failed to load resource: net::ERR_FAILED
+/coach/storage:1 Unchecked runtime.lastError: The message port closed before a response was received.
+/coach/storage:1 Access to XMLHttpRequest at 'https://mentorum-api.dersmatris.com/api/v1/uploads/url' from origin 'https://mentorum.dersmatris.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+mentorum-api.dersmatris.com/api/v1/uploads/url:1  Failed to load resource: net::ERR_FAILED
+mentorum-api.dersmatris.com/api/v1/teacher/courses:1  Failed to load resource: the server responded with a status of 403 ()
+mentorum-api.dersmatris.com/api/v1/student/courses:1  Failed to load resource: the server responded with a status of 403 ()
+mentorum-api.dersmatris.com/api/v1/teacher/courses:1  Failed to load resource: the server responded with a status of 403 ()
+mentorum-api.dersmatris.com/api/v1/student/courses:1  Failed to load resource: the server responded with a status of 403 ()
+mentorum-api.dersmatris.com/api/v1/teacher/courses:1  Failed to load resource: the server responded with a status of 403 ()
+mentorum-api.dersmatris.com/api/v1/student/courses:1  Failed to load resource: the server responded with a status of 403 ()
+mentorum-api.dersmatris.com/api/v1/teacher/courses:1  Failed to load resource: the server responded with a status of 403 ()
+mentorum-api.dersmatris.com/api/v1/student/courses:1  Failed to load resource: the server responded with a status of 403 ()
+/coach/storage:1 Unchecked runtime.lastError: The message port closed before a response was received.
+/coach/storage:1 Unchecked runtime.lastError: The message port closed before a response was received.

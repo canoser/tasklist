@@ -52,9 +52,22 @@ namespace MentorumApi.Endpoints
                 if (usedBytes + req.FileSizeInBytes > (long)settings.QuotaMb * 1024 * 1024)
                     return Results.Json(new { error = "Depolama kotası dolu." }, statusCode: 400);
 
+                if (!storage.IsConfigured)
+                    return Results.Json(new { error = "Bulut depolama servisi henüz yapılandırılmamış." }, statusCode: 503);
+
                 var entity = homeworkId.HasValue ? "homework" : questionId.HasValue ? "question" : courseId.HasValue ? "course" : "general";
                 var objectKey = $"{programId}/{entity}/{Guid.NewGuid():N}{ext}";
-                var uploadUrl = storage.GenerateUploadUrl(objectKey, req.ContentType, TimeSpan.FromMinutes(15));
+                
+                string uploadUrl;
+                try
+                {
+                    uploadUrl = storage.GenerateUploadUrl(objectKey, req.ContentType, TimeSpan.FromMinutes(15));
+                }
+                catch (Exception ex)
+                {
+                    return Results.Json(new { error = $"Yükleme bağlantısı üretilemedi: {ex.Message}" }, statusCode: 503);
+                }
+
                 var uploadId = await repo.CreatePendingAsync(programId, senderId.Value, recipientUserId, courseId, homeworkId, questionId, objectKey, req.ContentType, req.FileSizeInBytes, req.FileName);
 
                 return Results.Ok(new { uploadId, uploadUrl, objectKey });
@@ -102,7 +115,19 @@ namespace MentorumApi.Endpoints
 
                 if (!allowed) return Results.Json(new { error = "Bu dosyaya erişim yetkiniz yok." }, statusCode: 403);
 
-                var url = storage.GenerateDownloadUrl(upload.ObjectKey, TimeSpan.FromMinutes(10));
+                if (!storage.IsConfigured)
+                    return Results.Json(new { error = "Bulut depolama servisi henüz yapılandırılmamış." }, statusCode: 503);
+
+                string url;
+                try
+                {
+                    url = storage.GenerateDownloadUrl(upload.ObjectKey, TimeSpan.FromMinutes(10));
+                }
+                catch (Exception ex)
+                {
+                    return Results.Json(new { error = $"İndirme bağlantısı üretilemedi: {ex.Message}" }, statusCode: 503);
+                }
+
                 return Results.Ok(new { url, contentType = upload.ContentType, originalName = upload.OriginalName });
             });
 

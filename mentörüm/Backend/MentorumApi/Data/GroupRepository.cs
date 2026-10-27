@@ -23,7 +23,7 @@ namespace MentorumApi.Data
             using var conn = _connectionFactory.CreateConnection();
             return await conn.QueryAsync<GroupDto>(@"
                 SELECT g.id, g.program_id AS ProgramId, g.name AS Name, g.color AS Color, g.description AS Description,
-                       (SELECT COUNT(1) FROM student_group_members m WHERE m.group_id = g.id) AS MemberCount
+                       (SELECT COUNT(1) FROM student_group_members m WHERE m.group_id = g.id AND m.is_active = 1) AS MemberCount
                 FROM student_groups g
                 WHERE g.program_id = @ProgramId
                 ORDER BY g.name", new { ProgramId = programId });
@@ -35,7 +35,7 @@ namespace MentorumApi.Data
             using var conn = _connectionFactory.CreateConnection();
             return await conn.QuerySingleOrDefaultAsync<GroupDto>(@"
                 SELECT g.id, g.program_id AS ProgramId, g.name AS Name, g.color AS Color, g.description AS Description,
-                       (SELECT COUNT(1) FROM student_group_members m WHERE m.group_id = g.id) AS MemberCount
+                       (SELECT COUNT(1) FROM student_group_members m WHERE m.group_id = g.id AND m.is_active = 1) AS MemberCount
                 FROM student_groups g
                 WHERE g.id = @GroupId AND g.program_id = @ProgramId",
                 new { GroupId = groupId, ProgramId = programId });
@@ -83,12 +83,12 @@ namespace MentorumApi.Data
             if (!await IsMemberAsync(programId, coachId)) return "FORBIDDEN";
             using var conn = _connectionFactory.CreateConnection();
             var rows = await conn.ExecuteAsync(@"
-                INSERT INTO student_group_members (id, group_id, student_id, program_id)
-                SELECT @Id, g.id, s.id, @ProgramId
+                INSERT INTO student_group_members (id, group_id, student_id, program_id, is_active)
+                SELECT @Id, g.id, s.id, @ProgramId, 1
                 FROM student_groups g
                 JOIN students s ON s.id = @StudentId AND s.program_id = @ProgramId
                 WHERE g.id = @GroupId AND g.program_id = @ProgramId
-                ON CONFLICT (group_id, student_id) DO NOTHING",
+                ON CONFLICT (group_id, student_id) DO UPDATE SET is_active = 1",
                 new { Id = Guid.NewGuid(), GroupId = groupId, StudentId = studentId, ProgramId = programId });
             return rows > 0 ? "OK" : "NOT_FOUND";
         }
@@ -109,11 +109,12 @@ namespace MentorumApi.Data
             if (!await IsMemberAsync(programId, coachId)) return Enumerable.Empty<GroupMemberDto>();
             using var conn = _connectionFactory.CreateConnection();
             return await conn.QueryAsync<GroupMemberDto>(@"
-                SELECT s.id, s.full_name AS FullName, s.email AS Email, s.grade AS Grade
+                SELECT m.student_id AS Id, u.full_name AS FullName, u.email AS Email, s.grade AS Grade
                 FROM student_group_members m
+                JOIN users u ON u.id = m.student_id
                 JOIN students s ON s.id = m.student_id
-                WHERE m.group_id = @GroupId AND m.program_id = @ProgramId
-                ORDER BY s.full_name",
+                WHERE m.group_id = @GroupId AND m.program_id = @ProgramId AND m.is_active = 1
+                ORDER BY u.full_name",
                 new { GroupId = groupId, ProgramId = programId });
         }
     }

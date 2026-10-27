@@ -40,6 +40,29 @@ namespace MentorumApi.Endpoints
                 }
             });
 
+            studentRoot.MapPut("/{studentId:guid}", async (
+                Guid studentId,
+                [FromBody] UpdateStudentRequest req,
+                [FromServices] StudentRepository repo,
+                [FromServices] ProgramAccessGuard guard,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = GetUserId(user);
+                if (coachId == null) return Results.Unauthorized();
+
+                try
+                {
+                    await guard.EnsureCoachOwnsStudentAsync(coachId.Value, studentId);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    return Results.Json(new { error = "Öğrenci bulunamadı veya yetkiniz yok." }, statusCode: 403);
+                }
+
+                var ok = await repo.UpdateStudentAsync(studentId, req);
+                return ok ? Results.Ok(new { message = "Öğrenci bilgileri güncellendi." }) : Results.NotFound(new { error = "Öğrenci bulunamadı." });
+            });
+
             var group = app.MapGroup("/api/v1/programs/{programId:guid}/students").RequireAuthorization("RequireCoachRole");
 
             // B1: Öğrenci ekleme (e-postasız gölge profil destekli)

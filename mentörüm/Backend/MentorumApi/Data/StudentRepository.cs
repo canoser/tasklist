@@ -429,6 +429,54 @@ namespace MentorumApi.Data
             }
         }
 
+        public async Task<bool> UpdateStudentAsync(Guid studentId, UpdateStudentRequest req)
+        {
+            var track = NormalizeTrack(req.TargetExam);
+
+            using var conn = _connectionFactory.CreateConnection();
+            conn.Open();
+            using var tx = conn.BeginTransaction();
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(req.FirstName) || !string.IsNullOrWhiteSpace(req.LastName))
+                {
+                    var currentName = await conn.QuerySingleOrDefaultAsync<string>(
+                        "SELECT full_name FROM users WHERE id = @StudentId", new { StudentId = studentId }, tx);
+
+                    if (currentName != null)
+                    {
+                        var parts = currentName.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+                        var currentFirst = parts.Length > 0 ? parts[0] : "";
+                        var currentLast = parts.Length > 1 ? parts[1] : "";
+
+                        var newFirst = !string.IsNullOrWhiteSpace(req.FirstName) ? req.FirstName.Trim() : currentFirst;
+                        var newLast = !string.IsNullOrWhiteSpace(req.LastName) ? req.LastName.Trim() : currentLast;
+                        var newFullName = $"{newFirst} {newLast}".Trim();
+
+                        await conn.ExecuteAsync(
+                            "UPDATE users SET full_name = @FullName, updated_at = NOW() WHERE id = @StudentId",
+                            new { FullName = newFullName, StudentId = studentId }, tx);
+                    }
+                }
+
+                var rows = await conn.ExecuteAsync(@"
+                    UPDATE students SET
+                        grade = COALESCE(@Grade, grade),
+                        track = COALESCE(@Track, track),
+                        updated_at = NOW()
+                    WHERE id = @StudentId",
+                    new { Grade = req.ClassLevel, Track = track, StudentId = studentId }, tx);
+
+                tx.Commit();
+                return rows > 0;
+            }
+            catch
+            {
+                tx.Rollback();
+                throw;
+            }
+        }
+
         private static string? NormalizeTrack(string? targetExam)
         {
             if (string.IsNullOrWhiteSpace(targetExam)) return null;

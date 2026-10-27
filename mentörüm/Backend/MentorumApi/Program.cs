@@ -190,6 +190,19 @@ try
     app.UseSerilogRequestLogging();
     app.UseHttpsRedirection();
     app.UseCors("MentorumCors");
+
+    app.UseExceptionHandler(err => err.Run(async context =>
+    {
+        context.Response.StatusCode = 500;
+        context.Response.ContentType = "application/json";
+        var exceptionFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
+        if (exceptionFeature?.Error != null)
+        {
+            Log.Error(exceptionFeature.Error, "İşlenemeyen sunucu hatası (Global Exception Handler)");
+        }
+        await context.Response.WriteAsync("{\"error\":\"Sunucu hatası oluştu. Lütfen tekrar deneyin.\"}");
+    }));
+
     app.UseAuthRateLimit();
 
     app.UseAuthentication();

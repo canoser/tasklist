@@ -158,4 +158,12 @@ namespace MentorumApi.DTOs
     {
         public Guid GroupId { get; set; }
     }
+
+    public class UpdateStudentRequest
+    {
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public int? ClassLevel { get; set; }
+        public string? TargetExam { get; set; }
+    }
 }

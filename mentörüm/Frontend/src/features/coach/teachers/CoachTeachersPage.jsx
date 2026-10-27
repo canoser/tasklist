@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useTeachers, useDeactivateTeacher, usePrograms, useCourses } from '../coachSchoolApi';
 import Button from '../../../components/common/Button/Button';
 import Card from '../../../components/common/Card/Card';
@@ -9,6 +9,7 @@ import { Trash2, Plus, Mail, Phone, BookOpen, Users, GraduationCap } from 'lucid
 import styles from './CoachTeachersPage.module.css';
 
 const CoachTeachersPage = () => {
+  const navigate = useNavigate();
   const { programId: routeProgramId } = useParams();
   const { data: programs = [] } = usePrograms();
   const [selectedProgramId] = useState('');

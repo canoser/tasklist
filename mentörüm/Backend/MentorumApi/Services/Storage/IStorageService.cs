@@ -3,6 +3,9 @@ namespace MentorumApi.Services
     /// <summary>Nesne depolama (Cloudflare R2 / S3-uyumlu) soyutlaması.</summary>
     public interface IStorageService
     {
+        /// <summary>Depolama servisinin (Cloudflare R2 vb.) geçerli ayarlarla hazır olup olmadığını belirtir.</summary>
+        bool IsConfigured { get; }
+
         /// <summary>İstemcinin doğrudan yükleyebileceği presigned PUT URL üretir.</summary>
         string GenerateUploadUrl(string objectKey, string contentType, TimeSpan expiresIn);
 

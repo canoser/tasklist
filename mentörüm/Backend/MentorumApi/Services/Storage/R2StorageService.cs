@@ -6,38 +6,57 @@ namespace MentorumApi.Services
     /// <summary>Cloudflare R2 üzerinde çalışan S3-uyumlu depolama servisi.</summary>
     public class R2StorageService : IStorageService
     {
-        private readonly IAmazonS3 _s3Client;
-        private readonly string _bucketName;
+        private readonly IAmazonS3? _s3Client;
+        private readonly string? _bucketName;
+
+        public bool IsConfigured { get; }
 
         public R2StorageService(IConfiguration configuration)
         {
-            var accessKey = configuration["R2_ACCESS_KEY_ID"]
-                ?? throw new InvalidOperationException("R2_ACCESS_KEY_ID is missing.");
-            var secretKey = configuration["R2_SECRET_ACCESS_KEY"]
-                ?? throw new InvalidOperationException("R2_SECRET_ACCESS_KEY is missing.");
-            var serviceUrl = configuration["R2_ENDPOINT_URL"]
-                ?? throw new InvalidOperationException("R2_ENDPOINT_URL is missing.");
-            _bucketName = configuration["R2_BUCKET_NAME"]
-                ?? throw new InvalidOperationException("R2_BUCKET_NAME is missing.");
+            var accessKey = configuration["R2_ACCESS_KEY_ID"];
+            var secretKey = configuration["R2_SECRET_ACCESS_KEY"];
+            var serviceUrl = configuration["R2_ENDPOINT_URL"];
+            _bucketName = configuration["R2_BUCKET_NAME"];
 
-            var s3Config = new AmazonS3Config
+            if (string.IsNullOrWhiteSpace(accessKey) ||
+                string.IsNullOrWhiteSpace(secretKey) ||
+                string.IsNullOrWhiteSpace(serviceUrl) ||
+                string.IsNullOrWhiteSpace(_bucketName))
             {
-                ServiceURL = serviceUrl,
-                ForcePathStyle = true
-            };
+                IsConfigured = false;
+                _s3Client = null;
+                return;
+            }
 
-            _s3Client = new AmazonS3Client(accessKey, secretKey, s3Config);
+            try
+            {
+                var s3Config = new AmazonS3Config
+                {
+                    ServiceURL = serviceUrl,
+                    ForcePathStyle = true
+                };
+
+                _s3Client = new AmazonS3Client(accessKey, secretKey, s3Config);
+                IsConfigured = true;
+            }
+            catch
+            {
+                IsConfigured = false;
+                _s3Client = null;
+            }
         }
 
         public string GenerateUploadUrl(string objectKey, string contentType, TimeSpan expiresIn)
         {
+            if (!IsConfigured || _s3Client == null || string.IsNullOrEmpty(_bucketName))
+                throw new InvalidOperationException("R2 depolama servisi yapılandırılmamış.");
+
             var request = new GetPreSignedUrlRequest
             {
                 BucketName = _bucketName,
                 Key = objectKey,
                 Verb = HttpVerb.PUT,
                 Expires = DateTime.UtcNow.Add(expiresIn),
-                // GÜVENLİK: ContentType imzaya dahil edilir; istemci aynı tipi göndermek zorundadır.
                 ContentType = contentType
             };
 
@@ -46,6 +65,9 @@ namespace MentorumApi.Services
 
         public string GenerateDownloadUrl(string objectKey, TimeSpan expiresIn)
         {
+            if (!IsConfigured || _s3Client == null || string.IsNullOrEmpty(_bucketName))
+                throw new InvalidOperationException("R2 depolama servisi yapılandırılmamış.");
+
             var request = new GetPreSignedUrlRequest
             {
                 BucketName = _bucketName,
@@ -59,6 +81,9 @@ namespace MentorumApi.Services
 
         public async Task DeleteFileAsync(string objectKey)
         {
+            if (!IsConfigured || _s3Client == null || string.IsNullOrEmpty(_bucketName))
+                return;
+
             await _s3Client.DeleteObjectAsync(new DeleteObjectRequest
             {
                 BucketName = _bucketName,
@@ -68,6 +93,9 @@ namespace MentorumApi.Services
 
         public async Task<long?> GetObjectInfoAsync(string objectKey)
         {
+            if (!IsConfigured || _s3Client == null || string.IsNullOrEmpty(_bucketName))
+                return null;
+
             try
             {
                 var response = await _s3Client.GetObjectMetadataAsync(new GetObjectMetadataRequest
