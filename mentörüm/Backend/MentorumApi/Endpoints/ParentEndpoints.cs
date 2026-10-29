@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using MentorumApi.Models;
 using MentorumApi.Data;
+using MentorumApi.DTOs;
 
 namespace MentorumApi.Endpoints;
 
@@ -112,8 +113,8 @@ public static class ParentEndpoints
                 new { ParentId = Guid.Parse(parentId), StudentId = studentId });
             if (relation == 0) return Results.Forbid();
 
-            var rawExams = (await conn.QueryAsync<(Guid Id, DateTime? ExamDate, string? Name, string? ExamType, decimal? TotalNet)>(@"
-                SELECT e.id AS Id, e.exam_date AS ExamDate, COALESCE(e.exam_name, e.exam_type) AS Name, e.exam_type AS ExamType, e.total_net AS TotalNet
+            var rawExams = (await conn.QueryAsync<StudentExamDto>(@"
+                SELECT e.id AS Id, e.exam_date AS ExamDate, COALESCE(e.exam_name, e.exam_type) AS ExamName, e.exam_type AS ExamType, e.total_net AS TotalNet
                 FROM exam_results e
                 WHERE e.student_id = @StudentId
                 ORDER BY e.exam_date DESC, e.created_at DESC",
@@ -122,7 +123,7 @@ public static class ParentEndpoints
             if (rawExams.Count == 0) return Results.Ok(Array.Empty<object>());
 
             var examIds = rawExams.Select(e => e.Id).ToArray();
-            var scores = (await conn.QueryAsync<(Guid ExamId, Guid? Id, Guid? SubjectId, Guid? CurriculumTopicId, string? SubjectName, string? UnitName, string? TopicName, int? QuestionCount, int? Correct, int? Wrong, int? Blank, decimal? Net, float? Score, float? MaxScore)>(@"
+            var scores = (await conn.QueryAsync<ExamScoreRowDto>(@"
                 SELECT exam_id AS ExamId, id AS Id, subject_id AS SubjectId, curriculum_topic_id AS CurriculumTopicId,
                        subject_name AS SubjectName, unit_name AS UnitName, topic_name AS TopicName,
                        question_count AS QuestionCount, correct AS Correct, wrong AS Wrong, blank AS Blank,
@@ -135,7 +136,7 @@ public static class ParentEndpoints
             {
                 id = e.Id,
                 examDate = e.ExamDate,
-                name = e.Name,
+                name = e.ExamName,
                 examType = e.ExamType,
                 totalNet = e.TotalNet,
                 scores = scores[e.Id].Select(s => new

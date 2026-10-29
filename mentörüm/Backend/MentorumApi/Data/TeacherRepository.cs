@@ -309,11 +309,11 @@ namespace MentorumApi.Data
 
             if (owned == null) throw new UnauthorizedAccessException("Program veya öğretmen bulunamadı.");
 
-            var rawRows = (await conn.QueryAsync<(Guid StudentId, string StudentName, string? Email, string? Phone, string? TargetExam, int? ClassLevel, string CourseName, int IsActive, DateTime? EnrolledAt)>(@"
+            var rawRows = (await conn.QueryAsync<TeacherStudentRawRow>(@"
                 -- Bireysel veya doğrudan kurs kayıtları
-                SELECT u.id AS StudentId, u.full_name AS StudentName, u.email AS Email, NULL AS Phone,
+                SELECT u.id AS StudentId, u.full_name AS StudentName, u.email AS Email, s.phone AS Phone,
                        s.track AS TargetExam, s.grade AS ClassLevel, c.name AS CourseName,
-                       cs.is_active AS IsActive, cs.created_at AS EnrolledAt
+                       cs.is_active AS IsActive, cs.enrolled_at AS EnrolledAt
                 FROM course_students cs
                 JOIN courses c ON c.id = cs.course_id
                 JOIN users u ON u.id = cs.student_id
@@ -323,9 +323,9 @@ namespace MentorumApi.Data
                 UNION ALL
 
                 -- Grup üzerinden gelen kayıtlar
-                SELECT u.id AS StudentId, u.full_name AS StudentName, u.email AS Email, NULL AS Phone,
+                SELECT u.id AS StudentId, u.full_name AS StudentName, u.email AS Email, s.phone AS Phone,
                        s.track AS TargetExam, s.grade AS ClassLevel, c.name AS CourseName,
-                       sgm.is_active AS IsActive, sgm.created_at AS EnrolledAt
+                       sgm.is_active AS IsActive, sgm.joined_at AS EnrolledAt
                 FROM course_groups cg
                 JOIN courses c ON c.id = cg.course_id
                 JOIN student_group_members sgm ON sgm.group_id = cg.group_id
@@ -464,6 +464,19 @@ namespace MentorumApi.Data
                 TotalExams = rawRows.Count,
                 ExamResults = rawRows
             };
+        }
+
+        private sealed class TeacherStudentRawRow
+        {
+            public Guid StudentId { get; set; }
+            public string StudentName { get; set; } = string.Empty;
+            public string? Email { get; set; }
+            public string? Phone { get; set; }
+            public string? TargetExam { get; set; }
+            public int? ClassLevel { get; set; }
+            public string CourseName { get; set; } = string.Empty;
+            public int IsActive { get; set; }
+            public DateTime? EnrolledAt { get; set; }
         }
     }
 }

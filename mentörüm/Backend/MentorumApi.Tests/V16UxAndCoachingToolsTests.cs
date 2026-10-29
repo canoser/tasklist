@@ -201,5 +201,40 @@ namespace MentorumApi.Tests
             Assert.True(schoolCat.TotalMinutes >= 1800);
             Assert.True(budget.TotalTrackedMinutes >= 1800);
         }
+
+        [Fact]
+        public async Task StudentDetail_Curriculum_Sessions_Events_And_TeacherStudents_Return200()
+        {
+            var coachClient = CreateClient(CoachA, "Coach");
+
+            var detailRes = await coachClient.GetAsync($"/api/v1/students/{StudentB}");
+            Assert.Equal(HttpStatusCode.OK, detailRes.StatusCode);
+
+            var currRes = await coachClient.GetAsync($"/api/v1/students/{StudentB}/curriculum");
+            Assert.Equal(HttpStatusCode.OK, currRes.StatusCode);
+
+            var sessRes = await coachClient.GetAsync($"/api/v1/students/{StudentB}/sessions");
+            Assert.Equal(HttpStatusCode.OK, sessRes.StatusCode);
+
+            var eventsRes = await coachClient.GetAsync($"/api/v1/students/{StudentB}/events");
+            Assert.Equal(HttpStatusCode.OK, eventsRes.StatusCode);
+
+            // Öğretmen öğrencileri uç noktası
+            using var conn = _db.CreateConnection();
+            var teacherId = Guid.NewGuid();
+            await conn.ExecuteAsync(@"
+                INSERT INTO users (id, email, role, full_name)
+                VALUES (@Id, @Email, 'Teacher', 'Test Teacher')
+                ON CONFLICT (id) DO NOTHING",
+                new { Id = teacherId, Email = $"t_{teacherId:N}@test.com" });
+            await conn.ExecuteAsync(@"
+                INSERT INTO teachers (id, program_id, is_active)
+                VALUES (@Id, @ProgramId, 1)
+                ON CONFLICT (id) DO NOTHING",
+                new { Id = teacherId, ProgramId = ProgramA });
+
+            var teacherStudentsRes = await coachClient.GetAsync($"/api/v1/programs/{ProgramA}/teachers/{teacherId}/students");
+            Assert.Equal(HttpStatusCode.OK, teacherStudentsRes.StatusCode);
+        }
     }
 }

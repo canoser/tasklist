@@ -129,8 +129,8 @@ namespace MentorumApi.Data
                         (
                             SELECT ROUND(AVG(
                                 CASE
-                                    WHEN (COALESCE(sc.correct_count, 0) + COALESCE(sc.wrong_count, 0) + COALESCE(sc.blank_count, 0)) > 0
-                                    THEN (sc.correct_count::numeric / (sc.correct_count + sc.wrong_count + sc.blank_count)::numeric) * 100.0
+                                    WHEN (COALESCE(sc.correct, 0) + COALESCE(sc.wrong, 0) + COALESCE(sc.blank, 0)) > 0
+                                    THEN (sc.correct::numeric / (sc.correct + sc.wrong + sc.blank)::numeric) * 100.0
                                     WHEN sc.max_score > 0 AND sc.score IS NOT NULL
                                     THEN (sc.score::numeric / sc.max_score::numeric) * 100.0
                                     ELSE NULL

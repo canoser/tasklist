@@ -59,10 +59,9 @@ namespace MentorumApi.Data
 
                 using var conn = _connectionFactory.CreateConnection();
                 var parents = await conn.QueryAsync<CoachStudentParentDto>(@"
-                    SELECT u.id AS Id, u.full_name AS FullName, u.email AS Email, p.phone AS Phone, sp.relation AS Relation
+                    SELECT u.id AS Id, u.full_name AS FullName, u.email AS Email, sp.phone AS Phone, sp.relation AS Relation
                     FROM student_parents sp
                     JOIN users u ON u.id = sp.parent_id
-                    LEFT JOIN parents p ON p.id = sp.parent_id
                     WHERE sp.student_id = @StudentId AND sp.is_accepted = 1",
                     new { StudentId = studentId });
                 detail.Parents = parents.ToList();
@@ -153,7 +152,7 @@ namespace MentorumApi.Data
             if (exams.Count == 0) return exams;
 
             var examIds = exams.Select(e => e.Id).ToArray();
-            var rawScores = (await connection.QueryAsync<(Guid ExamId, Guid Id, Guid? SubjectId, Guid? CurriculumTopicId, string? SubjectCode, string? SubjectName, string? UnitName, string? TopicName, int? QuestionCount, int? Correct, int? Wrong, int? Blank, decimal? Net, float? Score, float? MaxScore)>(@"
+            var rawScores = (await connection.QueryAsync<ExamScoreRowDto>(@"
                 SELECT exam_id AS ExamId, id AS Id, subject_id AS SubjectId, curriculum_topic_id AS CurriculumTopicId,
                        subject_code AS SubjectCode, subject_name AS SubjectName, unit_name AS UnitName, topic_name AS TopicName,
                        question_count AS QuestionCount, correct AS Correct, wrong AS Wrong, blank AS Blank,

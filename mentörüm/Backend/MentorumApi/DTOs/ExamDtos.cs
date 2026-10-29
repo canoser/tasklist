@@ -20,6 +20,11 @@ namespace MentorumApi.DTOs
         public float? MaxScore { get; set; }
     }
 
+    public class ExamScoreRowDto : ExamScoreDto
+    {
+        public Guid ExamId { get; set; }
+    }
+
     public class CreateExamResultRequest
     {
         public Guid? StudentId { get; set; }
