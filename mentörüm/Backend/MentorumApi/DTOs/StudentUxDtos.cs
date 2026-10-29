@@ -49,7 +49,10 @@ namespace MentorumApi.DTOs
         public string TopicText { get; set; } = "";
         public string Status { get; set; } = "OPEN";
         public Guid? SubjectId { get; set; }
+        public string? SubjectName { get; set; }
         public Guid? UploadId { get; set; }
+        public string? CoachReply { get; set; }
+        public DateTime? RepliedAt { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 
@@ -58,6 +61,12 @@ namespace MentorumApi.DTOs
         public string TopicText { get; set; } = "";
         public Guid? SubjectId { get; set; }
         public Guid? UploadId { get; set; }
+    }
+
+    public class CoachReplyQuestionRequest
+    {
+        public string? Reply { get; set; }
+        public string? Status { get; set; } = "RESOLVED";
     }
 
     public class SchoolScheduleDto
@@ -87,5 +96,46 @@ namespace MentorumApi.DTOs
     {
         public int CurrentStreak { get; set; }
         public int TotalStudyDays { get; set; }
+    }
+
+    public class CoachStudentToolsResponseDto
+    {
+        public Guid StudentId { get; set; }
+        public string SwotData { get; set; } = "{}";
+        public string WheelData { get; set; } = "{}";
+        public string HabitsData { get; set; } = "[]";
+        public AutoSwotSummaryDto AutoSwot { get; set; } = new();
+        public DateTime? UpdatedAt { get; set; }
+    }
+
+    public class AutoSwotSummaryDto
+    {
+        public List<string> Strengths { get; set; } = new();
+        public List<string> Weaknesses { get; set; } = new();
+        public List<string> Opportunities { get; set; } = new();
+        public List<string> Threats { get; set; } = new();
+    }
+
+    public class UpdateCoachingToolsRequest
+    {
+        public string? SwotData { get; set; }
+        public string? WheelData { get; set; }
+        public string? HabitsData { get; set; }
+    }
+
+    public class StudentCoachingHabitsDto
+    {
+        public Guid StudentId { get; set; }
+        public string HabitsData { get; set; } = "[]";
+        public string? MonthlyMilestone { get; set; }
+        public int? WeeklyTargetMinutes { get; set; }
+        public int? WeeklyTargetQuestions { get; set; }
+    }
+
+    public class ToggleHabitRequest
+    {
+        public string HabitId { get; set; } = "";
+        public bool Completed { get; set; }
+        public string? Date { get; set; }
     }
 }

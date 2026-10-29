@@ -11,10 +11,13 @@ namespace MentorumApi.Data
         {
             using var conn = _connectionFactory.CreateConnection();
             return await conn.QueryAsync<StudentQuestionDto>(@"
-                SELECT id AS Id, topic_text AS TopicText, status AS Status, subject_id AS SubjectId, upload_id AS UploadId, created_at AS CreatedAt
-                FROM student_questions
-                WHERE student_id = @StudentId
-                ORDER BY (status = 'OPEN') DESC, created_at DESC",
+                SELECT q.id AS Id, q.topic_text AS TopicText, q.status AS Status, q.subject_id AS SubjectId,
+                       s.name AS SubjectName, q.upload_id AS UploadId, q.coach_reply AS CoachReply,
+                       q.replied_at AS RepliedAt, q.created_at AS CreatedAt
+                FROM student_questions q
+                LEFT JOIN subjects s ON s.id = q.subject_id
+                WHERE q.student_id = @StudentId
+                ORDER BY (q.status = 'OPEN') DESC, q.created_at DESC",
                 new { StudentId = studentId });
         }
 
@@ -35,6 +38,28 @@ namespace MentorumApi.Data
             var rows = await conn.ExecuteAsync(@"
                 UPDATE student_questions SET status = @Status WHERE id = @Id AND student_id = @StudentId",
                 new { Id = questionId, StudentId = studentId, Status = status == "RESOLVED" ? "RESOLVED" : "OPEN" });
+            return rows > 0;
+        }
+
+        public async Task<bool> ReplyByCoachAsync(Guid studentId, Guid questionId, Guid coachId, string? reply, string? status)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            var rows = await conn.ExecuteAsync(@"
+                UPDATE student_questions q
+                SET coach_reply = @Reply,
+                    replied_by = @CoachId,
+                    replied_at = NOW(),
+                    status = @Status
+                WHERE q.id = @QuestionId 
+                  AND q.student_id = @StudentId
+                  AND q.program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)",
+                new { 
+                    QuestionId = questionId, 
+                    StudentId = studentId, 
+                    CoachId = coachId, 
+                    Reply = reply, 
+                    Status = status == "OPEN" ? "OPEN" : "RESOLVED" 
+                });
             return rows > 0;
         }
     }

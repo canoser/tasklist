@@ -129,24 +129,39 @@ const StudentCoursesPage = () => {
                 </Card>
               ) : (
                 <div className={styles.courseGrid}>
-                  {courses?.map((c) => (
-                    <div 
-                      key={c.id} 
-                      className={styles.courseCard} 
-                      onClick={() => setSelectedCourse(c)}
-                    >
-                      <div className={styles.courseInfo}>
-                        <div className={styles.courseIcon}>
-                          <BookOpen size={20} />
+                  {courses?.map((c) => {
+                    const typeLabel = c.type === 'OZEL_DERS' ? 'Bireysel Koçluk' : (c.type === 'DERS' ? 'Akademik Ders' : (c.type || 'Akademik Ders'));
+                    return (
+                      <div 
+                        key={c.id} 
+                        className={styles.courseCard} 
+                        onClick={() => setSelectedCourse(c)}
+                      >
+                        <div className={styles.courseInfo}>
+                          <div className={styles.courseIcon}>
+                            <BookOpen size={20} />
+                          </div>
+                          <div>
+                            <div className={styles.courseName}>{c.name}</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px', flexWrap: 'wrap' }}>
+                              <span className={styles.courseType}>{typeLabel}</span>
+                              {c.teacherName && (
+                                <span style={{ fontSize: '0.72rem', color: 'var(--text-color-muted)' }}>
+                                  Öğretmen: {c.teacherName}
+                                </span>
+                              )}
+                              {c.subjectName && c.subjectName !== c.name && (
+                                <span style={{ fontSize: '0.72rem', color: 'var(--text-color-muted)' }}>
+                                  ({c.subjectName})
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <div className={styles.courseName}>{c.name}</div>
-                          <span className={styles.courseType}>{c.type || 'Akademik Ders'}</span>
-                        </div>
+                        <ChevronRight size={18} color="var(--text-color-muted)" />
                       </div>
-                      <ChevronRight size={18} color="var(--text-color-muted)" />
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

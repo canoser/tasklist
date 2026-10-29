@@ -22,7 +22,15 @@ namespace MentorumApi.Data
                    (COALESCE(c.teacher_can_add_notes, 0) = 1) AS TeacherCanAddNotes,
                    (COALESCE(c.teacher_can_view_schedule, 0) = 1) AS TeacherCanViewSchedule,
                    (COALESCE(c.teacher_can_manage_schedule, 0) = 1) AS TeacherCanManageSchedule,
-                   (SELECT COUNT(1) FROM course_students cs WHERE cs.course_id = c.id AND cs.is_active = 1) AS StudentCount";
+                   (
+                       SELECT COUNT(DISTINCT sid) FROM (
+                           SELECT cs.student_id AS sid FROM course_students cs WHERE cs.course_id = c.id AND cs.is_active = 1
+                           UNION
+                           SELECT sgm.student_id AS sid FROM course_groups cg
+                           JOIN student_group_members sgm ON sgm.group_id = cg.group_id AND sgm.is_active = 1
+                           WHERE cg.course_id = c.id
+                       ) roster
+                   ) AS StudentCount";
 
         private async Task<bool> IsMemberAsync(Guid programId, Guid coachId)
         {
@@ -233,7 +241,7 @@ namespace MentorumApi.Data
                     SELECT sgm.student_id FROM course_groups cg
                     JOIN courses c ON c.id = cg.course_id AND c.program_id = @ProgramId
                     JOIN student_group_members sgm ON sgm.group_id = cg.group_id
-                    WHERE cg.course_id = @CourseId
+                    WHERE cg.course_id = @CourseId AND sgm.is_active = 1
                 )
                 ORDER BY u.full_name",
                 new { CourseId = courseId, ProgramId = programId });

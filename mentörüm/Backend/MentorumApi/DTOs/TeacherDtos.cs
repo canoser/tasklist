@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace MentorumApi.DTOs
@@ -157,6 +159,7 @@ namespace MentorumApi.DTOs
         public required string Status { get; set; } // 'DONE' | 'PENDING'
 
         public string? Feedback { get; set; }
+        public int? ExpectedVersion { get; set; }
     }
 
     public class TeacherAddNoteRequest

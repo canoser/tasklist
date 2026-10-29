@@ -43,6 +43,7 @@ import CoachTeacherDetailPage from './features/coach/teachers/CoachTeacherDetail
 import CoachProfilePage from './features/coach/profile/CoachProfilePage';
 import ApprovalsPage from './features/coach/approvals/ApprovalsPage';
 import CoachPaymentsPage from './features/coach/payments/CoachPaymentsPage';
+import CoachAuditLogsPage from './features/coach/audit/CoachAuditLogsPage';
 import ViewAsBanner from './components/common/ViewAsBanner/ViewAsBanner';
 import ThemeSync from './components/common/ThemeSync/ThemeSync';
 import StoragePage from './features/storage/StoragePage';
@@ -145,6 +146,8 @@ function App() {
           <Route path="programs/:programId/groups" element={<CoachGroupsPage />} />
           <Route path="programs/:programId/schedule" element={<WeeklySchedulePage />} />
           <Route path="programs/:programId/settings" element={<CoachProgramSettingsPage />} />
+          <Route path="audit-logs" element={<CoachAuditLogsPage />} />
+          <Route path="programs/:programId/audit-logs" element={<CoachAuditLogsPage />} />
           <Route path="storage" element={<StoragePage />} />
           <Route path="admin" element={<PrivateRoute requireAdmin><AdminPanelPage /></PrivateRoute>} />
         </Route>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
@@ -6,7 +6,7 @@ import styles from './AssignHomeworkModal.module.css';
 import { useAssignHomework, useLevels, useSubjects, useUnits, useTopics } from '../coachApi';
 import { usePrograms, useCourses } from '../coachSchoolApi';
 
-const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
+const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent, initialTopic, programId }) => {
   const [level, setLevel] = useState('');
   const [subject, setSubject] = useState('');
   const [topic, setTopic] = useState('');
@@ -16,6 +16,7 @@ const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
   const [title, setTitle] = useState('');
   const [desc, setDesc] = useState('');
   const [dueDate, setDueDate] = useState('');
+  const [priority, setPriority] = useState('NORMAL');
 
   const assignHomeworkMutation = useAssignHomework();
   const { data: levels = [] } = useLevels();
@@ -23,10 +24,45 @@ const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
   const { data: units = [] } = useUnits(subject || undefined, level || undefined);
   const { data: topics = [] } = useTopics(subject || undefined, level || undefined, unit || undefined);
   const { data: programs = [] } = usePrograms();
-  const activeProgramId = programs[0]?.id;
-  const { data: courses = [] } = useCourses(activeProgramId);
+  const effectiveProgramId = programId || selectedStudent?.programId || programs[0]?.id;
+  const { data: courses = [] } = useCourses(effectiveProgramId);
+
+  // F6: initialTopic veya selectedStudent.grade ile otomatik seviye & konu & başlık doldurma
+  useEffect(() => {
+    if (!isOpen) return;
+
+    if (initialTopic) {
+      if (initialTopic.grade) setLevel(String(initialTopic.grade));
+      else if (selectedStudent?.grade) setLevel(String(selectedStudent.grade));
+
+      if (initialTopic.subjectId) setSubject(initialTopic.subjectId);
+      if (initialTopic.unitNumber != null) setUnit(initialTopic.unitNumber);
+      if (initialTopic.id) setTopic(initialTopic.id);
+
+      const autoTitle = [initialTopic.subjectName, initialTopic.topicName].filter(Boolean).join(' — ');
+      if (autoTitle) setTitle(autoTitle);
+    } else if (selectedStudent?.grade) {
+      setLevel(String(selectedStudent.grade));
+    }
+  }, [isOpen, initialTopic, selectedStudent]);
 
   if (!isOpen) return null;
+
+  const handleTopicChange = (e) => {
+    const selectedTopicId = e.target.value;
+    setTopic(selectedTopicId);
+    setFreeTopic('');
+
+    if (selectedTopicId && selectedTopicId !== '__other__') {
+      const tObj = topics.find((t) => t.id === selectedTopicId);
+      const sObj = subjects.find((s) => s.id === subject);
+      if (tObj && (!title || title.trim() === '')) {
+        const sName = sObj ? sObj.name : '';
+        const auto = [sName, tObj.topicName].filter(Boolean).join(' — ');
+        if (auto) setTitle(auto);
+      }
+    }
+  };
 
   const handleAssign = () => {
     if (!title || !dueDate) {
@@ -47,7 +83,8 @@ const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
       courseId: courseId || null,
       title,
       description: desc,
-      dueDate
+      dueDate,
+      priority
     }, {
       onSuccess: () => {
         // Reset form and close
@@ -60,6 +97,7 @@ const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
         setTitle('');
         setDesc('');
         setDueDate('');
+        setPriority('NORMAL');
         onClose();
       },
       onError: () => {
@@ -137,7 +175,7 @@ const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
             <select 
               className={styles.select} 
               value={topic} 
-              onChange={e => { setTopic(e.target.value); setFreeTopic(''); }}
+              onChange={handleTopicChange}
               disabled={!subject || assignHomeworkMutation.isPending}
             >
               <option value="">-- Konu Seç --</option>
@@ -191,6 +229,20 @@ const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent }) => {
               onChange={e => setDesc(e.target.value)}
               disabled={assignHomeworkMutation.isPending}
             />
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Öncelik Seviyesi</label>
+            <select
+              className={styles.select}
+              value={priority}
+              onChange={e => setPriority(e.target.value)}
+              disabled={assignHomeworkMutation.isPending}
+            >
+              <option value="NORMAL">Normal</option>
+              <option value="HIGH">Yüksek (Kritik / Öncelikli)</option>
+              <option value="LOW">Düşük</option>
+            </select>
           </div>
 
           <Input 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useProgramCoaches, useRemoveProgramCoach, useTransferAdmin } from '../coachSchoolApi';
 import { useSendInvite } from '../coachApi';
 import Button from '../../../components/common/Button/Button';
@@ -8,6 +8,7 @@ import styles from './CoachProgramSettingsPage.module.css';
 
 const CoachProgramSettingsPage = () => {
   const { programId } = useParams();
+  const navigate = useNavigate();
   const { data: coaches, isLoading } = useProgramCoaches(programId);
   const removeCoach = useRemoveProgramCoach();
   const transferAdmin = useTransferAdmin();
@@ -24,7 +25,12 @@ const CoachProgramSettingsPage = () => {
     <div className={styles.container}>
       <h1 className={styles.title}>Program Ayarları</h1>
 
-      <Button onClick={handleInviteAssistant} isLoading={sendInvite.isPending}>Yardımcı Koç Davet Et</Button>
+      <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
+        <Button onClick={handleInviteAssistant} isLoading={sendInvite.isPending}>Yardımcı Koç Davet Et</Button>
+        <Button variant="outline" onClick={() => navigate(`/coach/programs/${programId}/audit-logs`)}>
+          İşlem Geçmişi (Denetim İzi)
+        </Button>
+      </div>
 
       <div className={styles.list}>
         {isLoading && <p>Yükleniyor...</p>}

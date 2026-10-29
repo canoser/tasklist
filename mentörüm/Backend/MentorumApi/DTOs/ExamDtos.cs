@@ -4,9 +4,20 @@ namespace MentorumApi.DTOs
 {
     public class ExamScoreDto
     {
-        public required string SubjectCode { get; set; }
-        public float Score { get; set; }
-        public float MaxScore { get; set; }
+        public Guid? Id { get; set; }
+        public Guid? SubjectId { get; set; }
+        public string? SubjectCode { get; set; }
+        public Guid? CurriculumTopicId { get; set; }
+        public string? SubjectName { get; set; }
+        public string? UnitName { get; set; }
+        public string? TopicName { get; set; }
+        public int? QuestionCount { get; set; }
+        public int? Correct { get; set; }
+        public int? Wrong { get; set; }
+        public int? Blank { get; set; }
+        public decimal? Net { get; set; }
+        public float? Score { get; set; }
+        public float? MaxScore { get; set; }
     }
 
     public class CreateExamResultRequest
@@ -23,6 +34,7 @@ namespace MentorumApi.DTOs
         public string? ExamName { get; set; }
         public float TotalNet { get; set; }
         public string? Notes { get; set; }
+        public string? ErrorReasons { get; set; }
 
         public List<ExamScoreDto> Scores { get; set; } = new();
     }

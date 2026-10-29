@@ -1,12 +1,13 @@
 import React, { useRef, useState } from 'react';
 import axios from 'axios';
-import { Clock, Paperclip, X, Image as ImageIcon, MessageSquare, Check, ChevronUp } from 'lucide-react';
+import { Clock, Paperclip, X, Image as ImageIcon, MessageSquare, Check, ChevronUp, Download, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useStudentHomework, useCompleteHomework, useRequestExtension } from '../studentApi';
 import { useCreateUploadUrl, useConfirmUpload } from '../../storage/storageApi';
 import { compressImage } from '../../../utils/imageCompressor';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import { formatDate } from '../../../utils/dateUtils';
+import { PriorityBadge, AssignedViaBadge } from '../../../components/common/HomeworkStatusBadges';
 import styles from './StudentHomework.module.css';
 
 // 00:00 saatlerini temizleyen akıllı tarih formatlayıcı (T09)
@@ -64,11 +65,20 @@ const HomeworkCard = ({ hw, onComplete, onRequestExtension }) => {
     <Card interactive className={styles.homeworkCard}>
       <div className={styles.cardHeader}>
         <div>
-          {(hw.subjectName || hw.topicName) && (
-            <span className={styles.subjectBadge}>
-              {hw.subjectName}{hw.topicName ? ` · ${hw.topicName}` : ''}
-            </span>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: '4px' }}>
+            {hw.courseName && (
+              <span className={styles.subjectBadge}>
+                {hw.courseName}
+              </span>
+            )}
+            {(hw.subjectName || hw.topicName) && (
+              <span className={styles.subjectBadge}>
+                {hw.subjectName}{hw.topicName ? ` · ${hw.topicName}` : ''}
+              </span>
+            )}
+            <PriorityBadge priority={hw.priority} />
+            <AssignedViaBadge assignedVia={hw.assignedVia} />
+          </div>
           <h3 className={styles.hwTitle}>{hw.snapshotTitle}</h3>
         </div>
         <span className={`${styles.statusBadge} ${hw.status === 'OVERDUE' ? styles.overdue : ''}`}>
@@ -77,6 +87,63 @@ const HomeworkCard = ({ hw, onComplete, onRequestExtension }) => {
       </div>
       
       <p className={styles.hwDesc}>{hw.snapshotDesc}</p>
+
+      {/* Öğretmen İnceleme Durumu & Notu */}
+      {hw.teacherStatus && (
+        <div style={{
+          padding: '8px 12px',
+          borderRadius: '8px',
+          fontSize: '0.8rem',
+          marginBottom: '10px',
+          backgroundColor: hw.teacherStatus === 'REVISE_REQUESTED' ? 'rgba(239, 68, 68, 0.08)' : 'rgba(16, 185, 129, 0.08)',
+          border: `1px solid ${hw.teacherStatus === 'REVISE_REQUESTED' ? 'rgba(239, 68, 68, 0.25)' : 'rgba(16, 185, 129, 0.25)'}`,
+          color: hw.teacherStatus === 'REVISE_REQUESTED' ? '#b91c1c' : '#065f46'
+        }}>
+          <div style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+            {hw.teacherStatus === 'REVISE_REQUESTED' ? <AlertCircle size={14} /> : <CheckCircle2 size={14} />}
+            <span>{hw.teacherStatus === 'REVISE_REQUESTED' ? 'Öğretmen İncelemesi: Düzeltme İstendi' : 'Öğretmen İncelemesi: Onaylandı'}</span>
+          </div>
+          {hw.teacherReviewNote && (
+            <div style={{ marginTop: '4px', fontSize: '0.78rem', color: 'var(--text-color-main)' }}>
+              {hw.teacherReviewNote}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Ekli Ödev Dosyaları (Öğretmen / Koç Tarafından Eklenen) */}
+      {hw.attachments && hw.attachments.length > 0 && (
+        <div style={{ marginBottom: '10px' }}>
+          <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-color-muted)', marginBottom: '4px' }}>
+            Ödev Ekleri & Materyaller:
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            {hw.attachments.map((att) => (
+              <a
+                key={att.id}
+                href={att.url}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '4px 8px',
+                  borderRadius: '6px',
+                  background: 'var(--bg-app)',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--color-primary)',
+                  fontSize: '0.75rem',
+                  textDecoration: 'none'
+                }}
+              >
+                <Download size={12} />
+                <span>{att.fileName || 'Dosya'}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
       
       <div className={styles.progressSection}>
         <div className={styles.progressHeader}>
@@ -202,6 +269,7 @@ const HomeworkCard = ({ hw, onComplete, onRequestExtension }) => {
               percentage,
               note,
               attachmentIds: attachments.length > 0 ? attachments.map((a) => a.id) : undefined,
+              expectedVersion: hw.version ?? 1, // F2: Eşzamanlılık versiyon kontrolü
             })}
           >
             {percentage === 100 ? 'Tamamla' : 'İlerlemeyi Kaydet'}

@@ -84,7 +84,7 @@ namespace MentorumApi.Endpoints
                 await conn.ExecuteAsync(@"
                     INSERT INTO refresh_tokens (id, user_id, token, expires_at)
                     VALUES (@Id, @UserId, @Token, @ExpiresAt)",
-                    new { Id = Guid.NewGuid(), UserId = user.Id, Token = refreshToken, ExpiresAt = DateTime.UtcNow.AddDays(7) });
+                    new { Id = Guid.NewGuid(), UserId = user.Id, Token = HashRefreshToken(refreshToken), ExpiresAt = DateTime.UtcNow.AddDays(7) });
 
                 ctx.Response.Cookies.Append("refresh_token", refreshToken, new CookieOptions {
                     HttpOnly = true,
@@ -125,13 +125,14 @@ namespace MentorumApi.Endpoints
                     return Results.Json(new { error = "Onay bekleniyor.", code = "PENDING_APPROVAL" }, statusCode: 403);
                 if (user.ApprovalStatus == "REJECTED")
                     return Results.Json(new { error = "Basvurunuz reddedildi.", code = "COACH_REJECTED" }, statusCode: 403);
-var token = jwt.GenerateAccessToken(user);
+
+                var token = jwt.GenerateAccessToken(user);
                 var refreshToken = jwt.GenerateRefreshToken();
 
                 await conn.ExecuteAsync(@"
                     INSERT INTO refresh_tokens (id, user_id, token, expires_at)
                     VALUES (@Id, @UserId, @Token, @ExpiresAt)",
-                    new { Id = Guid.NewGuid(), UserId = user.Id, Token = refreshToken, ExpiresAt = DateTime.UtcNow.AddDays(7) });
+                    new { Id = Guid.NewGuid(), UserId = user.Id, Token = HashRefreshToken(refreshToken), ExpiresAt = DateTime.UtcNow.AddDays(7) });
 
                 ctx.Response.Cookies.Append("refresh_token", refreshToken, new CookieOptions {
                     HttpOnly = true,
@@ -157,11 +158,13 @@ var token = jwt.GenerateAccessToken(user);
                 var inputToken = req.RefreshToken ?? ctx.Request.Cookies["refresh_token"];
                 if (string.IsNullOrEmpty(inputToken)) return Results.Unauthorized();
 
+                var tokenHash = HashRefreshToken(inputToken);
+
                 using var conn = db.CreateConnection();
                 
                 var tokenRecord = await conn.QuerySingleOrDefaultAsync<RefreshTokenQueryModel>(
-                    "SELECT user_id AS UserId, expires_at AS ExpiresAt FROM refresh_tokens WHERE token = @Token AND is_revoked = 0", 
-                    new { Token = inputToken });
+                    "SELECT user_id AS UserId, expires_at AS ExpiresAt FROM refresh_tokens WHERE (token = @TokenHash OR token = @RawToken) AND is_revoked = 0", 
+                    new { TokenHash = tokenHash, RawToken = inputToken });
 
                 if (tokenRecord == null || tokenRecord.ExpiresAt < DateTime.UtcNow)
                     return Results.Unauthorized();
@@ -183,19 +186,19 @@ var token = jwt.GenerateAccessToken(user);
                 using var tx = conn.BeginTransaction();
                 try
                 {
-                    // Revoke old
-                    var affected = await conn.ExecuteAsync("UPDATE refresh_tokens SET is_revoked = 1 WHERE token = @Token AND is_revoked = 0", new { Token = inputToken }, tx);
+                    // Revoke old (both hashed and raw supported for smooth transition)
+                    var affected = await conn.ExecuteAsync("UPDATE refresh_tokens SET is_revoked = 1 WHERE (token = @TokenHash OR token = @RawToken) AND is_revoked = 0", new { TokenHash = tokenHash, RawToken = inputToken }, tx);
                     if (affected == 0)
                     {
                         tx.Rollback();
                         return Results.Unauthorized();
                     }
 
-                    // Insert new
+                    // Insert new with SHA-256 hash (E3)
                     await conn.ExecuteAsync(@"
                         INSERT INTO refresh_tokens (id, user_id, token, expires_at)
                         VALUES (@Id, @UserId, @Token, @ExpiresAt)",
-                        new { Id = Guid.NewGuid(), UserId = user.Id, Token = newRefreshToken, ExpiresAt = DateTime.UtcNow.AddDays(7) }, tx);
+                        new { Id = Guid.NewGuid(), UserId = user.Id, Token = HashRefreshToken(newRefreshToken), ExpiresAt = DateTime.UtcNow.AddDays(7) }, tx);
 
                     tx.Commit();
                 }
@@ -225,8 +228,9 @@ var token = jwt.GenerateAccessToken(user);
                 var inputToken = ctx.Request.Cookies["refresh_token"];
                 if (!string.IsNullOrEmpty(inputToken))
                 {
+                    var tokenHash = HashRefreshToken(inputToken);
                     using var conn = db.CreateConnection();
-                    await conn.ExecuteAsync("UPDATE refresh_tokens SET is_revoked = 1 WHERE token = @Token", new { Token = inputToken });
+                    await conn.ExecuteAsync("UPDATE refresh_tokens SET is_revoked = 1 WHERE (token = @TokenHash OR token = @RawToken)", new { TokenHash = tokenHash, RawToken = inputToken });
                 }
                 ctx.Response.Cookies.Delete("refresh_token", new CookieOptions { HttpOnly = true, Secure = true, SameSite = SameSiteMode.Strict, Path = "/" });
                 return Results.Ok(new { message = "Çıkış yapıldı" });
@@ -368,13 +372,14 @@ var token = jwt.GenerateAccessToken(user);
                     return Results.Json(new { error = "Onay bekleniyor.", code = "PENDING_APPROVAL" }, statusCode: 403);
                 if (user.ApprovalStatus == "REJECTED")
                     return Results.Json(new { error = "Basvurunuz reddedildi.", code = "COACH_REJECTED" }, statusCode: 403);
-var token = jwt.GenerateAccessToken(user);
+
+                var token = jwt.GenerateAccessToken(user);
                 var refreshToken = jwt.GenerateRefreshToken();
 
                 await conn.ExecuteAsync(@"
                     INSERT INTO refresh_tokens (id, user_id, token, expires_at)
                     VALUES (@Id, @UserId, @Token, @ExpiresAt)",
-                    new { Id = Guid.NewGuid(), UserId = user.Id, Token = refreshToken, ExpiresAt = DateTime.UtcNow.AddDays(7) });
+                    new { Id = Guid.NewGuid(), UserId = user.Id, Token = HashRefreshToken(refreshToken), ExpiresAt = DateTime.UtcNow.AddDays(7) });
 
                 ctx.Response.Cookies.Append("refresh_token", refreshToken, new CookieOptions {
                     HttpOnly = true,
@@ -390,6 +395,7 @@ var token = jwt.GenerateAccessToken(user);
                     User = new UserDto { Id = user.Id, Email = user.Email, Role = user.Role, FullName = user.FullName, AvatarUrl = user.AvatarUrl, IsAdmin = user.IsAdmin }
                 });
             });
+
             group.MapPost("/forgot-password", async ([FromBody] ForgotPasswordRequest req, [FromServices] DbConnectionFactory db, [FromServices] IEmailService emailService, [FromServices] IMemoryCache cache) =>
             {
                 if (string.IsNullOrEmpty(req.Email)) return Results.BadRequest(new { error = "Eksik bilgi" });
@@ -505,6 +511,12 @@ var token = jwt.GenerateAccessToken(user);
                 return Results.Ok(new { message = "Tema güncellendi." });
             });
 
+        }
+
+        private static string HashRefreshToken(string rawToken)
+        {
+            var bytes = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(rawToken));
+            return Convert.ToHexStringLower(bytes);
         }
 
         private static bool IsSuperAdminEmail(string email)

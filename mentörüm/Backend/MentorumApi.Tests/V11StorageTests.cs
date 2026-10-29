@@ -92,6 +92,7 @@ namespace MentorumApi.Tests
 
     public class FakeStorageService : IStorageService
     {
+        public bool IsConfigured => true;
         public string GenerateUploadUrl(string objectKey, string contentType, TimeSpan expiresIn) => "https://fake.example/" + objectKey;
         public string GenerateDownloadUrl(string objectKey, TimeSpan expiresIn) => "https://fake.example/" + objectKey;
         public Task DeleteFileAsync(string objectKey) => Task.CompletedTask;

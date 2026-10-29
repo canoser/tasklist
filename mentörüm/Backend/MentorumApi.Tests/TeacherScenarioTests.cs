@@ -13,7 +13,7 @@ namespace MentorumApi.Tests
 {
     public class TestTeacherAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
-        public const string Scheme = "TestTeacherScheme";
+        public new const string Scheme = "TestTeacherScheme";
 
         public TestTeacherAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder)
             : base(options, logger, encoder) { }

@@ -76,8 +76,8 @@ namespace MentorumApi.Data
             return await connection.QueryAsync<CurriculumUnitDto>(sql, new { SubjectId = subjectId, Grade = grade });
         }
 
-        // Öğrencinin sınıfına göre müfredat + tamamlanma durumu (Aşama 1).
-        // Tamamlanma, ödevlerden (curriculum_topic_id + DONE/LATE_DONE) türetilir; veri yoksa salt konu listesi.
+        // Öğrencinin sınıfına göre müfredat + tamamlanma durumu (Aşama 1 & V15 B6).
+        // Tamamlanma ve ödev durumu ödevlerden; LastNet ve AvgSuccessRate exam_scores tablosundan hesaplanır.
         public async Task<IEnumerable<StudentCurriculumTopicDto>> GetStudentCurriculumAsync(Guid studentId)
         {
             using var connection = _connectionFactory.CreateConnection();
@@ -85,16 +85,62 @@ namespace MentorumApi.Data
             var gradeText = grade?.ToString();
 
             return await connection.QueryAsync<StudentCurriculumTopicDto>(@"
-                SELECT ct.id AS Id, s.name AS SubjectName, ct.grade AS Grade, ct.curriculum_type AS CurriculumType,
-                       ct.unit_number AS UnitNumber, ct.unit_name AS UnitName, ct.topic_number AS TopicNumber,
+                SELECT ct.id AS Id,
+                       ct.subject_id AS SubjectId,
+                       s.name AS SubjectName,
+                       ct.grade AS Grade,
+                       ct.curriculum_type AS CurriculumType,
+                       ct.unit_number AS UnitNumber,
+                       ct.unit_name AS UnitName,
+                       ct.topic_number AS TopicNumber,
                        ct.topic_name AS TopicName,
-                       EXISTS (
-                           SELECT 1 FROM homework_assignments ha
-                           WHERE ha.student_id = @StudentId AND ha.curriculum_topic_id = ct.id
-                             AND ha.status IN ('DONE','LATE_DONE')
-                       ) AS IsCompleted
+                       COALESCE(hw.is_completed, false) AS IsCompleted,
+                       COALESCE(hw.homework_status, 'UNASSIGNED') AS HomeworkStatus,
+                       COALESCE(hw.assigned_count, 0) AS AssignedCount,
+                       COALESCE(hw.completed_count, 0) AS CompletedCount,
+                       es.last_net AS LastNet,
+                       es.avg_success_rate AS AvgSuccessRate
                 FROM curriculum_topics ct
                 JOIN subjects s ON s.id = ct.subject_id
+                LEFT JOIN LATERAL (
+                    SELECT
+                        COUNT(1) AS assigned_count,
+                        COUNT(CASE WHEN ha.status IN ('DONE', 'LATE_DONE') THEN 1 END) AS completed_count,
+                        (COUNT(CASE WHEN ha.status IN ('DONE', 'LATE_DONE') THEN 1 END) > 0) AS is_completed,
+                        CASE
+                            WHEN COUNT(CASE WHEN ha.status IN ('DONE', 'LATE_DONE') THEN 1 END) > 0 THEN 'DONE'
+                            WHEN COUNT(CASE WHEN ha.status = 'OVERDUE' OR (ha.status = 'PENDING' AND ha.due_date < NOW()) THEN 1 END) > 0 THEN 'OVERDUE'
+                            WHEN COUNT(CASE WHEN ha.status = 'PENDING' THEN 1 END) > 0 THEN 'PENDING'
+                            ELSE 'UNASSIGNED'
+                        END AS homework_status
+                    FROM homework_assignments ha
+                    WHERE ha.student_id = @StudentId AND ha.curriculum_topic_id = ct.id
+                ) hw ON true
+                LEFT JOIN LATERAL (
+                    SELECT
+                        (
+                            SELECT sc.net
+                            FROM exam_scores sc
+                            JOIN exam_results er ON er.id = sc.exam_id
+                            WHERE er.student_id = @StudentId AND sc.curriculum_topic_id = ct.id AND sc.net IS NOT NULL
+                            ORDER BY er.exam_date DESC, er.created_at DESC
+                            LIMIT 1
+                        ) AS last_net,
+                        (
+                            SELECT ROUND(AVG(
+                                CASE
+                                    WHEN (COALESCE(sc.correct_count, 0) + COALESCE(sc.wrong_count, 0) + COALESCE(sc.blank_count, 0)) > 0
+                                    THEN (sc.correct_count::numeric / (sc.correct_count + sc.wrong_count + sc.blank_count)::numeric) * 100.0
+                                    WHEN sc.max_score > 0 AND sc.score IS NOT NULL
+                                    THEN (sc.score::numeric / sc.max_score::numeric) * 100.0
+                                    ELSE NULL
+                                END
+                            ), 1)
+                            FROM exam_scores sc
+                            JOIN exam_results er ON er.id = sc.exam_id
+                            WHERE er.student_id = @StudentId AND sc.curriculum_topic_id = ct.id
+                        ) AS avg_success_rate
+                ) es ON true
                 WHERE ct.is_active = 1 AND (@GradeText IS NULL OR ct.grade = @GradeText)
                 ORDER BY s.name, ct.sort_order",
                 new { StudentId = studentId, GradeText = gradeText });
@@ -228,7 +274,7 @@ namespace MentorumApi.Data
                 }
 
                 var type = string.Equals(t.Type?.Trim(), "OLD", StringComparison.OrdinalIgnoreCase) ? "OLD" : "NEW";
-                var unit = (t.Unit ?? 0) > 0 ? t.Unit.Value : 1;
+                var unit = t.Unit is > 0 ? t.Unit.Value : 1;
                 var topicNo = string.IsNullOrWhiteSpace(t.Topic) ? $"{unit}.1" : t.Topic.Trim();
 
                 sortCounter.TryGetValue(subjectId, out var seq);

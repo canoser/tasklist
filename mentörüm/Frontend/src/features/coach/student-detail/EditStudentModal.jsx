@@ -9,6 +9,12 @@ export default function EditStudentModal({ open, onClose, student, onSubmit }) {
     const [lastName, setLastName] = useState('');
     const [classLevel, setClassLevel] = useState('');
     const [targetExam, setTargetExam] = useState('');
+    const [phone, setPhone] = useState('');
+    const [targetUniversity, setTargetUniversity] = useState('');
+    const [targetDepartment, setTargetDepartment] = useState('');
+    const [monthlyMilestone, setMonthlyMilestone] = useState('');
+    const [weeklyTargetMinutes, setWeeklyTargetMinutes] = useState('');
+    const [weeklyTargetQuestions, setWeeklyTargetQuestions] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState('');
 
@@ -21,6 +27,12 @@ export default function EditStudentModal({ open, onClose, student, onSubmit }) {
             setLastName(ln);
             setClassLevel(student.grade ? String(student.grade) : '');
             setTargetExam(student.track || '');
+            setPhone(student.phone || '');
+            setTargetUniversity(student.targetUniversity || '');
+            setTargetDepartment(student.targetDepartment || '');
+            setMonthlyMilestone(student.monthlyMilestone || '');
+            setWeeklyTargetMinutes(student.weeklyTargetMinutes != null ? String(student.weeklyTargetMinutes) : '');
+            setWeeklyTargetQuestions(student.weeklyTargetQuestions != null ? String(student.weeklyTargetQuestions) : '');
             setSubmitError('');
         }
     }, [student, open]);
@@ -36,6 +48,12 @@ export default function EditStudentModal({ open, onClose, student, onSubmit }) {
                 lastName: lastName.trim(),
                 classLevel: classLevel ? parseInt(classLevel, 10) : undefined,
                 targetExam: targetExam || undefined,
+                phone: phone.trim() || undefined,
+                targetUniversity: targetUniversity.trim() || undefined,
+                targetDepartment: targetDepartment.trim() || undefined,
+                monthlyMilestone: monthlyMilestone.trim() || undefined,
+                weeklyTargetMinutes: weeklyTargetMinutes ? parseInt(weeklyTargetMinutes, 10) : undefined,
+                weeklyTargetQuestions: weeklyTargetQuestions ? parseInt(weeklyTargetQuestions, 10) : undefined,
             });
             onClose();
         } catch (err) {
@@ -94,6 +112,53 @@ export default function EditStudentModal({ open, onClose, student, onSubmit }) {
                             <option value="ORTAOKUL">LGS / Ortaokul</option>
                         </select>
                     </div>
+                </div>
+
+                <div className={styles.levelRow}>
+                    <Input 
+                        label="Telefon Numarası"
+                        placeholder="Örn: 0555 123 4567" 
+                        value={phone} 
+                        onChange={(e) => setPhone(e.target.value)} 
+                    />
+                    <Input 
+                        label="Aylık Dönüm Noktası (Milestone)"
+                        placeholder="Örn: Limit-Türev bitirilecek" 
+                        value={monthlyMilestone} 
+                        onChange={(e) => setMonthlyMilestone(e.target.value)} 
+                    />
+                </div>
+
+                <div className={styles.levelRow}>
+                    <Input 
+                        label="Hedef Üniversite"
+                        placeholder="Örn: ODTÜ" 
+                        value={targetUniversity} 
+                        onChange={(e) => setTargetUniversity(e.target.value)} 
+                    />
+                    <Input 
+                        label="Hedef Bölüm"
+                        placeholder="Örn: Bilgisayar Mühendisliği" 
+                        value={targetDepartment} 
+                        onChange={(e) => setTargetDepartment(e.target.value)} 
+                    />
+                </div>
+
+                <div className={styles.levelRow}>
+                    <Input 
+                        label="Haftalık Hedef Çalışma (Dakika)"
+                        placeholder="Örn: 1200" 
+                        value={weeklyTargetMinutes} 
+                        onChange={(e) => setWeeklyTargetMinutes(e.target.value)} 
+                        type="number" 
+                    />
+                    <Input 
+                        label="Haftalık Hedef Soru Adedi"
+                        placeholder="Örn: 500" 
+                        value={weeklyTargetQuestions} 
+                        onChange={(e) => setWeeklyTargetQuestions(e.target.value)} 
+                        type="number" 
+                    />
                 </div>
 
                 {submitError && (

@@ -24,6 +24,9 @@ self.addEventListener('fetch', (event) => {
   // Sadece HTTP/HTTPS protokollerine izin ver (chrome-extension gibi eklentileri cache'lemeye çalışma)
   if (!url.protocol.startsWith('http')) return;
 
+  // Cross-origin istekler (CDN, dış fontlar vs.) doğrudan ağa bırakılır, SW araya girmez.
+  if (url.origin !== self.location.origin) return;
+
   // API istekleri ve GET dışı istekler: network-only (hiç cache'e yazılmaz).
   if (url.pathname.startsWith('/api/')) return;
   if (request.method !== 'GET') return;

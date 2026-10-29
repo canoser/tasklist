@@ -31,6 +31,31 @@ namespace MentorumApi.DTOs
         public DateTime? CoachingStartDate { get; set; }
         public string? TargetDepartment { get; set; }
         public float? TargetScore { get; set; }
+        public string? Phone { get; set; }
+        public Guid? GroupId { get; set; }
+        public string? MonthlyMilestone { get; set; }
+        public int? WeeklyTargetMinutes { get; set; }
+        public int? WeeklyTargetQuestions { get; set; }
+        public List<CoachStudentParentDto> Parents { get; set; } = new();
+        public List<PendingParentInviteDto> PendingParentInvites { get; set; } = new();
+        public List<StudentExamDto> ExamResults { get; set; } = new();
+    }
+
+    public class CoachStudentParentDto
+    {
+        public Guid Id { get; set; }
+        public string FullName { get; set; } = string.Empty;
+        public string? Email { get; set; }
+        public string? Phone { get; set; }
+        public string? Relation { get; set; }
+    }
+
+    public class PendingParentInviteDto
+    {
+        public Guid Id { get; set; }
+        public string Email { get; set; } = string.Empty;
+        public string Code { get; set; } = string.Empty;
+        public DateTime? ExpiresAt { get; set; }
     }
 
     public class StudentNoteDto
@@ -77,6 +102,8 @@ namespace MentorumApi.DTOs
         public string? ExamType { get; set; }
         public string? ExamName { get; set; }
         public float? TotalNet { get; set; }
+        public string? ErrorReasons { get; set; }
+        public List<ExamScoreDto> Scores { get; set; } = new();
     }
 
     public class StudentGoalDto
@@ -96,6 +123,7 @@ namespace MentorumApi.DTOs
     public class StudentCurriculumTopicDto
     {
         public Guid Id { get; set; }
+        public Guid SubjectId { get; set; }
         public string? SubjectName { get; set; }
         public string? Grade { get; set; }
         public string? CurriculumType { get; set; }
@@ -104,6 +132,11 @@ namespace MentorumApi.DTOs
         public string? TopicNumber { get; set; }
         public string? TopicName { get; set; }
         public bool IsCompleted { get; set; }
+        public string HomeworkStatus { get; set; } = "UNASSIGNED";
+        public int AssignedCount { get; set; }
+        public int CompletedCount { get; set; }
+        public decimal? LastNet { get; set; }
+        public decimal? AvgSuccessRate { get; set; }
     }
 
     public class ParentPermissionsDto
@@ -165,5 +198,12 @@ namespace MentorumApi.DTOs
         public string? LastName { get; set; }
         public int? ClassLevel { get; set; }
         public string? TargetExam { get; set; }
+        public string? Phone { get; set; }
+        public string? TargetUniversity { get; set; }
+        public string? TargetDepartment { get; set; }
+        public float? TargetScore { get; set; }
+        public string? MonthlyMilestone { get; set; }
+        public int? WeeklyTargetMinutes { get; set; }
+        public int? WeeklyTargetQuestions { get; set; }
     }
 }

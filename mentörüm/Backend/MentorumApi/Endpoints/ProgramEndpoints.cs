@@ -118,6 +118,44 @@ namespace MentorumApi.Endpoints
                 };
             });
 
+            // B1: Koç için program denetim izi (Audit Logs)
+            group.MapGet("/{id:guid}/audit-logs", async (
+                Guid id,
+                [FromQuery] int? limit,
+                [FromServices] AuditLogRepository auditRepo,
+                [FromServices] DbConnectionFactory db,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = GetCoachId(user);
+                if (coachId == null) return Results.Unauthorized();
+
+                using var conn = db.CreateConnection();
+                var isMember = await conn.ExecuteScalarAsync<int?>(
+                    "SELECT 1 FROM program_coaches WHERE program_id = @ProgramId AND coach_id = @CoachId",
+                    new { ProgramId = id, CoachId = coachId.Value });
+
+                if (isMember == null) return Results.Forbid();
+
+                var logs = await auditRepo.GetByProgramAsync(id, limit ?? 100);
+                return Results.Ok(logs);
+            });
+
+            // B6: Müfredat ilerleme özeti (alias)
+            group.MapGet("/{id:guid}/curriculum/progress", async (
+                Guid id,
+                [FromQuery] Guid studentId,
+                [FromServices] ProgramRepository programRepo,
+                [FromServices] CurriculumRepository curriculumRepo,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = GetCoachId(user);
+                if (coachId == null) return Results.Unauthorized();
+                var p = await programRepo.GetProgramAsync(id, coachId.Value);
+                if (p == null) return Results.NotFound(new { error = "Program bulunamadı." });
+                var progress = await curriculumRepo.GetStudentCurriculumAsync(studentId);
+                return Results.Ok(progress);
+            });
+
             // --- Süper yönetici ---
             var admin = app.MapGroup("/api/v1/admin").RequireAuthorization("RequireAdminRole");
 
@@ -272,4 +310,3 @@ namespace MentorumApi.Endpoints
         public string? NewPassword { get; set; }
     }
 }
-

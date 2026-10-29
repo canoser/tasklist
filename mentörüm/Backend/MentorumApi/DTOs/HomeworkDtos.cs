@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace MentorumApi.DTOs
@@ -33,6 +35,18 @@ namespace MentorumApi.DTOs
 
         [Required]
         public DateTime DueDate { get; set; }
+
+        public string? Priority { get; set; } = "NORMAL";
+    }
+
+    public class HomeworkAttachmentDto
+    {
+        public Guid Id { get; set; }
+        public Guid HomeworkId { get; set; }
+        public string OriginalName { get; set; } = "";
+        public string ContentType { get; set; } = "";
+        public long SizeBytes { get; set; }
+        public string? ObjectKey { get; set; }
     }
 
     public class CompleteHomeworkRequest
@@ -40,6 +54,7 @@ namespace MentorumApi.DTOs
         public int CompletionPercentage { get; set; } = 100;
         public string? Note { get; set; }
         public List<Guid>? AttachmentIds { get; set; }
+        public int? ExpectedVersion { get; set; }
     }
 
     public class HomeworkItemDto
@@ -55,5 +70,10 @@ namespace MentorumApi.DTOs
         public string? TopicName { get; set; }
         public string? StudentNote { get; set; }
         public string? CourseType { get; set; }
+        public string? CourseName { get; set; }
+        public string? AssignedVia { get; set; }
+        public string? Priority { get; set; }
+        public List<HomeworkAttachmentDto> Attachments { get; set; } = new();
+        public int Version { get; set; } = 1;
     }
 }

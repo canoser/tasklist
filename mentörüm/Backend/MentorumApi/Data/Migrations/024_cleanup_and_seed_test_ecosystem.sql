@@ -50,7 +50,9 @@ BEGIN
     SELECT id INTO v_coach_id FROM users WHERE LOWER(email) = 'canoser@gmail.com';
 
     IF v_coach_id IS NULL THEN
-        RAISE EXCEPTION 'canoser@gmail.com kullanıcısı veritabanında bulunamadı!';
+        -- canoser@gmail.com yoksa (ör. temiz test ortamı), bu veri-seed migration'ı atlanır.
+        -- Bu migration idempotent'tir: üretimde zaten uygulandığı için tekrar çalışmaz.
+        RETURN;
     END IF;
 
     -- 2. Eski verileri temizle

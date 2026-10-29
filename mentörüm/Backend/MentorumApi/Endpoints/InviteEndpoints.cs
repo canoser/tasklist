@@ -25,6 +25,18 @@ namespace MentorumApi.Endpoints
                 var coachIdStr = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                 if (!Guid.TryParse(coachIdStr, out var coachId)) return Results.Unauthorized();
 
+                if (!string.IsNullOrWhiteSpace(req.Role))
+                {
+                    req.Role = req.Role.Trim().ToUpperInvariant() switch
+                    {
+                        "STUDENT" => "Student",
+                        "PARENT" => "Parent",
+                        "TEACHER" => "Teacher",
+                        "COACH" => "Coach",
+                        _ => req.Role.Trim()
+                    };
+                }
+
                 if (req.Role != "Student" && req.Role != "Parent" && req.Role != "Teacher" && req.Role != "Coach")
                     return Results.BadRequest(new { error = "Geçersiz rol. Student, Parent, Teacher veya Coach olabilir." });
 
@@ -101,6 +113,10 @@ namespace MentorumApi.Endpoints
                                 directAdded = true 
                             });
                         }
+                    }
+                    else if (req.Role == "Parent" && existingUser.Role == "Parent")
+                    {
+                        // Mevcut veli için 2. öğrenci daveti: Conflict fırlatma, davet akışına devam et (token üretilir)
                     }
                     else
                     {
@@ -236,6 +252,16 @@ namespace MentorumApi.Endpoints
                         // Re-invite: mevcut kullanıcının şifresini sıfırla (yeni kayıt açma).
                         var newHash = BCrypt.Net.BCrypt.HashPassword(req.Password);
                         await conn.ExecuteAsync("UPDATE users SET password_hash = @Hash, updated_at = NOW() WHERE id = @Id", new { Hash = newHash, Id = userId }, tx);
+
+                        if (invite.Role == "Parent" && invite.RelatedId != null)
+                        {
+                            await conn.ExecuteAsync("INSERT INTO parents (id) VALUES (@Id) ON CONFLICT (id) DO NOTHING", new { Id = userId }, tx);
+                            await conn.ExecuteAsync(@"
+                                INSERT INTO student_parents (id, student_id, parent_id, parent_email, is_accepted, can_view_exams, can_view_homework, can_view_calendar, can_view_study_stats, can_view_payments)
+                                VALUES (@Id, @StudentId, @ParentId, @ParentEmail, 1, 1, 1, 1, 1, 0)
+                                ON CONFLICT DO NOTHING",
+                                new { Id = Guid.NewGuid(), StudentId = invite.RelatedId, ParentId = userId, ParentEmail = user.Email }, tx);
+                        }
                     }
                     else
                     {
@@ -254,14 +280,15 @@ namespace MentorumApi.Endpoints
                     }
                     else if (user.Role == "Parent")
                     {
-                        await conn.ExecuteAsync("INSERT INTO parents (id) VALUES (@Id)", new { Id = userId }, tx);
+                        await conn.ExecuteAsync("INSERT INTO parents (id) VALUES (@Id) ON CONFLICT (id) DO NOTHING", new { Id = userId }, tx);
                         
                         // Öğrenci - Veli ilişkisini kur
                         if (invite.RelatedId != null)
                         {
                             await conn.ExecuteAsync(@"
-                                INSERT INTO student_parents (id, student_id, parent_id, parent_email, is_accepted)
-                                VALUES (@Id, @StudentId, @ParentId, @ParentEmail, 1)",
+                                INSERT INTO student_parents (id, student_id, parent_id, parent_email, is_accepted, can_view_exams, can_view_homework, can_view_calendar, can_view_study_stats, can_view_payments)
+                                VALUES (@Id, @StudentId, @ParentId, @ParentEmail, 1, 1, 1, 1, 1, 0)
+                                ON CONFLICT DO NOTHING",
                                 new { Id = Guid.NewGuid(), StudentId = invite.RelatedId, ParentId = userId, ParentEmail = user.Email }, tx);
                         }
                     }

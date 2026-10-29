@@ -15,12 +15,13 @@ export const useCompleteHomework = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ homeworkId, percentage = 100, note = null, attachmentIds = null }) => {
-      // Backend'deki endpoint'e POST isteği yapıyoruz.
+    mutationFn: async ({ homeworkId, percentage = 100, note = null, attachmentIds = null, expectedVersion = 1 }) => {
+      // Backend'deki endpoint'e POST isteği yapıyoruz (V15: ExpectedVersion eklendi).
       const response = await apiClient.post(`/homework/assignments/${homeworkId}/complete`, {
         CompletionPercentage: percentage,
         Note: note,
-        AttachmentIds: attachmentIds
+        AttachmentIds: attachmentIds,
+        ExpectedVersion: expectedVersion
       });
       return response;
     },
@@ -48,9 +49,14 @@ export const useCompleteHomework = () => {
       // Rollback fonksiyonu döndür
       return { previousHomework };
     },
-    onError: (err, homeworkId, context) => {
+    onError: (err, variables, context) => {
       // Hata olursa eski haline döndür
-      queryClient.setQueryData(['student', 'homework'], context.previousHomework);
+      if (context?.previousHomework) {
+        queryClient.setQueryData(['student', 'homework'], context.previousHomework);
+      }
+      if (err?.response?.status === 409 || err?.response?.data?.code === 'CONCURRENCY_CONFLICT') {
+        alert('Bu ödev başka bir sekmede veya öğretmeniniz tarafından güncellendi. Sayfa yenileniyor...');
+      }
     },
     onSettled: () => {
       // İşlem bitince (başarılı/başarısız) sunucudan en güncel veriyi tekrar çek
@@ -280,3 +286,36 @@ export const useRequestExtension = () => {
   });
 };
 
+// V16: Öğrenci Koçluk Araçları (Yalnızca Alışkanlıklar & OKR Hedefleri)
+export const useStudentCoachingTools = () => {
+  return useQuery({
+    queryKey: ['student', 'coaching-tools'],
+    queryFn: async () => (await apiClient.get('/student/coaching-tools')) || { habitsData: '[]' },
+  });
+};
+
+export const useToggleStudentHabit = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data) => apiClient.patch('/student/coaching-tools/habits', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student', 'coaching-tools'] });
+    },
+  });
+};
+
+// V16: Öğrenci Haftalık Program / Slotları
+export const useStudentSchedule = () => {
+  return useQuery({
+    queryKey: ['student', 'schedule'],
+    queryFn: async () => (await apiClient.get('/student/schedule')) || [],
+  });
+};
+
+// V16: Öğrenciye Ait Yüklemeler / Dosyalar
+export const useStudentUploads = () => {
+  return useQuery({
+    queryKey: ['student', 'uploads'],
+    queryFn: async () => (await apiClient.get('/uploads')) || [],
+  });
+};

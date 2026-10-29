@@ -244,8 +244,8 @@ namespace MentorumApi.Data
                     UNION
                     SELECT sgm.student_id FROM course_groups cg
                     JOIN courses c ON c.id = cg.course_id
-                    JOIN student_group_members sgm ON sgm.group_id = cg.group_id
-                    WHERE c.teacher_id = @TeacherId AND c.program_id = @ProgramId
+                    JOIN student_group_members sgm ON sgm.group_id = cg.group_id AND sgm.is_active = 1
+                    WHERE c.teacher_id = @TeacherId AND c.program_id = @ProgramId AND c.is_active = 1
                 ) t",
                 new { TeacherId = teacherId, ProgramId = programId });
 

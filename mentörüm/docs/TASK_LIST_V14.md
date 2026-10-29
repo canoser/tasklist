@@ -1,6 +1,6 @@
 # 🧭 Mentörüm — V14 Görev Listesi (Canlı Hata Düzeltmeleri: Grup / Öğretmen / Depolama / Öğrenci Düzenleme)
 
-> **Tarih:** 22 Ekim 2026 · **Hazırlayan:** DeepSeek · **İnceleyen & Ek Çözümler:** Gemini (Antigravity)
+> **Tarih:** 22 Ekim 2026 · **Uygulayıcı:** DeepSeek - Cline · **İnceleyen & Ek Çözümler:** Gemini (Antigravity)
 > **Amaç:** Canlı ortamda (`mentorum.dersmatris.com`) konsol loglarından doğrulanan kritik hataları düzeltmek; koç panelindeki grup üye yönetimi, öğretmen kartı, dosya yükleme ve öğrenci düzenleme akışlarını onarmak.
 > **Sıralama:** Backend (SQL + exception/CORS) → Frontend → Test.
 > **Kaynak:** `docs/console/*.txt` konsol logları + satır satır kod incelemesi.
@@ -67,7 +67,7 @@
 - **Dosya:** `StudentRepository.cs` (+ DTO) + `StudentFlexibilityEndpoints.cs`.
 - **Yap:** `UpdateStudentAsync(programId, studentId, req)` (ad, sınıf, alan/track, hedef sınav) + `PUT /api/v1/students/{studentId}` (IDOR: `ProgramAccessGuard.EnsureCoachOwnsStudentAsync`).
 - **Kabul:** Koç öğrencinin sınıf/alan/hedef bilgisini güncelleyebilir.
-- 🔍 **Gemini Notu / Veri Bütünlüğü:** Öğrencinin Ad Soyad bilgisi `users.full_name`, sınıf ve alan bilgisi ise `students` tablosundadır (`grade`, `track`, `target_exam`). Bu güncelleme işlemi **`using var tx = conn.BeginTransaction()`** içinde çift tablolu atomik işlem olarak çalışmalıdır.
+- 🔍 **Gemini Notu / Veri Bütünlüğü:** Öğrencinin Ad Soyad bilgisi `users.full_name`, sınıf ve alan bilgisi ise `students` tablosundadır (`grade`, `track` — ayrı bir `target_exam` kolonu YOK, sınav tipi `track`'te tutulur). Bu güncelleme işlemi **`using var tx = conn.BeginTransaction()`** içinde çift tablolu atomik işlem olarak çalışmalıdır.
 
 ---
 
@@ -93,8 +93,13 @@
 ---
 
 ## 3. Test & Doğrulama
-- [x] `dotnet build` (0 hata, 0 uyarı ile başarılı).
+- [x] `dotnet build` (0 hata, 7 uyarı — mevcut nullable/CS0108, V14 ile ilgisiz).
+- [x] `dotnet test` (Docker açıkken 67/67 başarılı).
 - [x] `npm run build` (0 hata ile başarılı).
+
+> 🔍 **Test doğrulaması sırasında eklenen 2 düzeltme (DeepSeek - Cline):**
+> 1. `V11StorageTests.cs` → `FakeStorageService`'e B4'te eklenen `IsConfigured => true` eklendi (test derleme hatası CS0535 giderildi).
+> 2. `024_cleanup_and_seed_test_ecosystem.sql` → `canoser@gmail.com` yoksa `RAISE EXCEPTION` yerine `RETURN` (idempotent atlama); temiz test DB'sinde fixture patlaması giderildi.
 - [ ] Manuel: grup detayında üyeler görünür; öğrenciyi gruba alınca sayı artar; öğretmen kartına tıklayınca detay açılır; dosya yükleme çalışır; öğrenci düzenlenir.
 
 ---

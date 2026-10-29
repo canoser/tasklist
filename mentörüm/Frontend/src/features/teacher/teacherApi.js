@@ -85,6 +85,7 @@ export const useReviewTeacherHomework = () => {
   return useMutation({
     mutationFn: ({ courseId, assignmentId, data }) => apiClient.post(`/teacher/courses/${courseId}/homework/${assignmentId}/review`, data),
     onSuccess: (_, v) => queryClient.invalidateQueries({ queryKey: ['teacher', 'course', v.courseId] }),
+    onError: (_, v) => queryClient.invalidateQueries({ queryKey: ['teacher', 'course', v.courseId] }),
   });
 };
 

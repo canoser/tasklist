@@ -6,6 +6,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5130/api/v1';
 
 export const apiClient = axios.create({
   baseURL: API_URL,
+  timeout: 15000, // E4: 15s istek zaman aşımı
   headers: {
     'Content-Type': 'application/json',
   },
@@ -62,6 +63,11 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // E4: Zaman aşımı kontrolü
+    if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+      error.userMessage = 'İstek zaman aşımına uğradı. Lütfen bağlantınızı kontrol edin.';
+    }
+
     // 401 Unauthorized ve istek henüz tekrar denenmemişse
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
@@ -111,8 +117,6 @@ apiClient.interceptors.response.use(
         isRefreshing = false;
       }
     }
-
-    // 403 Forbidden (Resimler vb. için Cloudflare R2 Presigned url yenileme ileride buraya eklenebilir)
 
     return Promise.reject(error);
   }

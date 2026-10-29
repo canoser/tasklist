@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
@@ -9,22 +9,34 @@ import { Users, FolderGit2, BookOpen, CheckCircle2, AlertCircle, School, Mail, S
 import { useStudents, useSendInvite, usePendingInvites, useDeleteStudent } from '../coachApi';
 import { useCreateStudent, useInviteStudent } from '../studentFlexibilityApi';
 import AddStudentModal from './AddStudentModal';
+import AssignHomeworkModal from '../homework/AssignHomeworkModal';
 import { usePrograms } from '../coachSchoolApi';
 import styles from './CoachStudents.module.css';
 
 const CoachStudents = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('STUDENTS'); // 'STUDENTS' | 'GROUPS'
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'STUDENTS'); // 'STUDENTS' | 'GROUPS'
   const { data: students, isLoading } = useStudents();
   const { data: programs } = usePrograms();
   const { data: pendingInvites } = usePendingInvites();
   const sendInvite = useSendInvite();
   const deleteStudentMutation = useDeleteStudent();
   const [studentToDelete, setStudentToDelete] = useState(null);
+  const [assignModalStudent, setAssignModalStudent] = useState(null);
 
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || '');
   const [programFilter, setProgramFilter] = useState('');
-  const [gradeFilter, setGradeFilter] = useState('');
+  const [gradeFilter, setGradeFilter] = useState(searchParams.get('grade') || '');
+
+  // URL query params ile arama/filtreleme senkronizasyonu
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (activeTab && activeTab !== 'STUDENTS') params.set('tab', activeTab);
+    if (searchTerm) params.set('q', searchTerm);
+    if (gradeFilter) params.set('grade', gradeFilter);
+    setSearchParams(params, { replace: true });
+  }, [activeTab, searchTerm, gradeFilter, setSearchParams]);
   
   // T25: 2'li Segmentli Öğrenci Ekleme Alanı
   const [showAddForm, setShowAddForm] = useState(false);
@@ -202,6 +214,7 @@ const CoachStudents = () => {
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px' }}>
               <Button size="sm" variant="outline" onClick={() => navigate(`/coach/programs/${activeProgramId}/courses`)}>📚 Dersler</Button>
               <Button size="sm" variant="outline" onClick={() => navigate(`/coach/programs/${activeProgramId}/schedule`)}>🗓️ Haftalık Program</Button>
+              <Button size="sm" variant="outline" onClick={() => navigate(`/coach/programs/${activeProgramId}/audit-logs`)}>🛡️ İşlem Geçmişi</Button>
               <Button size="sm" variant="outline" onClick={() => navigate(`/coach/programs/${activeProgramId}/settings`)}>⚙️ Ayarlar</Button>
             </div>
           )}
@@ -562,7 +575,7 @@ const CoachStudents = () => {
                 </div>
                 <div className={styles.cardFooter}>
                   <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/coach/students/${student.id}`); }}>Profili Gör</Button>
-                  <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/coach/students/${student.id}`); }}>Ödev Ata</Button>
+                  <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); setAssignModalStudent(student); }}>Ödev Ata</Button>
                   {student.inviteStatus === 'NOT_INVITED' && (
                     <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); handleOpenInviteModal(student); }}>Davet Et</Button>
                   )}
@@ -662,6 +675,13 @@ const CoachStudents = () => {
           </Button>
         </div>
       </Modal>
+
+      <AssignHomeworkModal
+        isOpen={Boolean(assignModalStudent)}
+        selectedStudent={assignModalStudent}
+        programId={activeProgramId}
+        onClose={() => setAssignModalStudent(null)}
+      />
     </div>
   );
 };

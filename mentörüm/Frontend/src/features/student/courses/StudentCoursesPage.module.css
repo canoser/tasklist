@@ -39,6 +39,8 @@
 
 .topTabBtn {
   flex: 1;
+  white-space: normal;
+  text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;

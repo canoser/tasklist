@@ -27,7 +27,7 @@ const StudentCalendarPage = () => {
     setSearchParams(tab === 'schedule' ? { tab: 'schedule' } : {});
   };
 
-  const [view, setView] = useState(Views.MONTH);
+  const [view, setView] = useState(() => (typeof window !== 'undefined' && window.innerWidth < 768 ? Views.AGENDA : Views.MONTH));
   const [date, setDate] = useState(new Date());
   const [range, setRange] = useState({ start: startOfMonth(new Date()), end: endOfMonth(new Date()) });
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);

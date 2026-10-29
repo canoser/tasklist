@@ -9,6 +9,7 @@ using MentorumApi.Services;
 using MentorumApi.Services.Background;
 using MentorumApi.Middleware;
 using MentorumApi.Endpoints;
+using Npgsql;
 
 // 1. .env dosyasını yükle
 // Dapper: snake_case kolonları (örn. password_hash) PascalCase özelliklere (PasswordHash) eşle. Login/refresh/google SELECT * için zorunlu.
@@ -98,6 +99,8 @@ try
     builder.Services.AddScoped<StudentNotesRepository>();
     builder.Services.AddScoped<StudentQuestionsRepository>();
     builder.Services.AddScoped<SchoolScheduleRepository>();
+    builder.Services.AddScoped<AuditLogRepository>();
+    builder.Services.AddScoped<AuditLogService>();
     builder.Services.AddMemoryCache();
     builder.Services.AddHostedService<MentorumApi.Services.Background.OverdueHomeworkJob>();
 
@@ -189,18 +192,82 @@ try
 
     app.UseSerilogRequestLogging();
     app.UseHttpsRedirection();
+
+    // E1: Güvenlik Başlıkları Middleware'i
+    app.Use(async (context, next) =>
+    {
+        context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+        context.Response.Headers["X-Frame-Options"] = "DENY";
+        context.Response.Headers["Referrer-Policy"] = "same-origin";
+        if (context.Request.Headers.ContainsKey("Authorization"))
+        {
+            context.Response.Headers["Cache-Control"] = "no-store";
+        }
+        await next();
+    });
+
     app.UseCors("MentorumCors");
 
+    // B5 & E2: Global Exception Handler ve PostgresException Eşlemesi
     app.UseExceptionHandler(err => err.Run(async context =>
     {
-        context.Response.StatusCode = 500;
         context.Response.ContentType = "application/json";
         var exceptionFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
-        if (exceptionFeature?.Error != null)
+        var ex = exceptionFeature?.Error;
+
+        if (ex != null)
         {
-            Log.Error(exceptionFeature.Error, "İşlenemeyen sunucu hatası (Global Exception Handler)");
+            Log.Error(ex, "İşlenemeyen sunucu hatası (Global Exception Handler)");
         }
-        await context.Response.WriteAsync("{\"error\":\"Sunucu hatası oluştu. Lütfen tekrar deneyin.\"}");
+
+        var pgEx = ex as PostgresException ?? ex?.InnerException as PostgresException;
+        int statusCode = 500;
+        string errorCode = "INTERNAL_ERROR";
+        string errorMessage = "Sunucu hatası oluştu. Lütfen tekrar deneyin.";
+
+        if (pgEx != null)
+        {
+            switch (pgEx.SqlState)
+            {
+                case "23505": // Unique violation
+                    statusCode = 409;
+                    errorCode = "DUPLICATE_RECORD";
+                    errorMessage = "Bu kayıt zaten mevcut.";
+                    break;
+                case "23514": // Check violation (chk_score_question_sum vb.)
+                    statusCode = 400;
+                    errorCode = "CHECK_VIOLATION";
+                    errorMessage = "Girilen veriler doğrulama kurallarına uymuyor (soru sayısı toplamı doğru/yanlış/boş toplamına eşit olmalıdır).";
+                    break;
+                case "23503": // Foreign key violation
+                    statusCode = 400;
+                    errorCode = "FOREIGN_KEY_VIOLATION";
+                    errorMessage = "İlişkili kayıt bulunamadı.";
+                    break;
+            }
+        }
+        else if (ex is ArgumentException argEx)
+        {
+            statusCode = 400;
+            errorCode = "INVALID_ARGUMENT";
+            errorMessage = argEx.Message;
+        }
+        else if (ex is UnauthorizedAccessException unauthEx)
+        {
+            statusCode = 403;
+            errorCode = "FORBIDDEN";
+            errorMessage = unauthEx.Message;
+        }
+
+        context.Response.StatusCode = statusCode;
+        var responseObj = new
+        {
+            error = errorMessage,
+            code = errorCode,
+            timestamp = DateTime.UtcNow
+        };
+
+        await context.Response.WriteAsJsonAsync(responseObj);
     }));
 
     app.UseAuthRateLimit();

@@ -88,7 +88,7 @@ namespace MentorumApi.Data
                         WHERE sp.student_id = h.student_id 
                           AND sp.parent_id = @UserId 
                           AND sp.is_accepted = 1 
-                          AND (sp.can_view_homework = 1 OR sp.can_view_calendar = 1)
+                          AND (sp.can_view_homework = 1 AND sp.can_view_calendar = 1)
                     )
                 ");
             }
@@ -152,7 +152,7 @@ namespace MentorumApi.Data
                         WHERE sp.student_id = e.student_id 
                           AND sp.parent_id = @UserId 
                           AND sp.is_accepted = 1 
-                          AND (sp.can_view_exams = 1 OR sp.can_view_calendar = 1)
+                          AND (sp.can_view_exams = 1 AND sp.can_view_calendar = 1)
                     )
                 ");
             }

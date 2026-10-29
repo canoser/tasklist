@@ -76,15 +76,18 @@ namespace MentorumApi.Data
                     var assignId = Guid.NewGuid();
                     if (firstAssignId == Guid.Empty) firstAssignId = assignId;
 
+                    var assignedVia = req.GroupId.HasValue ? "GROUP" : "INDIVIDUAL";
+                    var priority = string.IsNullOrWhiteSpace(req.Priority) ? "NORMAL" : req.Priority.Trim().ToUpperInvariant();
+
                     // Snapshot ile doğrudan atama (konu/ders/şablon silinse bile içerik ve istatistik korunur)
                     await conn.ExecuteAsync(@"
                         INSERT INTO homework_assignments (
                             id, subject_id, curriculum_topic_id, snapshot_title, snapshot_desc, snapshot_source,
-                            student_id, program_id, course_id, created_by, due_date, status, created_at, updated_at
+                            student_id, program_id, course_id, created_by, due_date, status, assigned_via, priority, created_at, updated_at
                         )
                         VALUES (
                             @Id, @SubjectId, @CurriculumTopicId, @Title, @Description, @Source,
-                            @StudentId, @ProgramId, @CourseId, @CreatedBy, @DueDate, 'PENDING', @Now, @Now
+                            @StudentId, @ProgramId, @CourseId, @CreatedBy, @DueDate, 'PENDING', @AssignedVia, @Priority, @Now, @Now
                         )", new {
                         Id = assignId,
                         req.SubjectId,
@@ -97,6 +100,8 @@ namespace MentorumApi.Data
                         ProgramId = target.ProgramId,
                         req.CourseId,
                         req.DueDate,
+                        AssignedVia = assignedVia,
+                        Priority = priority,
                         Now = DateTime.UtcNow
                     }, tx);
 
@@ -134,7 +139,11 @@ namespace MentorumApi.Data
                     END as Status,
                     s.name as SubjectName,
                     ct.topic_name as TopicName,
-                    c.type as CourseType
+                    c.type as CourseType,
+                    c.name as CourseName,
+                    h.assigned_via as AssignedVia,
+                    COALESCE(h.priority, 'NORMAL') as Priority,
+                    COALESCE(h.version, 1) as Version
                 FROM homework_assignments h
                 LEFT JOIN subjects s ON s.id = h.subject_id
                 LEFT JOIN curriculum_topics ct ON ct.id = h.curriculum_topic_id
@@ -144,7 +153,27 @@ namespace MentorumApi.Data
                 ORDER BY h.due_date DESC";
 
             using var conn = _connectionFactory.CreateConnection();
-            return await conn.QueryAsync<HomeworkItemDto>(sql, new { CoachId = coachId, StudentId = studentId });
+            var list = (await conn.QueryAsync<HomeworkItemDto>(sql, new { CoachId = coachId, StudentId = studentId })).ToList();
+            if (list.Count > 0)
+            {
+                var hwIds = list.Select(x => x.Id).ToArray();
+                var attachments = await conn.QueryAsync<HomeworkAttachmentDto>(@"
+                    SELECT id AS Id, homework_id AS HomeworkId, original_name AS OriginalName,
+                           content_type AS ContentType, size_bytes AS SizeBytes, object_key AS ObjectKey
+                    FROM uploads
+                    WHERE homework_id = ANY(@HwIds) AND status <> 'DELETED'
+                    ORDER BY created_at ASC",
+                    new { HwIds = hwIds });
+                var attachLookup = attachments.ToLookup(a => a.HomeworkId);
+                foreach (var item in list)
+                {
+                    if (attachLookup.Contains(item.Id))
+                    {
+                        item.Attachments = attachLookup[item.Id].ToList();
+                    }
+                }
+            }
+            return list;
         }
     }
 }

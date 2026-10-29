@@ -488,3 +488,60 @@ export const useRecentTeacherNotes = () => {
   });
 };
 
+export const useStudentCoachingTools = (studentId) => {
+  return useQuery({
+    queryKey: ['coach', 'student', studentId, 'coaching-tools'],
+    queryFn: async () => {
+      if (!studentId) return null;
+      return await apiClient.get(`/students/${studentId}/coaching-tools`);
+    },
+    enabled: !!studentId,
+  });
+};
+
+export const useUpdateCoachingTools = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ studentId, toolsData }) => {
+      return await apiClient.put(`/students/${studentId}/coaching-tools`, toolsData);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['coach', 'student', variables.studentId, 'coaching-tools'] });
+    },
+  });
+};
+
+export const useReplyStudentQuestion = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ studentId, questionId, reply, status }) => {
+      return await apiClient.patch(`/students/${studentId}/questions/${questionId}`, { reply, status });
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['coach', 'student', variables.studentId, 'questions'] });
+    },
+  });
+};
+
+export const useStudentQuestionsForCoach = (studentId) => {
+  return useQuery({
+    queryKey: ['coach', 'student', studentId, 'questions'],
+    queryFn: async () => {
+      if (!studentId) return [];
+      return (await apiClient.get(`/students/${studentId}/questions`)) || [];
+    },
+    enabled: !!studentId,
+  });
+};
+
+export const useStudentCheckinsForCoach = (studentId) => {
+  return useQuery({
+    queryKey: ['coach', 'student', studentId, 'checkins'],
+    queryFn: async () => {
+      if (!studentId) return [];
+      return (await apiClient.get(`/students/${studentId}/checkins`)) || [];
+    },
+    enabled: !!studentId,
+  });
+};
+

@@ -26,7 +26,6 @@ const DroppableCell = ({ id, children }) => {
   );
 };
 
-
 const WeeklySchedulePage = ({ programId: propProgramId }) => {
   const { programId: routeProgramId } = useParams();
   const programId = propProgramId || routeProgramId;
@@ -40,6 +39,7 @@ const WeeklySchedulePage = ({ programId: propProgramId }) => {
   const [formHour, setFormHour] = useState(null);
   const [title, setTitle] = useState('');
   const [conflict, setConflict] = useState('');
+  const [dragConflict, setDragConflict] = useState('');
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -49,16 +49,40 @@ const WeeklySchedulePage = ({ programId: propProgramId }) => {
 
   const slotAt = (day, hour) => (slots || []).filter((s) => s.dayOfWeek === day && parseInt(s.startTime?.slice(0, 2), 10) === hour);
 
-  const handleCreate = (day, hour, targetType, targetId, slotTitle) => {
+  const handleCreate = async (day, hour, targetType, targetId, slotTitle) => {
     const startTime = `${String(hour).padStart(2, '0')}:00:00`;
     const endTime = `${String(hour + 1).padStart(2, '0')}:00:00`;
-    const existing = (slots || []).some((s) => s.dayOfWeek === day && parseInt(s.startTime?.slice(0, 2), 10) === hour);
-    if (existing) { setConflict('Bu saatte zaten bir slot var (çakışma).'); return; }
     const data = { dayOfWeek: day, startTime, endTime, title: slotTitle || title || 'Yeni Slot' };
     if (targetType === 'course') data.courseId = targetId;
     else if (targetType === 'group') data.groupId = targetId;
-    createSlot.mutateAsync({ programId, data });
-    setFormDay(null); setFormHour(null); setTitle(''); setConflict('');
+
+    try {
+      await createSlot.mutateAsync({ programId, data });
+      setFormDay(null);
+      setFormHour(null);
+      setTitle('');
+      setConflict('');
+      setDragConflict('');
+    } catch (err) {
+      let msg = 'Slot oluşturulamadı.';
+      if (err?.response?.status === 409 || err?.response?.data?.code === 'SCHEDULE_CONFLICT') {
+        const details = err.response?.data?.conflictDetails;
+        if (details && Array.isArray(details) && details.length > 0) {
+          const detailMsg = details.map((c) => `${c.reason || 'Çakışma'}${c.existingSlotTitle ? ` (${c.existingSlotTitle})` : ''}`).join('; ');
+          msg = `Bu saatte çakışma var: ${detailMsg}`;
+        } else {
+          msg = err.response?.data?.error || 'Bu saatte öğretmen veya öğrenci için program çakışması var.';
+        }
+      } else if (err.response?.data?.error) {
+        msg = err.response.data.error;
+      }
+
+      if (formDay !== null) {
+        setConflict(msg);
+      } else {
+        setDragConflict(msg);
+      }
+    }
   };
 
   const handleDragEnd = (event) => {
@@ -77,6 +101,28 @@ const WeeklySchedulePage = ({ programId: propProgramId }) => {
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>Haftalık Program</h1>
+
+      {dragConflict && (
+        <div style={{
+          background: 'rgba(239, 68, 68, 0.1)',
+          border: '1px solid #ef4444',
+          color: '#ef4444',
+          borderRadius: '8px',
+          padding: '10px 14px',
+          marginBottom: '1rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <span>{dragConflict}</span>
+          <button
+            onClick={() => setDragConflict('')}
+            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold' }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       <div className={styles.layout}>
         <div className={styles.sidePanel}>
@@ -106,7 +152,7 @@ const WeeklySchedulePage = ({ programId: propProgramId }) => {
                           <button className={styles.del} onClick={() => deleteSlot.mutateAsync({ programId, slotId: s.id })}>✕</button>
                         </div>
                       ))}
-                      <button className={styles.addBtn} onClick={() => { setFormDay(day); setFormHour(hour); setConflict(''); }}>+</button>
+                      <button className={styles.addBtn} onClick={() => { setFormDay(day); setFormHour(hour); setConflict(''); setDragConflict(''); }}>+</button>
                     </DroppableCell>
                   );
                 })}
@@ -122,7 +168,7 @@ const WeeklySchedulePage = ({ programId: propProgramId }) => {
           <input className={styles.input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Başlık" />
           <div className={styles.formActions}>
             <button className={styles.btn} onClick={() => handleCreate(formDay, formHour, null, null)}>Ekle</button>
-            <button className={styles.btnOutline} onClick={() => setFormDay(null)}>İptal</button>
+            <button className={styles.btnOutline} onClick={() => { setFormDay(null); setConflict(''); }}>İptal</button>
           </div>
           {conflict && <p className={styles.conflict}>{conflict}</p>}
         </Card>

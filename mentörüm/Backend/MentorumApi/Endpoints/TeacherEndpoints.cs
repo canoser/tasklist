@@ -2,6 +2,7 @@ using MentorumApi.Data;
 using MentorumApi.DTOs;
 using MentorumApi.Services;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Security.Claims;
 
 namespace MentorumApi.Endpoints
@@ -142,6 +143,7 @@ namespace MentorumApi.Endpoints
                     return Results.NotFound(new { error = ex.Message });
                 }
             });
+
             // Öğretmen tarafı (Aşama 6)
             var me = app.MapGroup("/api/v1/teacher").RequireAuthorization("RequireTeacherRole");
 
@@ -159,7 +161,8 @@ namespace MentorumApi.Endpoints
                 var access = await repo.GetCourseAccessAsync(courseId, teacherId.Value);
                 if (access == null) return Results.NotFound(new { error = "Ders bulunamadı." });
                 var students = await repo.GetTeacherCourseStudentsAsync(courseId);
-                return Results.Ok(students.Select(s => SchoolAccessRepository.MaskStudent(s, access)));
+                var masked = students.Select(s => SchoolAccessRepository.MaskStudent(s, access));
+                return Results.Ok(masked);
             });
 
             me.MapGet("/courses/{courseId:guid}/homework", async (Guid courseId, [FromServices] SchoolAccessRepository repo, ClaimsPrincipal user) =>
@@ -180,23 +183,6 @@ namespace MentorumApi.Endpoints
                 if (access == null) return Results.NotFound(new { error = "Ders bulunamadı." });
                 if (!access.CanViewExams) return Results.Forbid();
                 return Results.Ok(await repo.GetTeacherCourseExamsAsync(courseId));
-            });
-
-            // T20: Öğretmen ders kaynakları
-            me.MapGet("/courses/{courseId:guid}/resources", async (
-                Guid courseId,
-                [FromServices] CourseResourceRepository repo,
-                [FromServices] ProgramAccessGuard guard,
-                ClaimsPrincipal user) =>
-            {
-                var teacherId = GetCoachId(user);
-                if (teacherId == null) return Results.Unauthorized();
-
-                var isTeacher = await guard.IsTeacherOfCourseAsync(teacherId.Value, courseId);
-                if (!isTeacher) return Results.Json(new { error = "Bu derse erişim yetkiniz yok." }, statusCode: 403);
-
-                var resources = await repo.GetTeacherCourseResourcesAsync(courseId);
-                return Results.Ok(resources);
             });
 
             // --- Öğretmen kendi profili + oluşturma yetkileri (Aşama 3 & 5) ---
@@ -250,6 +236,10 @@ namespace MentorumApi.Endpoints
                     return Results.Ok(new { id });
                 }
                 catch (UnauthorizedAccessException) { return Results.NotFound(new { error = "Ödev bulunamadı veya öğrenci bu derste değil." }); }
+                catch (InvalidOperationException ex) when (ex.Message == "CONCURRENCY_CONFLICT")
+                {
+                    return Results.Conflict(new { error = "Bu kayıt başka bir oturumda güncellenmiş. Lütfen sayfayı yenileyip tekrar deneyin.", code = "CONCURRENCY_CONFLICT" });
+                }
                 catch (InvalidOperationException) { return Results.Forbid(); }
             }).AddEndpointFilter<MentorumApi.Filters.IdempotencyFilter>();
 

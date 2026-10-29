@@ -39,12 +39,43 @@ namespace MentorumApi.Data
                 SELECT u.id, u.full_name AS FullName, u.email, u.avatar_url AS AvatarUrl, 
                        s.grade, s.track, s.target_university AS TargetUniversity, s.is_active AS IsActive,
                        s.coaching_start_date AS CoachingStartDate, s.target_department AS TargetDepartment,
-                       s.target_score AS TargetScore, s.program_id AS ProgramId
+                       s.target_score AS TargetScore, s.program_id AS ProgramId,
+                       s.phone AS Phone, s.monthly_milestone AS MonthlyMilestone,
+                       s.weekly_target_minutes AS WeeklyTargetMinutes, s.weekly_target_questions AS WeeklyTargetQuestions,
+                       (SELECT g.id FROM student_group_members m JOIN student_groups g ON g.id = m.group_id WHERE m.student_id = u.id AND m.is_active = 1 LIMIT 1) AS GroupId,
+                       (SELECT g.name FROM student_group_members m JOIN student_groups g ON g.id = m.group_id WHERE m.student_id = u.id AND m.is_active = 1 LIMIT 1) AS GroupName,
+                       (SELECT COUNT(1) FROM course_students cs JOIN courses c ON c.id = cs.course_id WHERE cs.student_id = u.id AND cs.is_active = 1 AND c.type = 'OZEL_DERS') > 0 AS HasIndividualCourse,
+                       COALESCE((SELECT SUM(minutes) FROM study_sessions ss WHERE ss.student_id = u.id AND (ss.started_at >= date_trunc('week', CURRENT_DATE) OR (ss.started_at IS NULL AND ss.created_at >= date_trunc('week', CURRENT_DATE)))), 0) AS ThisWeekStudyMinutes,
+                       COALESCE((SELECT SUM(question_count) FROM study_sessions ss WHERE ss.student_id = u.id AND (ss.started_at >= date_trunc('week', CURRENT_DATE) OR (ss.started_at IS NULL AND ss.created_at >= date_trunc('week', CURRENT_DATE)))), 0) AS ThisWeekQuestionCount
                 FROM users u 
                 JOIN students s ON u.id = s.id 
                 /**where**/";
             
-            return await QuerySingleOrDefaultWithTenantAsync<StudentDetailDto>(sql, new { StudentId = studentId }, coachId, "s.id = @StudentId AND s.is_active = 1", tableAlias: "s");
+            var detail = await QuerySingleOrDefaultWithTenantAsync<StudentDetailDto>(sql, new { StudentId = studentId }, coachId, "s.id = @StudentId AND s.is_active = 1", tableAlias: "s");
+            if (detail != null)
+            {
+                var exams = await GetStudentExamsAsync(studentId);
+                detail.ExamResults = exams.ToList();
+
+                using var conn = _connectionFactory.CreateConnection();
+                var parents = await conn.QueryAsync<CoachStudentParentDto>(@"
+                    SELECT u.id AS Id, u.full_name AS FullName, u.email AS Email, p.phone AS Phone, sp.relation AS Relation
+                    FROM student_parents sp
+                    JOIN users u ON u.id = sp.parent_id
+                    LEFT JOIN parents p ON p.id = sp.parent_id
+                    WHERE sp.student_id = @StudentId AND sp.is_accepted = 1",
+                    new { StudentId = studentId });
+                detail.Parents = parents.ToList();
+
+                var pendingInvites = await conn.QueryAsync<PendingParentInviteDto>(@"
+                    SELECT id AS Id, email AS Email, code AS Code, expires_at AS ExpiresAt
+                    FROM invite_tokens
+                    WHERE related_id = @StudentId AND role = 'Parent' AND is_used = 0 AND expires_at > NOW()
+                    ORDER BY created_at DESC",
+                    new { StudentId = studentId });
+                detail.PendingParentInvites = pendingInvites.ToList();
+            }
+            return detail;
         }
 
         public async Task<IEnumerable<StudentNoteDto>> GetStudentNotesAsync(Guid coachId, Guid studentId)
@@ -112,12 +143,48 @@ namespace MentorumApi.Data
         public async Task<IEnumerable<StudentExamDto>> GetStudentExamsAsync(Guid studentId)
         {
             using var connection = _connectionFactory.CreateConnection();
-            return await connection.QueryAsync<StudentExamDto>(@"
-                SELECT id, exam_date AS ExamDate, exam_type AS ExamType, exam_name AS ExamName, total_net AS TotalNet
+            var exams = (await connection.QueryAsync<StudentExamDto>(@"
+                SELECT id, exam_date AS ExamDate, exam_type AS ExamType, exam_name AS ExamName, total_net AS TotalNet, error_reasons AS ErrorReasons
                 FROM exam_results
                 WHERE student_id = @StudentId
-                ORDER BY exam_date DESC",
-                new { StudentId = studentId });
+                ORDER BY exam_date DESC, created_at DESC",
+                new { StudentId = studentId })).ToList();
+
+            if (exams.Count == 0) return exams;
+
+            var examIds = exams.Select(e => e.Id).ToArray();
+            var rawScores = (await connection.QueryAsync<(Guid ExamId, Guid Id, Guid? SubjectId, Guid? CurriculumTopicId, string? SubjectCode, string? SubjectName, string? UnitName, string? TopicName, int? QuestionCount, int? Correct, int? Wrong, int? Blank, decimal? Net, float? Score, float? MaxScore)>(@"
+                SELECT exam_id AS ExamId, id AS Id, subject_id AS SubjectId, curriculum_topic_id AS CurriculumTopicId,
+                       subject_code AS SubjectCode, subject_name AS SubjectName, unit_name AS UnitName, topic_name AS TopicName,
+                       question_count AS QuestionCount, correct AS Correct, wrong AS Wrong, blank AS Blank,
+                       net AS Net, score AS Score, max_score AS MaxScore
+                FROM exam_scores
+                WHERE exam_id = ANY(@ExamIds)",
+                new { ExamIds = examIds })).ToList();
+
+            var scoresByExam = rawScores.ToLookup(s => s.ExamId);
+            foreach (var exam in exams)
+            {
+                exam.Scores = scoresByExam[exam.Id].Select(s => new ExamScoreDto
+                {
+                    Id = s.Id,
+                    SubjectId = s.SubjectId,
+                    CurriculumTopicId = s.CurriculumTopicId,
+                    SubjectCode = s.SubjectCode,
+                    SubjectName = s.SubjectName,
+                    UnitName = s.UnitName,
+                    TopicName = s.TopicName,
+                    QuestionCount = s.QuestionCount,
+                    Correct = s.Correct,
+                    Wrong = s.Wrong,
+                    Blank = s.Blank,
+                    Net = s.Net,
+                    Score = s.Score,
+                    MaxScore = s.MaxScore
+                }).ToList();
+            }
+
+            return exams;
         }
 
         public async Task<StudentGoalDto?> GetStudentGoalAsync(Guid studentId)
@@ -354,11 +421,27 @@ namespace MentorumApi.Data
                       AND group_id IN (SELECT id FROM student_groups WHERE program_id = @ProgramId)",
                     new { StudentId = studentId, ProgramId = programId }, tx);
 
-                var courseId = Guid.NewGuid();
-                await conn.ExecuteAsync(@"
-                    INSERT INTO courses (id, program_id, name, type, is_active)
-                    VALUES (@Id, @ProgramId, 'Bireysel Koçluk', 'OZEL_DERS', 1)",
-                    new { Id = courseId, ProgramId = programId }, tx);
+                var existingCourseId = await conn.QuerySingleOrDefaultAsync<Guid?>(@"
+                    SELECT c.id
+                    FROM courses c
+                    JOIN course_students cs ON cs.course_id = c.id
+                    WHERE cs.student_id = @StudentId AND c.program_id = @ProgramId AND c.type = 'OZEL_DERS'
+                    ORDER BY c.is_active DESC, c.created_at ASC
+                    LIMIT 1",
+                    new { StudentId = studentId, ProgramId = programId }, tx);
+
+                var courseId = existingCourseId ?? Guid.NewGuid();
+                if (existingCourseId == null)
+                {
+                    await conn.ExecuteAsync(@"
+                        INSERT INTO courses (id, program_id, name, type, is_active)
+                        VALUES (@Id, @ProgramId, 'Bireysel Koçluk', 'OZEL_DERS', 1)",
+                        new { Id = courseId, ProgramId = programId }, tx);
+                }
+                else
+                {
+                    await conn.ExecuteAsync("UPDATE courses SET is_active = 1, updated_at = NOW() WHERE id = @Id", new { Id = courseId }, tx);
+                }
 
                 await conn.ExecuteAsync(@"
                     INSERT INTO course_students (id, course_id, student_id, program_id, is_active)
@@ -463,9 +546,27 @@ namespace MentorumApi.Data
                     UPDATE students SET
                         grade = COALESCE(@Grade, grade),
                         track = COALESCE(@Track, track),
+                        phone = COALESCE(@Phone, phone),
+                        target_university = COALESCE(@TargetUniversity, target_university),
+                        target_department = COALESCE(@TargetDepartment, target_department),
+                        target_score = COALESCE(@TargetScore, target_score),
+                        monthly_milestone = COALESCE(@MonthlyMilestone, monthly_milestone),
+                        weekly_target_minutes = COALESCE(@WeeklyTargetMinutes, weekly_target_minutes),
+                        weekly_target_questions = COALESCE(@WeeklyTargetQuestions, weekly_target_questions),
                         updated_at = NOW()
                     WHERE id = @StudentId",
-                    new { Grade = req.ClassLevel, Track = track, StudentId = studentId }, tx);
+                    new {
+                        Grade = req.ClassLevel,
+                        Track = track,
+                        req.Phone,
+                        req.TargetUniversity,
+                        req.TargetDepartment,
+                        req.TargetScore,
+                        req.MonthlyMilestone,
+                        req.WeeklyTargetMinutes,
+                        req.WeeklyTargetQuestions,
+                        StudentId = studentId
+                    }, tx);
 
                 tx.Commit();
                 return rows > 0;

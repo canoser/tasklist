@@ -49,52 +49,31 @@ const CoachProgramsPage = () => {
 
       <div className={styles.list}>
         {isLoading && <p>Yükleniyor...</p>}
+        {programs?.length === 0 && (
+          <Card className={styles.emptyCard} padding="lg">
+            <p>Henüz bir program oluşturmadınız. Yukarıdaki butona tıklayarak ilk programınızı oluşturabilirsiniz.</p>
+          </Card>
+        )}
         {programs?.map((p) => {
-          const programStudents = studentsByProgram[p.id] || [];
+          const progStudents = studentsByProgram[p.id] || [];
           return (
             <Card key={p.id} className={styles.item} padding="md">
               <div className={styles.itemHeader}>
-                <strong>
-                  {p.color && <span className={styles.colorDot} style={{ backgroundColor: p.color }} />}
-                  {p.name}
-                </strong>
-                <span className={styles.badge}>{p.role === 'YONETICI' ? 'Yönetici' : 'Yardımcı'}</span>
+                <div>
+                  <h3 className={styles.itemTitle}>{p.name}</h3>
+                  {p.category && <span className={styles.badge}>{p.category}</span>}
+                </div>
+                <span className={styles.studentCount}>
+                  <Users size={14} />
+                  <span>{progStudents.length} Öğrenci</span>
+                </span>
               </div>
-              {p.description && <div className={styles.itemDesc}>{p.description}</div>}
-              <div className={styles.itemMeta} style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                  <Users size={14} /> Öğrenci: {p.studentCount}
-                </span>
-                <span>·</span>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                  <BookOpen size={14} /> Ders: {p.courseCount}
-                </span>
-                <span>·</span>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                  <GraduationCap size={14} /> Öğretmen: {p.teacherCount}
-                </span>
-                {p.category && (
-                  <>
-                    <span>·</span>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                      <Target size={14} /> {p.category}
-                    </span>
-                  </>
-                )}
-                {p.overdueCount > 0 && (
-                  <>
-                    <span>·</span>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#ef4444', fontWeight: 600 }}>
-                      <AlertCircle size={14} /> Gecikmiş: {p.overdueCount}
-                    </span>
-                  </>
-                )}
-              </div>
-              {programStudents.length > 0 && (
-                <div className={styles.studentsBlock}>
-                  <span className={styles.studentsLabel}>Öğrenciler:</span>
-                  <div className={styles.studentsList}>
-                    {programStudents.map((s) => (
+
+              {progStudents.length > 0 && (
+                <div className={styles.studentChips}>
+                  <div className={styles.chipsLabel}>Öğrenciler:</div>
+                  <div className={styles.chipsList}>
+                    {progStudents.map((s) => (
                       <button
                         key={s.id}
                         type="button"
@@ -112,6 +91,7 @@ const CoachProgramsPage = () => {
                 <Button size="sm" variant="outline" onClick={() => navigate(`/coach/programs/${p.id}/courses`)}>Dersler</Button>
                 <Button size="sm" variant="outline" onClick={() => navigate(`/coach/programs/${p.id}/groups`)}>Gruplar</Button>
                 <Button size="sm" variant="outline" onClick={() => navigate(`/coach/programs/${p.id}/schedule`)}>Program</Button>
+                <Button size="sm" variant="outline" onClick={() => navigate(`/coach/programs/${p.id}/audit-logs`)}>Denetim İzi</Button>
                 <Button size="sm" variant="ghost" onClick={() => navigate(`/coach/programs/${p.id}/settings`)}>Ayarlar</Button>
               </div>
             </Card>

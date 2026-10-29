@@ -25,7 +25,8 @@ import {
   X,
   Sparkles,
   Eye,
-  FolderOpen
+  FolderOpen,
+  History
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -33,6 +34,7 @@ import ThemeDecorContainer from '../../common/ThemeDecor/ThemeDecorContainer';
 import ThemeSelector from '../../common/ThemeSelector/ThemeSelector';
 import InstallAppButton from '../../common/InstallAppButton/InstallAppButton';
 import ViewAsModal from '../../../features/coach/view-as/ViewAsModal';
+import AssignHomeworkModal from '../../../features/coach/homework/AssignHomeworkModal';
 import styles from './CoachLayout.module.css';
 
 const CoachLayout = () => {
@@ -44,6 +46,7 @@ const CoachLayout = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isViewAsModalOpen, setIsViewAsModalOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
 
   // Süper yönetici onay sayacı
   const { data: pendingApprovals } = usePendingApprovals();
@@ -139,6 +142,7 @@ const CoachLayout = () => {
     {
       groupTitle: 'SİSTEM',
       items: [
+        { path: '/coach/audit-logs', label: 'İşlem Geçmişi (Denetim)', icon: History },
         { path: '/coach/profile', label: 'Ayarlar & Profil', icon: UserCog },
         ...(user?.isAdmin ? [{ 
           path: '/coach/admin', 
@@ -365,8 +369,8 @@ const CoachLayout = () => {
             <button
               type="button"
               className={styles.quickActionBtn}
-              onClick={() => navigate('/coach/students')}
-              title="Öğrenci veya Ödev İşlemleri"
+              onClick={() => setIsAssignModalOpen(true)}
+              title="Yeni Ödev Ata"
             >
               <Plus size={18} strokeWidth={2.2} />
               <span>Ödev Ata</span>
@@ -468,6 +472,11 @@ const CoachLayout = () => {
           onClose={() => setIsViewAsModalOpen(false)} 
         />
       )}
+
+      <AssignHomeworkModal
+        isOpen={isAssignModalOpen}
+        onClose={() => setIsAssignModalOpen(false)}
+      />
     </div>
   );
 };

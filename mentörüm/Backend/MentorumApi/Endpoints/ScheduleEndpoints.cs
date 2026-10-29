@@ -2,6 +2,8 @@ using Dapper;
 using MentorumApi.Data;
 using MentorumApi.DTOs;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Linq;
 using System.Security.Claims;
 
 namespace MentorumApi.Endpoints
@@ -33,6 +35,10 @@ namespace MentorumApi.Endpoints
                 {
                     return Results.NotFound(new { error = "Program bulunamadı veya yetkiniz yok." });
                 }
+                catch (ScheduleConflictException ex)
+                {
+                    return Results.Conflict(new { error = "Ders çakışması tespit edildi.", code = "SCHEDULE_CONFLICT", conflictDetails = ex.Conflicts });
+                }
                 catch (InvalidOperationException ex) when (ex.Message == "EXACTLY_ONE_TARGET")
                 {
                     return Results.BadRequest(new { error = "Ders, grup veya öğrenciden tam olarak biri seçilmeli." });
@@ -55,8 +61,23 @@ namespace MentorumApi.Endpoints
             {
                 var coachId = GetUserId(user);
                 if (coachId == null) return Results.Unauthorized();
-                var ok = await repo.UpdateSlotAsync(programId, slotId, coachId.Value, req);
-                return ok ? Results.Ok(new { message = "Güncellendi." }) : Results.NotFound(new { error = "Slot bulunamadı." });
+                try
+                {
+                    var ok = await repo.UpdateSlotAsync(programId, slotId, coachId.Value, req);
+                    return ok ? Results.Ok(new { message = "Güncellendi." }) : Results.NotFound(new { error = "Slot bulunamadı." });
+                }
+                catch (ScheduleConflictException ex)
+                {
+                    return Results.Conflict(new { error = "Ders çakışması tespit edildi.", code = "SCHEDULE_CONFLICT", conflictDetails = ex.Conflicts });
+                }
+                catch (InvalidOperationException ex) when (ex.Message == "INVALID_DAY_OF_WEEK")
+                {
+                    return Results.BadRequest(new { error = "Gün değeri 1-7 arasında olmalıdır." });
+                }
+                catch (InvalidOperationException ex) when (ex.Message == "INVALID_TIME_RANGE")
+                {
+                    return Results.BadRequest(new { error = "Başlangıç saati bitişten küçük olmalıdır." });
+                }
             });
 
             coach.MapDelete("/{slotId:guid}", async (Guid programId, Guid slotId, [FromServices] ScheduleRepository repo, ClaimsPrincipal user) =>
@@ -116,7 +137,7 @@ namespace MentorumApi.Endpoints
                 if (parentId == null) return Results.Unauthorized();
                 using var conn = db.CreateConnection();
                 var rel = await conn.ExecuteScalarAsync<int>(
-                    "SELECT 1 FROM student_parents WHERE parent_id = @ParentId AND student_id = @StudentId AND is_accepted = 1",
+                    "SELECT 1 FROM student_parents WHERE parent_id = @ParentId AND student_id = @StudentId AND is_accepted = 1 AND COALESCE(can_view_calendar, 0) = 1",
                     new { ParentId = parentId.Value, StudentId = studentId });
                 if (rel == 0) return Results.Forbid();
                 return Results.Ok(await repo.GetStudentSlotsAsync(studentId));

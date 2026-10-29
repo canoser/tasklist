@@ -57,10 +57,16 @@ const LoginPage = () => {
         redirectByRole(data.user.role);
       }
     } catch (err) {
-      const code = err?.response?.data?.code;
-      if (code === 'PENDING_APPROVAL') setError('Hesabınız onay bekliyor. Yönetici onayı sonrası tekrar deneyin.');
-      else if (code === 'COACH_REJECTED') setError('Başvurunuz reddedildi.');
-      else setError(err.response?.data?.error || err.response?.data?.error?.message || (isRegister ? 'Kayıt başarısız.' : 'Giriş başarısız. Bilgilerinizi kontrol edin.'));
+      if (err?.userMessage) {
+        setError(err.userMessage);
+      } else if (!err?.response) {
+        setError('Sunucuya bağlanılamadı. Lütfen internet bağlantınızı veya sunucu durumunu kontrol edin.');
+      } else {
+        const code = err?.response?.data?.code;
+        if (code === 'PENDING_APPROVAL') setError('Hesabınız onay bekliyor. Yönetici onayı sonrası tekrar deneyin.');
+        else if (code === 'COACH_REJECTED') setError('Başvurunuz reddedildi.');
+        else setError(err.response?.data?.error || err.response?.data?.error?.message || (isRegister ? 'Kayıt başarısız.' : 'Giriş başarısız. Bilgilerinizi kontrol edin.'));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -79,10 +85,16 @@ const LoginPage = () => {
         redirectByRole(data.user.role);
       }
     } catch (err) {
-      const code = err?.response?.data?.code;
-      if (code === 'PENDING_APPROVAL') setError('Hesabınız onay bekliyor. Yönetici onayı sonrası tekrar deneyin.');
-      else if (code === 'COACH_REJECTED') setError('Başvurunuz reddedildi.');
-      else setError('Google işlemi başarısız. Lütfen tekrar deneyin.');
+      if (err?.userMessage) {
+        setError(err.userMessage);
+      } else if (!err?.response) {
+        setError('Sunucuya bağlanılamadı. Lütfen internet bağlantınızı veya sunucu durumunu kontrol edin.');
+      } else {
+        const code = err?.response?.data?.code;
+        if (code === 'PENDING_APPROVAL') setError('Hesabınız onay bekliyor. Yönetici onayı sonrası tekrar deneyin.');
+        else if (code === 'COACH_REJECTED') setError('Başvurunuz reddedildi.');
+        else setError('Google işlemi başarısız. Lütfen tekrar deneyin.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -100,7 +112,11 @@ const LoginPage = () => {
         callback: handleGoogleCredential,
       });
       window.google.accounts.id.renderButton(googleButtonRef.current, {
-        theme: 'outline', size: 'large', width: 320, text: 'continue_with'
+        theme: 'outline',
+        size: 'large',
+        width: 320,
+        text: 'signin_with',
+        locale: 'tr',
       });
     };
 

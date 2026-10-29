@@ -100,7 +100,7 @@ public static class ParentEndpoints
             });
         });
 
-        // Veli — çocuğun sınav sonuçları (salt okunur)
+        // Veli — çocuğun sınav sonuçları (salt okunur + detaylı alt ders/konu skorları - B8)
         group.MapGet("/children/{studentId}/exams", async (Guid studentId, DbConnectionFactory db, HttpContext ctx) =>
         {
             var parentId = ctx.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -108,18 +108,55 @@ public static class ParentEndpoints
 
             using var conn = db.CreateConnection();
             var relation = await conn.ExecuteScalarAsync<int>(
-                "SELECT 1 FROM student_parents WHERE parent_id = @ParentId AND student_id = @StudentId AND is_accepted = 1",
+                "SELECT 1 FROM student_parents WHERE parent_id = @ParentId AND student_id = @StudentId AND is_accepted = 1 AND COALESCE(can_view_exams, 0) = 1",
                 new { ParentId = Guid.Parse(parentId), StudentId = studentId });
             if (relation == 0) return Results.Forbid();
 
-            var exams = await conn.QueryAsync<dynamic>(@"
-                SELECT e.id as id, e.exam_date as ""examDate"", COALESCE(e.exam_name, e.exam_type) as name, e.exam_type as ""examType"", e.total_net as ""totalNet""
+            var rawExams = (await conn.QueryAsync<(Guid Id, DateTime? ExamDate, string? Name, string? ExamType, decimal? TotalNet)>(@"
+                SELECT e.id AS Id, e.exam_date AS ExamDate, COALESCE(e.exam_name, e.exam_type) AS Name, e.exam_type AS ExamType, e.total_net AS TotalNet
                 FROM exam_results e
                 WHERE e.student_id = @StudentId
-                ORDER BY e.exam_date DESC",
-                new { StudentId = studentId });
+                ORDER BY e.exam_date DESC, e.created_at DESC",
+                new { StudentId = studentId })).ToList();
 
-            return Results.Ok(exams);
+            if (rawExams.Count == 0) return Results.Ok(Array.Empty<object>());
+
+            var examIds = rawExams.Select(e => e.Id).ToArray();
+            var scores = (await conn.QueryAsync<(Guid ExamId, Guid? Id, Guid? SubjectId, Guid? CurriculumTopicId, string? SubjectName, string? UnitName, string? TopicName, int? QuestionCount, int? Correct, int? Wrong, int? Blank, decimal? Net, float? Score, float? MaxScore)>(@"
+                SELECT exam_id AS ExamId, id AS Id, subject_id AS SubjectId, curriculum_topic_id AS CurriculumTopicId,
+                       subject_name AS SubjectName, unit_name AS UnitName, topic_name AS TopicName,
+                       question_count AS QuestionCount, correct AS Correct, wrong AS Wrong, blank AS Blank,
+                       net AS Net, score AS Score, max_score AS MaxScore
+                FROM exam_scores
+                WHERE exam_id = ANY(@ExamIds)",
+                new { ExamIds = examIds })).ToLookup(s => s.ExamId);
+
+            var result = rawExams.Select(e => new
+            {
+                id = e.Id,
+                examDate = e.ExamDate,
+                name = e.Name,
+                examType = e.ExamType,
+                totalNet = e.TotalNet,
+                scores = scores[e.Id].Select(s => new
+                {
+                    id = s.Id,
+                    subjectId = s.SubjectId,
+                    curriculumTopicId = s.CurriculumTopicId,
+                    subjectName = s.SubjectName,
+                    unitName = s.UnitName,
+                    topicName = s.TopicName,
+                    questionCount = s.QuestionCount,
+                    correct = s.Correct,
+                    wrong = s.Wrong,
+                    blank = s.Blank,
+                    net = s.Net,
+                    score = s.Score,
+                    maxScore = s.MaxScore
+                }).ToList()
+            });
+
+            return Results.Ok(result);
         });
 
         // T19: Veli — çocuğun öğretmen notları (yalnızca STUDENT_VISIBLE ve summary)

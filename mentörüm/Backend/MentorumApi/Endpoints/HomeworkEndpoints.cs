@@ -127,7 +127,7 @@ namespace MentorumApi.Endpoints
 
                 using var db = dbFactory.CreateConnection();
                 // Harika Kurgu: Eğer status PENDING ise ve due_date geçmişse anında OVERDUE döndürür! Cron'a gerek kalmaz!
-                var homeworks = await Dapper.SqlMapper.QueryAsync<HomeworkItemDto>(db, @"
+                var homeworks = (await Dapper.SqlMapper.QueryAsync<HomeworkItemDto>(db, @"
                     SELECT 
                         h.id as Id, 
                         h.snapshot_title as SnapshotTitle, 
@@ -141,13 +141,39 @@ namespace MentorumApi.Endpoints
                             ELSE h.status 
                         END as Status,
                         s.name as SubjectName,
-                        ct.topic_name as TopicName
+                        ct.topic_name as TopicName,
+                        c.name as CourseName,
+                        c.type as CourseType,
+                        h.assigned_via as AssignedVia,
+                        COALESCE(h.priority, 'NORMAL') as Priority,
+                        COALESCE(h.version, 1) as Version
                     FROM homework_assignments h
                     LEFT JOIN subjects s ON s.id = h.subject_id
                     LEFT JOIN curriculum_topics ct ON ct.id = h.curriculum_topic_id
+                    LEFT JOIN courses c ON c.id = h.course_id
                     WHERE h.student_id = @UserId
                     ORDER BY h.due_date ASC
-                ", new { UserId = userId });
+                ", new { UserId = userId })).ToList();
+
+                if (homeworks.Count > 0)
+                {
+                    var hwIds = homeworks.Select(x => x.Id).ToArray();
+                    var attachments = await Dapper.SqlMapper.QueryAsync<HomeworkAttachmentDto>(db, @"
+                        SELECT id AS Id, homework_id AS HomeworkId, original_name AS OriginalName,
+                               content_type AS ContentType, size_bytes AS SizeBytes, object_key AS ObjectKey
+                        FROM uploads
+                        WHERE homework_id = ANY(@HwIds) AND status <> 'DELETED'
+                        ORDER BY created_at ASC",
+                        new { HwIds = hwIds });
+                    var attachLookup = attachments.ToLookup(a => a.HomeworkId);
+                    foreach (var item in homeworks)
+                    {
+                        if (attachLookup.Contains(item.Id))
+                        {
+                            item.Attachments = attachLookup[item.Id].ToList();
+                        }
+                    }
+                }
 
                 return Results.Ok(homeworks);
             });
@@ -195,14 +221,14 @@ namespace MentorumApi.Endpoints
 
                 using var db = dbFactory.CreateConnection();
                 
-                // Veli bu öğrencinin velisi mi kontrolü
+                // Veli bu öğrencinin velisi mi ve ödev izni var mı kontrolü (B7)
                 var relation = await Dapper.SqlMapper.ExecuteScalarAsync<int>(db,
-                    "SELECT 1 FROM student_parents WHERE parent_id = @ParentId AND student_id = @StudentId AND is_accepted = 1",
+                    "SELECT 1 FROM student_parents WHERE parent_id = @ParentId AND student_id = @StudentId AND is_accepted = 1 AND COALESCE(can_view_homework, 0) = 1",
                     new { ParentId = parentId, StudentId = studentId });
 
                 if (relation == 0) return Results.Forbid();
 
-                var homeworks = await Dapper.SqlMapper.QueryAsync<HomeworkItemDto>(db, @"
+                var homeworks = (await Dapper.SqlMapper.QueryAsync<HomeworkItemDto>(db, @"
                     SELECT 
                         h.id as Id, 
                         h.snapshot_title as SnapshotTitle, 
@@ -216,13 +242,39 @@ namespace MentorumApi.Endpoints
                             ELSE h.status 
                         END as Status,
                         s.name as SubjectName,
-                        ct.topic_name as TopicName
+                        ct.topic_name as TopicName,
+                        c.name as CourseName,
+                        c.type as CourseType,
+                        h.assigned_via as AssignedVia,
+                        COALESCE(h.priority, 'NORMAL') as Priority,
+                        COALESCE(h.version, 1) as Version
                     FROM homework_assignments h
                     LEFT JOIN subjects s ON s.id = h.subject_id
                     LEFT JOIN curriculum_topics ct ON ct.id = h.curriculum_topic_id
+                    LEFT JOIN courses c ON c.id = h.course_id
                     WHERE h.student_id = @StudentId
                     ORDER BY h.due_date ASC
-                ", new { StudentId = studentId });
+                ", new { StudentId = studentId })).ToList();
+
+                if (homeworks.Count > 0)
+                {
+                    var hwIds = homeworks.Select(x => x.Id).ToArray();
+                    var attachments = await Dapper.SqlMapper.QueryAsync<HomeworkAttachmentDto>(db, @"
+                        SELECT id AS Id, homework_id AS HomeworkId, original_name AS OriginalName,
+                               content_type AS ContentType, size_bytes AS SizeBytes, object_key AS ObjectKey
+                        FROM uploads
+                        WHERE homework_id = ANY(@HwIds) AND status <> 'DELETED'
+                        ORDER BY created_at ASC",
+                        new { HwIds = hwIds });
+                    var attachLookup = attachments.ToLookup(a => a.HomeworkId);
+                    foreach (var item in homeworks)
+                    {
+                        if (attachLookup.Contains(item.Id))
+                        {
+                            item.Attachments = attachLookup[item.Id].ToList();
+                        }
+                    }
+                }
 
                 return Results.Ok(homeworks);
             });

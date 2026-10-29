@@ -334,3 +334,16 @@ export const useRemoveCourseGroup = () => {
     onSuccess: (_, v) => qc.invalidateQueries({ queryKey: ['coach', 'program', v.programId, 'course', v.courseId, 'groups'] }),
   });
 };
+
+// --- Denetim İzi (Audit Logs) & Müfredat İlerleme (V15) ---
+export const useProgramAuditLogs = (programId, limit = 100) => useQuery({
+  queryKey: ['coach', 'program', programId, 'audit-logs', limit],
+  queryFn: async () => (await apiClient.get(`/programs/${programId}/audit-logs?limit=${limit}`)) || [],
+  enabled: !!programId,
+});
+
+export const useCurriculumProgress = (programId, studentId) => useQuery({
+  queryKey: ['coach', 'program', programId, 'curriculum-progress', studentId],
+  queryFn: async () => (await apiClient.get(`/programs/${programId}/curriculum/progress?studentId=${studentId}`)) || [],
+  enabled: !!programId && !!studentId,
+});

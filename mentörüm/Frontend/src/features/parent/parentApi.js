@@ -81,7 +81,18 @@ export const useParentStudyStats = (studentId) => {
     queryKey: ['parent', 'child', studentId, 'study-stats'],
     queryFn: async () => {
       if (!studentId) return null;
-      return await apiClient.get(`/parent/children/${studentId}/study-stats`);
+      return await apiClient.get(`/parents/children/${studentId}/study-stats`);
+    },
+    enabled: !!studentId,
+  });
+};
+
+export const useParentTeacherNotes = (studentId) => {
+  return useQuery({
+    queryKey: ['parent', 'child', studentId, 'teacher-notes'],
+    queryFn: async () => {
+      if (!studentId) return [];
+      return (await apiClient.get(`/parents/children/${studentId}/teacher-notes`)) || [];
     },
     enabled: !!studentId,
   });

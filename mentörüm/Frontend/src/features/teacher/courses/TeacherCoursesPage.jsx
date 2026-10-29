@@ -26,6 +26,17 @@ const TeacherCoursesPage = () => {
   const [tab, setTab] = useState('students');
   const download = useDownloadUrl();
 
+  const [hwAllStudents, setHwAllStudents] = useState(false);
+  const [hwStudentId, setHwStudentId] = useState('');
+  const [hwTitle, setHwTitle] = useState('');
+  const [hwDesc, setHwDesc] = useState('');
+  const [hwDue, setHwDue] = useState('');
+  const [hwLevel, setHwLevel] = useState('');
+  const [hwSubject, setHwSubject] = useState('');
+  const [hwUnit, setHwUnit] = useState('');
+  const [hwTopic, setHwTopic] = useState('');
+  const [hwFreeTopic, setHwFreeTopic] = useState('');
+
   const course = courses?.find((c) => c.courseId === selected);
   const { data: students } = useTeacherCourseStudents(selected);
   const { data: homework } = useTeacherCourseHomework(selected);
@@ -55,23 +66,28 @@ const TeacherCoursesPage = () => {
   const [completeSuccessMsg, setCompleteSuccessMsg] = useState('');
 
   const submitReview = async (h) => {
-    await reviewHomework.mutateAsync({ courseId: selected, assignmentId: h.id, data: { status: 'DONE', feedback: reviewFeedback.trim() } });
-    setReviewTarget(null);
-    setReviewFeedback('');
+    try {
+      await reviewHomework.mutateAsync({
+        courseId: selected,
+        assignmentId: h.id,
+        data: {
+          status: 'DONE',
+          feedback: reviewFeedback.trim(),
+          expectedVersion: h.version ?? 1 // F2: Eşzamanlılık kontrolü
+        }
+      });
+      setReviewTarget(null);
+      setReviewFeedback('');
+    } catch (err) {
+      if (err?.response?.status === 409 || err?.response?.data?.code === 'CONCURRENCY_CONFLICT') {
+        alert('Bu ödev başka bir sekmede veya öğrenci tarafından güncellendi. Sayfa yenileniyor...');
+      } else {
+        alert('Ödev değerlendirilemedi: ' + (err?.response?.data?.error || err.message));
+      }
+    }
   };
 
   const [showHomeworkForm, setShowHomeworkForm] = useState(false);
-  const [hwAllStudents, setHwAllStudents] = useState(false);
-  const [hwStudentId, setHwStudentId] = useState('');
-  const [hwTitle, setHwTitle] = useState('');
-  const [hwDesc, setHwDesc] = useState('');
-  const [hwDue, setHwDue] = useState('');
-  const [hwLevel, setHwLevel] = useState('');
-  const [hwSubject, setHwSubject] = useState('');
-  const [hwUnit, setHwUnit] = useState('');
-  const [hwTopic, setHwTopic] = useState('');
-  const [hwFreeTopic, setHwFreeTopic] = useState('');
-
   const [showExamForm, setShowExamForm] = useState(false);
   const [exStudentId, setExStudentId] = useState('');
   const [exName, setExName] = useState('');

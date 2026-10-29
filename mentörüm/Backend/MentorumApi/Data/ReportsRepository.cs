@@ -182,34 +182,59 @@ namespace MentorumApi.Data
                 GROUP BY COALESCE(category, 'OTHER')",
                 new { StudentId = studentId });
 
+            var schoolMinutes = await conn.ExecuteScalarAsync<int?>(@"
+                SELECT COALESCE(SUM(
+                    CASE 
+                        WHEN end_time >= start_time THEN EXTRACT(EPOCH FROM (end_time - start_time)) / 60
+                        ELSE EXTRACT(EPOCH FROM (end_time + interval '24 hours' - start_time)) / 60
+                    END
+                ), 0)::int
+                FROM school_schedules
+                WHERE student_id = @StudentId",
+                new { StudentId = studentId }) ?? 0;
+
             var result = new WeeklyTimeBudgetDto
             {
                 TotalStudyMinutes = studyMinutes
             };
 
             int totalPersonal = 0;
+            var categoriesMap = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
             foreach (var r in personalRows)
             {
+                string cat = (string)r.category;
                 int mins = (int)r.totalminutes;
                 totalPersonal += mins;
-                result.Categories.Add(new WeeklyTimeBudgetItemDto
-                {
-                    Category = (string)r.category,
-                    TotalMinutes = mins
-                });
+                categoriesMap[cat] = categoriesMap.GetValueOrDefault(cat, 0) + mins;
             }
 
-            result.TotalPersonalMinutes = totalPersonal;
-            result.TotalTrackedMinutes = studyMinutes + totalPersonal;
+            if (schoolMinutes > 0)
+            {
+                totalPersonal += schoolMinutes;
+                categoriesMap["SCHOOL"] = categoriesMap.GetValueOrDefault("SCHOOL", 0) + schoolMinutes;
+            }
 
             if (studyMinutes > 0)
             {
-                result.Categories.Insert(0, new WeeklyTimeBudgetItemDto
+                result.Categories.Add(new WeeklyTimeBudgetItemDto
                 {
                     Category = "STUDY",
                     TotalMinutes = studyMinutes
                 });
             }
+
+            foreach (var kvp in categoriesMap)
+            {
+                result.Categories.Add(new WeeklyTimeBudgetItemDto
+                {
+                    Category = kvp.Key,
+                    TotalMinutes = kvp.Value
+                });
+            }
+
+            result.TotalPersonalMinutes = totalPersonal;
+            result.TotalTrackedMinutes = studyMinutes + totalPersonal;
 
             if (result.TotalTrackedMinutes > 0)
             {

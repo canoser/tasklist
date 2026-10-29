@@ -1,8 +1,32 @@
 using Dapper;
 using MentorumApi.DTOs;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MentorumApi.Data
 {
+    public class ScheduleConflictItem
+    {
+        public Guid SlotId { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string ConflictType { get; set; } = string.Empty; // "TEACHER" or "STUDENT"
+        public string ConflictingName { get; set; } = string.Empty;
+        public TimeSpan StartTime { get; set; }
+        public TimeSpan EndTime { get; set; }
+    }
+
+    public class ScheduleConflictException : Exception
+    {
+        public List<ScheduleConflictItem> Conflicts { get; }
+        public ScheduleConflictException(List<ScheduleConflictItem> conflicts) 
+            : base("Ders çakışması tespit edildi.")
+        {
+            Conflicts = conflicts;
+        }
+    }
+
     public class ScheduleRepository
     {
         private readonly DbConnectionFactory _connectionFactory;
@@ -44,6 +68,128 @@ namespace MentorumApi.Data
                 new { SlotId = slotId, ProgramId = programId });
         }
 
+        public async Task<List<ScheduleConflictItem>> CheckConflictsAsync(
+            Guid programId,
+            int dayOfWeek,
+            TimeSpan startTime,
+            TimeSpan endTime,
+            DateTime? validFrom,
+            DateTime? validTo,
+            Guid? courseId,
+            Guid? groupId,
+            Guid? studentId,
+            Guid? excludeSlotId = null)
+        {
+            var conflicts = new List<ScheduleConflictItem>();
+            using var conn = _connectionFactory.CreateConnection();
+
+            // 1. Öğretmen çakışması denetimi
+            if (courseId.HasValue)
+            {
+                var teacherInfo = await conn.QuerySingleOrDefaultAsync<(Guid TeacherId, string TeacherName)?>(@"
+                    SELECT c.teacher_id, u.full_name 
+                    FROM courses c 
+                    JOIN users u ON u.id = c.teacher_id 
+                    WHERE c.id = @CourseId AND c.is_active = 1 AND c.teacher_id IS NOT NULL",
+                    new { CourseId = courseId.Value });
+
+                if (teacherInfo.HasValue)
+                {
+                    var overlappingTeacherSlots = await conn.QueryAsync<ScheduleConflictItem>(@"
+                        SELECT s.id AS SlotId, s.title AS Title, 'TEACHER' AS ConflictType,
+                               @TeacherName AS ConflictingName, s.start_time AS StartTime, s.end_time AS EndTime
+                        FROM schedule_slots s
+                        JOIN courses c ON c.id = s.course_id
+                        WHERE c.teacher_id = @TeacherId
+                          AND s.is_active = 1
+                          AND s.day_of_week = @DayOfWeek
+                          AND (@ExcludeSlotId IS NULL OR s.id != @ExcludeSlotId)
+                          AND (s.start_time < @EndTime AND s.end_time > @StartTime)
+                          AND (@ValidFrom IS NULL OR s.valid_to IS NULL OR s.valid_to >= @ValidFrom)
+                          AND (@ValidTo IS NULL OR s.valid_from IS NULL OR s.valid_from <= @ValidTo)",
+                        new
+                        {
+                            TeacherId = teacherInfo.Value.TeacherId,
+                            TeacherName = teacherInfo.Value.TeacherName,
+                            DayOfWeek = dayOfWeek,
+                            StartTime = startTime,
+                            EndTime = endTime,
+                            ValidFrom = validFrom,
+                            ValidTo = validTo,
+                            ExcludeSlotId = excludeSlotId
+                        });
+
+                    conflicts.AddRange(overlappingTeacherSlots);
+                }
+            }
+
+            // 2. Öğrenci / Grup çakışması denetimi
+            var targetStudentList = new List<Guid>();
+            if (studentId.HasValue)
+            {
+                targetStudentList.Add(studentId.Value);
+            }
+            else if (groupId.HasValue)
+            {
+                var gStudents = await conn.QueryAsync<Guid>(
+                    "SELECT student_id FROM student_group_members WHERE group_id = @GroupId AND is_active = 1",
+                    new { GroupId = groupId.Value });
+                targetStudentList.AddRange(gStudents);
+            }
+            else if (courseId.HasValue)
+            {
+                var cStudents = await conn.QueryAsync<Guid>(@"
+                    SELECT cs.student_id FROM course_students cs WHERE cs.course_id = @CourseId AND cs.is_active = 1
+                    UNION
+                    SELECT sgm.student_id FROM course_groups cg 
+                    JOIN student_group_members sgm ON sgm.group_id = cg.group_id AND sgm.is_active = 1
+                    WHERE cg.course_id = @CourseId",
+                    new { CourseId = courseId.Value });
+                targetStudentList.AddRange(cStudents);
+            }
+
+            if (targetStudentList.Count > 0)
+            {
+                var targetStudentArr = targetStudentList.Distinct().ToArray();
+                var overlappingStudentSlots = await conn.QueryAsync<ScheduleConflictItem>(@"
+                    SELECT DISTINCT s.id AS SlotId, s.title AS Title, 'STUDENT' AS ConflictType,
+                           u.full_name AS ConflictingName, s.start_time AS StartTime, s.end_time AS EndTime
+                    FROM schedule_slots s
+                    JOIN LATERAL (
+                        SELECT s.student_id AS sid WHERE s.student_id = ANY(@TargetStudents)
+                        UNION
+                        SELECT cs.student_id AS sid FROM course_students cs WHERE cs.course_id = s.course_id AND cs.student_id = ANY(@TargetStudents) AND cs.is_active = 1
+                        UNION
+                        SELECT sgm.student_id AS sid FROM student_group_members sgm WHERE sgm.group_id = s.group_id AND sgm.student_id = ANY(@TargetStudents) AND sgm.is_active = 1
+                        UNION
+                        SELECT sgm2.student_id AS sid FROM course_groups cg 
+                        JOIN student_group_members sgm2 ON sgm2.group_id = cg.group_id AND sgm2.is_active = 1 
+                        WHERE cg.course_id = s.course_id AND sgm2.student_id = ANY(@TargetStudents)
+                    ) st ON true
+                    JOIN users u ON u.id = st.sid
+                    WHERE s.is_active = 1
+                      AND s.day_of_week = @DayOfWeek
+                      AND (@ExcludeSlotId IS NULL OR s.id != @ExcludeSlotId)
+                      AND (s.start_time < @EndTime AND s.end_time > @StartTime)
+                      AND (@ValidFrom IS NULL OR s.valid_to IS NULL OR s.valid_to >= @ValidFrom)
+                      AND (@ValidTo IS NULL OR s.valid_from IS NULL OR s.valid_from <= @ValidTo)",
+                    new
+                    {
+                        TargetStudents = targetStudentArr,
+                        DayOfWeek = dayOfWeek,
+                        StartTime = startTime,
+                        EndTime = endTime,
+                        ValidFrom = validFrom,
+                        ValidTo = validTo,
+                        ExcludeSlotId = excludeSlotId
+                    });
+
+                conflicts.AddRange(overlappingStudentSlots);
+            }
+
+            return conflicts;
+        }
+
         public async Task<Guid> CreateSlotAsync(Guid programId, Guid coachId, CreateScheduleSlotRequest req)
         {
             if (!await IsMemberAsync(programId, coachId)) throw new UnauthorizedAccessException("FORBIDDEN");
@@ -52,6 +198,13 @@ namespace MentorumApi.Data
             if (targetCount != 1) throw new InvalidOperationException("EXACTLY_ONE_TARGET");
             if (req.DayOfWeek < 1 || req.DayOfWeek > 7) throw new InvalidOperationException("INVALID_DAY_OF_WEEK");
             if (req.StartTime >= req.EndTime) throw new InvalidOperationException("INVALID_TIME_RANGE");
+
+            // B3: Çakışma denetimi
+            var conflicts = await CheckConflictsAsync(programId, req.DayOfWeek, req.StartTime, req.EndTime, req.ValidFrom, req.ValidTo, req.CourseId, req.GroupId, req.StudentId);
+            if (conflicts.Count > 0)
+            {
+                throw new ScheduleConflictException(conflicts);
+            }
 
             var id = Guid.NewGuid();
             using var conn = _connectionFactory.CreateConnection();
@@ -72,6 +225,25 @@ namespace MentorumApi.Data
         public async Task<bool> UpdateSlotAsync(Guid programId, Guid slotId, Guid coachId, UpdateScheduleSlotRequest req)
         {
             if (!await IsMemberAsync(programId, coachId)) return false;
+
+            var existing = await GetSlotAsync(programId, slotId, coachId);
+            if (existing == null) return false;
+
+            var dayOfWeek = req.DayOfWeek ?? existing.DayOfWeek;
+            var startTime = req.StartTime ?? existing.StartTime;
+            var endTime = req.EndTime ?? existing.EndTime;
+            var validFrom = req.ValidFrom ?? existing.ValidFrom;
+            var validTo = req.ValidTo ?? existing.ValidTo;
+
+            if (startTime >= endTime) throw new InvalidOperationException("INVALID_TIME_RANGE");
+
+            // B3: Güncellemede çakışma denetimi (kendi slotId'si hariç)
+            var conflicts = await CheckConflictsAsync(programId, dayOfWeek, startTime, endTime, validFrom, validTo, existing.CourseId, existing.GroupId, existing.StudentId, slotId);
+            if (conflicts.Count > 0)
+            {
+                throw new ScheduleConflictException(conflicts);
+            }
+
             using var conn = _connectionFactory.CreateConnection();
             var rows = await conn.ExecuteAsync(@"
                 UPDATE schedule_slots SET
@@ -102,6 +274,7 @@ namespace MentorumApi.Data
                 new { SlotId = slotId, ProgramId = programId });
             return rows > 0;
         }
+
         // Öğretmenin derslerinin slotları (yetkili olduğu dersler tam, yetkili olmadığı program içi slotlar IsBusyOnly=true)
         public async Task<IEnumerable<ScheduleSlotDto>> GetTeacherSlotsAsync(Guid teacherId)
         {
@@ -154,7 +327,7 @@ namespace MentorumApi.Data
                   AND (
                       s.student_id = @StudentId
                       OR s.course_id IN (SELECT course_id FROM course_students WHERE student_id = @StudentId AND is_active = 1)
-                      OR s.group_id IN (SELECT group_id FROM student_group_members WHERE student_id = @StudentId)
+                      OR s.group_id IN (SELECT group_id FROM student_group_members WHERE student_id = @StudentId AND is_active = 1)
                   )
                 ORDER BY s.day_of_week, s.start_time", new { StudentId = studentId });
         }
@@ -168,9 +341,9 @@ namespace MentorumApi.Data
                 FROM schedule_slots s
                 WHERE s.is_active = 1
                   AND (
-                      s.student_id IN (SELECT student_id FROM student_parents WHERE parent_id = @ParentId AND is_accepted = 1)
-                      OR s.course_id IN (SELECT cs.course_id FROM course_students cs WHERE cs.student_id IN (SELECT student_id FROM student_parents WHERE parent_id = @ParentId AND is_accepted = 1) AND cs.is_active = 1)
-                      OR s.group_id IN (SELECT sgm.group_id FROM student_group_members sgm WHERE sgm.student_id IN (SELECT student_id FROM student_parents WHERE parent_id = @ParentId AND is_accepted = 1))
+                      s.student_id IN (SELECT student_id FROM student_parents WHERE parent_id = @ParentId AND is_accepted = 1 AND COALESCE(can_view_calendar, 0) = 1)
+                      OR s.course_id IN (SELECT cs.course_id FROM course_students cs WHERE cs.student_id IN (SELECT student_id FROM student_parents WHERE parent_id = @ParentId AND is_accepted = 1 AND COALESCE(can_view_calendar, 0) = 1) AND cs.is_active = 1)
+                      OR s.group_id IN (SELECT sgm.group_id FROM student_group_members sgm WHERE sgm.student_id IN (SELECT student_id FROM student_parents WHERE parent_id = @ParentId AND is_accepted = 1 AND COALESCE(can_view_calendar, 0) = 1) AND sgm.is_active = 1)
                   )
                 ORDER BY s.day_of_week, s.start_time", new { ParentId = parentId });
         }

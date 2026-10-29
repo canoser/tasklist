@@ -31,27 +31,54 @@ export default function WeeklyTimeBudgetCard({ studentId }) {
   // Dakikaları saate çevirme
   const toHours = (mins) => ((mins || 0) / 60).toFixed(1);
 
-  const studyMins = budget.totalStudyMinutes ?? budget.TotalStudyMinutes ?? 0;
-  const sleepMins = budget.sleepMinutes ?? budget.SleepMinutes ?? 0;
-  const schoolMins = budget.schoolMinutes ?? budget.SchoolMinutes ?? 0;
-  const sportMins = budget.sportMinutes ?? budget.SportMinutes ?? 0;
-  const socialMins = budget.socialMinutes ?? budget.SocialMinutes ?? 0;
-  const otherMins = budget.otherMinutes ?? budget.OtherMinutes ?? 0;
-  const restMins = budget.restMinutes ?? budget.RestMinutes ?? 0;
-  const sumMins = studyMins + sleepMins + schoolMins + sportMins + socialMins + restMins + otherMins;
-  const totalMins = (budget.totalMinutes ?? budget.TotalMinutes ?? sumMins) || 1;
+  const totalTracked = budget.totalTrackedMinutes ?? budget.TotalTrackedMinutes ?? 0;
+  const totalMins = totalTracked > 0 ? totalTracked : 1;
 
-  const categories = [
-    { label: 'Ders Çalışma & Etüt', mins: studyMins, color: CATEGORY_COLORS.study, icon: <BookOpen size={16} /> },
-    { label: 'Uyku & Dinlenme', mins: sleepMins, color: CATEGORY_COLORS.sleep, icon: <Moon size={16} /> },
-    { label: 'Okul & Dershane', mins: schoolMins, color: CATEGORY_COLORS.school, icon: <School size={16} /> },
-    { label: 'Spor & Egzersiz', mins: sportMins, color: CATEGORY_COLORS.sport, icon: <Activity size={16} /> },
-    { label: 'Sosyal & Aile', mins: socialMins, color: CATEGORY_COLORS.social, icon: <Users size={16} /> },
-    { label: 'Mola & Eğlence', mins: restMins, color: CATEGORY_COLORS.rest, icon: <Coffee size={16} /> },
-  ];
+  const categoryConfig = {
+    STUDY: { label: 'Ders Çalışma & Etüt', color: CATEGORY_COLORS.study, icon: <BookOpen size={16} /> },
+    SLEEP: { label: 'Uyku & Dinlenme', color: CATEGORY_COLORS.sleep, icon: <Moon size={16} /> },
+    SCHOOL: { label: 'Okul & Dershane', color: CATEGORY_COLORS.school, icon: <School size={16} /> },
+    SPORT: { label: 'Spor & Egzersiz', color: CATEGORY_COLORS.sport, icon: <Activity size={16} /> },
+    SOCIAL: { label: 'Sosyal & Aile', color: CATEGORY_COLORS.social, icon: <Users size={16} /> },
+    REST: { label: 'Mola & Eğlence', color: CATEGORY_COLORS.rest, icon: <Coffee size={16} /> },
+    OTHER: { label: 'Diğer Aktiviteler', color: CATEGORY_COLORS.other, icon: <Pin size={16} /> }
+  };
 
-  if (otherMins > 0) {
-    categories.push({ label: 'Diğer Aktiviteler', mins: otherMins, color: CATEGORY_COLORS.other, icon: <Pin size={16} /> });
+  const rawCategories = budget.categories || budget.Categories || [];
+  let categories = [];
+
+  if (rawCategories.length > 0) {
+    categories = rawCategories.map(rc => {
+      const catKey = (rc.category || rc.Category || 'OTHER').toUpperCase();
+      const cfg = categoryConfig[catKey] || { label: rc.category || rc.Category || 'Aktivite', color: CATEGORY_COLORS.other, icon: <Pin size={16} /> };
+      return {
+        label: cfg.label,
+        mins: rc.totalMinutes ?? rc.TotalMinutes ?? 0,
+        color: cfg.color,
+        icon: cfg.icon,
+        percentage: rc.percentage ?? rc.Percentage ?? 0
+      };
+    });
+  } else {
+    const studyMins = budget.totalStudyMinutes ?? budget.TotalStudyMinutes ?? 0;
+    const sleepMins = budget.sleepMinutes ?? budget.SleepMinutes ?? 0;
+    const schoolMins = budget.schoolMinutes ?? budget.SchoolMinutes ?? 0;
+    const sportMins = budget.sportMinutes ?? budget.SportMinutes ?? 0;
+    const socialMins = budget.socialMinutes ?? budget.SocialMinutes ?? 0;
+    const otherMins = budget.otherMinutes ?? budget.OtherMinutes ?? 0;
+    const restMins = budget.restMinutes ?? budget.RestMinutes ?? 0;
+
+    categories = [
+      { label: 'Ders Çalışma & Etüt', mins: studyMins, color: CATEGORY_COLORS.study, icon: <BookOpen size={16} /> },
+      { label: 'Uyku & Dinlenme', mins: sleepMins, color: CATEGORY_COLORS.sleep, icon: <Moon size={16} /> },
+      { label: 'Okul & Dershane', mins: schoolMins, color: CATEGORY_COLORS.school, icon: <School size={16} /> },
+      { label: 'Spor & Egzersiz', mins: sportMins, color: CATEGORY_COLORS.sport, icon: <Activity size={16} /> },
+      { label: 'Sosyal & Aile', mins: socialMins, color: CATEGORY_COLORS.social, icon: <Users size={16} /> },
+      { label: 'Mola & Eğlence', mins: restMins, color: CATEGORY_COLORS.rest, icon: <Coffee size={16} /> },
+    ];
+    if (otherMins > 0) {
+      categories.push({ label: 'Diğer Aktiviteler', mins: otherMins, color: CATEGORY_COLORS.other, icon: <Pin size={16} /> });
+    }
   }
 
   return (

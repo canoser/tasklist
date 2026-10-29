@@ -2,20 +2,42 @@ import React, { useState } from 'react';
 import { useParentChildren, useParentChildHomework } from '../parentApi';
 import Card from '../../../components/common/Card/Card';
 import { formatDate } from '../../../utils/dateUtils';
+import { PriorityBadge, AssignedViaBadge } from '../../../components/common/HomeworkStatusBadges';
+import { Check, AlertCircle, CheckCircle2, Download, Lock } from 'lucide-react';
 import styles from './ParentHomework.module.css';
 
 const ParentHomework = () => {
   const { data: children, isLoading: isChildrenLoading } = useParentChildren();
   const [selectedChildId, setSelectedChildId] = useState(null);
   const student = children?.find((c) => c.studentId === selectedChildId) || children?.[0];
-  const { data: homeworks, isLoading: isHwLoading } = useParentChildHomework(student?.studentId);
+  
+  const canViewHomework = student?.canViewHomework === 1;
+  const { data: homeworks, isLoading: isHwLoading } = useParentChildHomework(canViewHomework ? student?.studentId : null);
 
-  if (isChildrenLoading || isHwLoading) {
+  if (isChildrenLoading || (canViewHomework && isHwLoading)) {
     return <div className={styles.loading}>Ödevler yükleniyor...</div>;
   }
 
   if (!student) {
     return <div className={styles.error}>Kayıtlı öğrenci bulunamadı.</div>;
+  }
+
+  if (!canViewHomework) {
+    return (
+      <div className={styles.pageContainer}>
+        <header className={styles.header}>
+          <h1 className={styles.title}>Ödev Takibi</h1>
+          <p className={styles.subtitle}>{student.fullName} adlı öğrencinin tüm ödevleri</p>
+        </header>
+        <Card padding="lg" style={{ textAlign: 'center', color: 'var(--text-color-muted)', marginTop: '20px' }}>
+          <div style={{ display: 'inline-flex', padding: '12px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', marginBottom: '10px' }}>
+            <Lock size={24} />
+          </div>
+          <h3 style={{ margin: '0 0 6px', color: 'var(--text-color-main)' }}>Erişim Kısıtlı</h3>
+          <p style={{ margin: 0, fontSize: '0.85rem' }}>Bu öğrencinin ödevlerini görüntüleme izni koç tarafından sınırlandırılmıştır.</p>
+        </Card>
+      </div>
+    );
   }
 
   const pendingHomeworks = homeworks?.filter(hw => hw.status === 'PENDING' || hw.status === 'OVERDUE') || [];
@@ -52,18 +74,79 @@ const ParentHomework = () => {
               <Card key={hw.id} className={styles.homeworkCard}>
                 <div className={styles.cardHeader}>
                   <div>
-                    {(hw.subjectName || hw.topicName) && (
-                      <span className={styles.subjectBadge}>
-                        {hw.subjectName}{hw.topicName ? ` · ${hw.topicName}` : ''}
-                      </span>
-                    )}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: '4px' }}>
+                      {hw.courseName && (
+                        <span className={styles.subjectBadge}>{hw.courseName}</span>
+                      )}
+                      {(hw.subjectName || hw.topicName) && (
+                        <span className={styles.subjectBadge}>
+                          {hw.subjectName}{hw.topicName ? ` · ${hw.topicName}` : ''}
+                        </span>
+                      )}
+                      <PriorityBadge priority={hw.priority} />
+                      <AssignedViaBadge assignedVia={hw.assignedVia} />
+                    </div>
                     <h3 className={styles.hwTitle}>{hw.snapshotTitle}</h3>
                   </div>
                   <span className={`${styles.statusBadge} ${hw.status === 'OVERDUE' ? styles.overdue : ''}`}>
                     {hw.status === 'OVERDUE' ? 'Gecikmiş' : 'Bekliyor'}
                   </span>
                 </div>
+                
                 <p className={styles.hwDesc}>{hw.snapshotDesc}</p>
+
+                {/* Öğretmen İnceleme Durumu & Notu */}
+                {hw.teacherStatus && (
+                  <div style={{
+                    padding: '8px 10px',
+                    borderRadius: '6px',
+                    fontSize: '0.8rem',
+                    marginBottom: '8px',
+                    backgroundColor: hw.teacherStatus === 'REVISE_REQUESTED' ? 'rgba(239, 68, 68, 0.08)' : 'rgba(16, 185, 129, 0.08)',
+                    border: `1px solid ${hw.teacherStatus === 'REVISE_REQUESTED' ? 'rgba(239, 68, 68, 0.25)' : 'rgba(16, 185, 129, 0.25)'}`,
+                    color: hw.teacherStatus === 'REVISE_REQUESTED' ? '#b91c1c' : '#065f46'
+                  }}>
+                    <div style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      {hw.teacherStatus === 'REVISE_REQUESTED' ? <AlertCircle size={14} /> : <CheckCircle2 size={14} />}
+                      <span>{hw.teacherStatus === 'REVISE_REQUESTED' ? 'Öğretmen İncelemesi: Düzeltme İstendi' : 'Öğretmen İncelemesi: Onaylandı'}</span>
+                    </div>
+                    {hw.teacherReviewNote && (
+                      <div style={{ marginTop: '4px', fontSize: '0.78rem', color: 'var(--text-color-main)' }}>
+                        {hw.teacherReviewNote}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Ekli Ödev Dosyaları */}
+                {hw.attachments && hw.attachments.length > 0 && (
+                  <div style={{ marginBottom: '8px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {hw.attachments.map((att) => (
+                      <a
+                        key={att.id}
+                        href={att.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '3px 8px',
+                          borderRadius: '6px',
+                          background: 'var(--bg-app)',
+                          border: '1px solid var(--border-color)',
+                          color: 'var(--color-primary)',
+                          fontSize: '0.75rem',
+                          textDecoration: 'none'
+                        }}
+                      >
+                        <Download size={12} />
+                        <span>{att.fileName || 'Dosya'}</span>
+                      </a>
+                    ))}
+                  </div>
+                )}
+
                 <div className={styles.progressHeader}>
                   <span>İlerleme Durumu: %{hw.completionPercentage || 0}</span>
                 </div>
@@ -89,19 +172,26 @@ const ParentHomework = () => {
               <Card key={hw.id} className={styles.homeworkCardCompleted}>
                 <div className={styles.cardHeader}>
                   <div>
-                    {(hw.subjectName || hw.topicName) && (
-                      <span className={styles.subjectBadge}>
-                        {hw.subjectName}{hw.topicName ? ` · ${hw.topicName}` : ''}
-                      </span>
-                    )}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: '4px' }}>
+                      {hw.courseName && (
+                        <span className={styles.subjectBadge}>{hw.courseName}</span>
+                      )}
+                      {(hw.subjectName || hw.topicName) && (
+                        <span className={styles.subjectBadge}>
+                          {hw.subjectName}{hw.topicName ? ` · ${hw.topicName}` : ''}
+                        </span>
+                      )}
+                      <PriorityBadge priority={hw.priority} />
+                      <AssignedViaBadge assignedVia={hw.assignedVia} />
+                    </div>
                     <h3 className={styles.hwTitleCompleted}>{hw.snapshotTitle}</h3>
                   </div>
-                  <span className={styles.statusBadgeDone}>
-                    ✓ Tamamlandı
+                  <span className={styles.statusBadgeDone} style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                    <Check size={13} /> Tamamlandı
                   </span>
                 </div>
                 <div className={styles.dueDate}>
-                  Teslim Edildi: {formatDate(hw.completedAt, 'dd MMM yyyy')}
+                  Teslim: {formatDate(hw.completedAt, 'dd MMM yyyy')}
                 </div>
               </Card>
             ))}

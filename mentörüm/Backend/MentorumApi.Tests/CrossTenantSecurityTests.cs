@@ -46,8 +46,7 @@ namespace MentorumApi.Tests
 
         public IntegrationTestFixture()
         {
-            PostgreSqlContainer = new PostgreSqlBuilder()
-                .WithImage("postgres:15-alpine")
+            PostgreSqlContainer = new PostgreSqlBuilder("postgres:15-alpine")
                 .Build();
         }
 

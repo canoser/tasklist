@@ -1,5 +1,9 @@
 using Dapper;
 using MentorumApi.DTOs;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MentorumApi.Data
 {
@@ -39,7 +43,7 @@ namespace MentorumApi.Data
                     SELECT cs.student_id FROM course_students cs WHERE cs.course_id = @CourseId AND cs.is_active = 1
                     UNION
                     SELECT sgm.student_id FROM course_groups cg
-                    JOIN student_group_members sgm ON sgm.group_id = cg.group_id
+                    JOIN student_group_members sgm ON sgm.group_id = cg.group_id AND sgm.is_active = 1
                     WHERE cg.course_id = @CourseId
                 ) AS t",
                 new { CourseId = courseId });
@@ -53,6 +57,7 @@ namespace MentorumApi.Data
                 new { TeacherId = teacherId, ProgramId = programId });
             return found != null;
         }
+
         public async Task<List<Guid>> GetTeacherProgramIdsAsync(Guid teacherId)
         {
             using var conn = _connectionFactory.CreateConnection();
@@ -100,6 +105,7 @@ namespace MentorumApi.Data
                 CoachingStartDate = access.CanViewProfile ? student.CoachingStartDate : null,
             };
         }
+
         // Öğretmenin dersleri (Aşama 6)
         public async Task<IEnumerable<CourseAccessDto>> GetTeacherCoursesAsync(Guid teacherId)
         {
@@ -139,7 +145,9 @@ namespace MentorumApi.Data
                 WHERE s.id IN (
                     SELECT cs.student_id FROM course_students cs WHERE cs.course_id = @CourseId AND cs.is_active = 1
                     UNION
-                    SELECT sgm.student_id FROM course_groups cg JOIN student_group_members sgm ON sgm.group_id = cg.group_id WHERE cg.course_id = @CourseId
+                    SELECT sgm.student_id FROM course_groups cg 
+                    JOIN student_group_members sgm ON sgm.group_id = cg.group_id AND sgm.is_active = 1
+                    WHERE cg.course_id = @CourseId
                 )
                 ORDER BY u.full_name",
                 new { CourseId = courseId });
@@ -150,7 +158,7 @@ namespace MentorumApi.Data
             // Not: Koçun AssignHomeworkAsync ile attığı course_id=NULL ödevler bu filtreyle öğretmene görünmez (kabul edilen davranış).
             using var conn = _connectionFactory.CreateConnection();
             return await conn.QueryAsync(@"
-                SELECT h.id, h.student_id as ""studentId"", u.full_name as ""studentName"", h.snapshot_title as title, h.due_date as ""dueDate"", h.status as status, h.feedback as feedback
+                SELECT h.id, h.student_id as ""studentId"", u.full_name as ""studentName"", h.snapshot_title as title, h.due_date as ""dueDate"", h.status as status, h.feedback as feedback, COALESCE(h.version, 1) as version
                 FROM homework_assignments h
                 JOIN users u ON u.id = h.student_id
                 WHERE h.program_id = (SELECT program_id FROM courses WHERE id = @CourseId)
@@ -158,7 +166,9 @@ namespace MentorumApi.Data
                   AND h.student_id IN (
                     SELECT cs.student_id FROM course_students cs WHERE cs.course_id = @CourseId AND cs.is_active = 1
                     UNION
-                    SELECT sgm.student_id FROM course_groups cg JOIN student_group_members sgm ON sgm.group_id = cg.group_id WHERE cg.course_id = @CourseId
+                    SELECT sgm.student_id FROM course_groups cg 
+                    JOIN student_group_members sgm ON sgm.group_id = cg.group_id AND sgm.is_active = 1
+                    WHERE cg.course_id = @CourseId
                 )
                 ORDER BY h.due_date DESC",
                 new { CourseId = courseId });
@@ -176,27 +186,37 @@ namespace MentorumApi.Data
                   AND e.student_id IN (
                     SELECT cs.student_id FROM course_students cs WHERE cs.course_id = @CourseId AND cs.is_active = 1
                     UNION
-                    SELECT sgm.student_id FROM course_groups cg JOIN student_group_members sgm ON sgm.group_id = cg.group_id WHERE cg.course_id = @CourseId
+                    SELECT sgm.student_id FROM course_groups cg 
+                    JOIN student_group_members sgm ON sgm.group_id = cg.group_id AND sgm.is_active = 1
+                    WHERE cg.course_id = @CourseId
                 )
                 ORDER BY e.exam_date DESC",
                 new { CourseId = courseId });
         }
+
         // Öğrencinin dersleri (Aşama 10)
         public async Task<IEnumerable<dynamic>> GetStudentCoursesAsync(Guid studentId)
         {
             using var conn = _connectionFactory.CreateConnection();
             return await conn.QueryAsync(@"
-                SELECT c.id AS Id, c.name AS Name, c.type AS Type
+                SELECT DISTINCT ON (CASE WHEN c.type = 'OZEL_DERS' THEN 'OZEL_DERS' ELSE c.id::text END)
+                    c.id AS Id, 
+                    c.name AS Name, 
+                    c.type AS Type,
+                    u.full_name AS TeacherName,
+                    s.name AS SubjectName
                 FROM courses c
+                LEFT JOIN users u ON u.id = c.teacher_id
+                LEFT JOIN subjects s ON s.id = c.subject_id
                 WHERE c.is_active = 1
                   AND c.id IN (
                       SELECT cs.course_id FROM course_students cs WHERE cs.student_id = @StudentId AND cs.is_active = 1
                       UNION
                       SELECT cg.course_id FROM course_groups cg
-                      JOIN student_group_members sgm ON sgm.group_id = cg.group_id
+                      JOIN student_group_members sgm ON sgm.group_id = cg.group_id AND sgm.is_active = 1
                       WHERE sgm.student_id = @StudentId
                   )
-                ORDER BY c.name",
+                ORDER BY (CASE WHEN c.type = 'OZEL_DERS' THEN 'OZEL_DERS' ELSE c.id::text END), c.name",
                 new { StudentId = studentId });
         }
 
@@ -228,8 +248,8 @@ namespace MentorumApi.Data
                 {
                     var id = Guid.NewGuid();
                     await conn.ExecuteAsync(@"
-                        INSERT INTO homework_assignments (id, subject_id, curriculum_topic_id, snapshot_title, snapshot_desc, snapshot_source, student_id, program_id, course_id, created_by, due_date, status, created_at, updated_at)
-                        VALUES (@Id, @SubjectId, @CurriculumTopicId, @Title, @Description, @Source, @StudentId, @ProgramId, @CourseId, @CreatedBy, @DueDate, 'PENDING', @Now, @Now)",
+                        INSERT INTO homework_assignments (id, subject_id, curriculum_topic_id, snapshot_title, snapshot_desc, snapshot_source, student_id, program_id, course_id, created_by, due_date, status, version, created_at, updated_at)
+                        VALUES (@Id, @SubjectId, @CurriculumTopicId, @Title, @Description, @Source, @StudentId, @ProgramId, @CourseId, @CreatedBy, @DueDate, 'PENDING', 1, @Now, @Now)",
                         new
                         {
                             Id = id,
@@ -315,11 +335,29 @@ namespace MentorumApi.Data
                     feedback = @Feedback,
                     completed_at = CASE WHEN @Status = 'DONE' THEN @Now ELSE completed_at END,
                     completed_by = CASE WHEN @Status = 'DONE' THEN 'Teacher' ELSE completed_by END,
+                    version = version + 1,
                     updated_at = @Now
-                WHERE id = @AssignmentId AND course_id = @CourseId",
-                new { Status = status, Feedback = req.Feedback ?? "", Now = now, AssignmentId = assignmentId, CourseId = courseId });
+                WHERE id = @AssignmentId AND course_id = @CourseId AND (@ExpectedVersion IS NULL OR version = @ExpectedVersion)",
+                new { 
+                    Status = status, 
+                    Feedback = req.Feedback ?? "", 
+                    Now = now, 
+                    AssignmentId = assignmentId, 
+                    CourseId = courseId,
+                    req.ExpectedVersion 
+                });
 
-            if (rows == 0) throw new UnauthorizedAccessException("NOT_FOUND");
+            if (rows == 0)
+            {
+                var currentVer = await conn.QuerySingleOrDefaultAsync<int?>(
+                    "SELECT version FROM homework_assignments WHERE id = @AssignmentId AND course_id = @CourseId",
+                    new { AssignmentId = assignmentId, CourseId = courseId });
+                if (currentVer != null && req.ExpectedVersion.HasValue && currentVer.Value != req.ExpectedVersion.Value)
+                {
+                    throw new InvalidOperationException("CONCURRENCY_CONFLICT");
+                }
+                throw new UnauthorizedAccessException("NOT_FOUND");
+            }
             return assignmentId;
         }
 
