@@ -185,6 +185,15 @@ namespace MentorumApi.Endpoints
                 return Results.Ok(await repo.GetTeacherCourseExamsAsync(courseId));
             });
 
+            me.MapGet("/courses/{courseId:guid}/resources", async (Guid courseId, [FromServices] SchoolAccessRepository accessRepo, [FromServices] CourseResourceRepository resourceRepo, ClaimsPrincipal user) =>
+            {
+                var teacherId = GetCoachId(user);
+                if (teacherId == null) return Results.Unauthorized();
+                var access = await accessRepo.GetCourseAccessAsync(courseId, teacherId.Value);
+                if (access == null) return Results.NotFound(new { error = "Ders bulunamadı." });
+                return Results.Ok(await resourceRepo.GetTeacherCourseResourcesAsync(courseId));
+            });
+
             // --- Öğretmen kendi profili + oluşturma yetkileri (Aşama 3 & 5) ---
             me.MapGet("/me", async ([FromServices] TeacherRepository repo, ClaimsPrincipal user) =>
             {

@@ -1,13 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/apiClient';
 
-export const useTeacherCourses = () => {
+export const useTeacherCourses = (enabled = true) => {
   return useQuery({
     queryKey: ['teacher', 'courses'],
     queryFn: async () => {
       const response = await apiClient.get('/teacher/courses');
       return response || [];
     },
+    enabled,
   });
 };
 

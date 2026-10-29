@@ -39,13 +39,15 @@ namespace MentorumApi.Data
                     SELECT c.teacher_id, cs.student_id AS sid
                     FROM course_students cs
                     JOIN courses c ON c.id = cs.course_id
-                    WHERE c.program_id = @ProgramId AND cs.is_active = 1 AND c.teacher_id IS NOT NULL
+                    JOIN students s ON s.id = cs.student_id
+                    WHERE c.program_id = @ProgramId AND c.is_active = 1 AND cs.is_active = 1 AND s.is_active = 1 AND c.teacher_id IS NOT NULL
                     UNION
                     SELECT c.teacher_id, sgm.student_id AS sid
                     FROM course_groups cg
                     JOIN courses c ON c.id = cg.course_id
                     JOIN student_group_members sgm ON sgm.group_id = cg.group_id
-                    WHERE c.program_id = @ProgramId AND c.teacher_id IS NOT NULL AND c.is_active = 1 AND sgm.is_active = 1
+                    JOIN students s ON s.id = sgm.student_id
+                    WHERE c.program_id = @ProgramId AND c.teacher_id IS NOT NULL AND c.is_active = 1 AND sgm.is_active = 1 AND s.is_active = 1
                 ) c
                 GROUP BY c.teacher_id",
                 new { ProgramId = programId });
@@ -240,12 +242,14 @@ namespace MentorumApi.Data
                 SELECT COUNT(DISTINCT sid) FROM (
                     SELECT cs.student_id AS sid FROM course_students cs
                     JOIN courses c ON c.id = cs.course_id
-                    WHERE c.teacher_id = @TeacherId AND c.program_id = @ProgramId AND cs.is_active = 1
+                    JOIN students s ON s.id = cs.student_id
+                    WHERE c.teacher_id = @TeacherId AND c.program_id = @ProgramId AND c.is_active = 1 AND cs.is_active = 1 AND s.is_active = 1
                     UNION
                     SELECT sgm.student_id FROM course_groups cg
                     JOIN courses c ON c.id = cg.course_id
                     JOIN student_group_members sgm ON sgm.group_id = cg.group_id AND sgm.is_active = 1
-                    WHERE c.teacher_id = @TeacherId AND c.program_id = @ProgramId AND c.is_active = 1
+                    JOIN students s ON s.id = sgm.student_id
+                    WHERE c.teacher_id = @TeacherId AND c.program_id = @ProgramId AND c.is_active = 1 AND s.is_active = 1
                 ) t",
                 new { TeacherId = teacherId, ProgramId = programId });
 
@@ -313,7 +317,8 @@ namespace MentorumApi.Data
                 -- Bireysel veya doğrudan kurs kayıtları
                 SELECT u.id AS StudentId, u.full_name AS StudentName, u.email AS Email, s.phone AS Phone,
                        s.track AS TargetExam, s.grade AS ClassLevel, c.name AS CourseName,
-                       cs.is_active AS IsActive, cs.enrolled_at AS EnrolledAt
+                       CASE WHEN cs.is_active = 1 AND s.is_active = 1 AND c.is_active = 1 THEN 1 ELSE 0 END AS IsActive,
+                       cs.enrolled_at AS EnrolledAt
                 FROM course_students cs
                 JOIN courses c ON c.id = cs.course_id
                 JOIN users u ON u.id = cs.student_id
@@ -325,7 +330,8 @@ namespace MentorumApi.Data
                 -- Grup üzerinden gelen kayıtlar
                 SELECT u.id AS StudentId, u.full_name AS StudentName, u.email AS Email, s.phone AS Phone,
                        s.track AS TargetExam, s.grade AS ClassLevel, c.name AS CourseName,
-                       sgm.is_active AS IsActive, sgm.joined_at AS EnrolledAt
+                       CASE WHEN sgm.is_active = 1 AND s.is_active = 1 AND c.is_active = 1 THEN 1 ELSE 0 END AS IsActive,
+                       sgm.joined_at AS EnrolledAt
                 FROM course_groups cg
                 JOIN courses c ON c.id = cg.course_id
                 JOIN student_group_members sgm ON sgm.group_id = cg.group_id

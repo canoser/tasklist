@@ -19,8 +19,12 @@ export default function StoragePage() {
     const { user, viewAs } = useAuthStore();
     const effectiveRole = (user?.role === 'Coach' || user?.role === 'Admin') && viewAs ? viewAs.role : user?.role;
 
+    const isCoach = effectiveRole === 'Coach' || effectiveRole === 'Admin';
+    const isStudent = effectiveRole === 'Student';
+    const isTeacher = effectiveRole === 'Teacher';
+
     const { data: uploads = [] } = useUploads();
-    const { data: usage } = useStorageUsage();
+    const { data: usage } = useStorageUsage(isCoach);
     const createUpload = useCreateUploadUrl();
     const confirmUpload = useConfirmUpload();
     const registerDevice = useRegisterDevice();
@@ -40,15 +44,15 @@ export default function StoragePage() {
     }, []);
 
     // Öğrenci için ders listesi ve alıcı seçenekleri
-    const { data: studentCourses = [] } = useStudentCourses();
-    const { data: recipients = [] } = useRecipients(courseId || null);
+    const { data: studentCourses = [] } = useStudentCourses(isStudent);
+    const { data: recipients = [] } = useRecipients(isStudent && courseId ? courseId : null);
 
     // Koç için öğrenci listesi
-    const { data: coachStudents = [] } = useStudents();
+    const { data: coachStudents = [] } = useStudents(isCoach);
 
     // Öğretmen için ders ve dersin öğrencileri
-    const { data: teacherCourses = [] } = useTeacherCourses();
-    const { data: teacherStudents = [] } = useTeacherCourseStudents(courseId || null);
+    const { data: teacherCourses = [] } = useTeacherCourses(isTeacher);
+    const { data: teacherStudents = [] } = useTeacherCourseStudents(isTeacher && courseId ? courseId : null);
 
     const filtered = uploads.filter((u) =>
         tab === 'images' ? IMAGE_TYPES.includes(u.contentType) : DOC_TYPES.includes(u.contentType)

@@ -1,13 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../api/apiClient';
 
-export const useStudents = () => {
+export const useStudents = (enabled = true) => {
   return useQuery({
     queryKey: ['coach', 'students'],
     queryFn: async () => {
       const response = await apiClient.get('/students');
       return response || [];
     },
+    enabled,
   });
 };
 

@@ -34,7 +34,10 @@ self.addEventListener('fetch', (event) => {
   // SPA navigasyonu: offline app shell.
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request).catch(() => caches.match('/index.html'))
+      fetch(request).catch(async () => {
+        const shell = await caches.match('/index.html');
+        return shell || new Response('Çevrimdışı', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+      })
     );
     return;
   }
@@ -42,7 +45,7 @@ self.addEventListener('fetch', (event) => {
   // Statik varlıklar: cache-first + arka planda tazele.
   event.respondWith(
     caches.match(request).then((cached) => {
-const fetchPromise = fetch(request).then((response) => {
+      const fetchPromise = fetch(request).then((response) => {
         if (response && response.status === 200) {
           try {
             const responseToCache = response.clone();
@@ -52,9 +55,8 @@ const fetchPromise = fetch(request).then((response) => {
           }
         }
         return response;
-      }).catch((err) => {
-        if (!cached) throw err; // Eğer cache de yoksa gerçek ağ hatasını fırlat (undefined dönme)
-        return cached;
+      }).catch(() => {
+        return cached || new Response('', { status: 504 });
       });
       return cached || fetchPromise;
     })

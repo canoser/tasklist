@@ -12,9 +12,10 @@ export const useRecipients = (courseId) => useQuery({
     enabled: !!courseId,
 });
 
-export const useStorageUsage = () => useQuery({
+export const useStorageUsage = (enabled = true) => useQuery({
     queryKey: ['coach', 'storage-usage'],
     queryFn: () => apiClient.get('/coach/storage-usage') || null,
+    enabled,
 });
 
 export const useCreateUploadUrl = () => {

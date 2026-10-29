@@ -400,10 +400,10 @@ const TeacherCoursesPage = () => {
                   <div>
                     <strong>{r.title}</strong>
                     <span className={styles.meta} style={{ display: 'block' }}>
-                      {r.resourceType || 'Ders Materyali'} {r.description ? `· ${r.description}` : ''}
+                      {r.resourceType || r.type || 'Ders Materyali'} {r.description ? `· ${r.description}` : ''}
                     </span>
-                    {r.url && (
-                      <a href={r.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: 'var(--color-primary)' }}>
+                    {(r.url || r.resourceRef) && (
+                      <a href={r.url || r.resourceRef} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: 'var(--color-primary)' }}>
                         Bağlantıyı Aç ↗
                       </a>
                     )}

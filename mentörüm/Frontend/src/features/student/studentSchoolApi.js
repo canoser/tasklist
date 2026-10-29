@@ -6,9 +6,10 @@ export const useStudentSchedule = () => useQuery({
   queryFn: async () => (await apiClient.get('/student/schedule')) || [],
 });
 
-export const useStudentCourses = () => useQuery({
+export const useStudentCourses = (enabled = true) => useQuery({
   queryKey: ['student', 'courses'],
   queryFn: async () => (await apiClient.get('/student/courses')) || [],
+  enabled,
 });
 
 export const useStudentCourseResources = (courseId) => useQuery({
