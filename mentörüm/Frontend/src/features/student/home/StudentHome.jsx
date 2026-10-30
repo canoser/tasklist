@@ -4,10 +4,8 @@ import {
   useStudentHomework, 
   useStudentExams, 
   useStudentCurriculum, 
-  useStudentSessions, 
-  useStudentStreak 
+  useStudentSessions 
 } from '../studentApi';
-import { useUIStore } from '../../../store/uiStore';
 import { BookOpen, Target, FlaskConical, BookMarked, StickyNote, HelpCircle } from 'lucide-react';
 import StudyTimerCard from './StudyTimerCard';
 import MoodCheckinCard from './MoodCheckinCard';
@@ -20,12 +18,10 @@ import styles from './StudentHome.module.css';
 
 const StudentHome = () => {
   const navigate = useNavigate();
-  const { studentHomeLayout } = useUIStore();
   const { data: homeworks, isLoading } = useStudentHomework();
   const { data: exams } = useStudentExams();
   const { data: curriculum } = useStudentCurriculum();
   const { data: sessions } = useStudentSessions();
-  const { data: streak = { currentStreak: 0 } } = useStudentStreak();
   
   const [activeTabbedSection, setActiveTabbedSection] = useState('notes'); // 'notes' | 'questions'
 

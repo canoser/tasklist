@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import Card from '../../../../components/common/Card/Card';
 import Button from '../../../../components/common/Button/Button';
-import { Smile, Frown, Meh, AlertCircle, MessageSquare, Send, CheckCircle2 } from 'lucide-react';
+import { Smile, Frown, Meh, AlertCircle, MessageSquare, Send } from 'lucide-react';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 
 const MOOD_MAP = {
   GREAT: { label: 'Harika / Motive', icon: Smile, color: '#10b981' },
   GOOD: { label: 'İyi / Odaklı', icon: Smile, color: '#3b82f6' },
+  ENERGETIC: { label: 'Çok Verimli', icon: Smile, color: '#059669' },
+  NORMAL: { label: 'Normal', icon: Meh, color: '#3b82f6' },
   TIRED: { label: 'Yorgun', icon: Meh, color: '#f59e0b' },
   STRESSED: { label: 'Stresli', icon: Frown, color: '#f97316' },
   ANXIOUS: { label: 'Kaygılı', icon: AlertCircle, color: '#ef4444' }

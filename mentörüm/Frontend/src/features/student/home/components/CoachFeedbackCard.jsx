@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Card from '../../../../components/common/Card/Card';
-import Button from '../../../../components/common/Button/Button';
-import { MessageSquare, AlertCircle, FileText, CheckCircle2, Download, HelpCircle, User } from 'lucide-react';
+
+import { MessageSquare, AlertCircle, FileText, Download, HelpCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { useStudentTeacherNotes, useStudentQuestions, useStudentUploads } from '../../studentApi';

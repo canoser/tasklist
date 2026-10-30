@@ -12,7 +12,7 @@ import {
   ArrowLeft, 
   ExternalLink, 
   ChevronRight, 
-  Layers, 
+
   Target 
 } from 'lucide-react';
 import { useDownloadUrl } from '../../storage/storageApi';

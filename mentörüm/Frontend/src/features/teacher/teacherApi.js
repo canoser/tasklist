@@ -126,14 +126,3 @@ export const useTeacherCourseResources = (courseId) => {
     enabled: !!courseId,
   });
 };
-
-export const useCompleteTeacherCourse = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ courseId, data }) =>
-      apiClient.post(`/teacher/courses/${courseId}/complete`, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teacher', 'courses'] });
-    },
-  });
-};

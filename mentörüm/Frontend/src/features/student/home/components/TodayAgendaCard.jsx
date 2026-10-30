@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import Card from '../../../../components/common/Card/Card';
 import Button from '../../../../components/common/Button/Button';
-import { Calendar, Clock, CheckCircle2, Circle, AlertCircle, MessageSquare, ChevronRight, BookOpen, Flame } from 'lucide-react';
+import { Calendar, Clock, CheckCircle2, Circle, MessageSquare, ChevronRight, BookOpen, Flame } from 'lucide-react';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
-import { useStudentSchedule, useStudentCoachingTools, useToggleStudentHabit, useUpdateSessionPrep } from '../../studentApi';
+import { useStudentCoachingTools, useToggleStudentHabit, useUpdateSessionPrep } from '../../studentApi';
+import { useStudentSchedule } from '../../studentSchoolApi';
 
 const PRIORITY_ORDER = { HIGH: 1, NORMAL: 2, LOW: 3 };
 
@@ -55,7 +56,7 @@ const TodayAgendaCard = ({ upcomingSession, homeworks = [], onNavigateToHomework
     toggleHabit.mutate({
       habitId,
       date: todayStr,
-      done: !isDone
+      completed: !isDone
     });
   };
 

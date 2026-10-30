@@ -3,7 +3,7 @@ import Modal from '../../../components/common/Modal/Modal';
 import Input from '../../../components/common/Input/Input';
 import Button from '../../../components/common/Button/Button';
 import { useUpdateTeacher } from '../coachSchoolApi';
-import { UserCheck, Phone, BookOpen, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { UserCheck, BookOpen, AlertCircle, CheckCircle2 } from 'lucide-react';
 import styles from './AddTeacherModal.module.css';
 
 const BRANCH_OPTIONS = [

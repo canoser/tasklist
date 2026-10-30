@@ -1,9 +1,28 @@
 import React, { useState } from 'react';
 import Card from '../../../../components/common/Card/Card';
 import Button from '../../../../components/common/Button/Button';
-import { Compass, Plus, ChevronDown, ChevronUp, CheckCircle, Calendar } from 'lucide-react';
+import { Compass, Plus, ChevronDown, ChevronUp, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
+
+const parseGrowData = (raw) => {
+  if (!raw) return null;
+  if (typeof raw === 'object') return raw;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+};
+
+const formatSessionDate = (dateVal) => {
+  if (!dateVal) return '-';
+  try {
+    return format(new Date(dateVal), 'd MMM yyyy', { locale: tr });
+  } catch {
+    return String(dateVal);
+  }
+};
 
 const GrowSessionsPanel = ({ sessions = [], onAddSession }) => {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -147,7 +166,8 @@ const GrowSessionsPanel = ({ sessions = [], onAddSession }) => {
         ) : (
           sessions.map((s) => {
             const isExpanded = expandedId === s.id;
-            const grow = s.growData || {};
+            const grow = parseGrowData(s.growData);
+            const hasGrowFields = !!(grow && (grow.goal || grow.reality || grow.options || grow.willAction));
             return (
               <div key={s.id} style={{ border: '1px solid var(--border-color)', borderRadius: '8px', overflow: 'hidden' }}>
                 <div
@@ -157,29 +177,53 @@ const GrowSessionsPanel = ({ sessions = [], onAddSession }) => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <Calendar size={16} style={{ color: 'var(--text-color-muted)' }} />
                     <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{s.title}</span>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-color-muted)' }}>{s.sessionDate}</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-color-muted)' }}>{formatSessionDate(s.sessionDate)}</span>
                   </div>
                   {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 </div>
 
                 {isExpanded && (
-                  <div style={{ padding: '14px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', backgroundColor: 'var(--bg-color-surface)' }}>
-                    <div>
-                      <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-primary)' }}>🎯 Hedef (Goal)</div>
-                      <p style={{ margin: '4px 0 0', fontSize: '0.825rem' }}>{grow.goal || '-'}</p>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#f59e0b' }}>🔍 Mevcut Durum (Reality)</div>
-                      <p style={{ margin: '4px 0 0', fontSize: '0.825rem' }}>{grow.reality || '-'}</p>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#3b82f6' }}>💡 Seçenekler (Options)</div>
-                      <p style={{ margin: '4px 0 0', fontSize: '0.825rem' }}>{grow.options || '-'}</p>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#10b981' }}>🚀 Aksiyon (Will)</div>
-                      <p style={{ margin: '4px 0 0', fontSize: '0.825rem' }}>{grow.willAction || '-'}</p>
-                    </div>
+                  <div style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: '12px', backgroundColor: 'var(--bg-color-surface)' }}>
+                    {s.prepNotes && (
+                      <div style={{ padding: '8px 10px', borderRadius: '6px', backgroundColor: 'rgba(59, 130, 246, 0.08)', borderLeft: '3px solid #3b82f6', fontSize: '0.82rem' }}>
+                        <strong>Öğrenci Hazırlık Notu:</strong> {s.prepNotes}
+                      </div>
+                    )}
+                    {hasGrowFields ? (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+                        <div>
+                          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-primary)' }}>🎯 Hedef (Goal)</div>
+                          <p style={{ margin: '4px 0 0', fontSize: '0.825rem' }}>{grow.goal || '-'}</p>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#f59e0b' }}>🔍 Mevcut Durum (Reality)</div>
+                          <p style={{ margin: '4px 0 0', fontSize: '0.825rem' }}>{grow.reality || '-'}</p>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#3b82f6' }}>💡 Seçenekler (Options)</div>
+                          <p style={{ margin: '4px 0 0', fontSize: '0.825rem' }}>{grow.options || '-'}</p>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#10b981' }}>🚀 Aksiyon (Will)</div>
+                          <p style={{ margin: '4px 0 0', fontSize: '0.825rem' }}>{grow.willAction || s.actionItems || '-'}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {s.notes && (
+                          <div>
+                            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-primary)' }}>Görüşme Notları</div>
+                            <p style={{ margin: '4px 0 0', fontSize: '0.825rem', whiteSpace: 'pre-line' }}>{s.notes}</p>
+                          </div>
+                        )}
+                        {s.actionItems && (
+                          <div>
+                            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#10b981' }}>🚀 Aksiyon / Kararlar</div>
+                            <p style={{ margin: '4px 0 0', fontSize: '0.825rem' }}>{s.actionItems}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

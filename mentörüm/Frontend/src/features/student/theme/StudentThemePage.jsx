@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useUIStore } from '../../../store/uiStore';
-import Card from '../../../components/common/Card/Card';
+
 import { 
   Palette, 
   Sun, 

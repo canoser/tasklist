@@ -14,7 +14,7 @@ const LoginPage = () => {
   const { setAuth } = useAuthStore();
   
   const [isRegister, setIsRegister] = useState(false);
-  const [isForgot, setIsForgot] = useState(false);
+  const isForgot = false;
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

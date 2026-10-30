@@ -1,42 +1,18 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Card from '../../../../components/common/Card/Card';
-import Button from '../../../../components/common/Button/Button';
-import { Grid, Plus, Trash2, CheckCircle } from 'lucide-react';
+import { Grid } from 'lucide-react';
 
 const EisenhowerMatrixCard = ({ homework = [], questions = [] }) => {
-  const [customItems, setCustomItems] = useState({
-    doFirst: [],
-    schedule: [],
-    delegate: [],
-    eliminate: []
-  });
-  const [inputVal, setInputVal] = useState({ quadrant: 'doFirst', text: '' });
-
   // Otomatik maddeler
   const autoDoFirst = [
     ...homework.filter(h => h.status === 'OVERDUE' || (h.priority === 'HIGH' && h.status === 'PENDING')).map(h => `Acil Ödev: ${h.snapshotTitle}`),
     ...questions.filter(q => q.status === 'OPEN').slice(0, 2).map(q => `Çözülemeyen Soru: ${q.topicText}`)
   ];
 
-  const autoSchedule = [
-    ...homework.filter(h => h.priority !== 'HIGH' && h.status === 'PENDING').slice(0, 3).map(h => `Planlı Ödev: ${h.snapshotTitle}`)
-  ];
-
-  const handleAdd = (quadrant) => {
-    if (!inputVal.text.trim()) return;
-    setCustomItems({
-      ...customItems,
-      [quadrant]: [...customItems[quadrant], inputVal.text.trim()]
-    });
-    setInputVal({ quadrant: 'doFirst', text: '' });
-  };
-
-  const handleRemove = (quadrant, idx) => {
-    setCustomItems({
-      ...customItems,
-      [quadrant]: customItems[quadrant].filter((_, i) => i !== idx)
-    });
-  };
+  const autoSchedule = homework
+    .filter(h => h.priority !== 'HIGH' && h.status === 'PENDING')
+    .slice(0, 3)
+    .map(h => `Planlı Ödev: ${h.snapshotTitle}`);
 
   return (
     <Card
@@ -54,15 +30,13 @@ const EisenhowerMatrixCard = ({ homework = [], questions = [] }) => {
             🔥 1. Hemen Yap (Acil & Önemli)
           </div>
           <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '0.8rem', color: 'var(--text-color-main)' }}>
-            {autoDoFirst.map((item, i) => (
-              <li key={`adf_${i}`} style={{ marginBottom: '4px' }}>{item}</li>
-            ))}
-            {customItems.doFirst.map((item, i) => (
-              <li key={`cdf_${i}`} style={{ marginBottom: '4px' }}>
-                {item}
-                <button type="button" onClick={() => handleRemove('doFirst', i)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', marginLeft: '4px' }}>&times;</button>
-              </li>
-            ))}
+            {autoDoFirst.length === 0 ? (
+              <li style={{ color: 'var(--text-color-muted)', fontStyle: 'italic' }}>Acil madde yok</li>
+            ) : (
+              autoDoFirst.map((item, i) => (
+                <li key={`adf_${i}`} style={{ marginBottom: '4px' }}>{item}</li>
+              ))
+            )}
           </ul>
         </div>
 
@@ -72,15 +46,13 @@ const EisenhowerMatrixCard = ({ homework = [], questions = [] }) => {
             📅 2. Planla (Önemli, Acil Değil)
           </div>
           <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '0.8rem', color: 'var(--text-color-main)' }}>
-            {autoSchedule.map((item, i) => (
-              <li key={`as_${i}`} style={{ marginBottom: '4px' }}>{item}</li>
-            ))}
-            {customItems.schedule.map((item, i) => (
-              <li key={`cs_${i}`} style={{ marginBottom: '4px' }}>
-                {item}
-                <button type="button" onClick={() => handleRemove('schedule', i)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', marginLeft: '4px' }}>&times;</button>
-              </li>
-            ))}
+            {autoSchedule.length === 0 ? (
+              <li style={{ color: 'var(--text-color-muted)', fontStyle: 'italic' }}>Planlı madde yok</li>
+            ) : (
+              autoSchedule.map((item, i) => (
+                <li key={`as_${i}`} style={{ marginBottom: '4px' }}>{item}</li>
+              ))
+            )}
           </ul>
         </div>
 
@@ -90,16 +62,7 @@ const EisenhowerMatrixCard = ({ homework = [], questions = [] }) => {
             ⚡ 3. Hızlıca Bitir / Delege Et
           </div>
           <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '0.8rem', color: 'var(--text-color-main)' }}>
-            {customItems.delegate.length === 0 ? (
-              <li style={{ color: 'var(--text-color-muted)', fontStyle: 'italic' }}>Madde yok</li>
-            ) : (
-              customItems.delegate.map((item, i) => (
-                <li key={`cd_${i}`} style={{ marginBottom: '4px' }}>
-                  {item}
-                  <button type="button" onClick={() => handleRemove('delegate', i)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', marginLeft: '4px' }}>&times;</button>
-                </li>
-              ))
-            )}
+            <li style={{ color: 'var(--text-color-muted)', fontStyle: 'italic' }}>Madde yok</li>
           </ul>
         </div>
 
@@ -109,16 +72,7 @@ const EisenhowerMatrixCard = ({ homework = [], questions = [] }) => {
             🛑 4. Ele / Sınırla (Zaman Tuzakları)
           </div>
           <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '0.8rem', color: 'var(--text-color-main)' }}>
-            {customItems.eliminate.length === 0 ? (
-              <li style={{ color: 'var(--text-color-muted)', fontStyle: 'italic' }}>Örn: Sosyal medya, plansız oyun</li>
-            ) : (
-              customItems.eliminate.map((item, i) => (
-                <li key={`ce_${i}`} style={{ marginBottom: '4px' }}>
-                  {item}
-                  <button type="button" onClick={() => handleRemove('eliminate', i)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', marginLeft: '4px' }}>&times;</button>
-                </li>
-              ))
-            )}
+            <li style={{ color: 'var(--text-color-muted)', fontStyle: 'italic' }}>Örn: Sosyal medya, plansız oyun</li>
           </ul>
         </div>
       </div>

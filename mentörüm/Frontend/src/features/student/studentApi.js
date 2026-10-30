@@ -141,13 +141,6 @@ export const useCreateStudySession = () => {
   });
 };
 
-export const useStudentStudySessions = () => {
-  return useQuery({
-    queryKey: ['student', 'study-sessions'],
-    queryFn: async () => (await apiClient.get('/student/study-sessions')) || [],
-  });
-};
-
 export const useStudentSubjectStats = () => {
   return useQuery({
     queryKey: ['student', 'subject-stats'],
@@ -301,14 +294,6 @@ export const useToggleStudentHabit = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['student', 'coaching-tools'] });
     },
-  });
-};
-
-// V16: Öğrenci Haftalık Program / Slotları
-export const useStudentSchedule = () => {
-  return useQuery({
-    queryKey: ['student', 'schedule'],
-    queryFn: async () => (await apiClient.get('/student/schedule')) || [],
   });
 };
 

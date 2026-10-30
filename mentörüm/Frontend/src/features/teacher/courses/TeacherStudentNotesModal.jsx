@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Modal from '../../../components/common/Modal/Modal';
 import Button from '../../../components/common/Button/Button';
-import Input from '../../../components/common/Input/Input';
+
 import { useTeacherStudentNotes, useCreateTeacherNote } from '../teacherApi';
 
 export default function TeacherStudentNotesModal({ isOpen, onClose, courseId, student }) {

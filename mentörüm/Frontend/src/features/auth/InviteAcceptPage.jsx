@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { apiClient } from '../../api/apiClient';
-import { useAuthStore } from './authStore';
 import Button from '../../components/common/Button/Button';
 import Input from '../../components/common/Input/Input';
 import Card from '../../components/common/Card/Card';

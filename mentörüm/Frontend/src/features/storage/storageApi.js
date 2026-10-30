@@ -34,10 +34,6 @@ export const useConfirmUpload = () => {
     });
 };
 
-export const useDeliverUpload = () => useMutation({
-    mutationFn: ({ uploadId, data }) => apiClient.post(`/uploads/${uploadId}/deliver`, data),
-});
-
 export const useDownloadUrl = () => useMutation({
     mutationFn: (uploadId) => apiClient.get(`/uploads/${uploadId}/url`),
 });
@@ -58,11 +54,3 @@ export const useSetDownloadDevice = () => {
         onSuccess: () => qc.invalidateQueries({ queryKey: ['devices'] }),
     });
 };
-
-export const useUpdateCoachStorage = () => useMutation({
-    mutationFn: ({ coachId, data }) => apiClient.put(`/admin/coaches/${coachId}/storage`, data),
-});
-
-export const useUpdateTeacherFileSharing = () => useMutation({
-    mutationFn: ({ courseId, allowed }) => apiClient.put(`/courses/${courseId}/teacher-file-sharing`, { allowed }),
-});

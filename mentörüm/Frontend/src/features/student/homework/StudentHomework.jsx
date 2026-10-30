@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import axios from 'axios';
-import { Clock, Paperclip, X, Image as ImageIcon, MessageSquare, Check, ChevronUp, Download, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Clock, Paperclip, X, MessageSquare, Check, ChevronUp, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useStudentHomework, useCompleteHomework, useRequestExtension } from '../studentApi';
 import { useCreateUploadUrl, useConfirmUpload } from '../../storage/storageApi';
 import { compressImage } from '../../../utils/imageCompressor';
@@ -8,6 +8,7 @@ import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import { formatDate } from '../../../utils/dateUtils';
 import { PriorityBadge, AssignedViaBadge } from '../../../components/common/HomeworkStatusBadges';
+import HomeworkAttachmentList from '../../../components/common/HomeworkAttachmentList';
 import styles from './StudentHomework.module.css';
 
 // 00:00 saatlerini temizleyen akıllı tarih formatlayıcı (T09)
@@ -112,38 +113,7 @@ const HomeworkCard = ({ hw, onComplete, onRequestExtension }) => {
       )}
 
       {/* Ekli Ödev Dosyaları (Öğretmen / Koç Tarafından Eklenen) */}
-      {hw.attachments && hw.attachments.length > 0 && (
-        <div style={{ marginBottom: '10px' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-color-muted)', marginBottom: '4px' }}>
-            Ödev Ekleri & Materyaller:
-          </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-            {hw.attachments.map((att) => (
-              <a
-                key={att.id}
-                href={att.url}
-                target="_blank"
-                rel="noreferrer"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  padding: '4px 8px',
-                  borderRadius: '6px',
-                  background: 'var(--bg-app)',
-                  border: '1px solid var(--border-color)',
-                  color: 'var(--color-primary)',
-                  fontSize: '0.75rem',
-                  textDecoration: 'none'
-                }}
-              >
-                <Download size={12} />
-                <span>{att.fileName || 'Dosya'}</span>
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
+      <HomeworkAttachmentList attachments={hw.attachments} />
       
       <div className={styles.progressSection}>
         <div className={styles.progressHeader}>

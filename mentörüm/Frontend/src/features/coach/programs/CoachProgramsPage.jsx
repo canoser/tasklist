@@ -6,7 +6,7 @@ import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
 import Card from '../../../components/common/Card/Card';
 import Modal from '../../../components/common/Modal/Modal';
-import { Plus, Users, BookOpen, GraduationCap, Target, AlertCircle } from 'lucide-react';
+import { Plus, Users } from 'lucide-react';
 import styles from './CoachProgramsPage.module.css';
 
 const CoachProgramsPage = () => {

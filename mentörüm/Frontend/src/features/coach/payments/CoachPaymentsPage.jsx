@@ -6,7 +6,7 @@ import Modal from '../../../components/common/Modal/Modal';
 import Input from '../../../components/common/Input/Input';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import { CreditCard, CheckCircle2, AlertTriangle, Clock, Check, Plus } from 'lucide-react';
+import { AlertTriangle, Check, Plus } from 'lucide-react';
 import styles from './CoachPaymentsPage.module.css';
 
 export default function CoachPaymentsPage() {
@@ -39,14 +39,15 @@ export default function CoachPaymentsPage() {
 
     plans.forEach(plan => {
       (plan.items || []).forEach(item => {
-        const amt = parseFloat(item.amount) || 0;
-        totalPlanned += amt;
-        if (item.status === 'PAID') {
-          totalCollected += amt;
-        } else {
+        const baseAmt = parseFloat(item.baseAmount ?? item.amount) || 0;
+        const paidAmt = parseFloat(item.paidAmount) || 0;
+        const remAmt = item.remainingAmount != null ? parseFloat(item.remainingAmount) : Math.max(0, baseAmt - paidAmt);
+        totalPlanned += baseAmt;
+        totalCollected += paidAmt;
+        if (item.status !== 'PAID' && remAmt > 0) {
           pendingCount++;
           const isOverdue = item.dueDate && new Date(item.dueDate) < new Date();
-          if (isOverdue) totalOverdue += amt;
+          if (isOverdue) totalOverdue += remAmt;
         }
       });
     });
@@ -61,9 +62,13 @@ export default function CoachPaymentsPage() {
 
   const handleCollect = (item) => {
     if (!item?.id) return;
+    const collectAmount = item.remainingAmount != null
+      ? parseFloat(item.remainingAmount)
+      : Math.max(0, (parseFloat(item.baseAmount) || 0) - (parseFloat(item.paidAmount) || 0));
+    if (collectAmount <= 0) return;
     collectPaymentMutation.mutate({
       itemId: item.id,
-      amount: item.amount,
+      amount: collectAmount,
       method: 'CASH'
     });
   };
@@ -250,7 +255,7 @@ export default function CoachPaymentsPage() {
                       <span className={styles.studentName}>{plan.studentName || 'Öğrenci'}</span>
                     </div>
                     <span className={styles.planTotalBadge}>
-                      Toplam: ₺{parseFloat(plan.totalAmount || 0).toLocaleString('tr-TR')}
+                      Toplam: ₺{parseFloat(plan.amount ?? plan.totalAmount ?? 0).toLocaleString('tr-TR')}
                     </span>
                   </div>
 
@@ -258,6 +263,9 @@ export default function CoachPaymentsPage() {
                     {(plan.items || []).map(item => {
                       const isPaid = item.status === 'PAID';
                       const isOverdue = !isPaid && item.dueDate && new Date(item.dueDate) < new Date();
+                      const displayAmount = isPaid
+                        ? (item.paidAmount || item.baseAmount || 0)
+                        : (item.remainingAmount ?? item.baseAmount ?? 0);
                       return (
                         <div key={item.id} className={styles.itemCard}>
                           <div className={styles.itemTop}>
@@ -276,7 +284,7 @@ export default function CoachPaymentsPage() {
 
                           <div className={styles.itemAmountRow}>
                             <span className={styles.itemAmount}>
-                              ₺{parseFloat(item.amount || 0).toLocaleString('tr-TR')}
+                              ₺{parseFloat(displayAmount).toLocaleString('tr-TR')}
                             </span>
                             {!isPaid && (
                               <button

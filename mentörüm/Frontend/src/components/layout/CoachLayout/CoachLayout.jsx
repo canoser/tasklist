@@ -49,7 +49,7 @@ const CoachLayout = () => {
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
 
   // Süper yönetici onay sayacı
-  const { data: pendingApprovals } = usePendingApprovals();
+  const { data: pendingApprovals } = usePendingApprovals(Boolean(user?.isAdmin));
   const pendingCount = user?.isAdmin ? (pendingApprovals?.length || 0) : 0;
 
   // Koç bekleyen onayları sayacı (tüm programlar)
@@ -157,7 +157,7 @@ const CoachLayout = () => {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
-    navigate(`/coach/students?search=${encodeURIComponent(searchQuery.trim())}`);
+    navigate(`/coach/students?q=${encodeURIComponent(searchQuery.trim())}`);
   };
 
   return (

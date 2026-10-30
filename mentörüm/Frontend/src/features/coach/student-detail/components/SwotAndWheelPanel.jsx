@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../../../../components/common/Card/Card';
 import Button from '../../../../components/common/Button/Button';
-import { ShieldCheck, AlertTriangle, Sparkles, TrendingUp, Plus, Trash2, Save } from 'lucide-react';
+import { ShieldCheck, AlertTriangle, Sparkles, TrendingUp, Save } from 'lucide-react';
 
 const DEFAULT_WHEEL_AXES = [
   { key: 'study', label: 'Konu Çalışması' },
@@ -14,14 +14,19 @@ const DEFAULT_WHEEL_AXES = [
   { key: 'review', label: 'Tekrar & Pekiştirme' }
 ];
 
-const SwotAndWheelPanel = ({ toolsData, onSaveTools, autoSwot }) => {
-  const parsedSwot = typeof toolsData?.swotData === 'string' 
-    ? (JSON.parse(toolsData.swotData || '{}') || {}) 
-    : (toolsData?.swotData || {});
+const safeParseJsonObject = (val) => {
+  if (!val) return {};
+  if (typeof val === 'object') return val;
+  try {
+    return JSON.parse(val) || {};
+  } catch {
+    return {};
+  }
+};
 
-  const parsedWheel = typeof toolsData?.wheelData === 'string'
-    ? (JSON.parse(toolsData.wheelData || '{}') || {})
-    : (toolsData?.wheelData || {});
+const SwotAndWheelPanel = ({ toolsData, onSaveTools, autoSwot }) => {
+  const parsedSwot = safeParseJsonObject(toolsData?.swotData);
+  const parsedWheel = safeParseJsonObject(toolsData?.wheelData);
 
   const [swot, setSwot] = useState({
     strengths: parsedSwot.strengths || [],
@@ -37,6 +42,26 @@ const SwotAndWheelPanel = ({ toolsData, onSaveTools, autoSwot }) => {
     });
     return initial;
   });
+
+  // toolsData async geldiğinde state'i senkronize et (ilk mount sonrası veri ezilmesini önler)
+  useEffect(() => {
+    setSwot({
+      strengths: parsedSwot.strengths || [],
+      weaknesses: parsedSwot.weaknesses || [],
+      opportunities: parsedSwot.opportunities || [],
+      threats: parsedSwot.threats || []
+    });
+  }, [toolsData?.swotData]);
+
+  useEffect(() => {
+    setWheel(prev => {
+      const next = { ...prev };
+      DEFAULT_WHEEL_AXES.forEach(a => {
+        if (parsedWheel[a.key] != null) next[a.key] = parsedWheel[a.key];
+      });
+      return next;
+    });
+  }, [toolsData?.wheelData]);
 
   const [inputVals, setInputVals] = useState({ strengths: '', weaknesses: '', opportunities: '', threats: '' });
   const [activeSection, setActiveSection] = useState('SWOT'); // 'SWOT' | 'WHEEL'

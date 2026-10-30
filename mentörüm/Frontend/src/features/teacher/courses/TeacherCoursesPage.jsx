@@ -59,7 +59,7 @@ const TeacherCoursesPage = () => {
   // T37: Öğrenci not modalı state
   const [activeNotesStudent, setActiveNotesStudent] = useState(null);
 
-  // T39: Dersi tamamla state
+  // Ders tamamlama modalı state'leri
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [completeSummary, setCompleteSummary] = useState('');
   const [completeCoachNote, setCompleteCoachNote] = useState('');

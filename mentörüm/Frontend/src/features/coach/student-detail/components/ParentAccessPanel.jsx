@@ -3,7 +3,7 @@ import Card from '../../../../components/common/Card/Card';
 import Button from '../../../../components/common/Button/Button';
 import Input from '../../../../components/common/Input/Input';
 import ParentPermissionsPanel from '../ParentPermissionsPanel';
-import { Users, Mail, Shield, Copy, Check, Clock, UserPlus } from 'lucide-react';
+import { Shield, Copy, Check, Clock, UserPlus } from 'lucide-react';
 import { useSendInvite } from '../../coachApi';
 
 const ParentAccessPanel = ({ student, onInviteSuccess }) => {

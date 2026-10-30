@@ -15,7 +15,7 @@ const TeacherLayout = () => {
   const handleLogout = async () => {
     try {
       await apiClient.post('/auth/logout');
-    } catch (e) {}
+    } catch {}
     clearAuth();
     navigate('/login');
   };

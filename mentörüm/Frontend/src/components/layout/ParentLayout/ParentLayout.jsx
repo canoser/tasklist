@@ -16,7 +16,7 @@ const ParentLayout = () => {
   const displayName = viewAs?.name || user?.fullName || 'Veli';
   const displayInitial = displayName.charAt(0);
 
-  const { data: children = [], isLoading } = useParentChildren();
+  const { data: children = [] } = useParentChildren();
   const activeChild = children[0];
 
   const canViewHomework = activeChild ? activeChild.canViewHomework === 1 : true;
@@ -27,7 +27,7 @@ const ParentLayout = () => {
   const handleLogout = async () => {
     try {
       await apiClient.post('/auth/logout');
-    } catch (e) {}
+    } catch {}
     clearAuth();
     navigate('/login');
   };

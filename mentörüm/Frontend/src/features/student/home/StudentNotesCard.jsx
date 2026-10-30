@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Pin, Trash2, Lock, Eye } from 'lucide-react';
-import Card from '../../../components/common/Card/Card';
+
 import { useStudentNotes, useCreateNote, useUpdateNote, useDeleteNote } from '../studentApi';
 
 export default function StudentNotesCard() {

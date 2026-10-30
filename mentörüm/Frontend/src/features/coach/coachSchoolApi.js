@@ -193,14 +193,6 @@ export const useProgramCoaches = (programId) => useQuery({
   enabled: !!programId,
 });
 
-export const useAddProgramCoach = () => {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ programId, coachId }) => apiClient.post(`/programs/${programId}/coaches`, { coachId }),
-    onSuccess: (_, v) => qc.invalidateQueries({ queryKey: ['coach', 'program', v.programId, 'coaches'] }),
-  });
-};
-
 export const useRemoveProgramCoach = () => {
   const qc = useQueryClient();
   return useMutation({
@@ -218,9 +210,10 @@ export const useTransferAdmin = () => {
 };
 
 // --- Süper yönetici ---
-export const usePendingApprovals = () => useQuery({
+export const usePendingApprovals = (enabled = true) => useQuery({
   queryKey: ['admin', 'pending-approvals'],
   queryFn: async () => (await apiClient.get('/admin/pending-approvals')) || [],
+  enabled: Boolean(enabled),
 });
 
 export const useAdminUsers = (role, search) => useQuery({
@@ -335,15 +328,9 @@ export const useRemoveCourseGroup = () => {
   });
 };
 
-// --- Denetim İzi (Audit Logs) & Müfredat İlerleme (V15) ---
+// --- Denetim İzi (Audit Logs) (V15) ---
 export const useProgramAuditLogs = (programId, limit = 100) => useQuery({
   queryKey: ['coach', 'program', programId, 'audit-logs', limit],
   queryFn: async () => (await apiClient.get(`/programs/${programId}/audit-logs?limit=${limit}`)) || [],
   enabled: !!programId,
-});
-
-export const useCurriculumProgress = (programId, studentId) => useQuery({
-  queryKey: ['coach', 'program', programId, 'curriculum-progress', studentId],
-  queryFn: async () => (await apiClient.get(`/programs/${programId}/curriculum/progress?studentId=${studentId}`)) || [],
-  enabled: !!programId && !!studentId,
 });

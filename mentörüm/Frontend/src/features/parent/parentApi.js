@@ -11,17 +11,6 @@ export const useParentChildren = () => {
   });
 };
 
-export const useParentChildPermissions = (studentId) => {
-  return useQuery({
-    queryKey: ['parent', 'child', studentId, 'permissions'],
-    queryFn: async () => {
-      if (!studentId) return null;
-      return await apiClient.get(`/parents/children/${studentId}/permissions`);
-    },
-    enabled: !!studentId,
-  });
-};
-
 export const useParentChildHomework = (studentId) => {
   return useQuery({
     queryKey: ['parent', 'child', studentId, 'homework'],
@@ -61,7 +50,7 @@ export const useParentChildPayments = (studentId) => {
     queryKey: ['parent', 'child', studentId, 'payments'],
     queryFn: async () => {
       if (!studentId) return null;
-      return await apiClient.get(`/parent/children/${studentId}/payments`);
+      return await apiClient.get(`/parents/children/${studentId}/payments`);
     },
     enabled: !!studentId,
     refetchInterval: 10000, // T49: 10 sn polling
@@ -71,7 +60,7 @@ export const useParentChildPayments = (studentId) => {
 export const useCreatePaymentClaim = () => {
   return useMutation({
     mutationFn: async ({ studentId, data }) => {
-      return await apiClient.post(`/parent/children/${studentId}/payment-claims`, data);
+      return await apiClient.post(`/parents/children/${studentId}/payment-claims`, data);
     },
   });
 };

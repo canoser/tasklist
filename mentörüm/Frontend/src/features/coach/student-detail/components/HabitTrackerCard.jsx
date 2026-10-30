@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import Card from '../../../../components/common/Card/Card';
 import Button from '../../../../components/common/Button/Button';
-import { CheckCircle2, Circle, Plus, Trash2, Calendar, Award } from 'lucide-react';
-import { format, subDays, startOfWeek, addDays } from 'date-fns';
+import { CheckCircle2, Circle, Plus, Trash2, Award } from 'lucide-react';
+import { format, startOfWeek, addDays } from 'date-fns';
 import { tr } from 'date-fns/locale';
 
 const HabitTrackerCard = ({ habits = [], onSaveHabits, isCoach = true }) => {

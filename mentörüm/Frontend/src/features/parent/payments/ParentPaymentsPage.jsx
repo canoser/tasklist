@@ -25,7 +25,7 @@ export default function ParentPaymentsPage() {
     claimMutation.mutate({
       studentId: activeStudentId,
       data: {
-        paymentItemId: item.id,
+        itemId: item.id,
         amount: claimAmount ? parseFloat(claimAmount) : (item.baseAmount - item.paidAmount),
         receiptUrl: claimReceiptUrl.trim() || null,
         notes: claimNotes.trim() || null

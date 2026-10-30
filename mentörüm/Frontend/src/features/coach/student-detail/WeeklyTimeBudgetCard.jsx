@@ -1,6 +1,6 @@
 import React from 'react';
 import Card from '../../../components/common/Card/Card';
-import { useStudentTimeBudget } from '../coachApi';
+import { useCoachStudentTimeBudget } from '../coachApi';
 import { BookOpen, Moon, School, Activity, Users, Coffee, Pin } from 'lucide-react';
 
 const CATEGORY_COLORS = {
@@ -14,7 +14,7 @@ const CATEGORY_COLORS = {
 };
 
 export default function WeeklyTimeBudgetCard({ studentId }) {
-  const { data: budget, isLoading } = useStudentTimeBudget(studentId);
+  const { data: budget, isLoading } = useCoachStudentTimeBudget(studentId);
 
   if (isLoading) {
     return <Card padding="lg"><div>Zaman bütçesi yükleniyor...</div></Card>;

@@ -4,7 +4,7 @@ import { useParentChildren, useParentChildHomework, useParentStudyStats, usePare
 import Card from '../../../components/common/Card/Card';
 import ChildSelector from '../../../components/common/ChildSelector/ChildSelector';
 import { formatDate } from '../../../utils/dateUtils';
-import { BookOpen, Target, Clock, HelpCircle, FileText, CheckCircle2, MessageSquare, AlertCircle } from 'lucide-react';
+import { BookOpen, Target, Clock, HelpCircle, MessageSquare } from 'lucide-react';
 import styles from './ParentSummary.module.css';
 
 const ParentSummary = () => {
@@ -79,7 +79,7 @@ const ParentSummary = () => {
                 <Clock size={20} />
               </div>
               <div className={styles.statInfo}>
-                <span className={styles.statValue}>{studyStats.thisWeekStudyMinutes ?? 0} dk</span>
+                <span className={styles.statValue}>{studyStats.totalMinutes ?? studyStats.thisWeekStudyMinutes ?? 0} dk</span>
                 <span className={styles.statLabel}>Haftalık Çalışma</span>
               </div>
             </Card>
@@ -88,7 +88,7 @@ const ParentSummary = () => {
                 <HelpCircle size={20} />
               </div>
               <div className={styles.statInfo}>
-                <span className={styles.statValue}>{studyStats.thisWeekQuestionCount ?? 0}</span>
+                <span className={styles.statValue}>{studyStats.totalQuestions ?? studyStats.thisWeekQuestionCount ?? 0}</span>
                 <span className={styles.statLabel}>Çözülen Soru</span>
               </div>
             </Card>
@@ -123,14 +123,14 @@ const ParentSummary = () => {
               <Card key={tn.id} padding="sm">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                   <strong style={{ fontSize: '0.85rem', color: 'var(--color-primary)' }}>
-                    {tn.courseName} · {tn.teacherName}
+                    {[tn.courseName, tn.teacherName].filter(Boolean).join(' · ') || 'Öğretmen Değerlendirmesi'}
                   </strong>
                   <span style={{ fontSize: '0.72rem', color: 'var(--text-color-muted)' }}>
                     {tn.createdAt ? formatDate(tn.createdAt, 'dd MMM yyyy') : ''}
                   </span>
                 </div>
                 <p style={{ margin: 0, fontSize: '0.825rem', color: 'var(--text-color-main)', lineHeight: 1.4 }}>
-                  {tn.note || tn.content}
+                  {tn.summary || tn.note || tn.content}
                 </p>
               </Card>
             ))}

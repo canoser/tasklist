@@ -7,7 +7,7 @@ import {
   useAddCourseStudent, useRemoveCourseStudent, useAddCourseGroup, useRemoveCourseGroup, useCreateResource,
   useUpdateCourse, useGroups, useTeachers,
 } from '../coachSchoolApi';
-import { useStudents } from '../coachApi';
+
 import { useCreateUploadUrl, useConfirmUpload, useDownloadUrl } from '../../storage/storageApi';
 import { compressImage } from '../../../utils/imageCompressor';
 import Button from '../../../components/common/Button/Button';
@@ -35,7 +35,7 @@ const CoachCourseDetailPage = () => {
   const navigate = useNavigate();
   const [tab, setTab] = useState('students');
   const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
-  const [studentId, setStudentId] = useState('');
+
   const [groupId, setGroupId] = useState('');
   const [resTitle, setResTitle] = useState('');
   const [resType, setResType] = useState('BOOK');
@@ -46,7 +46,7 @@ const CoachCourseDetailPage = () => {
 
   const { data: students } = useCourseStudents(programId, courseId);
   const { data: groups } = useCourseGroups(programId, courseId);
-  const { data: allStudents = [] } = useStudents();
+
   const { data: allGroups = [] } = useGroups(programId);
   const { data: allTeachers = [] } = useTeachers(programId);
   const { data: resources } = useCourseResources(programId, courseId);

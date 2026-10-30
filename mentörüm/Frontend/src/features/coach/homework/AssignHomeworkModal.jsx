@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Card from '../../../components/common/Card/Card';
+
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
 import styles from './AssignHomeworkModal.module.css';

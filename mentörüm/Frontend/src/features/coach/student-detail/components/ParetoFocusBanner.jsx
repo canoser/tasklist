@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertCircle, ArrowRight, Zap, Target } from 'lucide-react';
+import { Zap, Target } from 'lucide-react';
 import Button from '../../../../components/common/Button/Button';
 
 const ParetoFocusBanner = ({ exams = [], onAssignFocusHomework }) => {

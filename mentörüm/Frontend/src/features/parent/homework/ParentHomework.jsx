@@ -3,7 +3,8 @@ import { useParentChildren, useParentChildHomework } from '../parentApi';
 import Card from '../../../components/common/Card/Card';
 import { formatDate } from '../../../utils/dateUtils';
 import { PriorityBadge, AssignedViaBadge } from '../../../components/common/HomeworkStatusBadges';
-import { Check, AlertCircle, CheckCircle2, Download, Lock } from 'lucide-react';
+import HomeworkAttachmentList from '../../../components/common/HomeworkAttachmentList';
+import { Check, AlertCircle, CheckCircle2, Lock } from 'lucide-react';
 import styles from './ParentHomework.module.css';
 
 const ParentHomework = () => {
@@ -119,33 +120,7 @@ const ParentHomework = () => {
                 )}
 
                 {/* Ekli Ödev Dosyaları */}
-                {hw.attachments && hw.attachments.length > 0 && (
-                  <div style={{ marginBottom: '8px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                    {hw.attachments.map((att) => (
-                      <a
-                        key={att.id}
-                        href={att.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          padding: '3px 8px',
-                          borderRadius: '6px',
-                          background: 'var(--bg-app)',
-                          border: '1px solid var(--border-color)',
-                          color: 'var(--color-primary)',
-                          fontSize: '0.75rem',
-                          textDecoration: 'none'
-                        }}
-                      >
-                        <Download size={12} />
-                        <span>{att.fileName || 'Dosya'}</span>
-                      </a>
-                    ))}
-                  </div>
-                )}
+                <HomeworkAttachmentList attachments={hw.attachments} showLabel={false} />
 
                 <div className={styles.progressHeader}>
                   <span>İlerleme Durumu: %{hw.completionPercentage || 0}</span>
