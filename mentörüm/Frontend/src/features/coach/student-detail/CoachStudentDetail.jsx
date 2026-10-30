@@ -3,8 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
+import Input, { Select, Textarea } from '../../../components/common/Input/Input';
 import Modal from '../../../components/common/Modal/Modal';
 import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
+import StatusBadge from '../../../components/common/StatusBadge/StatusBadge';
 import AssignHomeworkModal from '../homework/AssignHomeworkModal';
 import styles from './CoachStudentDetail.module.css';
 import {
@@ -16,7 +18,9 @@ import {
   useCoachStudentEvents,
   useCoachStudentSessions,
   useCreateCoachingSession,
+  useCoachStudentCourses,
   useCoachStudentTeacherNotes,
+  useCreateCoachCourseNote,
   useCoachStudentCoachingTools,
   useUpdateCoachingTools,
   useReplyStudentQuestion,
@@ -25,6 +29,7 @@ import {
   useUpdateStudent,
   downloadStudentReportPdf,
 } from '../coachApi';
+import { useCourses } from '../coachSchoolApi';
 import EditStudentModal from './EditStudentModal';
 import { queryKeys } from '../../../api/queryKeys';
 import WeeklyTimeBudgetCard from './WeeklyTimeBudgetCard';
@@ -40,26 +45,48 @@ import NotesTab from './components/NotesTab';
 import { ArrowLeft, FileDown, Edit3, PlusCircle, Clock, BookOpen, MessageSquare, Users, Trash2 } from 'lucide-react';
 
 const GROUP_TABS = [
-  { id: 'general', defaultTab: 'info', icon: Clock, label: 'Genel & Zaman', pills: [
-    { id: 'info', label: 'Öğrenci Bilgileri & Hedefler' },
-    { id: 'timeBudget', label: 'Zaman Bütçesi' },
-    { id: 'events', label: 'Takvim & Etkinlikler' },
-  ]},
-  { id: 'academic', defaultTab: 'homework', icon: BookOpen, label: 'Akademik Takip', pills: [
-    { id: 'homework', label: 'Ödevler' },
-    { id: 'exams', label: 'Sınavlar & Netler' },
-    { id: 'topics', label: 'Konu Takibi' },
-  ]},
-  { id: 'sessions', defaultTab: 'grow', icon: MessageSquare, label: 'Görüşme & Notlar', pills: [
-    { id: 'grow', label: 'GROW Seansları' },
-    { id: 'swot', label: 'SWOT & Denge Çarkı' },
-    { id: 'pulse', label: 'Öğrenci Nabzı & Sorular' },
-    { id: 'notes', label: 'Koç Notları' },
-    { id: 'teacherNotes', label: 'Öğretmen Görüşleri' },
-  ]},
-  { id: 'parents', defaultTab: 'parents', icon: Users, label: 'Veli Entegrasyonu', pills: [
-    { id: 'parents', label: 'Veli Erişimi & Yetkiler' },
-  ]},
+  {
+    id: 'general',
+    defaultTab: 'info',
+    icon: Clock,
+    label: 'Genel & Zaman',
+    pills: [
+      { id: 'info', label: 'Öğrenci Bilgileri & Hedefler' },
+      { id: 'timeBudget', label: 'Zaman Bütçesi' },
+      { id: 'events', label: 'Takvim & Etkinlikler' },
+    ],
+  },
+  {
+    id: 'academic',
+    defaultTab: 'homework',
+    icon: BookOpen,
+    label: 'Akademik Takip',
+    pills: [
+      { id: 'homework', label: 'Ödevler' },
+      { id: 'exams', label: 'Sınavlar & Netler' },
+      { id: 'topics', label: 'Konu Takibi' },
+    ],
+  },
+  {
+    id: 'sessions',
+    defaultTab: 'grow',
+    icon: MessageSquare,
+    label: 'Görüşme & Notlar',
+    pills: [
+      { id: 'grow', label: 'GROW Seansları' },
+      { id: 'swot', label: 'SWOT & Denge Çarkı' },
+      { id: 'pulse', label: 'Öğrenci Nabzı & Sorular' },
+      { id: 'notes', label: 'Koç Notları' },
+      { id: 'teacherNotes', label: 'Ders & Öğretmen Değerlendirmeleri' },
+    ],
+  },
+  {
+    id: 'parents',
+    defaultTab: 'parents',
+    icon: Users,
+    label: 'Veli Entegrasyonu',
+    pills: [{ id: 'parents', label: 'Veli Erişimi & Yetkiler' }],
+  },
 ];
 
 const CoachStudentDetail = () => {
@@ -76,15 +103,23 @@ const CoachStudentDetail = () => {
   const [isHomeworkModalOpen, setIsHomeworkModalOpen] = useState(false);
   const [selectedTopicForHw, setSelectedTopicForHw] = useState(null);
 
+  // U18: Koçun ders değerlendirme / öğretmen notu ekleme state'leri
+  const [noteCourseId, setNoteCourseId] = useState('');
+  const [noteSummary, setNoteSummary] = useState('');
+  const [noteBody, setNoteBody] = useState('');
+  const [noteVisibility, setNoteVisibility] = useState('STUDENT_VISIBLE');
+
   const activeGroupObj = GROUP_TABS.find((g) => g.pills.some((p) => p.id === activeTab)) || GROUP_TABS[0];
 
-  // Lazy sekme sorguları (Opus E3)
   const { data: notesList, isLoading: isNotesLoading } = useCoachStudentNotes(id, activeTab === 'notes');
   const { data: studentHomeworks } = useCoachStudentHomework(id, activeTab === 'info' || activeTab === 'homework');
   const { data: curriculum } = useCoachStudentCurriculum(id, activeTab === 'topics');
   const { data: studentEvents } = useCoachStudentEvents(id, activeTab === 'events');
   const { data: sessions } = useCoachStudentSessions(id, activeTab === 'grow');
+  const { data: studentCourses = [] } = useCoachStudentCourses(id, activeTab === 'info' || activeTab === 'teacherNotes');
+  const { data: programCourses = [] } = useCourses(student?.programId);
   const { data: teacherNotes = [] } = useCoachStudentTeacherNotes(id, activeTab === 'teacherNotes');
+  const createCoachCourseNote = useCreateCoachCourseNote(id);
   const { data: coachingTools } = useCoachStudentCoachingTools(id, activeTab === 'info' || activeTab === 'swot');
   const updateCoachingTools = useUpdateCoachingTools();
   const replyQuestion = useReplyStudentQuestion();
@@ -92,10 +127,14 @@ const CoachStudentDetail = () => {
   const { data: checkins = [] } = useStudentCheckinsForCoach(id, activeTab === 'pulse');
   const createSession = useCreateCoachingSession(id);
 
+  const courseOptionsForNotes = studentCourses.length > 0 ? studentCourses : programCourses;
+
   const parsedHabits = React.useMemo(() => {
     try {
       if (!coachingTools?.habitsData) return [];
-      return typeof coachingTools.habitsData === 'string' ? JSON.parse(coachingTools.habitsData || '[]') : coachingTools.habitsData;
+      return typeof coachingTools.habitsData === 'string'
+        ? JSON.parse(coachingTools.habitsData || '[]')
+        : coachingTools.habitsData;
     } catch {
       return [];
     }
@@ -112,6 +151,26 @@ const CoachStudentDetail = () => {
     }
   };
 
+  const handleAddCourseEvaluation = async (e) => {
+    e.preventDefault();
+    const targetCourseId = noteCourseId || courseOptionsForNotes[0]?.id;
+    if (!targetCourseId) {
+      alert('Lütfen önce öğrenciye bir ders/özel ders tanımlayın veya ders seçin.');
+      return;
+    }
+    if (!noteBody.trim() && !noteSummary.trim()) return;
+
+    await createCoachCourseNote.mutateAsync({
+      courseId: targetCourseId,
+      note: noteBody.trim() || noteSummary.trim(),
+      summary: noteSummary.trim() || null,
+      visibility: noteVisibility,
+    });
+
+    setNoteSummary('');
+    setNoteBody('');
+  };
+
   return (
     <div className={styles.pageContainer}>
       <div className={styles.topHeader}>
@@ -125,14 +184,27 @@ const CoachStudentDetail = () => {
           <div className={styles.avatar}>{student.fullName?.charAt(0) || '?'}</div>
           <div>
             <h1 className={styles.title}>{student.fullName}</h1>
-            <p className={styles.subtitle}>{student.grade ? `${student.grade}. Sınıf` : ''} • {student.track || student.area}</p>
+            <p className={styles.subtitle}>
+              {student.grade ? `${student.grade}. Sınıf` : ''} • {student.track || student.area}
+            </p>
           </div>
         </div>
         <div className={styles.actions}>
-          <Button variant="outline" onClick={handleDownloadReport}><FileDown size={15} /> <span>PDF Rapor</span></Button>
-          <Button variant="secondary" onClick={() => setIsEditModalOpen(true)}><Edit3 size={15} /> <span>Düzenle</span></Button>
-          <Button variant="primary" onClick={() => setIsHomeworkModalOpen(true)}><PlusCircle size={15} /> <span>Ödev Ata</span></Button>
-          <Button variant="ghost" style={{ color: 'var(--color-danger, #ef4444)', borderColor: 'rgba(239, 68, 68, 0.3)' }} onClick={() => setShowDeleteConfirm(true)} title="Öğrenciyi Sil">
+          <Button variant="outline" onClick={handleDownloadReport}>
+            <FileDown size={15} /> <span>PDF Rapor</span>
+          </Button>
+          <Button variant="secondary" onClick={() => setIsEditModalOpen(true)}>
+            <Edit3 size={15} /> <span>Düzenle</span>
+          </Button>
+          <Button variant="primary" onClick={() => setIsHomeworkModalOpen(true)}>
+            <PlusCircle size={15} /> <span>Ödev Ata</span>
+          </Button>
+          <Button
+            variant="ghost"
+            style={{ color: 'var(--color-danger, #ef4444)', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+            onClick={() => setShowDeleteConfirm(true)}
+            title="Öğrenciyi Sil"
+          >
             <Trash2 size={15} /> <span>Sil</span>
           </Button>
         </div>
@@ -163,7 +235,12 @@ const CoachStudentDetail = () => {
       </div>
 
       <div className={styles.tabContent}>
-        {activeTab === 'parents' && <ParentAccessPanel student={student} onInviteSuccess={() => queryClient.invalidateQueries({ queryKey: queryKeys.coach.student(id) })} />}
+        {activeTab === 'parents' && (
+          <ParentAccessPanel
+            student={student}
+            onInviteSuccess={() => queryClient.invalidateQueries({ queryKey: queryKeys.coach.student(id) })}
+          />
+        )}
         {activeTab === 'info' && (
           <InfoTab
             studentId={id}
@@ -172,22 +249,122 @@ const CoachStudentDetail = () => {
             studentHomeworks={studentHomeworks}
             questions={questions}
             onUpdateGoal={(patch) => updateStudentMutation.mutate({ studentId: id, data: patch })}
-            onSaveHabits={(newHabits) => updateCoachingTools.mutate({ studentId: id, data: { habitsData: JSON.stringify(newHabits) } })}
+            onSaveHabits={(newHabits) =>
+              updateCoachingTools.mutate({ studentId: id, data: { habitsData: JSON.stringify(newHabits) } })
+            }
+            onOpenCourseNote={(courseId) => {
+              setNoteCourseId(courseId);
+              setActiveTab('teacherNotes');
+            }}
           />
         )}
         {activeTab === 'timeBudget' && <WeeklyTimeBudgetCard studentId={id} />}
         {activeTab === 'notes' && <NotesTab studentId={id} notesList={notesList} isNotesLoading={isNotesLoading} />}
         {activeTab === 'teacherNotes' && (
-          <Card title="Öğretmen Görüşleri & Değerlendirmeleri" className={styles.notesCard}>
-            {teacherNotes.length > 0 ? teacherNotes.map((note) => (
-              <div key={note.id} style={{ padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <strong style={{ fontSize: '0.9rem', color: 'var(--color-primary)' }}>{note.courseName} · {note.teacherName}</strong>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-color-muted)' }}>{note.createdAt ? new Date(note.createdAt).toLocaleDateString('tr-TR') : '-'}</span>
-                </div>
-                <p style={{ margin: '6px 0 0', fontSize: '0.85rem', color: 'var(--text-color-main)', lineHeight: 1.5 }}>{note.note}</p>
+          <Card title="Ders & Öğretmen Değerlendirmeleri" className={styles.notesCard}>
+            <form
+              onSubmit={handleAddCourseEvaluation}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+                padding: '14px',
+                marginBottom: '18px',
+                borderRadius: '10px',
+                border: '1px solid var(--border-color)',
+                backgroundColor: 'var(--bg-color-muted, rgba(148, 163, 184, 0.06))',
+              }}
+            >
+              <h4 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-color-main)' }}>
+                ✓ Ders Tamamlama / Öğretmen Değerlendirme Notu Ekle
+              </h4>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <Select
+                  label="Ders / Branş *"
+                  value={noteCourseId || courseOptionsForNotes[0]?.id || ''}
+                  onChange={(e) => setNoteCourseId(e.target.value)}
+                  required
+                >
+                  {courseOptionsForNotes.length === 0 && <option value="">Önce ders tanımlayın</option>}
+                  {courseOptionsForNotes.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name} {c.teacherName ? `(${c.teacherName})` : ''}
+                    </option>
+                  ))}
+                </Select>
+
+                <Select
+                  label="Görünürlük"
+                  value={noteVisibility}
+                  onChange={(e) => setNoteVisibility(e.target.value)}
+                >
+                  <option value="STUDENT_VISIBLE">Öğrenciye ve Veliye Görünür</option>
+                  <option value="COACH_ONLY">Sadece Koç Görsün (Gizli Not)</option>
+                </Select>
               </div>
-            )) : <p>Öğretmenler tarafından henüz görüş veya değerlendirme girilmemiş.</p>}
+
+              <Input
+                label="Kısa Ders Özeti (Öğrenci & Veli Görür)"
+                placeholder="Örn: Konu anlatımı ve soru çözümü tamamlandı."
+                value={noteSummary}
+                onChange={(e) => setNoteSummary(e.target.value)}
+              />
+
+              <Textarea
+                label="Detaylı Pedagojik Değerlendirme / Ders Notu *"
+                rows={3}
+                placeholder="Dersteki performans, ödev takibi, dikkat edilmesi gereken noktalar..."
+                value={noteBody}
+                onChange={(e) => setNoteBody(e.target.value)}
+                required
+              />
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="sm"
+                  isLoading={createCoachCourseNote.isPending}
+                  disabled={courseOptionsForNotes.length === 0 || (!noteBody.trim() && !noteSummary.trim())}
+                >
+                  ✓ Ders Değerlendirmesini Kaydet
+                </Button>
+              </div>
+            </form>
+
+            {teacherNotes.length > 0 ? (
+              teacherNotes.map((note) => (
+                <div key={note.id} style={{ padding: '12px 0', borderBottom: '1px solid var(--border-color)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <strong style={{ fontSize: '0.9rem', color: 'var(--color-primary)' }}>
+                      {note.courseName || 'Ders'} · {note.teacherName || 'Koç'}
+                    </strong>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <StatusBadge
+                        status={note.visibility === 'COACH_ONLY' ? 'REJECTED' : 'APPROVED'}
+                        label={note.visibility === 'COACH_ONLY' ? 'Sadece Koç' : 'Öğrenci/Veli Görür'}
+                      />
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-color-muted)' }}>
+                        {note.createdAt ? new Date(note.createdAt).toLocaleDateString('tr-TR') : '-'}
+                      </span>
+                    </div>
+                  </div>
+                  {note.summary && (
+                    <div style={{ marginTop: '4px', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-color-main)' }}>
+                      Özet: {note.summary}
+                    </div>
+                  )}
+                  <p style={{ margin: '6px 0 0', fontSize: '0.85rem', color: 'var(--text-color-main)', lineHeight: 1.5 }}>
+                    {note.note}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p style={{ color: 'var(--text-color-muted)', fontSize: '0.875rem' }}>
+                Henüz ders veya öğretmen değerlendirme notu girilmemiş.
+              </p>
+            )}
           </Card>
         )}
         {activeTab === 'exams' && <ExamsTab studentId={id} student={student} />}
@@ -195,23 +372,44 @@ const CoachStudentDetail = () => {
           <HomeworkTab
             exams={student?.examResults || []}
             studentHomeworks={studentHomeworks}
-            onAssignFocusHomework={(subj) => { setSelectedTopicForHw({ subjectName: subj }); setIsHomeworkModalOpen(true); }}
+            onAssignFocusHomework={(subj) => {
+              setSelectedTopicForHw({ subjectName: subj });
+              setIsHomeworkModalOpen(true);
+            }}
           />
         )}
         {activeTab === 'topics' && (
           <TopicsTab
             curriculum={curriculum}
-            onAssignTopicHomework={(topic) => { setSelectedTopicForHw(topic); setIsHomeworkModalOpen(true); }}
+            onAssignTopicHomework={(topic) => {
+              setSelectedTopicForHw(topic);
+              setIsHomeworkModalOpen(true);
+            }}
           />
         )}
         {activeTab === 'events' && (
           <Card title="Öğrencinin Kişisel Takvimi" className={styles.notesCard}>
-            {studentEvents?.length > 0 ? studentEvents.map((ev) => (
-              <div key={ev.id} style={{ padding: '6px 0', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-                <span>{ev.title}</span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-color-muted)' }}>{ev.startAt ? new Date(ev.startAt).toLocaleString('tr-TR') : '-'} · {ev.eventType}</span>
-              </div>
-            )) : <p>Öğrenci henüz kişisel etkinlik eklememiş.</p>}
+            {studentEvents?.length > 0 ? (
+              studentEvents.map((ev) => (
+                <div
+                  key={ev.id}
+                  style={{
+                    padding: '6px 0',
+                    borderBottom: '1px solid var(--border-color)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    gap: 10,
+                  }}
+                >
+                  <span>{ev.title}</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-color-muted)' }}>
+                    {ev.startAt ? new Date(ev.startAt).toLocaleString('tr-TR') : '-'} · {ev.eventType}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p>Öğrenci henüz kişisel etkinlik eklememiş.</p>
+            )}
           </Card>
         )}
         {activeTab === 'grow' && (
@@ -240,14 +438,19 @@ const CoachStudentDetail = () => {
           <StudentPulsePanel
             checkins={checkins}
             questions={questions}
-            onReplyQuestion={(questionId, coachAnswer) => replyQuestion.mutate({ studentId: id, questionId, reply: coachAnswer, status: 'RESOLVED' })}
+            onReplyQuestion={(questionId, coachAnswer) =>
+              replyQuestion.mutate({ studentId: id, questionId, reply: coachAnswer, status: 'RESOLVED' })
+            }
           />
         )}
       </div>
 
       <AssignHomeworkModal
         isOpen={isHomeworkModalOpen}
-        onClose={() => { setIsHomeworkModalOpen(false); setSelectedTopicForHw(null); }}
+        onClose={() => {
+          setIsHomeworkModalOpen(false);
+          setSelectedTopicForHw(null);
+        }}
         selectedStudent={student}
         initialTopic={selectedTopicForHw}
       />
@@ -257,8 +460,18 @@ const CoachStudentDetail = () => {
           <strong>{student.fullName}</strong> adlı öğrenciyi sistemden silmek istediğinize emin misiniz? Öğrenci ve ilişkili tüm aktif kayıtları arşive alınacaktır.
         </p>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-          <Button variant="ghost" onClick={() => setShowDeleteConfirm(false)}>Vazgeç</Button>
-          <Button variant="danger" isLoading={deleteStudentMutation.isPending} onClick={async () => { await deleteStudentMutation.mutateAsync(id); setShowDeleteConfirm(false); navigate('/coach/students'); }}>
+          <Button variant="ghost" onClick={() => setShowDeleteConfirm(false)}>
+            Vazgeç
+          </Button>
+          <Button
+            variant="danger"
+            isLoading={deleteStudentMutation.isPending}
+            onClick={async () => {
+              await deleteStudentMutation.mutateAsync(id);
+              setShowDeleteConfirm(false);
+              navigate('/coach/students');
+            }}
+          >
             Evet, Öğrenciyi Sil
           </Button>
         </div>
@@ -268,7 +481,9 @@ const CoachStudentDetail = () => {
         open={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         student={student}
-        onSubmit={async (payload) => { await updateStudentMutation.mutateAsync({ studentId: id, data: payload }); }}
+        onSubmit={async (payload) => {
+          await updateStudentMutation.mutateAsync({ studentId: id, data: payload });
+        }}
       />
     </div>
   );

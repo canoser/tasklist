@@ -154,23 +154,26 @@ namespace MentorumApi.Data
                 new { CourseId = courseId });
         }
 
-        // Öğrencinin dersleri (Aşama 10)
+        // Öğrencinin dersleri (Aşama 10 + U18: tüm dersler ve özel dersler, öğretmen/koç adıyla)
         public async Task<IEnumerable<StudentCourseItemDto>> GetStudentCoursesAsync(Guid studentId)
         {
             using var conn = _connectionFactory.CreateConnection();
             return await conn.QueryAsync<StudentCourseItemDto>(@"
-                SELECT DISTINCT ON (CASE WHEN c.type = 'OZEL_DERS' THEN 'OZEL_DERS' ELSE c.id::text END)
+                SELECT DISTINCT ON (CASE WHEN c.type = 'OZEL_DERS' AND c.teacher_id IS NULL THEN 'AUTO_OZEL_DERS' ELSE c.id::text END)
                     c.id AS Id, 
                     c.name AS Name, 
                     c.type AS Type,
-                    u.full_name AS TeacherName,
+                    c.teacher_id AS TeacherId,
+                    COALESCE(u.full_name, cu.full_name) AS TeacherName,
                     s.name AS SubjectName
                 FROM courses c
                 LEFT JOIN users u ON u.id = c.teacher_id
+                LEFT JOIN coaching_programs cp ON cp.id = c.program_id
+                LEFT JOIN users cu ON cu.id = cp.created_by
                 LEFT JOIN subjects s ON s.id = c.subject_id
                 WHERE c.is_active = 1
-                  AND c.id IN (SELECT course_id FROM vw_active_course_students WHERE student_id = @StudentId)
-                ORDER BY (CASE WHEN c.type = 'OZEL_DERS' THEN 'OZEL_DERS' ELSE c.id::text END), c.name",
+                   AND c.id IN (SELECT course_id FROM vw_active_course_students WHERE student_id = @StudentId)
+                ORDER BY (CASE WHEN c.type = 'OZEL_DERS' AND c.teacher_id IS NULL THEN 'AUTO_OZEL_DERS' ELSE c.id::text END), c.name",
                 new { StudentId = studentId });
         }
 
@@ -333,6 +336,40 @@ namespace MentorumApi.Data
                 INSERT INTO teacher_notes (id, program_id, course_id, student_id, teacher_id, note, summary, visibility, created_at)
                 VALUES (@Id, @ProgramId, @CourseId, @StudentId, @TeacherId, @Note, @Summary, @Visibility, @Now)",
                 new { Id = id, ProgramId = access.ProgramId, CourseId = courseId, StudentId = studentId, TeacherId = teacherId, Note = req.Note, Summary = req.Summary, Visibility = visibility, Now = DateTime.UtcNow });
+            return id;
+        }
+
+        /// <summary>U18: Koçun kendi öğrencisi için ders bazlı değerlendirme/öğretmen notu eklemesi.</summary>
+        public async Task<Guid> AddCoachCourseNoteAsync(Guid coachId, Guid studentId, CoachAddCourseNoteRequest req)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            var courseProgramId = await conn.ExecuteScalarAsync<Guid?>(@"
+                SELECT c.program_id
+                FROM courses c
+                JOIN students s ON s.program_id = c.program_id AND s.id = @StudentId
+                WHERE c.id = @CourseId AND c.is_active = 1",
+                new { CourseId = req.CourseId, StudentId = studentId });
+
+            if (courseProgramId == null)
+                throw new InvalidOperationException("COURSE_NOT_FOUND");
+
+            var visibility = req.Visibility == "COACH_ONLY" ? "COACH_ONLY" : "STUDENT_VISIBLE";
+            var id = Guid.NewGuid();
+            await conn.ExecuteAsync(@"
+                INSERT INTO teacher_notes (id, program_id, course_id, student_id, teacher_id, note, summary, visibility, created_at)
+                VALUES (@Id, @ProgramId, @CourseId, @StudentId, @TeacherId, @Note, @Summary, @Visibility, @Now)",
+                new
+                {
+                    Id = id,
+                    ProgramId = courseProgramId.Value,
+                    CourseId = req.CourseId,
+                    StudentId = studentId,
+                    TeacherId = coachId,
+                    Note = req.Note,
+                    Summary = req.Summary,
+                    Visibility = visibility,
+                    Now = DateTime.UtcNow
+                });
             return id;
         }
 

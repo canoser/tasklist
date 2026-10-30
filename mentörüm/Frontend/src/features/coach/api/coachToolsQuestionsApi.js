@@ -2,6 +2,17 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../../api/apiClient';
 import { queryKeys } from '../../../api/queryKeys';
 
+export const useCoachStudentCourses = (studentId, enabled = true) => {
+  return useQuery({
+    queryKey: queryKeys.coach.studentCourses(studentId),
+    queryFn: async () => {
+      if (!studentId) return [];
+      return (await apiClient.get(`/students/${studentId}/courses`)) || [];
+    },
+    enabled: !!studentId && enabled,
+  });
+};
+
 export const useCoachStudentTeacherNotes = (studentId, enabled = true) => {
   return useQuery({
     queryKey: queryKeys.coach.studentTeacherNotes(studentId),
@@ -10,6 +21,24 @@ export const useCoachStudentTeacherNotes = (studentId, enabled = true) => {
       return (await apiClient.get(`/students/${studentId}/teacher-notes`)) || [];
     },
     enabled: !!studentId && enabled,
+  });
+};
+
+export const useCreateCoachCourseNote = (studentId) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ courseId, note, summary, visibility }) => {
+      return await apiClient.post(`/students/${studentId}/teacher-notes`, {
+        courseId,
+        note,
+        summary,
+        visibility,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.coach.studentTeacherNotes(studentId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.coach.recentTeacherNotes() });
+    },
   });
 };
 

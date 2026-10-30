@@ -6,6 +6,7 @@ namespace MentorumApi.DTOs
         public Guid ProgramId { get; set; }
         public Guid? SubjectId { get; set; }
         public Guid? TeacherId { get; set; }
+        public string? TeacherName { get; set; }
         public required string Name { get; set; }
         public required string Type { get; set; }
         public string? Color { get; set; }

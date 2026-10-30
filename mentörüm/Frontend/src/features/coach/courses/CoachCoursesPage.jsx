@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCourses, useCreateCourse, useTeachers } from '../coachSchoolApi';
+import { useAuthStore } from '../../auth/authStore';
 import Button from '../../../components/common/Button/Button';
-import Input from '../../../components/common/Input/Input';
+import Input, { Select } from '../../../components/common/Input/Input';
 import Card from '../../../components/common/Card/Card';
 import styles from './CoachCoursesPage.module.css';
 
@@ -47,6 +48,7 @@ const CoachCoursesPage = ({ programId: propProgramId, embedded = false, showCrea
   const { programId: routeProgramId } = useParams();
   const programId = propProgramId || routeProgramId;
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const { data: courses, isLoading } = useCourses(programId);
   const createCourse = useCreateCourse();
   const { data: teachers = [] } = useTeachers(programId);
@@ -97,20 +99,17 @@ const CoachCoursesPage = ({ programId: propProgramId, embedded = false, showCrea
           <form onSubmit={handleCreate} className={styles.form}>
             <div className={styles.formTopGrid}>
               <Input label="Ders Adı" value={name} onChange={(e) => setName(e.target.value)} placeholder="Örn: AYT Matematik" />
-              <div className={styles.fieldGroup}>
-                <label className={styles.fieldLabel}>Ders Türü</label>
-                <select value={type} onChange={(e) => setType(e.target.value)} className={styles.select}>
-                  <option value="DERS">Akademik Ders (Grup / Sınıf)</option>
-                  <option value="OZEL_DERS">Bireysel Özel Ders / Koçluk</option>
-                </select>
-              </div>
-              <div className={styles.fieldGroup}>
-                <label className={styles.fieldLabel}>Sorumlu Öğretmen</label>
-                <select value={teacherId} onChange={(e) => setTeacherId(e.target.value)} className={styles.select}>
-                  <option value="">Öğretmen Seçin (Opsiyonel)</option>
-                  {teachers.map((t) => <option key={t.id} value={t.id}>{t.fullName}</option>)}
-                </select>
-              </div>
+              <Select label="Ders Türü" value={type} onChange={(e) => setType(e.target.value)}>
+                <option value="DERS">Akademik Ders (Grup / Sınıf)</option>
+                <option value="OZEL_DERS">Bireysel Özel Ders / Koçluk</option>
+              </Select>
+              <Select label="Sorumlu Öğretmen" value={teacherId} onChange={(e) => setTeacherId(e.target.value)}>
+                <option value="">Öğretmen Seçin (Opsiyonel)</option>
+                {user?.id && (
+                  <option value={user.id}>📌 Kendim ({user.fullName || 'Koç'} — Dersi Ben Veriyorum)</option>
+                )}
+                {teachers.map((t) => <option key={t.id} value={t.id}>{t.fullName}</option>)}
+              </Select>
             </div>
 
             <div className={styles.fieldGroup}>
@@ -185,7 +184,10 @@ const CoachCoursesPage = ({ programId: propProgramId, embedded = false, showCrea
               <span className={styles.type}>{c.type === 'OZEL_DERS' ? 'Özel Ders' : 'Ders'}</span>
             </div>
             <div className={styles.itemFooter}>
-              <span className={styles.meta}>Kayıtlı Öğrenci: <strong>{c.studentCount ?? 0}</strong></span>
+              <span className={styles.meta}>
+                Kayıtlı Öğrenci: <strong>{c.studentCount ?? 0}</strong>
+                {c.teacherName ? ` · Eğitmen: ${c.teacherName}` : ''}
+              </span>
               <Button size="sm" variant="outline" onClick={() => navigate(`/coach/programs/${programId}/courses/${c.id}`)}>
                 Detay & Kaynaklar →
               </Button>

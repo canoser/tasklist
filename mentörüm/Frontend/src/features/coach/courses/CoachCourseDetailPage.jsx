@@ -8,8 +8,9 @@ import {
 } from '../coachSchoolApi';
 
 import { useUploadFile, useOpenUpload } from '../../storage/storageApi';
+import { useAuthStore } from '../../auth/authStore';
 import Button from '../../../components/common/Button/Button';
-import Input from '../../../components/common/Input/Input';
+import Input, { Select } from '../../../components/common/Input/Input';
 import Card from '../../../components/common/Card/Card';
 import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
 import AddStudentsToCourseModal from './AddStudentsToCourseModal';
@@ -32,6 +33,7 @@ const PERMS = [
 const CoachCourseDetailPage = () => {
   const { programId, courseId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [tab, setTab] = useState('students');
   const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
 
@@ -243,11 +245,14 @@ const CoachCourseDetailPage = () => {
       {tab === 'permissions' && course && (
         <div>
           <Card className={styles.card} padding="md">
-            <div className={styles.formRow}>
-              <select value={teacherId} onChange={(e) => setTeacherId(e.target.value)} className={styles.select}>
+            <div className={styles.formRow} style={{ alignItems: 'flex-end' }}>
+              <Select label="Sorumlu Öğretmen" value={teacherId} onChange={(e) => setTeacherId(e.target.value)}>
                 <option value="">Öğretmen seç (boş = değiştirme)</option>
+                {user?.id && (
+                  <option value={user.id}>📌 Kendim ({user.fullName || 'Koç'} — Dersi Ben Veriyorum)</option>
+                )}
                 {allTeachers.map((t) => <option key={t.id} value={t.id}>{t.fullName}</option>)}
-              </select>
+              </Select>
               <Button size="sm" onClick={() => updateCourse.mutateAsync({ programId, courseId, data: teacherId ? { teacherId } : {} })}>Öğretmeni Değiştir</Button>
             </div>
           </Card>

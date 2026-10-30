@@ -17,6 +17,7 @@ export const queryKeys = {
     studentEvents: (id) => ['coach', 'student', id, 'events'],
     studentSessions: (id) => ['coach', 'student', id, 'sessions'],
     parentPermissions: (studentId, parentId) => ['coach', 'student', studentId, 'parent', parentId, 'permissions'],
+    studentCourses: (id) => ['coach', 'student', id, 'courses'],
     studentTeacherNotes: (id) => ['coach', 'student', id, 'teacher-notes'],
     studentSubjectStats: (id) => ['coach', 'student', id, 'subject-stats'],
     studentTimeBudget: (id) => ['coach', 'student', id, 'time-budget'],

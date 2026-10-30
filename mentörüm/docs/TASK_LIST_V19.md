@@ -213,3 +213,18 @@
   2. `TeacherCoursesPage.jsx` içindeki satır içi `+ Ödev Ata` (`showHomeworkForm`) ve `+ Sınav Ekle` (`showExamForm`) formlarını da ortak `<Modal>` + ortak `<Select>` / `<Input>` yapısına geçir.
 - **Kabul:** Koç ve Öğretmen panellerinde ödev atama ve müfredat seçimi tek ortak kod bloğundan ve aynı modal tasarımından çalışır.
 
+#### [x] U18 — Koçun Aynı Zamanda Öğretmen Olabilmesi, Öğrenci Ekranında Ders/Öğretmen Yönetimi ve Koç Ders Değerlendirme Notu (`teacher_notes`)
+- **Dosyalar:** `CourseRepository.cs`, `CourseDtos.cs`, `SchoolAccessRepository.cs`, `StudentEndpoints.cs`, `coachApi.js`, `queryKeys.js`, `CoachCoursesPage.jsx`, `CoachCourseDetailPage.jsx`, `InfoTab.jsx`, `CoachStudentDetail.jsx`
+- **Yap:**
+  1. **Sorumlu Öğretmen Olarak Koç ("Kendim — Koç") Desteği:**
+     - `CourseRepository.cs` içinde `CreateCourseAsync` ve `UpdateCourseAsync` metotlarında `req.TeacherId` doğrulamasını güncelle: seçilen `TeacherId` ya `program_teachers` tablosunda aktif olmalı ya da `program_coaches` tablosunda programın koçu (`coach_id`) olmalı; `CourseSelect` sorgusuna `LEFT JOIN users tu ON tu.id = c.teacher_id` ile `TeacherName` alanını (`CourseDto.TeacherName`) ekle.
+     - `CoachCoursesPage.jsx`, `CoachCourseDetailPage.jsx` ve öğrenci detayındaki hızlı ders oluşturma modalında **Sorumlu Öğretmen** açılır listesinin en üstüne **"📌 Kendim (Koç — Dersi Ben Veriyorum)"** (`value={user.id}`) seçeneğini ekle.
+  2. **Öğrenci Detay Ekranında (`InfoTab.jsx`) "Aldığı Dersler & Öğretmenler" Kartı:**
+     - `SchoolAccessRepository.GetStudentCoursesAsync(Guid studentId)` içindeki `DISTINCT ON (CASE WHEN c.type = 'OZEL_DERS'...)` kısıtını kaldırarak (`DISTINCT ON (c.id)`) öğrencinin birden fazla özel dersi/öğretmeni olduğunda tamamının listelenmesini sağla.
+     - `StudentEndpoints.cs` içine `GET /api/v1/students/{id}/courses` ucunu ekle (`EnsureCoachOwnsStudentAsync` + `repo.GetStudentCoursesAsync(id)`).
+     - `InfoTab.jsx` içinde öğrencinin kayıtlı olduğu tüm dersleri ve öğretmenlerini (`Ders Adı`, `Tür`, `Öğretmen Adı`) gösteren, mevcut bir derse tek tıkla ekleme/çıkarma yapabilen ve doğrudan **"+ Yeni Ders / Özel Ders Aç"** modalıyla (öğretmen olarak Koçun kendisi veya başka öğretmen seçilerek) öğrenciye ders bağlayabilen yönetim bölümünü ekle.
+  3. **Koçun Ders Değerlendirme / Öğretmen Notu (`teacher_notes`) Yazabilmesi:**
+     - `SchoolAccessRepository.cs` içine `AddCoachCourseNoteAsync(Guid coachId, Guid studentId, Guid courseId, TeacherAddNoteRequest req)` metodunu ve `StudentEndpoints.cs` içine `POST /api/v1/students/{id}/teacher-notes` ucunu ekle.
+     - `CoachStudentDetail.jsx` (`Görüşme & Notlar → Öğretmen Görüşleri` sekmesi) ve `CoachCourseDetailPage.jsx` içine, koçun tıpkı öğretmen portalındaki gibi ders seçip **Kısa Özet (Öğrenci & Veli Görür)**, **Detaylı Pedagojik Not** ve **Görünürlük** girerek ders değerlendirme notu (`teacher_notes`) kaydedebileceği formu ekle.
+- **Kabul:** Koç kendisini dersin öğretmeni olarak atayabilir; öğrenci detay ekranında öğrencinin aldığı tüm dersler ve öğretmenleri görünür/yönetilir; koç, öğretmenin girebildiği ders bazlı değerlendirme ve tamamlama notlarını (`teacher_notes`) doğrudan girebilir.
+

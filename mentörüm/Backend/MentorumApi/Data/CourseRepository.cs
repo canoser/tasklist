@@ -10,6 +10,7 @@ namespace MentorumApi.Data
 
         private const string CourseSelect = @"
             SELECT c.id, c.program_id AS ProgramId, c.subject_id AS SubjectId, c.teacher_id AS TeacherId,
+                   tu.full_name AS TeacherName,
                    c.name AS Name, c.type AS Type, c.color AS Color, c.is_active AS IsActive,
                    (COALESCE(c.teacher_can_view_profile, 0) = 1) AS TeacherCanViewProfile,
                    (COALESCE(c.teacher_can_view_contact, 0) = 1) AS TeacherCanViewContact,
@@ -33,6 +34,18 @@ namespace MentorumApi.Data
             return found != null;
         }
 
+        private static async Task<bool> IsValidInstructorForProgramAsync(System.Data.IDbConnection conn, Guid programId, Guid instructorId)
+        {
+            var found = await conn.ExecuteScalarAsync<int?>(@"
+                SELECT 1 WHERE EXISTS (
+                    SELECT 1 FROM program_teachers WHERE teacher_id = @InstructorId AND program_id = @ProgramId AND is_active = 1
+                ) OR EXISTS (
+                    SELECT 1 FROM program_coaches WHERE coach_id = @InstructorId AND program_id = @ProgramId
+                )",
+                new { InstructorId = instructorId, ProgramId = programId });
+            return found != null;
+        }
+
         public async Task<IEnumerable<CourseDto>> GetCoursesAsync(Guid programId, Guid coachId)
         {
             if (!await IsMemberAsync(programId, coachId)) return Enumerable.Empty<CourseDto>();
@@ -40,6 +53,7 @@ namespace MentorumApi.Data
             return await conn.QueryAsync<CourseDto>($@"
                 {CourseSelect}
                 FROM courses c
+                LEFT JOIN users tu ON tu.id = c.teacher_id
                 WHERE c.program_id = @ProgramId AND c.is_active = 1
                 ORDER BY c.name", new { ProgramId = programId });
         }
@@ -51,6 +65,7 @@ namespace MentorumApi.Data
             return await conn.QuerySingleOrDefaultAsync<CourseDto>($@"
                 {CourseSelect}
                 FROM courses c
+                LEFT JOIN users tu ON tu.id = c.teacher_id
                 WHERE c.id = @CourseId AND c.program_id = @ProgramId AND c.is_active = 1",
                 new { ProgramId = programId, CourseId = courseId });
         }
@@ -61,13 +76,10 @@ namespace MentorumApi.Data
             var id = Guid.NewGuid();
             using var conn = _connectionFactory.CreateConnection();
 
-            // Tenant doğrulaması (IDOR önlemi): öğretmen gerçekten bu programda mı?
+            // Tenant doğrulaması (IDOR önlemi): eğitmen (öğretmen veya koçun kendisi) bu programda mı?
             if (req.TeacherId.HasValue)
             {
-                var teacherInProgram = await conn.ExecuteScalarAsync<int?>(
-                    "SELECT 1 FROM program_teachers WHERE teacher_id = @TeacherId AND program_id = @ProgramId AND is_active = 1",
-                    new { TeacherId = req.TeacherId.Value, ProgramId = programId });
-                if (teacherInProgram == null)
+                if (!await IsValidInstructorForProgramAsync(conn, programId, req.TeacherId.Value))
                     throw new InvalidOperationException("TEACHER_NOT_IN_PROGRAM");
             }
 
@@ -100,13 +112,10 @@ namespace MentorumApi.Data
             if (!await IsMemberAsync(programId, coachId)) return false;
             using var conn = _connectionFactory.CreateConnection();
 
-            // Tenant doğrulaması (IDOR önlemi): öğretmen gerçekten bu programda mı?
+            // Tenant doğrulaması (IDOR önlemi): eğitmen (öğretmen veya koçun kendisi) bu programda mı?
             if (req.TeacherId.HasValue)
             {
-                var teacherInProgram = await conn.ExecuteScalarAsync<int?>(
-                    "SELECT 1 FROM program_teachers WHERE teacher_id = @TeacherId AND program_id = @ProgramId AND is_active = 1",
-                    new { TeacherId = req.TeacherId.Value, ProgramId = programId });
-                if (teacherInProgram == null)
+                if (!await IsValidInstructorForProgramAsync(conn, programId, req.TeacherId.Value))
                     throw new InvalidOperationException("TEACHER_NOT_IN_PROGRAM");
             }
 

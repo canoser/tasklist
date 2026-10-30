@@ -299,6 +299,47 @@ namespace MentorumApi.Endpoints
                 return Results.Ok(notes);
             });
 
+            // U18: Koçun öğrencisi için ders bazlı değerlendirme / öğretmen notu eklemesi
+            group.MapPost("/{id:guid}/teacher-notes", async (
+                Guid id,
+                [FromBody] CoachAddCourseNoteRequest req,
+                [FromServices] SchoolAccessRepository repo,
+                [FromServices] ProgramAccessGuard guard,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = user.GetUserId();
+                if (coachId == null) return Results.Unauthorized();
+                if (string.IsNullOrWhiteSpace(req.Note)) return Results.BadRequest(new { error = "Not alanı zorunludur." });
+
+                await guard.EnsureCoachOwnsStudentAsync(coachId.Value, id);
+
+                try
+                {
+                    var noteId = await repo.AddCoachCourseNoteAsync(coachId.Value, id, req);
+                    return Results.Ok(new { id = noteId });
+                }
+                catch (InvalidOperationException ex) when (ex.Message == "COURSE_NOT_FOUND")
+                {
+                    return Results.NotFound(new { error = "Ders bulunamadı." });
+                }
+            }).AddEndpointFilter<MentorumApi.Filters.IdempotencyFilter>();
+
+            // U18: Koç için öğrencinin kayıtlı olduğu dersler ve öğretmenleri
+            group.MapGet("/{id:guid}/courses", async (
+                Guid id,
+                [FromServices] SchoolAccessRepository repo,
+                [FromServices] ProgramAccessGuard guard,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = user.GetUserId();
+                if (coachId == null) return Results.Unauthorized();
+
+                await guard.EnsureCoachOwnsStudentAsync(coachId.Value, id);
+
+                var courses = await repo.GetStudentCoursesAsync(id);
+                return Results.Ok(courses);
+            });
+
             group.MapGet("/recent-teacher-notes", async (
                 [FromServices] SchoolAccessRepository repo,
                 ClaimsPrincipal user) =>

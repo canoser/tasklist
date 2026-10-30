@@ -195,11 +195,23 @@ namespace MentorumApi.DTOs
         public DateTime CreatedAt { get; set; }
     }
 
+    [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+    public class CoachAddCourseNoteRequest
+    {
+        [Required]
+        public required Guid CourseId { get; set; }
+        [Required]
+        public required string Note { get; set; }
+        public string? Visibility { get; set; } = "STUDENT_VISIBLE";
+        public string? Summary { get; set; }
+    }
+
     public class StudentCourseItemDto
     {
         public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string? Type { get; set; }
+        public Guid? TeacherId { get; set; }
         public string? TeacherName { get; set; }
         public string? SubjectName { get; set; }
     }

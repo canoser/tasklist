@@ -329,7 +329,11 @@ export const useAddCourseStudent = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ programId, courseId, studentId }) => apiClient.post(`/programs/${programId}/courses/${courseId}/students`, { studentId }),
-    onSuccess: (_, v) => qc.invalidateQueries({ queryKey: ['coach', 'program', v.programId, 'course', v.courseId, 'students'] }),
+    onSuccess: (_, v) => {
+      qc.invalidateQueries({ queryKey: ['coach', 'program', v.programId, 'course', v.courseId, 'students'] });
+      qc.invalidateQueries({ queryKey: ['coach', 'program', v.programId, 'courses'] });
+      qc.invalidateQueries({ queryKey: ['coach', 'student', v.studentId, 'courses'] });
+    },
   });
 };
 
@@ -337,7 +341,11 @@ export const useRemoveCourseStudent = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ programId, courseId, studentId }) => apiClient.delete(`/programs/${programId}/courses/${courseId}/students/${studentId}`),
-    onSuccess: (_, v) => qc.invalidateQueries({ queryKey: ['coach', 'program', v.programId, 'course', v.courseId, 'students'] }),
+    onSuccess: (_, v) => {
+      qc.invalidateQueries({ queryKey: ['coach', 'program', v.programId, 'course', v.courseId, 'students'] });
+      qc.invalidateQueries({ queryKey: ['coach', 'program', v.programId, 'courses'] });
+      qc.invalidateQueries({ queryKey: ['coach', 'student', v.studentId, 'courses'] });
+    },
   });
 };
 
