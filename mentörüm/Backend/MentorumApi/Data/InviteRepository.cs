@@ -15,6 +15,18 @@ namespace MentorumApi.Data
         public int IsUsed { get; set; }
     }
 
+    public class PendingInviteDto
+    {
+        public Guid Id { get; set; }
+        public string Email { get; set; } = string.Empty;
+        public string Code { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
+        public DateTime ExpiresAt { get; set; }
+        public string ProgramName { get; set; } = "Genel";
+        public Guid? ProgramId { get; set; }
+    }
+
     public class InviteRepository
     {
         private readonly DbConnectionFactory _db;
@@ -101,11 +113,11 @@ namespace MentorumApi.Data
                 });
         }
 
-        public async Task<IEnumerable<dynamic>> GetPendingInvitesForCoachAsync(Guid coachId)
+        public async Task<IEnumerable<PendingInviteDto>> GetPendingInvitesForCoachAsync(Guid coachId)
         {
             using var conn = _db.CreateConnection();
-            return await conn.QueryAsync(@"
-                SELECT it.id, it.email, it.code, it.role, it.created_at AS CreatedAt, it.expires_at AS ExpiresAt,
+            return await conn.QueryAsync<PendingInviteDto>(@"
+                SELECT it.id AS Id, it.email AS Email, it.code AS Code, it.role AS Role, it.created_at AS CreatedAt, it.expires_at AS ExpiresAt,
                        COALESCE(cp.name, cp_parent.name, 'Genel') AS ProgramName,
                        COALESCE(it.related_id, s.program_id) AS ProgramId
                 FROM invite_tokens it

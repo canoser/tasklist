@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace MentorumApi.DTOs
 {
@@ -186,7 +187,20 @@ namespace MentorumApi.DTOs
         public string? CourseName { get; set; }
         public Guid? TeacherId { get; set; }
         public string? TeacherName { get; set; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? Note { get; set; }
         public string? Summary { get; set; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? Visibility { get; set; }
         public DateTime CreatedAt { get; set; }
+    }
+
+    public class StudentCourseItemDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string? Type { get; set; }
+        public string? TeacherName { get; set; }
+        public string? SubjectName { get; set; }
     }
 }

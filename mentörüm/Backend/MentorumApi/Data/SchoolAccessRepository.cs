@@ -155,10 +155,10 @@ namespace MentorumApi.Data
         }
 
         // Öğrencinin dersleri (Aşama 10)
-        public async Task<IEnumerable<dynamic>> GetStudentCoursesAsync(Guid studentId)
+        public async Task<IEnumerable<StudentCourseItemDto>> GetStudentCoursesAsync(Guid studentId)
         {
             using var conn = _connectionFactory.CreateConnection();
-            return await conn.QueryAsync(@"
+            return await conn.QueryAsync<StudentCourseItemDto>(@"
                 SELECT DISTINCT ON (CASE WHEN c.type = 'OZEL_DERS' THEN 'OZEL_DERS' ELSE c.id::text END)
                     c.id AS Id, 
                     c.name AS Name, 
@@ -376,10 +376,10 @@ namespace MentorumApi.Data
         }
 
         /// <summary>T30: Koç için öğrencinin tüm öğretmen notları (tam not + özet + görünürlük + öğretmen adı).</summary>
-        public async Task<IEnumerable<dynamic>> GetStudentTeacherNotesForCoachAsync(Guid studentId)
+        public async Task<IEnumerable<PublicTeacherNoteDto>> GetStudentTeacherNotesForCoachAsync(Guid studentId)
         {
             using var conn = _connectionFactory.CreateConnection();
-            return await conn.QueryAsync(@"
+            return await conn.QueryAsync<PublicTeacherNoteDto>(@"
                 SELECT 
                     tn.id, 
                     tn.course_id AS CourseId, 

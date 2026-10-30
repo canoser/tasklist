@@ -292,11 +292,11 @@ namespace MentorumApi.Data
             }
         }
 
-        public async Task<IEnumerable<dynamic>> GetPendingApprovalsAsync()
+        public async Task<IEnumerable<PendingApprovalUserDto>> GetPendingApprovalsAsync()
         {
             using var conn = _connectionFactory.CreateConnection();
-            return await conn.QueryAsync(@"
-                SELECT u.id, u.full_name AS FullName, u.email AS Email, u.role AS Role, u.created_at AS CreatedAt
+            return await conn.QueryAsync<PendingApprovalUserDto>(@"
+                SELECT u.id AS Id, u.full_name AS FullName, u.email AS Email, u.role AS Role, u.created_at AS CreatedAt
                 FROM users u
                 WHERE u.approval_status = 'PENDING'
                 ORDER BY u.created_at");

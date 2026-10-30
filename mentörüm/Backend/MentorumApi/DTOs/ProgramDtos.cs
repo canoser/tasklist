@@ -63,4 +63,13 @@ namespace MentorumApi.DTOs
         public Guid? StudentProgramId { get; set; }
         public string? ProgramName { get; set; }
     }
+
+    public class PendingApprovalUserDto
+    {
+        public Guid Id { get; set; }
+        public string FullName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
+    }
 }
