@@ -772,3 +772,436 @@ CREATE TABLE IF NOT EXISTS auth_attempts (
     attempts INT NOT NULL
 );
 
+
+-- ============================================================================
+-- V12–V16 Birleştirilmiş Şema Genişletmeleri (eski 002..023, 025..027)
+-- Not: 024_cleanup_and_seed_test_ecosystem.sql geliştirme seed'i olarak
+--      docs/seeds/dev_seed_ecosystem.sql konumuna taşınmıştır.
+-- ============================================================================
+
+-- [002_teacher_process_homework]
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS teacher_can_process_homework INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE homework_assignments ADD COLUMN IF NOT EXISTS feedback TEXT NOT NULL DEFAULT '';
+
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'homework_assignments_completed_by_check' AND conrelid = 'homework_assignments'::regclass) THEN
+        ALTER TABLE homework_assignments DROP CONSTRAINT homework_assignments_completed_by_check;
+    END IF;
+END $$;
+ALTER TABLE homework_assignments ADD CONSTRAINT homework_assignments_completed_by_check CHECK (completed_by IN ('Student','Coach','Teacher'));
+
+-- [003_teacher_notes & 007_teacher_notes_visibility]
+CREATE TABLE IF NOT EXISTS teacher_notes (
+    id UUID PRIMARY KEY,
+    program_id UUID NOT NULL REFERENCES coaching_programs(id) ON DELETE CASCADE,
+    course_id UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+    student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    teacher_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    note TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_teacher_notes_course_student ON teacher_notes(course_id, student_id);
+ALTER TABLE teacher_notes ADD COLUMN IF NOT EXISTS visibility VARCHAR(16) NOT NULL DEFAULT 'STUDENT_VISIBLE';
+ALTER TABLE teacher_notes ADD COLUMN IF NOT EXISTS summary TEXT NULL;
+
+-- [004_teacher_assignment_status]
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS assignment_status VARCHAR(16) NOT NULL DEFAULT 'ACTIVE';
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS ended_at TIMESTAMPTZ NULL;
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS end_reason VARCHAR(255) NULL;
+ALTER TABLE program_teachers ADD COLUMN IF NOT EXISTS assignment_status VARCHAR(16) NOT NULL DEFAULT 'ACTIVE';
+ALTER TABLE program_teachers ADD COLUMN IF NOT EXISTS ended_at TIMESTAMPTZ NULL;
+ALTER TABLE program_teachers ADD COLUMN IF NOT EXISTS end_reason VARCHAR(255) NULL;
+
+-- [005_parent_visibility_flags]
+ALTER TABLE student_parents ADD COLUMN IF NOT EXISTS can_view_exams INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE student_parents ADD COLUMN IF NOT EXISTS can_view_homework INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE student_parents ADD COLUMN IF NOT EXISTS can_view_calendar INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE student_parents ADD COLUMN IF NOT EXISTS can_view_study_stats INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE student_parents ADD COLUMN IF NOT EXISTS can_view_payments INTEGER NOT NULL DEFAULT 0;
+
+-- [006_approval_items]
+CREATE TABLE IF NOT EXISTS approval_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    program_id UUID NOT NULL,
+    entity_type VARCHAR(32) NOT NULL,
+    entity_id UUID NOT NULL,
+    payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+    status VARCHAR(16) NOT NULL DEFAULT 'PENDING',
+    created_by UUID NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    resolved_at TIMESTAMPTZ NULL,
+    resolved_by UUID NULL,
+    rejection_reason VARCHAR(255) NULL,
+    UNIQUE (entity_type, entity_id)
+);
+CREATE INDEX IF NOT EXISTS idx_approval_items_program_status ON approval_items(program_id, status);
+
+-- [008_study_sessions]
+CREATE TABLE IF NOT EXISTS study_sessions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    program_id UUID NOT NULL,
+    student_id UUID NOT NULL,
+    subject_id UUID NULL,
+    curriculum_topic_id UUID NULL,
+    minutes INTEGER NOT NULL DEFAULT 0,
+    question_count INTEGER NOT NULL DEFAULT 0,
+    correct INTEGER NOT NULL DEFAULT 0,
+    wrong INTEGER NOT NULL DEFAULT 0,
+    blank INTEGER NOT NULL DEFAULT 0,
+    source_type VARCHAR(16) NOT NULL DEFAULT 'MANUAL',
+    started_at TIMESTAMPTZ NULL,
+    ended_at TIMESTAMPTZ NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_study_sessions_student ON study_sessions(student_id);
+
+-- [009_personal_events_category & 017_personal_events_checkin]
+ALTER TABLE personal_events ADD COLUMN IF NOT EXISTS category VARCHAR(16) NULL;
+ALTER TABLE personal_events ADD COLUMN IF NOT EXISTS checked_in INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE personal_events ADD COLUMN IF NOT EXISTS actual_minutes INTEGER NULL;
+
+-- [010_payments]
+CREATE TABLE IF NOT EXISTS payment_plans (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    program_id UUID NOT NULL,
+    student_id UUID NOT NULL,
+    parent_id UUID NULL,
+    period_type VARCHAR(16) NOT NULL,
+    amount NUMERIC(12,2) NOT NULL,
+    currency VARCHAR(8) NOT NULL DEFAULT 'TRY',
+    month_day INTEGER NULL,
+    start_date DATE NOT NULL,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    created_by UUID NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS payment_items (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    plan_id UUID NOT NULL,
+    due_date DATE NOT NULL,
+    base_amount NUMERIC(12,2) NOT NULL,
+    paid_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
+    status VARCHAR(16) NOT NULL DEFAULT 'PENDING',
+    currency VARCHAR(8) NOT NULL DEFAULT 'TRY',
+    paid_at TIMESTAMPTZ NULL,
+    rolled_from_item_id UUID NULL,
+    notes TEXT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS payments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    item_id UUID NOT NULL,
+    amount NUMERIC(12,2) NOT NULL,
+    method VARCHAR(32) NULL,
+    recorded_by UUID NOT NULL,
+    paid_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    status VARCHAR(16) NOT NULL DEFAULT 'PAID',
+    receipt_url TEXT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- [011_rate_limit_rules]
+CREATE TABLE IF NOT EXISTS rate_limit_rules (
+    path TEXT PRIMARY KEY,
+    max_attempts INTEGER NOT NULL,
+    window_seconds INTEGER NOT NULL DEFAULT 300,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_by UUID NULL
+);
+
+INSERT INTO rate_limit_rules (path, max_attempts, window_seconds) VALUES
+    ('/api/v1/auth/login', 40, 300),
+    ('/api/v1/auth/register', 40, 300),
+    ('/api/v1/auth/google', 40, 300),
+    ('/api/v1/invites/send', 20, 300)
+ON CONFLICT (path) DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS rate_limit_events (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    path TEXT NOT NULL,
+    ip TEXT NOT NULL,
+    attempts INTEGER NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_rate_limit_events_created ON rate_limit_events(created_at DESC);
+
+-- [012_user_theme]
+ALTER TABLE users ADD COLUMN IF NOT EXISTS theme_mode VARCHAR(8) NULL;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS theme_style VARCHAR(16) NULL;
+
+-- [013_student_checkins]
+CREATE TABLE IF NOT EXISTS student_checkins (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    program_id UUID NOT NULL,
+    student_id UUID NOT NULL,
+    checkin_date DATE NOT NULL,
+    mood VARCHAR(16) NOT NULL,
+    note TEXT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (student_id, checkin_date)
+);
+CREATE INDEX IF NOT EXISTS idx_student_checkins_student ON student_checkins(student_id, checkin_date DESC);
+
+-- [014_student_notes]
+CREATE TABLE IF NOT EXISTS student_notes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    program_id UUID NOT NULL,
+    student_id UUID NOT NULL,
+    title TEXT NOT NULL DEFAULT '',
+    content TEXT NOT NULL DEFAULT '',
+    visibility VARCHAR(16) NOT NULL DEFAULT 'PRIVATE',
+    is_pinned INTEGER NOT NULL DEFAULT 0,
+    event_date DATE NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_student_notes_student ON student_notes(student_id, updated_at DESC);
+
+-- [015_student_questions]
+CREATE TABLE IF NOT EXISTS student_questions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    program_id UUID NOT NULL,
+    student_id UUID NOT NULL,
+    subject_id UUID NULL,
+    topic_text TEXT NOT NULL DEFAULT '',
+    status VARCHAR(16) NOT NULL DEFAULT 'OPEN',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_student_questions_student ON student_questions(student_id, created_at DESC);
+
+-- [016_school_schedules]
+CREATE TABLE IF NOT EXISTS school_schedules (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    program_id UUID NOT NULL,
+    student_id UUID NOT NULL,
+    day_of_week INTEGER NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    label TEXT NOT NULL DEFAULT 'Okul',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_school_schedules_student ON school_schedules(student_id, day_of_week);
+
+-- [018_homework_student_note]
+ALTER TABLE homework_assignments ADD COLUMN IF NOT EXISTS student_note TEXT NULL;
+
+-- [019_uploads]
+CREATE TABLE IF NOT EXISTS uploads (
+    id UUID PRIMARY KEY,
+    program_id UUID NOT NULL REFERENCES coaching_programs(id) ON DELETE CASCADE,
+    sender_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    recipient_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    course_id UUID NULL REFERENCES courses(id) ON DELETE SET NULL,
+    homework_id UUID NULL REFERENCES homework_assignments(id) ON DELETE SET NULL,
+    student_question_id UUID NULL REFERENCES student_questions(id) ON DELETE SET NULL,
+    object_key TEXT NOT NULL UNIQUE,
+    content_type TEXT NOT NULL,
+    size_bytes BIGINT NOT NULL,
+    original_name TEXT NOT NULL,
+    status VARCHAR(16) NOT NULL DEFAULT 'PENDING' CHECK(status IN ('PENDING','UPLOADED','DELETED')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS upload_deliveries (
+    id UUID PRIMARY KEY,
+    upload_id UUID NOT NULL REFERENCES uploads(id) ON DELETE CASCADE,
+    recipient_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    direction VARCHAR(8) NOT NULL CHECK(direction IN ('IN','OUT')),
+    status VARCHAR(16) NOT NULL DEFAULT 'PENDING' CHECK(status IN ('PENDING','DOWNLOADED')),
+    device_id UUID NULL,
+    local_path TEXT NULL,
+    file_hash TEXT NULL,
+    delivered_at TIMESTAMPTZ NULL
+);
+
+CREATE TABLE IF NOT EXISTS user_devices (
+    id UUID PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    device_uid TEXT NOT NULL,
+    platform VARCHAR(16) NOT NULL CHECK(platform IN ('web','android','ios')),
+    label TEXT NOT NULL,
+    first_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(user_id, device_uid)
+);
+
+CREATE INDEX IF NOT EXISTS idx_uploads_program ON uploads(program_id);
+CREATE INDEX IF NOT EXISTS idx_uploads_recipient ON uploads(recipient_user_id);
+CREATE INDEX IF NOT EXISTS idx_deliveries_upload ON upload_deliveries(upload_id);
+
+-- [020_storage_columns]
+ALTER TABLE coaches ADD COLUMN IF NOT EXISTS storage_quota_mb INT NOT NULL DEFAULT 50;
+ALTER TABLE coaches ADD COLUMN IF NOT EXISTS storage_warn_percent INT NOT NULL DEFAULT 80;
+ALTER TABLE coaches ADD COLUMN IF NOT EXISTS storage_mode VARCHAR(16) NOT NULL DEFAULT 'LOCAL';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS download_device_id UUID NULL;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS hide_device_picker_tip INT NOT NULL DEFAULT 0;
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS teacher_can_share_files INT NOT NULL DEFAULT 1;
+ALTER TABLE student_questions ADD COLUMN IF NOT EXISTS upload_id UUID NULL;
+ALTER TABLE course_resources ADD COLUMN IF NOT EXISTS upload_id UUID NULL;
+
+-- [021_question_collections]
+CREATE TABLE IF NOT EXISTS coach_question_collections (
+    id UUID PRIMARY KEY,
+    coach_id UUID NOT NULL REFERENCES coaches(id) ON DELETE CASCADE,
+    program_id UUID NOT NULL REFERENCES coaching_programs(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS coach_question_collection_items (
+    id UUID PRIMARY KEY,
+    collection_id UUID NOT NULL REFERENCES coach_question_collections(id) ON DELETE CASCADE,
+    student_question_id UUID NOT NULL REFERENCES student_questions(id) ON DELETE CASCADE,
+    added_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(collection_id, student_question_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_collections_coach ON coach_question_collections(coach_id, program_id);
+
+-- [022_student_flexibility]
+ALTER TABLE users ALTER COLUMN email DROP NOT NULL;
+ALTER TABLE students ADD COLUMN IF NOT EXISTS invite_status VARCHAR(16) NOT NULL DEFAULT 'NOT_INVITED';
+
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'courses_type_check' AND conrelid = 'courses'::regclass) THEN
+        ALTER TABLE courses DROP CONSTRAINT courses_type_check;
+    END IF;
+END $$;
+ALTER TABLE courses ADD CONSTRAINT courses_type_check CHECK (type IN ('DERS','OZEL_DERS','SORU_COZUMU','DENEME','KITAP','VIDEO','DIGER'));
+
+ALTER TABLE student_group_members ADD COLUMN IF NOT EXISTS is_active INTEGER NOT NULL DEFAULT 1;
+
+-- [023_coach_limits]
+ALTER TABLE coaches ADD COLUMN IF NOT EXISTS max_students INTEGER NULL;
+ALTER TABLE coaches ADD COLUMN IF NOT EXISTS max_teachers INTEGER NULL;
+
+INSERT INTO system_settings (key, value) VALUES ('default_max_programs', '1')
+ON CONFLICT (key) DO UPDATE SET value = '1';
+INSERT INTO system_settings (key, value) VALUES ('default_max_students', '20')
+ON CONFLICT (key) DO NOTHING;
+INSERT INTO system_settings (key, value) VALUES ('default_max_teachers', '5')
+ON CONFLICT (key) DO NOTHING;
+
+-- [025_teacher_details]
+ALTER TABLE teachers ADD COLUMN IF NOT EXISTS branch TEXT;
+ALTER TABLE teachers ADD COLUMN IF NOT EXISTS phone TEXT;
+
+-- [026_v15_exam_analytics_and_audit_logs]
+ALTER TABLE exam_scores DROP CONSTRAINT IF EXISTS exam_scores_pkey;
+ALTER TABLE exam_scores ADD COLUMN IF NOT EXISTS id UUID NOT NULL DEFAULT gen_random_uuid();
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'exam_scores_pkey' AND conrelid = 'exam_scores'::regclass) THEN
+        ALTER TABLE exam_scores ADD CONSTRAINT exam_scores_pkey PRIMARY KEY (id);
+    END IF;
+END $$;
+ALTER TABLE exam_scores ALTER COLUMN subject_code DROP NOT NULL;
+
+ALTER TABLE exam_scores
+    ADD COLUMN IF NOT EXISTS question_count INTEGER NULL CHECK (question_count IS NULL OR question_count BETWEEN 1 AND 250),
+    ADD COLUMN IF NOT EXISTS correct INTEGER NULL CHECK (correct IS NULL OR correct >= 0),
+    ADD COLUMN IF NOT EXISTS wrong INTEGER NULL CHECK (wrong IS NULL OR wrong >= 0),
+    ADD COLUMN IF NOT EXISTS blank INTEGER NULL CHECK (blank IS NULL OR blank >= 0),
+    ADD COLUMN IF NOT EXISTS net NUMERIC(6,2) NULL;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_score_question_sum' AND conrelid = 'exam_scores'::regclass) THEN
+        ALTER TABLE exam_scores
+        ADD CONSTRAINT chk_score_question_sum CHECK (
+            (correct IS NULL AND wrong IS NULL AND blank IS NULL AND question_count IS NULL) OR
+            (correct IS NOT NULL AND wrong IS NOT NULL AND blank IS NOT NULL AND question_count IS NOT NULL AND correct + wrong + blank = question_count)
+        );
+    END IF;
+END $$;
+
+ALTER TABLE homework_assignments
+    ADD COLUMN IF NOT EXISTS version INTEGER NOT NULL DEFAULT 1;
+
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    program_id UUID NULL REFERENCES coaching_programs(id) ON DELETE CASCADE,
+    actor_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    action TEXT NOT NULL,
+    resource_type TEXT NOT NULL,
+    resource_id UUID NOT NULL,
+    details JSONB NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_program_time ON audit_logs(program_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_actor ON audit_logs(actor_id, created_at DESC);
+
+ALTER TABLE exam_scores
+    ADD COLUMN IF NOT EXISTS subject_id UUID NULL REFERENCES subjects(id) ON DELETE SET NULL,
+    ADD COLUMN IF NOT EXISTS curriculum_topic_id UUID NULL REFERENCES curriculum_topics(id) ON DELETE SET NULL,
+    ADD COLUMN IF NOT EXISTS subject_name TEXT NULL,
+    ADD COLUMN IF NOT EXISTS unit_name TEXT NULL,
+    ADD COLUMN IF NOT EXISTS topic_name TEXT NULL;
+
+UPDATE exam_scores es
+SET subject_id = s.id,
+    subject_name = COALESCE(es.subject_name, s.name)
+FROM subjects s
+WHERE es.subject_id IS NULL
+  AND es.subject_code IS NOT NULL
+  AND UPPER(es.subject_code) = UPPER(s.short_code);
+
+CREATE INDEX IF NOT EXISTS idx_exam_scores_exam_id ON exam_scores(exam_id);
+CREATE INDEX IF NOT EXISTS idx_exam_scores_subject_id ON exam_scores(subject_id);
+CREATE INDEX IF NOT EXISTS idx_exam_scores_topic_id ON exam_scores(curriculum_topic_id);
+
+-- [027_v16_ux_communications_and_coaching_tools]
+ALTER TABLE students
+    ADD COLUMN IF NOT EXISTS phone TEXT NULL,
+    ADD COLUMN IF NOT EXISTS monthly_milestone TEXT NULL,
+    ADD COLUMN IF NOT EXISTS weekly_target_minutes INTEGER NULL,
+    ADD COLUMN IF NOT EXISTS weekly_target_questions INTEGER NULL;
+
+ALTER TABLE student_questions
+    ADD COLUMN IF NOT EXISTS coach_reply TEXT NULL,
+    ADD COLUMN IF NOT EXISTS replied_by UUID NULL REFERENCES users(id) ON DELETE SET NULL,
+    ADD COLUMN IF NOT EXISTS replied_at TIMESTAMP WITH TIME ZONE NULL;
+
+ALTER TABLE homework_assignments
+    ADD COLUMN IF NOT EXISTS priority TEXT NOT NULL DEFAULT 'NORMAL'
+        CHECK (priority IN ('HIGH', 'NORMAL', 'LOW')),
+    ADD COLUMN IF NOT EXISTS assigned_via TEXT NOT NULL DEFAULT 'INDIVIDUAL'
+        CHECK (assigned_via IN ('INDIVIDUAL', 'GROUP'));
+
+ALTER TABLE exam_results
+    ADD COLUMN IF NOT EXISTS error_reasons TEXT NULL;
+
+CREATE TABLE IF NOT EXISTS student_coaching_tools (
+    student_id UUID PRIMARY KEY REFERENCES students(id) ON DELETE CASCADE,
+    swot_data JSONB NOT NULL DEFAULT '{}'::jsonb,
+    wheel_data JSONB NOT NULL DEFAULT '{}'::jsonb,
+    habits_data JSONB NOT NULL DEFAULT '[]'::jsonb,
+    updated_by UUID NULL REFERENCES users(id) ON DELETE SET NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================================================
+-- [V17 — B1.4 & S7] GROW Koçluk Görüşmesi Kolonu ve Aktif Kurs-Öğrenci Görünümü
+-- ============================================================================
+
+ALTER TABLE coaching_sessions
+    ADD COLUMN IF NOT EXISTS grow_data JSONB NULL;
+
+CREATE OR REPLACE VIEW vw_active_course_students AS
+SELECT cs.course_id, cs.student_id
+FROM course_students cs
+WHERE cs.is_active = 1
+UNION
+SELECT cg.course_id, sgm.student_id
+FROM course_groups cg
+JOIN student_group_members sgm ON sgm.group_id = cg.group_id
+WHERE sgm.is_active = 1;
+
+CREATE OR REPLACE VIEW vw_active_student_groups AS
+SELECT student_id, group_id, program_id
+FROM student_group_members
+WHERE is_active = 1;

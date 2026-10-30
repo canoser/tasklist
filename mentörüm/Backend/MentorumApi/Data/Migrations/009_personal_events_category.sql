@@ -1,1 +1,0 @@
-ALTER TABLE personal_events ADD COLUMN IF NOT EXISTS category VARCHAR(16) NULL;
