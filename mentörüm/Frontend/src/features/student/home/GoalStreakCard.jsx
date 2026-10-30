@@ -15,9 +15,9 @@ export default function GoalStreakCard({ variant = 'default' }) {
   const { data: goal } = useStudentGoal();
   const { data: streak = { currentStreak: 0, totalStudyDays: 0 } } = useStudentStreak();
 
-  const uni = goal?.targetUniversity ?? goal?.target_university ?? goal?.TargetUniversity;
-  const dept = goal?.targetDepartment ?? goal?.target_department ?? goal?.TargetDepartment;
-  const score = goal?.targetScore ?? goal?.target_score ?? goal?.TargetScore;
+  const uni = goal?.targetUniversity;
+  const dept = goal?.targetDepartment;
+  const score = goal?.targetScore;
 
   const daysLeft = Math.max(0, Math.ceil((EXAM_DATE - new Date()) / (1000 * 60 * 60 * 24)));
   const targetSummary = [uni, dept, score ? `${score} Net` : null].filter(Boolean).join(' · ') || (score ? `${score} Net Hedef` : 'Hedef Belirlenmedi');

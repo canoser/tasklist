@@ -7,7 +7,6 @@ import ThemeDecorContainer from '../../common/ThemeDecor/ThemeDecorContainer';
 import { 
   Home, 
   Calendar, 
-  CalendarDays, 
   BookOpen, 
   CheckSquare, 
   Palette, 
@@ -32,8 +31,7 @@ const StudentLayout = () => {
 
   const sidebarTabs = [
     { path: '/student/home', label: 'Ana Sayfa', icon: Home },
-    { path: '/student/calendar', label: 'Takvim', icon: Calendar },
-    { path: '/student/schedule', label: 'Programım', icon: CalendarDays },
+    { path: '/student/calendar', label: 'Takvim & Program', icon: Calendar },
     { path: '/student/courses', label: 'Derslerim', icon: BookOpen },
     { path: '/student/homework', label: 'Ödevler', icon: CheckSquare },
     { path: '/student/storage', label: 'Dosyalar', icon: FolderOpen },

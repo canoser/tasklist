@@ -207,7 +207,7 @@ const StudentCalendarPage = () => {
           </Card>
         </>
       ) : (
-        <StudentSchedulePage />
+        <StudentSchedulePage embedded={true} />
       )}
     </div>
   );

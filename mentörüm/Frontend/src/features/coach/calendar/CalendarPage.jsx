@@ -184,7 +184,7 @@ const CalendarPage = () => {
       </div>
 
       {activeTab === 'SCHEDULE' ? (
-        <WeeklySchedulePage programId={activeProgramId} />
+        <WeeklySchedulePage programId={activeProgramId} embedded={true} />
       ) : (
         <div className={styles.calendarWrapper}>
           <Card className={styles.calendarCard}>

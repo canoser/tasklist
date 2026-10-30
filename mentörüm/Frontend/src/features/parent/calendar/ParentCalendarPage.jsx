@@ -10,6 +10,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import Card from '../../../components/common/Card/Card';
 import { useParentChildren, useParentChildCalendar } from '../parentApi';
 import ChildSelector from '../../../components/common/ChildSelector/ChildSelector';
+import ParentSchedulePage from '../schedule/ParentSchedulePage';
 import styles from './ParentCalendarPage.module.css';
 
 const locales = { tr };
@@ -18,6 +19,7 @@ const localizer = dateFnsLocalizer({ format, parse, startOfWeek, getDay, locales
 const ParentCalendarPage = () => {
   const { data: children, isLoading: isChildrenLoading } = useParentChildren();
   const [selectedChildId, setSelectedChildId] = useState(null);
+  const [activeTab, setActiveTab] = useState('calendar'); // 'calendar' | 'schedule'
   const [view, setView] = useState(Views.MONTH);
   const [date, setDate] = useState(new Date());
   const [range, setRange] = useState({ start: startOfMonth(new Date()), end: endOfMonth(new Date()) });
@@ -67,33 +69,75 @@ const ParentCalendarPage = () => {
     <div className={styles.pageContainer}>
       <header className={styles.header}>
         <div>
-          <h1 className={styles.title}>Takvim</h1>
-          <p className={styles.subtitle}>{student.fullName} adlı öğrencinin takvimi</p>
+          <h1 className={styles.title}>Takvim & Ders Programı</h1>
+          <p className={styles.subtitle}>{student.fullName} adlı öğrencinin akademik takvimi ve haftalık ders programı</p>
         </div>
       </header>
       <ChildSelector children={children} selectedId={student.studentId} onSelect={setSelectedChildId} />
-      <Card className={styles.card}>
-        {isLoading ? (
-          <div className={styles.loading}>Takvim yükleniyor...</div>
-        ) : (
-          <Calendar
-            localizer={localizer}
-            events={formatted}
-            startAccessor="start"
-            endAccessor="end"
-            style={{ height: '70vh' }}
-            views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
-            view={view}
-            date={date}
-            onView={setView}
-            onNavigate={setDate}
-            onRangeChange={handleRangeChange}
-            culture="tr"
-            messages={{ next: 'İleri', previous: 'Geri', today: 'Bugün', month: 'Ay', week: 'Hafta', day: 'Gün', agenda: 'Ajanda' }}
-            eventPropGetter={eventStyleGetter}
-          />
-        )}
-      </Card>
+
+      <div style={{ display: 'inline-flex', background: 'var(--bg-color-surface-elevated, var(--bg-app))', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '4px', gap: '4px', width: 'fit-content', marginBottom: '12px' }}>
+        <button
+          type="button"
+          onClick={() => setActiveTab('calendar')}
+          style={{
+            padding: '7px 14px',
+            borderRadius: '6px',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            background: activeTab === 'calendar' ? 'var(--bg-color-surface)' : 'transparent',
+            color: activeTab === 'calendar' ? 'var(--color-primary)' : 'var(--text-color-muted)',
+            boxShadow: activeTab === 'calendar' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none'
+          }}
+        >
+          🗓️ Akademik Takvim
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('schedule')}
+          style={{
+            padding: '7px 14px',
+            borderRadius: '6px',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            background: activeTab === 'schedule' ? 'var(--bg-color-surface)' : 'transparent',
+            color: activeTab === 'schedule' ? 'var(--color-primary)' : 'var(--text-color-muted)',
+            boxShadow: activeTab === 'schedule' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none'
+          }}
+        >
+          📅 Haftalık Ders Programı
+        </button>
+      </div>
+
+      {activeTab === 'schedule' ? (
+        <ParentSchedulePage studentId={student.studentId} embedded={true} />
+      ) : (
+        <Card className={styles.card}>
+          {isLoading ? (
+            <div className={styles.loading}>Takvim yükleniyor...</div>
+          ) : (
+            <Calendar
+              localizer={localizer}
+              events={formatted}
+              startAccessor="start"
+              endAccessor="end"
+              style={{ height: '70vh' }}
+              views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
+              view={view}
+              date={date}
+              onView={setView}
+              onNavigate={setDate}
+              onRangeChange={handleRangeChange}
+              culture="tr"
+              messages={{ next: 'İleri', previous: 'Geri', today: 'Bugün', month: 'Ay', week: 'Hafta', day: 'Gün', agenda: 'Ajanda' }}
+              eventPropGetter={eventStyleGetter}
+            />
+          )}
+        </Card>
+      )}
     </div>
   );
 };

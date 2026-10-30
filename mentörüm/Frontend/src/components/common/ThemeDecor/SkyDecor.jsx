@@ -118,7 +118,7 @@ export default function SkyDecor() {
       <div
         className={styles.celestialContainer}
         style={{
-          opacity: isDark ? 0.75 : 0.85,
+          opacity: isDark ? 0.32 : 0.24,
         }}
       >
         <svg

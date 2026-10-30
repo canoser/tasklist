@@ -32,12 +32,11 @@ const ParentLayout = () => {
     navigate('/login');
   };
 
-  // Dinamik sekmeler (T47 & T48 & T49)
+  // Dinamik sekmeler (5 Ergonomik Sekme: Takvim & Program birleştirildi)
   const tabs = [
     { path: '/parent/summary', label: 'Özet', icon: '📊', isAllowed: true },
     ...(canViewHomework ? [{ path: '/parent/homework', label: 'Ödev Takibi', icon: '📋', isAllowed: canViewHomework }] : []),
-    ...(canViewCalendar ? [{ path: '/parent/calendar', label: 'Takvim', icon: '🗓️', isAllowed: canViewCalendar }] : []),
-    ...(canViewCalendar ? [{ path: '/parent/schedule', label: 'Program', icon: '📅', isAllowed: canViewCalendar }] : []),
+    ...(canViewCalendar ? [{ path: '/parent/calendar', label: 'Takvim & Program', icon: '🗓️', isAllowed: canViewCalendar }] : []),
     ...(canViewExams ? [{ path: '/parent/exams', label: 'Sınavlar', icon: '📝', isAllowed: canViewExams }] : []),
     ...(canViewPayments ? [{ path: '/parent/payments', label: 'Ödemeler', icon: '💳', isAllowed: canViewPayments }] : []),
   ];

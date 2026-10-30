@@ -90,22 +90,37 @@ const CoachLayout = () => {
     navigate('/login');
   };
 
-  // Dinamik Breadcrumb Başlığı
-  const getPageTitle = () => {
+  // Dinamik Breadcrumb Başlığı ve Üst Kategori
+  const getBreadcrumbInfo = () => {
     const p = location.pathname;
-    if (p.includes('/dashboard')) return 'Dashboard';
-    if (p.includes('/students')) return 'Öğrenciler & Programlar';
-    if (p.includes('/teachers')) return 'Öğretmenler';
-    if (p.includes('/payments')) return 'Finans & Ödemeler';
-    if (p.includes('/programs')) return 'Programlar & Dersler';
-    if (p.includes('/calendar')) return 'Takvim & Haftalık Program';
-    if (p.includes('/approvals')) return 'Onay Merkezi';
-    if (p.includes('/reports')) return 'Raporlar & Analiz';
-    if (p.includes('/storage')) return 'Dosyalarım';
-    if (p.includes('/profile')) return 'Ayarlar & Profil';
-    if (p.includes('/admin')) return 'Sistem Yönetimi (Admin)';
-    return 'Panel';
+    if (p.includes('/audit-logs')) return { title: 'İşlem Geçmişi (Denetim)' };
+    if (p.includes('/dashboard')) return { title: 'Dashboard' };
+    if (/^\/coach\/students\/[^/]+/.test(p)) {
+      return { parentLabel: 'Öğrenciler & Programlar', parentPath: '/coach/students', title: 'Öğrenci Detayı' };
+    }
+    if (p.includes('/courses/')) {
+      return { parentLabel: 'Öğrenciler & Programlar', parentPath: '/coach/students?tab=COURSES', title: 'Ders Detayı' };
+    }
+    if (p.includes('/students') || p.includes('/courses') || p.includes('/groups')) {
+      return { title: 'Öğrenciler & Programlar' };
+    }
+    if (/\/teachers\/[^/]+/.test(p)) {
+      return { parentLabel: 'Öğretmenler', parentPath: '/coach/teachers', title: 'Öğretmen Detayı' };
+    }
+    if (p.includes('/teachers')) return { title: 'Öğretmenler' };
+    if (p.includes('/payments')) return { title: 'Finans & Ödemeler' };
+    if (p.includes('/calendar') || p.includes('/schedule')) return { title: 'Takvim & Program' };
+    if (p.includes('/approvals')) return { title: 'Onay Merkezi' };
+    if (p.includes('/reports')) return { title: 'Raporlar & Analiz' };
+    if (p.includes('/storage')) return { title: 'Dosyalarım' };
+    if (p.includes('/profile') || p.includes('/settings')) return { title: 'Ayarlar & Profil' };
+    if (p.includes('/admin')) return { title: 'Sistem Yönetimi (Admin)' };
+    if (p.includes('/programs')) return { title: 'Öğrenciler & Programlar' };
+    return { title: 'Panel' };
   };
+
+  const breadcrumbInfo = getBreadcrumbInfo();
+  const getPageTitle = () => breadcrumbInfo.title;
 
   const currentDateFormatted = format(new Date(), 'd MMMM yyyy, EEEE', { locale: tr });
 
@@ -203,9 +218,14 @@ const CoachLayout = () => {
                       onClick={() => {
                         if (window.innerWidth < 1024) closeSidebar();
                       }}
-                      className={({ isActive }) =>
-                        isActive ? `${styles.navItem} ${styles.navItemActive}` : styles.navItem
-                      }
+                      className={({ isActive }) => {
+                        const isProgramSubRoute =
+                          item.path === '/coach/students' &&
+                          (location.pathname.includes('/courses') || location.pathname.includes('/groups'));
+                        return isActive || isProgramSubRoute
+                          ? `${styles.navItem} ${styles.navItemActive}`
+                          : styles.navItem;
+                      }}
                     >
                       <span className={styles.navIcon}>
                         <Icon size={18} strokeWidth={1.75} />
@@ -298,7 +318,21 @@ const CoachLayout = () => {
             </button>
             <div className={styles.breadcrumbBox}>
               <div className={styles.breadcrumbs}>
-                <span className={styles.crumbRoot}>Mentörüm</span>
+                <span className={styles.crumbRoot} style={{ cursor: 'pointer' }} onClick={() => navigate('/coach/dashboard')}>
+                  Mentörüm
+                </span>
+                {breadcrumbInfo.parentLabel && (
+                  <>
+                    <span className={styles.crumbSlash}>/</span>
+                    <span
+                      className={styles.crumbRoot}
+                      style={{ cursor: 'pointer', color: 'var(--color-primary)' }}
+                      onClick={() => navigate(breadcrumbInfo.parentPath)}
+                    >
+                      {breadcrumbInfo.parentLabel}
+                    </span>
+                  </>
+                )}
                 <span className={styles.crumbSlash}>/</span>
                 <span className={styles.crumbCurrent}>{getPageTitle()}</span>
               </div>

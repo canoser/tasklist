@@ -19,7 +19,7 @@ const fmt = (t) => (t ? t.slice(0, 5) : '');
 
 const inputStyle = { padding: '8px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-app)', color: 'var(--text-primary)', colorScheme: 'dark' };
 
-const StudentSchedulePage = () => {
+const StudentSchedulePage = ({ embedded = false }) => {
   const { data: slots, isLoading } = useStudentSchedule();
   const { data: schoolSchedule = [] } = useStudentSchoolSchedule();
   const createSchedule = useCreateSchoolSchedule();
@@ -52,13 +52,12 @@ const StudentSchedulePage = () => {
   };
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Programım</h1>
+    <div className={styles.container} style={embedded ? { padding: 0, maxWidth: '100%' } : undefined}>
+      {!embedded && <h1 className={styles.title}>Programım</h1>}
 
       <Card className={styles.card} padding="md">
         <h2 style={{ margin: '0 0 10px', fontSize: '1rem' }}>Okul Saatlerim (Haftalık Tekrarlayan Şablon)</h2>
         
-        {/* Çoklu Gün Seçim Butonları (T10) */}
         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '12px' }}>
           <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginRight: '4px' }}>Günler:</span>
           {DAY_PILLS.map((d) => {
@@ -151,4 +150,3 @@ const StudentSchedulePage = () => {
 };
 
 export default StudentSchedulePage;
-

@@ -437,7 +437,12 @@
   background-color: transparent;
   padding: 24px;
   position: relative;
-  z-index: 1;
+  z-index: 2;
+}
+
+.pageContent > * {
+  position: relative;
+  z-index: 2;
 }
 
 /* Mobil Başlık */
