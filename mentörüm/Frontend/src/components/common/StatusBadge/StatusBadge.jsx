@@ -15,13 +15,16 @@ const STATUS_CONFIGS = {
   COMPLETED: { label: 'Tamamlandı', color: 'var(--color-success, #10b981)', bg: 'rgba(16, 185, 129, 0.15)' },
   PAID: { label: 'Ödendi', color: 'var(--color-success, #10b981)', bg: 'rgba(16, 185, 129, 0.15)' },
   APPROVED: { label: 'Onaylandı', color: 'var(--color-success, #10b981)', bg: 'rgba(16, 185, 129, 0.15)' },
+  ACTIVE: { label: 'Kayıtlı / Aktif', color: 'var(--color-success, #10b981)', bg: 'rgba(16, 185, 129, 0.15)' },
+  LATE_DONE: { label: 'Geç Tamamlandı', color: 'var(--color-warning, #f59e0b)', bg: 'rgba(245, 158, 11, 0.15)' },
   
   // Bekliyor / Nötr
   PENDING: { label: 'Bekliyor', color: 'var(--color-primary, #6366f1)', bg: 'rgba(99, 102, 241, 0.15)' },
+  INACTIVE: { label: 'Pasif', color: 'var(--text-secondary, #94a3b8)', bg: 'rgba(148, 163, 184, 0.15)' },
   CANCELLED: { label: 'İptal', color: 'var(--text-secondary, #94a3b8)', bg: 'rgba(148, 163, 184, 0.15)' },
 };
 
-export default function StatusBadge({ status, label, size = 'sm', style = {} }) {
+export default function StatusBadge({ status, label, size = 'sm', pill = false, className = '', style = {} }) {
   const normalizedKey = String(status || '').toUpperCase();
   const config = STATUS_CONFIGS[normalizedKey] || {
     label: label || status || 'Bilinmiyor',
@@ -35,6 +38,7 @@ export default function StatusBadge({ status, label, size = 'sm', style = {} }) 
 
   return (
     <span
+      className={className}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -42,7 +46,7 @@ export default function StatusBadge({ status, label, size = 'sm', style = {} }) 
         padding,
         fontSize,
         fontWeight: 600,
-        borderRadius: '4px',
+        borderRadius: pill ? '999px' : '6px',
         color: config.color,
         backgroundColor: config.bg,
         lineHeight: 1.2,

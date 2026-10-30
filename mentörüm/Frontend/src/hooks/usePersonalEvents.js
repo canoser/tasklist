@@ -4,8 +4,15 @@ import { apiClient } from '../api/apiClient';
 export const useCreatePersonalEvent = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data) => {
-      return await apiClient.post('/me/events', data);
+    mutationFn: async ({ title, description, eventType, category, startAt, endAt }) => {
+      return await apiClient.post('/me/events', {
+        title,
+        description,
+        eventType,
+        category,
+        startAt,
+        endAt,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['coach', 'calendar'] });
@@ -25,8 +32,8 @@ export const usePersonalEvents = () => {
 export const useCheckinPersonalEvent = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }) => {
-      return await apiClient.patch(`/me/events/${id}/checkin`, data);
+    mutationFn: async ({ id, data: { checkedIn, actualMinutes } }) => {
+      return await apiClient.patch(`/me/events/${id}/checkin`, { checkedIn, actualMinutes });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['me', 'events'] });

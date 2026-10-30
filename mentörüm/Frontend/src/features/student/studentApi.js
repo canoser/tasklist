@@ -88,7 +88,8 @@ export const useStudentGoal = () => useQuery({
 export const useUpdateStudentGoal = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data) => apiClient.put('/student/goal', data),
+    mutationFn: ({ targetUniversity, targetDepartment, targetScore }) =>
+      apiClient.put('/student/goal', { targetUniversity, targetDepartment, targetScore }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['student', 'goal'] });
       queryClient.invalidateQueries({ queryKey: ['student', 'profile'] });
@@ -130,8 +131,28 @@ export const useUpdateSessionPrep = () => {
 export const useCreateStudySession = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data) => {
-      return await apiClient.post('/student/study-sessions', data);
+    mutationFn: async ({
+      minutes,
+      questionCount,
+      correct,
+      wrong,
+      blank,
+      sourceType,
+      curriculumTopicId,
+      startedAt,
+      endedAt,
+    }) => {
+      return await apiClient.post('/student/study-sessions', {
+        minutes,
+        questionCount,
+        correct,
+        wrong,
+        blank,
+        sourceType,
+        curriculumTopicId,
+        startedAt,
+        endedAt,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['student', 'study-sessions'] });
@@ -173,7 +194,7 @@ export const useStudentCheckins = () => {
 export const useSaveCheckin = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data) => apiClient.put('/student/checkin', data),
+    mutationFn: ({ mood }) => apiClient.put('/student/checkin', { mood }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['student', 'checkins'] }),
   });
 };
@@ -189,7 +210,8 @@ export const useStudentNotes = () => {
 export const useCreateNote = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data) => apiClient.post('/student/notes', data),
+    mutationFn: ({ title, content, visibility }) =>
+      apiClient.post('/student/notes', { title, content, visibility }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['student', 'notes'] }),
   });
 };
@@ -197,7 +219,8 @@ export const useCreateNote = () => {
 export const useUpdateNote = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }) => apiClient.put(`/student/notes/${id}`, data),
+    mutationFn: ({ id, data: { title, content, visibility, isPinned } }) =>
+      apiClient.put(`/student/notes/${id}`, { title, content, visibility, isPinned }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['student', 'notes'] }),
   });
 };
@@ -221,7 +244,8 @@ export const useStudentQuestions = () => {
 export const useCreateQuestion = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data) => apiClient.post('/student/questions', data),
+    mutationFn: ({ topicText, uploadId }) =>
+      apiClient.post('/student/questions', { topicText, uploadId }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['student', 'questions'] }),
   });
 };
@@ -253,7 +277,8 @@ export const useStudentSchoolSchedule = () => {
 export const useCreateSchoolSchedule = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data) => apiClient.post('/student/school-schedule', data),
+    mutationFn: ({ dayOfWeek, startTime, endTime, label }) =>
+      apiClient.post('/student/school-schedule', { dayOfWeek, startTime, endTime, label }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['student', 'school-schedule'] });
       queryClient.invalidateQueries({ queryKey: ['student', 'calendar'] });
@@ -275,7 +300,8 @@ export const useDeleteSchoolSchedule = () => {
 // V10: Ödev Ek Süre Talebi
 export const useRequestExtension = () => {
   return useMutation({
-    mutationFn: ({ homeworkId, data }) => apiClient.post(`/homework/${homeworkId}/request-extension`, data),
+    mutationFn: ({ homeworkId, data: { reason } }) =>
+      apiClient.post(`/homework/${homeworkId}/request-extension`, { reason }),
   });
 };
 
@@ -290,7 +316,8 @@ export const useStudentCoachingTools = () => {
 export const useToggleStudentHabit = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data) => apiClient.patch('/student/coaching-tools/habits', data),
+    mutationFn: ({ habitId, date, completed }) =>
+      apiClient.patch('/student/coaching-tools/habits', { habitId, date, completed }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['student', 'coaching-tools'] });
     },
@@ -302,5 +329,32 @@ export const useStudentUploads = () => {
   return useQuery({
     queryKey: ['student', 'uploads'],
     queryFn: async () => (await apiClient.get('/uploads')) || [],
+  });
+};
+
+// Okul / Ders Programı & Kaynaklar (studentSchoolApi'den tekilleştirildi)
+export const useStudentSchedule = () => useQuery({
+  queryKey: ['student', 'schedule'],
+  queryFn: async () => (await apiClient.get('/student/schedule')) || [],
+});
+
+export const useStudentCourses = (enabled = true) => useQuery({
+  queryKey: ['student', 'courses'],
+  queryFn: async () => (await apiClient.get('/student/courses')) || [],
+  enabled,
+});
+
+export const useStudentCourseResources = (courseId) => useQuery({
+  queryKey: ['student', 'course', courseId, 'resources'],
+  queryFn: async () => (await apiClient.get(`/student/courses/${courseId}/resources`)) || [],
+  enabled: !!courseId,
+});
+
+export const useUpdateResourceProgress = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ resourceId, data: { progress, isDone } }) =>
+      apiClient.put(`/student/resources/${resourceId}/progress`, { progress, isDone }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['student'] }),
   });
 };

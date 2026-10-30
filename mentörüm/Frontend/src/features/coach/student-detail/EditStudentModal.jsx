@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Modal from '../../../components/common/Modal/Modal';
 import Input from '../../../components/common/Input/Input';
 import Button from '../../../components/common/Button/Button';
+import { STUDENT_GRADES, STUDENT_TRACKS } from '../../../constants/domainConstants';
 import styles from './EditStudentModal.module.css';
 
 export default function EditStudentModal({ open, onClose, student, onSubmit }) {
@@ -89,15 +90,21 @@ export default function EditStudentModal({ open, onClose, student, onSubmit }) {
                 </div>
 
                 <div className={styles.levelRow}>
-                    <Input 
-                        label="Sınıf Seviyesi"
-                        placeholder="Örn: 11" 
-                        value={classLevel} 
-                        onChange={(e) => setClassLevel(e.target.value)} 
-                        type="number" 
-                        min="1"
-                        max="12"
-                    />
+                    <div className={styles.selectWrapper}>
+                        <label className={styles.label}>Sınıf Seviyesi</label>
+                        <select 
+                            className={styles.select} 
+                            value={classLevel} 
+                            onChange={(e) => setClassLevel(e.target.value)}
+                        >
+                            <option value="">Seçiniz</option>
+                            {STUDENT_GRADES.map((g) => (
+                                <option key={g} value={g === 'Mezun' ? '13' : g}>
+                                    {g === 'Mezun' ? 'Mezun' : `${g}. Sınıf`}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                     <div className={styles.selectWrapper}>
                         <label className={styles.label}>Hedef Sınav</label>
                         <select 
@@ -106,10 +113,9 @@ export default function EditStudentModal({ open, onClose, student, onSubmit }) {
                             onChange={(e) => setTargetExam(e.target.value)}
                         >
                             <option value="">Seçiniz (opsiyonel)</option>
-                            <option value="SAY">SAY (Sayısal)</option>
-                            <option value="EA">EA (Eşit Ağırlık)</option>
-                            <option value="SOZ">SÖZ (Sözel)</option>
-                            <option value="ORTAOKUL">LGS / Ortaokul</option>
+                            {STUDENT_TRACKS.map((t) => (
+                                <option key={t.value} value={t.value}>{t.label}</option>
+                            ))}
                         </select>
                     </div>
                 </div>

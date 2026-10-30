@@ -1,4 +1,5 @@
 import React from 'react';
+import StatusBadge from './StatusBadge/StatusBadge';
 
 export const PriorityBadge = ({ priority }) => {
   const p = (priority || 'NORMAL').toUpperCase();
@@ -9,9 +10,9 @@ export const PriorityBadge = ({ priority }) => {
         fontWeight: 700,
         padding: '2px 8px',
         borderRadius: '12px',
-        backgroundColor: '#fee2e2',
-        color: '#dc2626',
-        border: '1px solid #fecaca'
+        backgroundColor: 'rgba(239, 68, 68, 0.15)',
+        color: 'var(--color-danger, #ef4444)',
+        border: '1px solid rgba(239, 68, 68, 0.3)'
       }}>
         ⚡ Kritik
       </span>
@@ -24,8 +25,8 @@ export const PriorityBadge = ({ priority }) => {
         fontWeight: 600,
         padding: '2px 8px',
         borderRadius: '12px',
-        backgroundColor: '#f1f5f9',
-        color: '#64748b'
+        backgroundColor: 'rgba(148, 163, 184, 0.15)',
+        color: 'var(--text-secondary, #64748b)'
       }}>
         Düşük
       </span>
@@ -37,8 +38,8 @@ export const PriorityBadge = ({ priority }) => {
       fontWeight: 500,
       padding: '2px 8px',
       borderRadius: '12px',
-      backgroundColor: '#f3f4f6',
-      color: '#4b5563'
+      backgroundColor: 'rgba(148, 163, 184, 0.12)',
+      color: 'var(--text-color-muted, #64748b)'
     }}>
       Normal
     </span>
@@ -54,9 +55,9 @@ export const AssignedViaBadge = ({ assignedVia }) => {
         fontWeight: 600,
         padding: '2px 8px',
         borderRadius: '12px',
-        backgroundColor: '#eff6ff',
-        color: '#2563eb',
-        border: '1px solid #bfdbfe'
+        backgroundColor: 'rgba(59, 130, 246, 0.15)',
+        color: 'var(--color-info, #3b82f6)',
+        border: '1px solid rgba(59, 130, 246, 0.3)'
       }}>
         👥 Grup Ödevi
       </span>
@@ -68,9 +69,9 @@ export const AssignedViaBadge = ({ assignedVia }) => {
       fontWeight: 600,
       padding: '2px 8px',
       borderRadius: '12px',
-      backgroundColor: '#f5f3ff',
-      color: '#7c3aed',
-      border: '1px solid #ddd6fe'
+      backgroundColor: 'rgba(124, 58, 237, 0.15)',
+      color: 'var(--color-primary, #7c3aed)',
+      border: '1px solid rgba(124, 58, 237, 0.3)'
     }}>
       👤 Bireysel
     </span>
@@ -79,45 +80,13 @@ export const AssignedViaBadge = ({ assignedVia }) => {
 
 export const HomeworkStatusBadge = ({ status }) => {
   const s = (status || 'PENDING').toUpperCase();
-  if (s === 'COMPLETED') {
-    return (
-      <span style={{
-        fontSize: '0.75rem',
-        fontWeight: 600,
-        padding: '2px 8px',
-        borderRadius: '12px',
-        backgroundColor: '#dcfce7',
-        color: '#166534'
-      }}>
-        ✓ Tamamlandı
-      </span>
-    );
-  }
-  if (s === 'OVERDUE') {
-    return (
-      <span style={{
-        fontSize: '0.75rem',
-        fontWeight: 700,
-        padding: '2px 8px',
-        borderRadius: '12px',
-        backgroundColor: '#fee2e2',
-        color: '#b91c1c'
-      }}>
-        ⚠ Gecikmiş
-      </span>
-    );
-  }
-  return (
-    <span style={{
-      fontSize: '0.75rem',
-      fontWeight: 600,
-      padding: '2px 8px',
-      borderRadius: '12px',
-      backgroundColor: '#fef3c7',
-      color: '#92400e'
-    }}>
-      Devam Ediyor
-    </span>
-  );
+  const labelMap = {
+    COMPLETED: '✓ Tamamlandı',
+    DONE: '✓ Tamamlandı',
+    OVERDUE: '⚠ Gecikmiş',
+    PENDING: 'Devam Ediyor'
+  };
+  return <StatusBadge status={s} label={labelMap[s] || 'Devam Ediyor'} pill />;
 };
+
 

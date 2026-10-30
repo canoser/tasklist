@@ -1,7 +1,6 @@
 import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../../features/auth/authStore';
-import { apiClient } from '../../../api/apiClient';
 import NotificationDropdown from '../../common/NotificationDropdown/NotificationDropdown';
 import ThemeDecorContainer from '../../common/ThemeDecor/ThemeDecorContainer';
 import { 
@@ -17,17 +16,11 @@ import {
 import styles from './StudentLayout.module.css';
 
 const StudentLayout = () => {
-  const { user, viewAs, clearAuth } = useAuthStore();
+  const { user, viewAs, logoutUser } = useAuthStore();
   const navigate = useNavigate();
   const displayName = viewAs?.name || user?.fullName || 'Öğrenci';
   const displayInitial = displayName.charAt(0);
-  const handleLogout = async () => {
-    try {
-      await apiClient.post('/auth/logout');
-    } catch {}
-    clearAuth();
-    navigate('/login');
-  };
+  const handleLogout = () => logoutUser(navigate);
 
   const sidebarTabs = [
     { path: '/student/home', label: 'Ana Sayfa', icon: Home },

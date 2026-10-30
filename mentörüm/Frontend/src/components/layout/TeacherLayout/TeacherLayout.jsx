@@ -1,24 +1,17 @@
 import React from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../../features/auth/authStore';
-import { apiClient } from '../../../api/apiClient';
 import NotificationDropdown from '../../common/NotificationDropdown/NotificationDropdown';
 import ThemeSelector from '../../common/ThemeSelector/ThemeSelector';
 import ThemeDecorContainer from '../../common/ThemeDecor/ThemeDecorContainer';
 import styles from './TeacherLayout.module.css';
 
 const TeacherLayout = () => {
-  const { user, viewAs, clearAuth } = useAuthStore();
+  const { user, viewAs, logoutUser } = useAuthStore();
   const navigate = useNavigate();
   const displayName = viewAs?.name || user?.fullName || 'Öğretmen';
   const displayInitial = displayName.charAt(0);
-  const handleLogout = async () => {
-    try {
-      await apiClient.post('/auth/logout');
-    } catch {}
-    clearAuth();
-    navigate('/login');
-  };
+  const handleLogout = () => logoutUser(navigate);
 
   const tabs = [
     { path: '/teacher/courses', label: 'Derslerim', icon: '📚' },

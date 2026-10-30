@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import styles from './CoachReports.module.css';
-import { useReportsOverview, useStudents, useStudentReport, useReportsDetail } from '../coachApi';
-import { apiClient } from '../../../api/apiClient';
+import { useReportsOverview, useStudents, useStudentReport, useReportsDetail, downloadStudentReportPdf } from '../coachApi';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { BarChart3, CheckCircle2, AlertCircle, Sparkles, FileDown, BookOpen, TrendingUp, Percent } from 'lucide-react';
@@ -25,15 +24,7 @@ const CoachReports = () => {
     const student = (students || []).find((s) => s.id === targetStudentId);
     try {
       setIsPdfDownloading(true);
-      const blob = await apiClient.get(`/students/${targetStudentId}/report.pdf`, { responseType: 'blob' });
-      const url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `veli-raporu-${(student?.fullName || 'ogrenci').replace(/\s+/g, '-').toLowerCase()}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
+      await downloadStudentReportPdf(targetStudentId, student?.fullName);
     } catch (err) {
       console.error('PDF indirme hatası:', err);
       alert('Veli raporu PDF indirilirken bir hata oluştu.');

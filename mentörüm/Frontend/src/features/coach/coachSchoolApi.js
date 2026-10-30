@@ -10,7 +10,7 @@ export const usePrograms = () => useQuery({
 export const useCreateProgram = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data) => apiClient.post('/programs', data),
+    mutationFn: ({ name, category }) => apiClient.post('/programs', { name, category }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['coach', 'programs'] }),
   });
 };
@@ -33,7 +33,16 @@ export const useDeactivateTeacher = () => {
 export const useDirectCreateTeacher = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ programId, data }) => apiClient.post(`/programs/${programId}/teachers`, data),
+    mutationFn: ({ programId, data: { firstName, lastName, branch, phone, email, password, courseIds } }) =>
+      apiClient.post(`/programs/${programId}/teachers`, {
+        firstName,
+        lastName,
+        branch,
+        phone,
+        email,
+        password,
+        courseIds,
+      }),
     onSuccess: (_, v) => {
       qc.invalidateQueries({ queryKey: ['coach', 'program', v.programId, 'teachers'] });
       qc.invalidateQueries({ queryKey: ['coach', 'teachers'] });
@@ -50,7 +59,13 @@ export const useTeacherDetail = (programId, teacherId) => useQuery({
 export const useUpdateTeacher = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ programId, teacherId, data }) => apiClient.put(`/programs/${programId}/teachers/${teacherId}`, data),
+    mutationFn: ({ programId, teacherId, data: { fullName, branch, phone, isActive } }) =>
+      apiClient.put(`/programs/${programId}/teachers/${teacherId}`, {
+        fullName,
+        branch,
+        phone,
+        isActive,
+      }),
     onSuccess: (_, v) => {
       qc.invalidateQueries({ queryKey: ['coach', 'program', v.programId, 'teachers'] });
       qc.invalidateQueries({ queryKey: ['coach', 'program', v.programId, 'teacher', v.teacherId] });
@@ -115,7 +130,7 @@ export const useGroups = (programId) => useQuery({
 export const useCreateGroup = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ programId, data }) => apiClient.post(`/programs/${programId}/groups`, data),
+    mutationFn: ({ programId, data: { name } }) => apiClient.post(`/programs/${programId}/groups`, { name }),
     onSuccess: (_, v) => qc.invalidateQueries({ queryKey: ['coach', 'program', v.programId, 'groups'] }),
   });
 };
@@ -158,7 +173,15 @@ export const useSchedule = (programId) => useQuery({
 export const useCreateScheduleSlot = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ programId, data }) => apiClient.post(`/programs/${programId}/schedule`, data),
+    mutationFn: ({ programId, data: { dayOfWeek, startTime, endTime, title, courseId, groupId } }) =>
+      apiClient.post(`/programs/${programId}/schedule`, {
+        dayOfWeek,
+        startTime,
+        endTime,
+        title,
+        courseId,
+        groupId,
+      }),
     onSuccess: (_, v) => qc.invalidateQueries({ queryKey: ['coach', 'program', v.programId, 'schedule'] }),
   });
 };
@@ -181,7 +204,13 @@ export const useCourseResources = (programId, courseId) => useQuery({
 export const useCreateResource = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ programId, courseId, data }) => apiClient.post(`/programs/${programId}/courses/${courseId}/resources`, data),
+    mutationFn: ({ programId, courseId, data: { title, type, uploadId, resourceRef } }) =>
+      apiClient.post(`/programs/${programId}/courses/${courseId}/resources`, {
+        title,
+        type,
+        uploadId,
+        resourceRef,
+      }),
     onSuccess: (_, v) => qc.invalidateQueries({ queryKey: ['coach', 'program', v.programId, 'course', v.courseId, 'resources'] }),
   });
 };

@@ -16,8 +16,8 @@ export const useStudents = (enabled = true) => {
 export const useSendInvite = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ email, role, relatedId }) => {
-      const response = await apiClient.post('/invites/send', { email, role, relatedId });
+    mutationFn: async ({ email, role, relatedId, sendEmail }) => {
+      const response = await apiClient.post('/invites/send', { email, role, relatedId, sendEmail });
       return response;
     },
     onSuccess: () => {
@@ -75,7 +75,8 @@ export const useCoachStudentNotes = (studentId, enabled = true) => {
 export const useCreateStudent = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data) => apiClient.post('/students', data),
+    mutationFn: ({ firstName, lastName, classLevel, targetExam, email }) =>
+      apiClient.post('/students', { firstName, lastName, classLevel, targetExam, email }),
     onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.coach.students() }),
   });
 };
@@ -117,7 +118,33 @@ export const useMoveToIndividual = (programId) => {
 export const useUpdateStudent = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ studentId, data }) => apiClient.put(`/students/${studentId}`, data),
+    mutationFn: ({
+      studentId,
+      data: {
+        firstName,
+        lastName,
+        classLevel,
+        targetExam,
+        phone,
+        targetUniversity,
+        targetDepartment,
+        monthlyMilestone,
+        weeklyTargetMinutes,
+        weeklyTargetQuestions,
+      },
+    }) =>
+      apiClient.put(`/students/${studentId}`, {
+        firstName,
+        lastName,
+        classLevel,
+        targetExam,
+        phone,
+        targetUniversity,
+        targetDepartment,
+        monthlyMilestone,
+        weeklyTargetMinutes,
+        weeklyTargetQuestions,
+      }),
     onSuccess: (_, v) => {
       qc.invalidateQueries({ queryKey: queryKeys.coach.students() });
       qc.invalidateQueries({ queryKey: queryKeys.coach.student(v.studentId) });
@@ -158,8 +185,8 @@ export const useUpdateCoachNotes = () => {
 export const useUpdateCoachProfile = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data) => {
-      return await apiClient.patch('/me/profile', data);
+    mutationFn: async ({ bio, specialty }) => {
+      return await apiClient.patch('/me/profile', { bio, specialty });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.me });
@@ -181,8 +208,14 @@ export const useCoachStudentSessions = (studentId, enabled = true) => {
 export const useCreateCoachingSession = (studentId) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data) => {
-      return await apiClient.post(`/students/${studentId}/sessions`, data);
+    mutationFn: async ({ title, sessionDate, notes, actionItems, growData }) => {
+      return await apiClient.post(`/students/${studentId}/sessions`, {
+        title,
+        sessionDate,
+        notes,
+        actionItems,
+        growData,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.coach.studentSessions(studentId) });
@@ -204,12 +237,38 @@ export const useParentPermissions = (studentId, parentId) => {
 export const useUpdateParentPermissions = (studentId, parentId) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (flags) => {
-      return await apiClient.put(`/students/${studentId}/parents/${parentId}/permissions`, flags);
+    mutationFn: async ({
+      canViewExams,
+      canViewHomework,
+      canViewCalendar,
+      canViewStudyStats,
+      canViewPayments,
+    }) => {
+      return await apiClient.put(`/students/${studentId}/parents/${parentId}/permissions`, {
+        canViewExams,
+        canViewHomework,
+        canViewCalendar,
+        canViewStudyStats,
+        canViewPayments,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.coach.parentPermissions(studentId, parentId) });
     },
   });
 };
+
+export const downloadStudentReportPdf = async (studentId, fullName = 'ogrenci') => {
+  const blob = await apiClient.get(`/students/${studentId}/report.pdf`, { responseType: 'blob' });
+  const url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+  const a = document.createElement('a');
+  a.href = url;
+  const slug = String(fullName || 'ogrenci').trim().replace(/\s+/g, '-').toLowerCase();
+  a.download = `veli-raporu-${slug}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.URL.revokeObjectURL(url);
+};
+
 

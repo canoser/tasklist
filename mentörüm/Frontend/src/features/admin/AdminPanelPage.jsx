@@ -3,6 +3,9 @@ import { usePendingApprovals, useAdminUsers, useApproveUser, useRejectUser, useA
 import Button from '../../components/common/Button/Button';
 import Input from '../../components/common/Input/Input';
 import Card from '../../components/common/Card/Card';
+import Modal from '../../components/common/Modal/Modal';
+import SegmentedTabs from '../../components/common/SegmentedTabs/SegmentedTabs';
+import StatusBadge from '../../components/common/StatusBadge/StatusBadge';
 import styles from './AdminPanelPage.module.css';
 import { apiClient } from '../../api/apiClient';
 
@@ -63,23 +66,34 @@ const AdminPanelPage = () => {
   const [curriculumResult, setCurriculumResult] = useState(null);
   const [curriculumError, setCurriculumError] = useState('');
   const [curriculumGrade, setCurriculumGrade] = useState('');
+  const [quotaModalUser, setQuotaModalUser] = useState(null);
+  const [maxStudentsInput, setMaxStudentsInput] = useState('');
+  const [maxTeachersInput, setMaxTeachersInput] = useState('');
+  const [storageQuotaInput, setStorageQuotaInput] = useState('');
 
   const handleApprove = (userId, defaultRole) => {
     const role = roles[userId] || defaultRole;
     if (role === 'Coach') {
-      const maxStudents = prompt('Öğrenci limiti (boş = varsayılan):') || null;
-      const maxTeachers = prompt('Öğretmen limiti (boş = varsayılan):') || null;
-      const storageQuotaMb = prompt('Depolama limiti (MB, boş = varsayılan):') || null;
-      approve.mutateAsync({
-        userId,
-        role,
-        maxStudents: maxStudents ? parseInt(maxStudents, 10) : null,
-        maxTeachers: maxTeachers ? parseInt(maxTeachers, 10) : null,
-        storageQuotaMb: storageQuotaMb ? parseInt(storageQuotaMb, 10) : null,
-      });
+      setQuotaModalUser({ userId, role });
+      setMaxStudentsInput('');
+      setMaxTeachersInput('');
+      setStorageQuotaInput('');
     } else {
       approve.mutateAsync({ userId, role });
     }
+  };
+
+  const handleConfirmCoachApprove = async (e) => {
+    e.preventDefault();
+    if (!quotaModalUser) return;
+    await approve.mutateAsync({
+      userId: quotaModalUser.userId,
+      role: quotaModalUser.role,
+      maxStudents: maxStudentsInput ? parseInt(maxStudentsInput, 10) : null,
+      maxTeachers: maxTeachersInput ? parseInt(maxTeachersInput, 10) : null,
+      storageQuotaMb: storageQuotaInput ? parseInt(storageQuotaInput, 10) : null,
+    });
+    setQuotaModalUser(null);
   };
 
   const handleAddUser = async () => {
@@ -148,34 +162,17 @@ const AdminPanelPage = () => {
       </header>
 
       {/* Navigasyon Sekmeleri */}
-      <div className={styles.tabs}>
-        <button 
-          className={`${styles.tabBtn} ${activeTab === 'pending' ? styles.tabBtnActive : ''}`}
-          onClick={() => setActiveTab('pending')}
-        >
-          ⏳ Onay Bekleyenler 
-          {pending && pending.length > 0 && <span className={styles.tabBadge}>{pending.length}</span>}
-        </button>
-        <button 
-          className={`${styles.tabBtn} ${activeTab === 'all' ? styles.tabBtnActive : ''}`}
-          onClick={() => setActiveTab('all')}
-        >
-          👥 Tüm Kullanıcılar
-          {allUsers && <span className={styles.tabBadgeNeutral}>{allUsers.length}</span>}
-        </button>
-        <button 
-          className={`${styles.tabBtn} ${activeTab === 'curriculum' ? styles.tabBtnActive : ''}`}
-          onClick={() => setActiveTab('curriculum')}
-        >
-          📚 Müfredat
-        </button>
-        <button
-          className={`${styles.tabBtn} ${activeTab === 'security' ? styles.tabBtnActive : ''}`}
-          onClick={() => setActiveTab('security')}
-        >
-          🛡️ Güvenlik & Kota
-        </button>
-      </div>
+      <SegmentedTabs
+        tabs={[
+          { id: 'pending', label: '⏳ Onay Bekleyenler', count: pending?.length || 0 },
+          { id: 'all', label: '👥 Tüm Kullanıcılar', count: allUsers?.length },
+          { id: 'curriculum', label: '📚 Müfredat' },
+          { id: 'security', label: '🛡️ Güvenlik & Kota' },
+        ]}
+        activeTab={activeTab}
+        onChange={setActiveTab}
+        style={{ marginBottom: '20px' }}
+      />
 
       {/* SEKME 1: ONAY BEKLEYENLER */}
       {activeTab === 'pending' && (
@@ -295,9 +292,11 @@ const AdminPanelPage = () => {
                       <span className={`${styles.roleBadge} ${styles['role_' + u.role]}`}>
                         {ROLE_LABEL[u.role] || u.role}
                       </span>
-                      <span className={u.approvalStatus === 'APPROVED' ? styles.statusApproved : styles.statusPending}>
-                        {u.approvalStatus === 'APPROVED' ? 'Aktif' : u.approvalStatus}
-                      </span>
+                      <StatusBadge
+                        status={u.approvalStatus}
+                        label={u.approvalStatus === 'APPROVED' ? 'Aktif' : u.approvalStatus}
+                        size="sm"
+                      />
                     </div>
                     <div className={styles.allUserEmail}>{u.email}</div>
                     <div className={styles.programInfo}>
@@ -470,6 +469,48 @@ const AdminPanelPage = () => {
           </Card>
         </div>
       )}
+
+      <Modal
+        isOpen={!!quotaModalUser}
+        onClose={() => setQuotaModalUser(null)}
+        title="Koç Hesabı Kota ve Limit Ayarları"
+        maxWidth="440px"
+      >
+        <form onSubmit={handleConfirmCoachApprove} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-color-muted)' }}>
+            Alanları boş bırakırsanız varsayılan sistem limitleri uygulanır.
+          </p>
+          <Input
+            label="Maksimum Öğrenci Limiti"
+            type="number"
+            placeholder="Varsayılan"
+            value={maxStudentsInput}
+            onChange={(e) => setMaxStudentsInput(e.target.value)}
+          />
+          <Input
+            label="Maksimum Öğretmen Limiti"
+            type="number"
+            placeholder="Varsayılan"
+            value={maxTeachersInput}
+            onChange={(e) => setMaxTeachersInput(e.target.value)}
+          />
+          <Input
+            label="Depolama Kotası (MB)"
+            type="number"
+            placeholder="Varsayılan"
+            value={storageQuotaInput}
+            onChange={(e) => setStorageQuotaInput(e.target.value)}
+          />
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '6px' }}>
+            <Button type="button" variant="ghost" size="sm" onClick={() => setQuotaModalUser(null)}>
+              İptal
+            </Button>
+            <Button type="submit" variant="primary" size="sm" isLoading={approve.isPending}>
+              Onayla ve Kaydet
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

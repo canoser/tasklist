@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../../features/auth/authStore';
-import { apiClient } from '../../../api/apiClient';
 import { useUIStore } from '../../../store/uiStore';
 import { usePendingApprovals } from '../../../features/coach/coachSchoolApi';
 import { useApprovals } from '../../../features/coach/coachApi';
@@ -38,7 +37,7 @@ import AssignHomeworkModal from '../../../features/coach/homework/AssignHomework
 import styles from './CoachLayout.module.css';
 
 const CoachLayout = () => {
-  const { user, clearAuth, viewAs } = useAuthStore();
+  const { user, logoutUser, viewAs } = useAuthStore();
   const { sidebarOpen, toggleSidebar, closeSidebar, theme, toggleTheme } = useUIStore();
   const navigate = useNavigate();
   const location = useLocation();
@@ -82,13 +81,7 @@ const CoachLayout = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      await apiClient.post('/auth/logout');
-    } catch {}
-    clearAuth();
-    navigate('/login');
-  };
+  const handleLogout = () => logoutUser(navigate);
 
   // Dinamik Breadcrumb Başlığı ve Üst Kategori
   const getBreadcrumbInfo = () => {

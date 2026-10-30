@@ -1,7 +1,6 @@
 import React from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../../features/auth/authStore';
-import { apiClient } from '../../../api/apiClient';
 import { useParentChildren } from '../../../features/parent/parentApi';
 import NotificationDropdown from '../../common/NotificationDropdown/NotificationDropdown';
 import ParentEmptyState from '../../common/ParentEmptyState/ParentEmptyState';
@@ -10,7 +9,7 @@ import ThemeDecorContainer from '../../common/ThemeDecor/ThemeDecorContainer';
 import styles from './ParentLayout.module.css';
 
 const ParentLayout = () => {
-  const { user, viewAs, clearAuth } = useAuthStore();
+  const { user, viewAs, logoutUser } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
   const displayName = viewAs?.name || user?.fullName || 'Veli';
@@ -24,13 +23,7 @@ const ParentLayout = () => {
   const canViewExams = activeChild ? activeChild.canViewExams === 1 : true;
   const canViewPayments = activeChild ? activeChild.canViewPayments === 1 : true;
 
-  const handleLogout = async () => {
-    try {
-      await apiClient.post('/auth/logout');
-    } catch {}
-    clearAuth();
-    navigate('/login');
-  };
+  const handleLogout = () => logoutUser(navigate);
 
   // Dinamik sekmeler (5 Ergonomik Sekme: Takvim & Program birleştirildi)
   const tabs = [
