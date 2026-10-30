@@ -291,3 +291,28 @@ U8 kapsamında 4 bozuk `dynamic` metot tiplendirilmiştir; ancak tırnaklı alia
 | **P1 (Sabitler / DRY)** | 4 dosyada `const DAYS`, 2 dosyada `ENTITY_TYPE_LABELS` + `renderPayloadDetails`, 4 dosyada tutarsız Sınıf/Alan (`Grade`/`Track`) listeleri (`EditStudentModal` serbest metin!) | **10+ dosya** | `Frontend/src/constants/domainConstants.js` |
 | **P1 (API / A5-A6)** | 28 satırlık ayrı `studentSchoolApi.js`, 14 opak `(data) =>` mutation ve `queryKeys.js` dışı manuel dizi anahtarları | **6 API dosyası** | `studentApi.js` birleştirmesi + Explicit Destructuring + `queryKeys.js` |
 | **P2 (Backend DRY)** | `StudentFlexibilityEndpoints.cs` içinde iki kez yazılan öğrenci oluşturma (ikincisinde `STUDENT_LIMIT_EXCEEDED` catch eksik!), 3 Repo'da `GetStudentProgramIdAsync`, parçalı `Course*Dtos.cs` | **Backend Data/Endpoints** | Tekil metot + A5 dosya birleştirmesi |
+
+---
+
+## 9. Ek Tarama (Faz 4): Açılır Pencereler (`<Modal>` İç Yapısı), Form Kontrolleri (`<Select>` / `<Textarea>`) ve Ödev Atama Akışı Tekrarları
+
+Kullanıcının Öğrenci Detay sayfasındaki **"Ödev Ata"** (`AssignHomeworkModal.jsx`) ve **"Düzenle"** (`EditStudentModal.jsx`) pencereleri arasındaki görsel fark tespiti üzerine yapılan derinlemesine iç-yapı taramasında şu 4 kök neden tespit edilmiştir:
+
+### 9.1. `<Modal>` İç İskelet Tutarsızlığı, Çift Padding ve Ölü Overlay CSS'leri
+- **`AssignHomeworkModal.jsx:103, 217` Çift Padding ve Farklı Footer:** `U9`'da dış katman `<Modal>` bileşenine geçirilmiş ancak iç katmandaki `<div className={styles.modalBody}>` (`padding: 24px`) ve `<div className={styles.modalFooter}>` (`background-color: #f8fafc; padding: 16px 24px`) kaldırılmamıştır. `Modal.jsx` zaten `.content` (`padding: 24px`) sardığı için `AssignHomeworkModal` içinde **48px çift boşluk** ve içeride asılı duran gri bir footer kutusu oluşmaktadır; `EditStudentModal.jsx` ise doğrudan `<form className={styles.form}>` ve `.actions` kullanmaktadır.
+- **`Modal.jsx` Standart `footer` Prop Eksikliği:** `Modal.jsx` içinde standart bir `footer` alanı olmadığı için 20 modalın her biri alt aksiyon barını (`İptal` / `Kaydet`) farklı CSS veya inline style (`justifyContent: 'flex-end'`) ile kurmaktadır.
+- **`isOpen` vs `open` Prop İkiliği:** `EditStudentModal`, `AddTeacherModal`, `EditTeacherModal`, `TeacherStudentNotesModal`, `PersonalEventModal` dışarıdan `open` prop'u alırken; diğer modallar `isOpen` prop'u almaktadır.
+- **Ölü CSS Kalıntıları:** `AssignHomeworkModal.module.css:1-57`, `PersonalEventModal.module.css:1-30`, `DevicePickerModal.module.css:1-20` ve `AddTeacherModal.module.css:1-33` içinde artık kullanılmayan `.modalOverlay`, `.modalContent`, `.overlay`, `.modal`, `.tabs`, `.tabBtn` sınıfları durmaktadır.
+
+### 9.2. Ortak `<Select>` ve `<Textarea>` Bileşenlerinin Olmaması (Aynı Modal İçinde Bile Farklı Kutu Boyutları)
+- `components/common/Input/Input.jsx` yalnızca `<input>` etiketini desteklemektedir (`padding: 12px 16px`, `font-size: 1rem`, `border-radius: var(--radius-md)`).
+- `components/common/` altında ortak bir `<Select>` veya `<Textarea>` bileşeni **yoktur**.
+- Sonuç olarak **aynı modalın içinde bile** (`EditStudentModal.jsx` içinde `Ad/Soyad` `<Input>` kutuları ile `Sınıf Seviyesi / Hedef Sınav` `<select>` kutuları; `AssignHomeworkModal.jsx` içinde `<select>`, `<Input>` ve `<textarea>` kutuları) yükseklik, iç boşluk (`12px 16px` vs `8px 12px` vs `10px 12px`), yazı boyutu (`1rem` vs `0.875rem`) ve label stilleri birbirinden farklı görünmektedir.
+- Toplam **25+ dosyada** elle `<label>` + `<select>` / `<textarea>` yazılmıştır.
+
+### 9.3. Sözde Modallar (`show*Modal` State'i Olup `<Modal>` Yerine Satır İçi `<div>` Açanlar)
+- **`TeacherCoursesPage.jsx:160-258` (`showCompleteModal`):** `✓ Dersi Tamamla` butonuna basıldığında `showCompleteModal` state'i `true` olmakta, ancak ortak `<Modal>` yerine sayfa akışı içinde inline `<div style={{ background: 'var(--bg-card)' }}>` açılmaktadır.
+- **`StudyTimerCard.jsx:99-122` (`t.showLogModal`):** Sayaç durdurulup `Bitir & Kaydet` denildiğinde `showLogModal` açılmakta, ancak `<Modal>` yerine kartın içinde dar bir inline `<div>` render edilmektedir.
+
+### 9.4. İki Ayrı Ödev Atama ve Müfredat Seçici Kodu (`AssignHomeworkModal.jsx` vs `TeacherCoursesPage.jsx`)
+- Koçun ödev atama penceresi (`AssignHomeworkModal.jsx:104-174`) ile öğretmenin ders detayındaki ödev atama formu (`TeacherCoursesPage.jsx:303-343`) aynı 4 kademeli müfredat seçicisini (`Seviye → Ders → Ünite/Tema → Konu → ➕ Serbest Konu`) ve ödev alanlarını (`Başlık`, `Açıklama`, `Son Teslim Tarihi`) iki ayrı yerde farklı JSX/CSS ile tekrarlamaktadır.

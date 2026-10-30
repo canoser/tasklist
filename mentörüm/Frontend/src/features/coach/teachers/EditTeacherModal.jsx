@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Modal from '../../../components/common/Modal/Modal';
-import Input from '../../../components/common/Input/Input';
+import Input, { Select } from '../../../components/common/Input/Input';
 import Button from '../../../components/common/Button/Button';
 import { TEACHER_BRANCH_OPTIONS } from '../../../constants/domainConstants';
 import { useUpdateTeacher } from '../coachSchoolApi';
@@ -9,7 +9,8 @@ import styles from './AddTeacherModal.module.css';
 
 const BRANCH_OPTIONS = TEACHER_BRANCH_OPTIONS;
 
-export default function EditTeacherModal({ open, onClose, programId, teacher }) {
+export default function EditTeacherModal({ open, isOpen, onClose, programId, teacher }) {
+  const effectiveOpen = isOpen ?? open;
   const [fullName, setFullName] = useState('');
   const [branch, setBranch] = useState(BRANCH_OPTIONS[0]);
   const [phone, setPhone] = useState('');
@@ -29,7 +30,7 @@ export default function EditTeacherModal({ open, onClose, programId, teacher }) 
       setErrorMsg('');
       setSuccessMsg('');
     }
-  }, [teacher, open]);
+  }, [teacher, effectiveOpen]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -61,10 +62,10 @@ export default function EditTeacherModal({ open, onClose, programId, teacher }) 
     }
   };
 
-  if (!open || !teacher) return null;
+  if (!effectiveOpen || !teacher) return null;
 
   return (
-    <Modal isOpen={open} onClose={onClose} title="Öğretmen Bilgilerini Düzenle">
+    <Modal isOpen={effectiveOpen} onClose={onClose} title="Öğretmen Bilgilerini Düzenle" maxWidth="500px">
       <form onSubmit={handleSubmit} className={styles.form}>
         {errorMsg && (
           <div className={styles.errorBox}>
@@ -79,7 +80,6 @@ export default function EditTeacherModal({ open, onClose, programId, teacher }) 
           </div>
         )}
 
-        {/* Ad Soyad */}
         <Input
           label="Ad Soyad *"
           value={fullName}
@@ -88,26 +88,23 @@ export default function EditTeacherModal({ open, onClose, programId, teacher }) 
           required
         />
 
-        {/* Branş Seçimi */}
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>
-            <BookOpen size={14} />
-            <span>Branş / Uzmanlık Alanı</span>
-          </label>
-          <select
-            className={styles.select}
-            value={branch}
-            onChange={(e) => setBranch(e.target.value)}
-          >
-            {BRANCH_OPTIONS.map((b) => (
-              <option key={b} value={b}>
-                {b}
-              </option>
-            ))}
-          </select>
-        </div>
+        <Select
+          label={
+            <>
+              <BookOpen size={14} />
+              <span>Branş / Uzmanlık Alanı</span>
+            </>
+          }
+          value={branch}
+          onChange={(e) => setBranch(e.target.value)}
+        >
+          {BRANCH_OPTIONS.map((b) => (
+            <option key={b} value={b}>
+              {b}
+            </option>
+          ))}
+        </Select>
 
-        {/* Telefon Numarası */}
         <Input
           label="Telefon Numarası"
           value={phone}
@@ -115,28 +112,25 @@ export default function EditTeacherModal({ open, onClose, programId, teacher }) 
           placeholder="Örn: 0555 123 45 67"
         />
 
-        {/* Aktiflik Durumu */}
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>
-            <UserCheck size={14} />
-            <span>Durum</span>
-          </label>
-          <select
-            className={styles.select}
-            value={isActive ? '1' : '0'}
-            onChange={(e) => setIsActive(e.target.value === '1')}
-          >
-            <option value="1">Aktif Öğretmen</option>
-            <option value="0">Pasif / Ayrılmış Öğretmen</option>
-          </select>
-        </div>
+        <Select
+          label={
+            <>
+              <UserCheck size={14} />
+              <span>Durum</span>
+            </>
+          }
+          value={isActive ? '1' : '0'}
+          onChange={(e) => setIsActive(e.target.value === '1')}
+        >
+          <option value="1">Aktif Öğretmen</option>
+          <option value="0">Pasif / Ayrılmış Öğretmen</option>
+        </Select>
 
-        {/* Butonlar */}
-        <div className={styles.footer}>
-          <Button type="button" variant="outline" onClick={onClose}>
+        <div className={styles.actions}>
+          <Button type="button" variant="ghost" onClick={onClose}>
             İptal
           </Button>
-          <Button type="submit" isLoading={updateTeacher.isPending}>
+          <Button type="submit" variant="primary" isLoading={updateTeacher.isPending}>
             Değişiklikleri Kaydet
           </Button>
         </div>

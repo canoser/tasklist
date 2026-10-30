@@ -3,7 +3,7 @@ import { usePrograms } from '../coachSchoolApi';
 import { usePaymentPlans, useCollectPayment, useStudents, useCreatePaymentPlan } from '../coachApi';
 import Button from '../../../components/common/Button/Button';
 import Modal from '../../../components/common/Modal/Modal';
-import Input from '../../../components/common/Input/Input';
+import Input, { Select } from '../../../components/common/Input/Input';
 import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
 import StatusBadge from '../../../components/common/StatusBadge/StatusBadge';
 import { formatCurrencyTRY } from '../../../constants/domainConstants';
@@ -299,61 +299,46 @@ export default function CoachPaymentsPage() {
 
       {/* Ödeme Planı Oluşturma Modalı */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Yeni Ödeme Planı Oluştur">
-        <form onSubmit={handleCreateSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px', padding: '8px 0' }}>
+        <form onSubmit={handleCreateSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {formError && (
             <div style={{ color: '#ef4444', fontSize: '0.875rem', fontWeight: 600 }}>{formError}</div>
           )}
 
-          <div>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>
-              Program
-            </label>
-            <select
-              value={formProgramId}
-              onChange={(e) => setFormProgramId(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-color-surface)', color: 'var(--text-color-main)' }}
-              required
-            >
-              <option value="">Program Seçin...</option>
-              {programs.map(p => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </select>
-          </div>
+          <Select
+            label="Program *"
+            value={formProgramId}
+            onChange={(e) => setFormProgramId(e.target.value)}
+            required
+          >
+            <option value="">Program Seçin...</option>
+            {programs.map(p => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </Select>
 
-          <div>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>
-              Öğrenci
-            </label>
-            <select
-              value={formStudentId}
-              onChange={(e) => setFormStudentId(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-color-surface)', color: 'var(--text-color-main)' }}
-              required
-            >
-              <option value="">Öğrenci Seçin...</option>
-              {filteredStudentsForModal.map(s => (
-                <option key={s.id} value={s.id}>{s.fullName} ({s.email})</option>
-              ))}
-            </select>
-          </div>
+          <Select
+            label="Öğrenci *"
+            value={formStudentId}
+            onChange={(e) => setFormStudentId(e.target.value)}
+            required
+          >
+            <option value="">Öğrenci Seçin...</option>
+            {filteredStudentsForModal.map(s => (
+              <option key={s.id} value={s.id}>{s.fullName} ({s.email})</option>
+            ))}
+          </Select>
 
-          <div>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '6px' }}>
-              Periyot Türü
-            </label>
-            <select
-              value={formPeriodType}
-              onChange={(e) => setFormPeriodType(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-color-surface)', color: 'var(--text-color-main)' }}
-              required
-            >
-              <option value="MONTHLY_DAY">Aylık (Her Ayın Belirli Günü)</option>
-              <option value="FOUR_WEEK">4 Haftalık</option>
-              <option value="PER_LESSON">Ders Başına</option>
-              <option value="PER_SESSION">Seans Başına</option>
-            </select>
-          </div>
+          <Select
+            label="Periyot Türü *"
+            value={formPeriodType}
+            onChange={(e) => setFormPeriodType(e.target.value)}
+            required
+          >
+            <option value="MONTHLY_DAY">Aylık (Her Ayın Belirli Günü)</option>
+            <option value="FOUR_WEEK">4 Haftalık</option>
+            <option value="PER_LESSON">Ders Başına</option>
+            <option value="PER_SESSION">Seans Başına</option>
+          </Select>
 
           <Input
             label="Taksit / Dönem Tutarı (₺)"
@@ -386,8 +371,8 @@ export default function CoachPaymentsPage() {
             required
           />
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '10px' }}>
-            <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>İptal</Button>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', paddingTop: '8px', borderTop: '1px solid var(--border-color)' }}>
+            <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>İptal</Button>
             <Button type="submit" variant="primary" isLoading={createPaymentPlanMutation.isPending}>
               Planı Kaydet
             </Button>

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { usePrograms, useCreateProgram } from '../coachSchoolApi';
 import { useStudents } from '../coachApi';
 import Button from '../../../components/common/Button/Button';
-import Input from '../../../components/common/Input/Input';
+import Input, { Select } from '../../../components/common/Input/Input';
 import Card from '../../../components/common/Card/Card';
 import Modal from '../../../components/common/Modal/Modal';
 import { Plus, Users } from 'lucide-react';
@@ -100,32 +100,27 @@ const CoachProgramsPage = () => {
       </div>
 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Yeni Program Oluştur">
-        <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '8px 0' }}>
+        <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <Input 
-            label="Yeni Program Adı" 
+            label="Yeni Program Adı *" 
             value={name} 
             onChange={(e) => setName(e.target.value)} 
             placeholder="Örn: 12-A Koçluk" 
             required 
           />
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, marginBottom: '6px', color: 'var(--text-color-main)' }}>
-              Kategori Seç (opsiyonel)
-            </label>
-            <select 
-              value={category} 
-              onChange={(e) => setCategory(e.target.value)} 
-              style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-color-surface)', color: 'var(--text-color-main)' }}
-            >
-              <option value="">Kategori Seçin...</option>
-              <option value="YKS">YKS</option>
-              <option value="LGS">LGS</option>
-              <option value="Ara Sınıf">Ara Sınıf</option>
-              <option value="Okul Dersi">Okul Dersi</option>
-            </select>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '8px' }}>
-            <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>İptal</Button>
+          <Select
+            label="Kategori Seç (opsiyonel)"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            <option value="">Kategori Seçin...</option>
+            <option value="YKS">YKS</option>
+            <option value="LGS">LGS</option>
+            <option value="Ara Sınıf">Ara Sınıf</option>
+            <option value="Okul Dersi">Okul Dersi</option>
+          </Select>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', paddingTop: '8px', borderTop: '1px solid var(--border-color)' }}>
+            <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>İptal</Button>
             <Button type="submit" variant="primary" isLoading={createProgram.isPending}>Program Oluştur</Button>
           </div>
         </form>

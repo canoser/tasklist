@@ -64,6 +64,16 @@
   scrollbar-width: thin;
 }
 
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-sm, 8px);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-color-surface);
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }

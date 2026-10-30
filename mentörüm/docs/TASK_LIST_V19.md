@@ -186,3 +186,30 @@
 - [x] `npx --prefix Frontend oxlint Frontend/src` → **0 uyarı, 0 hata**.
 - [x] Faz 3 (`U9`–`U14`) sayfa bazlı prop/handler diff denetimi ve doğrulaması tamamlandı.
 
+---
+
+### Faz 4 — Açılır Pencere (`<Modal>`) İç İskelet Standardizasyonu, Ortak Form Kontrolleri (`<Select>`, `<Textarea>`) ve Ödev Formu Tekilleştirmesi
+
+#### [x] U15 — `<Modal>` İç Yapı Standardizasyonu (`footer` Prop, Çift Padding Temizliği, Ölü CSS Silimi ve Sözde-Modalların `<Modal>`'a Geçişi)
+- **Dosyalar:** `Modal.jsx`, `Modal.module.css`, `AssignHomeworkModal.jsx`, `AssignHomeworkModal.module.css`, `EditStudentModal.jsx`, `EditStudentModal.module.css`, `AddTeacherModal.jsx`, `AddTeacherModal.module.css`, `EditTeacherModal.jsx`, `EditTeacherModal.module.css`, `PersonalEventModal.jsx`, `PersonalEventModal.module.css`, `DevicePickerModal.jsx`, `DevicePickerModal.module.css`, `TeacherCoursesPage.jsx`, `StudyTimerCard.jsx`
+- **Yap:**
+  1. `Modal.jsx` bileşenine opsiyonel `footer` prop'u ekle ve hem `isOpen` hem `open` prop adını (`const activeOpen = isOpen ?? open;`) destekle; `Modal.module.css` içine standart `.footer` (`display: flex; justify-content: flex-end; gap: 8px; padding-top: 16px; border-top: 1px solid var(--border-color); margin-top: 8px`) ve standart modal form aralığı ekle.
+  2. `AssignHomeworkModal.jsx` içindeki çift padding yaratan `.modalBody` sarmalayıcısını ve `#f8fafc` sabit renkli `.modalFooter` kutusunu kaldırarak `EditStudentModal.jsx` ile birebir aynı iç form düzenine ve buton sırasına (`İptal` `variant="ghost"` + `Ödevi Ata` `variant="primary"`) kavuştur.
+  3. `AssignHomeworkModal.module.css`, `PersonalEventModal.module.css`, `DevicePickerModal.module.css` ve `AddTeacherModal.module.css` içindeki artık kullanılmayan ölü `.modalOverlay`, `.modalContent`, `.overlay`, `.modal`, `.tabs`, `.tabBtn` CSS bloklarını temizle.
+  4. `TeacherCoursesPage.jsx` içindeki sözde-modal `showCompleteModal` (`Dersi Tamamla`) ve `StudyTimerCard.jsx` içindeki `t.showLogModal` (`Oturum İstatistikleri`) bloklarını gerçek ortak `<Modal>` bileşenine geçir.
+- **Kabul:** "Ödev Ata", "Öğrenci Bilgilerini Düzenle" ve diğer tüm açılır pencereler birebir aynı çerçeve, aynı iç boşluk (padding), aynı başlık/kapatma butonu ve aynı alt aksiyon barı ile açılır.
+
+#### [x] U16 — Ortak `<Select>` ve `<Textarea>` Form Primitiflerinin Oluşturulması ve Modal/Sayfa Formlarına Yaygınlaştırılması (`AGENTS.md` §A8)
+- **Dosyalar:** `Frontend/src/components/common/Input/Input.jsx`, `Input.module.css` (veya aynı klasörde export edilen `Select` ve `Textarea` bileşenleri) + modal/form dosyaları (`AssignHomeworkModal.jsx`, `EditStudentModal.jsx`, `AddTeacherModal.jsx`, `EditTeacherModal.jsx`, `PersonalEventModal.jsx`, `CoachPaymentsPage.jsx`, `CoachProgramsPage.jsx`, `CoachStudents.jsx`, `TeacherStudentNotesModal.jsx`, `TeacherCoursesPage.jsx`, `StudyTimerCard.jsx`)
+- **Yap:**
+  1. `Input.module.css` içindeki kutu yüksekliğini ve iç boşluğunu modal/sayfa ergonomisine uygun standart ölçüde (`padding: 10px 12px`, `font-size: 0.9rem`, `border-radius: var(--radius-md)`, `margin-bottom: 0` — form `gap` ile yönetilecek şekilde) hizala; `Input.jsx` yanına aynı label, focus halkası, hata mesajı ve disabled stillerini paylaşan ortak **`Select`** ve **`Textarea`** bileşenlerini ekle.
+  2. `EditStudentModal`, `AssignHomeworkModal`, `AddTeacherModal`, `EditTeacherModal`, `PersonalEventModal`, `CoachPaymentsPage`, `CoachProgramsPage`, `CoachStudents`, `TeacherStudentNotesModal`, `TeacherCoursesPage` ve `StudyTimerCard` içindeki elle yazılmış `<label>` + `<select>` / `<textarea>` kodlarını ortak `<Select>` ve `<Textarea>` bileşenlerine geçir.
+- **Kabul:** Aynı pencere içindeki `<Input>`, `<Select>` ve `<Textarea>` alanları piksel급 (yükseklik, kenarlık, label fontu, focus efekti) birebir aynı görünür; elle `.select` / `.textarea` CSS tekrarı kalmaz.
+
+#### [x] U17 — Ödev Atama Müfredat Seçici (`CurriculumTopicFields`) ve Öğretmen Ödev Modalının Tekilleştirmesi
+- **Dosyalar:** `AssignHomeworkModal.jsx`, `TeacherCoursesPage.jsx`
+- **Yap:**
+  1. `AssignHomeworkModal.jsx` ve `TeacherCoursesPage.jsx` içinde iki kez yazılmış olan 4 kademeli müfredat seçiciyi (`Seviye → Ders → Tema/Ünite → Konu → ➕ Serbest Konu`) ortak bir alt bileşende (`CurriculumTopicFields.jsx`) birleştir.
+  2. `TeacherCoursesPage.jsx` içindeki satır içi `+ Ödev Ata` (`showHomeworkForm`) ve `+ Sınav Ekle` (`showExamForm`) formlarını da ortak `<Modal>` + ortak `<Select>` / `<Input>` yapısına geçir.
+- **Kabul:** Koç ve Öğretmen panellerinde ödev atama ve müfredat seçimi tek ortak kod bloğundan ve aynı modal tasarımından çalışır.
+

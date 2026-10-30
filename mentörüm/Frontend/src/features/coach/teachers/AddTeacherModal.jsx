@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Modal from '../../../components/common/Modal/Modal';
-import Input from '../../../components/common/Input/Input';
+import Input, { Select } from '../../../components/common/Input/Input';
 import Button from '../../../components/common/Button/Button';
 import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
 import { TEACHER_BRANCH_OPTIONS } from '../../../constants/domainConstants';
@@ -11,10 +11,10 @@ import styles from './AddTeacherModal.module.css';
 
 const BRANCH_OPTIONS = TEACHER_BRANCH_OPTIONS;
 
-export default function AddTeacherModal({ open, onClose, programId, courses = [] }) {
+export default function AddTeacherModal({ open, isOpen, onClose, programId, courses = [] }) {
+  const effectiveOpen = isOpen ?? open;
   const [mode, setMode] = useState('DIRECT'); // 'DIRECT' | 'INVITE'
 
-  // Doğrudan ekleme state'leri
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [branch, setBranch] = useState(BRANCH_OPTIONS[0]);
@@ -23,7 +23,6 @@ export default function AddTeacherModal({ open, onClose, programId, courses = []
   const [password, setPassword] = useState('123456');
   const [selectedCourseIds, setSelectedCourseIds] = useState([]);
 
-  // Davet state'leri
   const [inviteEmail, setInviteEmail] = useState('');
   const [sendEmail, setSendEmail] = useState(false);
 
@@ -117,7 +116,7 @@ export default function AddTeacherModal({ open, onClose, programId, courses = []
   };
 
   return (
-    <Modal isOpen={open} onClose={handleClose} title="Öğretmen Ekle" maxWidth="500px">
+    <Modal isOpen={effectiveOpen} onClose={handleClose} title="Öğretmen Ekle" maxWidth="500px">
       <div style={{ marginBottom: 14 }}>
         <SegmentedTabs
           fullWidth
@@ -154,18 +153,15 @@ export default function AddTeacherModal({ open, onClose, programId, courses = []
           </div>
 
           <div className={styles.nameRow}>
-            <div className={styles.fieldWrapper}>
-              <label className={styles.label}>Branş *</label>
-              <select
-                className={styles.select}
-                value={branch}
-                onChange={(e) => setBranch(e.target.value)}
-              >
-                {BRANCH_OPTIONS.map((b) => (
-                  <option key={b} value={b}>{b}</option>
-                ))}
-              </select>
-            </div>
+            <Select
+              label="Branş *"
+              value={branch}
+              onChange={(e) => setBranch(e.target.value)}
+            >
+              {BRANCH_OPTIONS.map((b) => (
+                <option key={b} value={b}>{b}</option>
+              ))}
+            </Select>
             <Input
               label="Telefon (İsteğe Bağlı)"
               placeholder="05xx xxx xx xx"

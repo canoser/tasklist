@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Modal from '../../../components/common/Modal/Modal';
-import Input from '../../../components/common/Input/Input';
+import Input, { Select } from '../../../components/common/Input/Input';
 import Button from '../../../components/common/Button/Button';
 import { STUDENT_GRADES, STUDENT_TRACKS } from '../../../constants/domainConstants';
 import styles from './EditStudentModal.module.css';
 
-export default function EditStudentModal({ open, onClose, student, onSubmit }) {
+export default function EditStudentModal({ open, isOpen, onClose, student, onSubmit }) {
+    const effectiveOpen = isOpen ?? open;
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [classLevel, setClassLevel] = useState('');
@@ -20,7 +21,7 @@ export default function EditStudentModal({ open, onClose, student, onSubmit }) {
     const [submitError, setSubmitError] = useState('');
 
     useEffect(() => {
-        if (student && open) {
+        if (student && effectiveOpen) {
             const parts = (student.fullName || '').trim().split(' ');
             const fn = parts[0] || '';
             const ln = parts.slice(1).join(' ') || '';
@@ -36,7 +37,7 @@ export default function EditStudentModal({ open, onClose, student, onSubmit }) {
             setWeeklyTargetQuestions(student.weeklyTargetQuestions != null ? String(student.weeklyTargetQuestions) : '');
             setSubmitError('');
         }
-    }, [student, open]);
+    }, [student, effectiveOpen]);
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -70,7 +71,7 @@ export default function EditStudentModal({ open, onClose, student, onSubmit }) {
     };
 
     return (
-        <Modal isOpen={open} onClose={handleClose} title="Öğrenci Bilgilerini Düzenle" maxWidth="460px">
+        <Modal isOpen={effectiveOpen} onClose={handleClose} title="Öğrenci Bilgilerini Düzenle" maxWidth="500px">
             <form onSubmit={handleSubmit} className={styles.form}>
                 <div className={styles.nameRow}>
                     <Input 
@@ -90,34 +91,28 @@ export default function EditStudentModal({ open, onClose, student, onSubmit }) {
                 </div>
 
                 <div className={styles.levelRow}>
-                    <div className={styles.selectWrapper}>
-                        <label className={styles.label}>Sınıf Seviyesi</label>
-                        <select 
-                            className={styles.select} 
-                            value={classLevel} 
-                            onChange={(e) => setClassLevel(e.target.value)}
-                        >
-                            <option value="">Seçiniz</option>
-                            {STUDENT_GRADES.map((g) => (
-                                <option key={g} value={g === 'Mezun' ? '13' : g}>
-                                    {g === 'Mezun' ? 'Mezun' : `${g}. Sınıf`}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className={styles.selectWrapper}>
-                        <label className={styles.label}>Hedef Sınav</label>
-                        <select 
-                            className={styles.select} 
-                            value={targetExam} 
-                            onChange={(e) => setTargetExam(e.target.value)}
-                        >
-                            <option value="">Seçiniz (opsiyonel)</option>
-                            {STUDENT_TRACKS.map((t) => (
-                                <option key={t.value} value={t.value}>{t.label}</option>
-                            ))}
-                        </select>
-                    </div>
+                    <Select
+                        label="Sınıf Seviyesi"
+                        value={classLevel}
+                        onChange={(e) => setClassLevel(e.target.value)}
+                    >
+                        <option value="">Seçiniz</option>
+                        {STUDENT_GRADES.map((g) => (
+                            <option key={g} value={g === 'Mezun' ? '13' : g}>
+                                {g === 'Mezun' ? 'Mezun' : `${g}. Sınıf`}
+                            </option>
+                        ))}
+                    </Select>
+                    <Select
+                        label="Hedef Sınav"
+                        value={targetExam}
+                        onChange={(e) => setTargetExam(e.target.value)}
+                    >
+                        <option value="">Seçiniz (opsiyonel)</option>
+                        {STUDENT_TRACKS.map((t) => (
+                            <option key={t.value} value={t.value}>{t.label}</option>
+                        ))}
+                    </Select>
                 </div>
 
                 <div className={styles.levelRow}>

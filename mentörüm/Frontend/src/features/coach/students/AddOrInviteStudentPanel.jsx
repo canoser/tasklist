@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
-import Input from '../../../components/common/Input/Input';
+import Input, { Select } from '../../../components/common/Input/Input';
 import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
 import StatusBadge from '../../../components/common/StatusBadge/StatusBadge';
 import { STUDENT_GRADES, STUDENT_TRACKS } from '../../../constants/domainConstants';
@@ -190,35 +190,29 @@ const AddOrInviteStudentPanel = ({ showAddForm, onCloseAddForm, programs }) => {
                 </div>
 
                 <div className={styles.directRowThree}>
-                  <div>
-                    <label className={styles.selectLabel}>Sınıf Seviyesi</label>
-                    <select
-                      className={styles.select}
-                      value={directClassLevel}
-                      onChange={(e) => setDirectClassLevel(e.target.value)}
-                    >
-                      <option value="">Seçiniz</option>
-                      {STUDENT_GRADES.map((g) => (
-                        <option key={g} value={g === 'Mezun' ? '13' : g}>
-                          {g === 'Mezun' ? 'Mezun' : `${g}. Sınıf`}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <Select
+                    label="Sınıf Seviyesi"
+                    value={directClassLevel}
+                    onChange={(e) => setDirectClassLevel(e.target.value)}
+                  >
+                    <option value="">Seçiniz</option>
+                    {STUDENT_GRADES.map((g) => (
+                      <option key={g} value={g === 'Mezun' ? '13' : g}>
+                        {g === 'Mezun' ? 'Mezun' : `${g}. Sınıf`}
+                      </option>
+                    ))}
+                  </Select>
 
-                  <div>
-                    <label className={styles.selectLabel}>Hedef Sınav / Alan</label>
-                    <select
-                      className={styles.select}
-                      value={directTargetExam}
-                      onChange={(e) => setDirectTargetExam(e.target.value)}
-                    >
-                      <option value="">Seçiniz (opsiyonel)</option>
-                      {STUDENT_TRACKS.map((t) => (
-                        <option key={t.value} value={t.value}>{t.label}</option>
-                      ))}
-                    </select>
-                  </div>
+                  <Select
+                    label="Hedef Sınav / Alan"
+                    value={directTargetExam}
+                    onChange={(e) => setDirectTargetExam(e.target.value)}
+                  >
+                    <option value="">Seçiniz (opsiyonel)</option>
+                    {STUDENT_TRACKS.map((t) => (
+                      <option key={t.value} value={t.value}>{t.label}</option>
+                    ))}
+                  </Select>
                 </div>
 
                 <Input
@@ -262,19 +256,16 @@ const AddOrInviteStudentPanel = ({ showAddForm, onCloseAddForm, programs }) => {
                   placeholder="ogrenci@ornek.com"
                   required
                 />
-                <div>
-                  <label className={styles.selectLabel}>Program Seçin *</label>
-                  <select
-                    className={styles.select}
-                    value={effectiveInviteProgramId}
-                    onChange={(e) => setInviteProgramId(e.target.value)}
-                    required
-                  >
-                    {programs?.map((p) => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
-                    ))}
-                  </select>
-                </div>
+                <Select
+                  label="Program Seçin *"
+                  value={effectiveInviteProgramId}
+                  onChange={(e) => setInviteProgramId(e.target.value)}
+                  required
+                >
+                  {programs?.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </Select>
               </div>
 
               <p className={styles.directHint}>

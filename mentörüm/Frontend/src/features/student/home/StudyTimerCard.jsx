@@ -1,6 +1,8 @@
 import React from 'react';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
+import Input, { Select } from '../../../components/common/Input/Input';
+import Modal from '../../../components/common/Modal/Modal';
 import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
 import { Timer, Zap, Play, Pause, RotateCcw, Check, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
 import { useStudyTimer } from './useStudyTimer';
@@ -96,48 +98,45 @@ export default function StudyTimerCard({ compact = false, collapsible = false })
             <Button size="sm" variant="outline" onClick={() => t.handleQuickPreset(45)} style={{ padding: '3px 8px', fontSize: '0.72rem' }}>45 dk (Ders)</Button>
           </div>
 
-          {t.showLogModal && (
-            <div style={{ width: '100%', maxWidth: '480px', marginTop: '1rem', padding: '1rem', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
-              <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '0.95rem' }}>Oturum İstatistikleri</h4>
-              <form onSubmit={t.handleSaveSession} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <select value={t.topicId} onChange={(e) => t.setTopicId(e.target.value)} style={inputStyle}>
-                  <option value="">Ders / Konu seç (opsiyonel)</option>
-                  {t.topics.map((tp) => <option key={tp.id} value={tp.id}>{tp.label}</option>)}
-                </select>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                  <div><label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block' }}>Süre (Dakika)</label><input type="number" min="1" value={t.loggedMinutes} onChange={(e) => t.setLoggedMinutes(e.target.value)} style={inputStyle} /></div>
-                  <div><label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block' }}>Toplam Soru</label><input type="number" min="0" value={t.questionCount} onChange={(e) => t.setQuestionCount(e.target.value)} style={inputStyle} /></div>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem' }}>
-                  <div><label style={{ fontSize: '0.8rem', color: 'var(--color-success, #10b981)', display: 'block' }}>Doğru</label><input type="number" min="0" value={t.correct} onChange={(e) => t.setCorrect(e.target.value)} style={inputStyle} /></div>
-                  <div><label style={{ fontSize: '0.8rem', color: 'var(--color-danger, #ef4444)', display: 'block' }}>Yanlış</label><input type="number" min="0" value={t.wrong} onChange={(e) => t.setWrong(e.target.value)} style={inputStyle} /></div>
-                  <div><label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block' }}>Boş</label><input type="number" min="0" value={t.blank} onChange={(e) => t.setBlank(e.target.value)} style={inputStyle} /></div>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '0.5rem' }}>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => t.setShowLogModal(false)}>İptal</Button>
-                  <Button type="submit" variant="primary" size="sm" isLoading={t.isSubmitting}>Kaydet</Button>
-                </div>
-              </form>
-            </div>
-          )}
+          <Modal isOpen={t.showLogModal} onClose={() => t.setShowLogModal(false)} title="Oturum İstatistikleri" maxWidth="460px">
+            <form onSubmit={t.handleSaveSession} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <Select label="Ders / Konu (opsiyonel)" value={t.topicId} onChange={(e) => t.setTopicId(e.target.value)}>
+                <option value="">Ders / Konu seç (opsiyonel)</option>
+                {t.topics.map((tp) => <option key={tp.id} value={tp.id}>{tp.label}</option>)}
+              </Select>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <Input label="Süre (Dakika)" type="number" min="1" value={t.loggedMinutes} onChange={(e) => t.setLoggedMinutes(e.target.value)} />
+                <Input label="Toplam Soru" type="number" min="0" value={t.questionCount} onChange={(e) => t.setQuestionCount(e.target.value)} />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem' }}>
+                <Input label="Doğru" type="number" min="0" value={t.correct} onChange={(e) => t.setCorrect(e.target.value)} />
+                <Input label="Yanlış" type="number" min="0" value={t.wrong} onChange={(e) => t.setWrong(e.target.value)} />
+                <Input label="Boş" type="number" min="0" value={t.blank} onChange={(e) => t.setBlank(e.target.value)} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', paddingTop: '8px', borderTop: '1px solid var(--border-color)' }}>
+                <Button type="button" variant="ghost" onClick={() => t.setShowLogModal(false)}>İptal</Button>
+                <Button type="submit" variant="primary" isLoading={t.isSubmitting}>Kaydet</Button>
+              </div>
+            </form>
+          </Modal>
         </div>
       )}
 
       {t.activeTab === 'quicklog' && (
         <form onSubmit={t.handleQuickLogSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '0.5rem 0' }}>
-          <select value={t.topicId} onChange={(e) => t.setTopicId(e.target.value)} style={inputStyle}>
+          <Select label="Ders / Konu (opsiyonel)" value={t.topicId} onChange={(e) => t.setTopicId(e.target.value)}>
             <option value="">Ders / Konu seç (opsiyonel)</option>
             {t.topics.map((tp) => <option key={tp.id} value={tp.id}>{tp.label}</option>)}
-          </select>
+          </Select>
           <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Tamamladığın çalışma oturumunu tek tıkla sisteme işle:</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '0.75rem' }}>
-            <div><label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block' }}>Dakika</label><input type="number" min="1" value={t.quickMinutes} onChange={(e) => t.setQuickMinutes(e.target.value)} style={inputStyle} /></div>
-            <div><label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block' }}>Toplam Soru</label><input type="number" min="0" value={t.quickQuestions} onChange={(e) => t.setQuickQuestions(e.target.value)} style={inputStyle} /></div>
-            <div><label style={{ fontSize: '0.8rem', color: 'var(--color-success, #10b981)', display: 'block' }}>Doğru</label><input type="number" min="0" value={t.quickCorrect} onChange={(e) => t.setQuickCorrect(e.target.value)} style={inputStyle} /></div>
-            <div><label style={{ fontSize: '0.8rem', color: 'var(--color-danger, #ef4444)', display: 'block' }}>Yanlış</label><input type="number" min="0" value={t.quickWrong} onChange={(e) => t.setQuickWrong(e.target.value)} style={inputStyle} /></div>
+            <Input label="Dakika" type="number" min="1" value={t.quickMinutes} onChange={(e) => t.setQuickMinutes(e.target.value)} />
+            <Input label="Toplam Soru" type="number" min="0" value={t.quickQuestions} onChange={(e) => t.setQuickQuestions(e.target.value)} />
+            <Input label="Doğru" type="number" min="0" value={t.quickCorrect} onChange={(e) => t.setQuickCorrect(e.target.value)} />
+            <Input label="Yanlış" type="number" min="0" value={t.quickWrong} onChange={(e) => t.setQuickWrong(e.target.value)} />
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <Button type="submit" variant="primary" size="md" isLoading={t.isSubmitting} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <Button type="submit" variant="primary" size="md" isLoading={t.isSubmitting}>
               <Zap size={15} /> 5 Saniyede Kaydet
             </Button>
           </div>

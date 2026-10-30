@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Button from '../Button/Button';
-import Input from '../Input/Input';
+import Input, { Select } from '../Input/Input';
 import Modal from '../Modal/Modal';
 import { useCreatePersonalEvent } from '../../../hooks/usePersonalEvents';
 import styles from './PersonalEventModal.module.css';
@@ -21,7 +21,8 @@ const CATEGORIES = [
   { value: 'REST', label: 'Dinlenme / Mola' },
 ];
 
-const PersonalEventModal = ({ isOpen, onClose, defaultType = 'COACHING_SESSION' }) => {
+const PersonalEventModal = ({ isOpen, open, onClose, defaultType = 'COACHING_SESSION' }) => {
+  const effectiveOpen = isOpen ?? open;
   const [title, setTitle] = useState('');
   const [type, setType] = useState(defaultType);
   const [category, setCategory] = useState('');
@@ -29,7 +30,8 @@ const PersonalEventModal = ({ isOpen, onClose, defaultType = 'COACHING_SESSION' 
   const [end, setEnd] = useState('');
   const mutation = useCreatePersonalEvent();
 
-  const handleSave = () => {
+  const handleSave = (e) => {
+    if (e) e.preventDefault();
     if (!title || !start) {
       alert('Başlık ve başlangıç saati gereklidir.');
       return;
@@ -57,34 +59,49 @@ const PersonalEventModal = ({ isOpen, onClose, defaultType = 'COACHING_SESSION' 
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Yeni Etkinlik Ekle" maxWidth="440px">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <Input label="Başlık" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="örn. Can ile 1-1 Görüşme" />
-        <div className={styles.field}>
-          <label className={styles.label}>Tür</label>
-          <select className={styles.select} value={type} onChange={(e) => setType(e.target.value)}>
-            {TYPES.map((t) => (
-              <option key={t.value} value={t.value}>{t.label}</option>
-            ))}
-          </select>
-        </div>
-        <div className={styles.field}>
-          <label className={styles.label}>Kategori (Zaman Dağılımı İçin)</label>
-          <select className={styles.select} value={category} onChange={(e) => setCategory(e.target.value)}>
-            {CATEGORIES.map((c) => (
-              <option key={c.value} value={c.value}>{c.label}</option>
-            ))}
-          </select>
-        </div>
-        <Input label="Başlangıç" type="datetime-local" value={start} onChange={(e) => setStart(e.target.value)} />
-        <Input label="Bitiş (opsiyonel)" type="datetime-local" value={end} onChange={(e) => setEnd(e.target.value)} />
+    <Modal isOpen={effectiveOpen} onClose={onClose} title="Yeni Etkinlik Ekle" maxWidth="460px">
+      <form onSubmit={handleSave} className={styles.form}>
+        <Input
+          label="Başlık *"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="örn. Can ile 1-1 Görüşme"
+          required
+        />
+        <Select label="Tür" value={type} onChange={(e) => setType(e.target.value)}>
+          {TYPES.map((t) => (
+            <option key={t.value} value={t.value}>{t.label}</option>
+          ))}
+        </Select>
+        <Select
+          label="Kategori (Zaman Dağılımı İçin)"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        >
+          {CATEGORIES.map((c) => (
+            <option key={c.value} value={c.value}>{c.label}</option>
+          ))}
+        </Select>
+        <Input
+          label="Başlangıç *"
+          type="datetime-local"
+          value={start}
+          onChange={(e) => setStart(e.target.value)}
+          required
+        />
+        <Input
+          label="Bitiş (opsiyonel)"
+          type="datetime-local"
+          value={end}
+          onChange={(e) => setEnd(e.target.value)}
+        />
         <div className={styles.actions}>
-          <Button variant="ghost" size="sm" onClick={onClose}>İptal</Button>
-          <Button variant="primary" size="sm" onClick={handleSave} disabled={mutation.isPending}>
-            {mutation.isPending ? 'Ekleniyor...' : 'Ekle'}
+          <Button type="button" variant="ghost" onClick={onClose}>İptal</Button>
+          <Button type="submit" variant="primary" isLoading={mutation.isPending}>
+            Ekle
           </Button>
         </div>
-      </div>
+      </form>
     </Modal>
   );
 };

@@ -6,6 +6,7 @@ import { useSchedule, useCourses, useGroups, useCreateScheduleSlot, useDeleteSch
 import { WEEKDAYS_ZERO_INDEXED } from '../../../constants/domainConstants';
 import Modal from '../../../components/common/Modal/Modal';
 import Button from '../../../components/common/Button/Button';
+import Input, { Select } from '../../../components/common/Input/Input';
 import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
 import styles from './WeeklySchedulePage.module.css';
 
@@ -241,47 +242,36 @@ const WeeklySchedulePage = ({ programId: propProgramId, embedded = false }) => {
           />
 
           {slotTargetType === 'course' && (
-            <div className={styles.fieldGroup}>
-              <label className={styles.fieldLabel}>Ders / Branş</label>
-              <select
-                className={styles.select}
-                value={selectedCourseId}
-                onChange={(e) => setSelectedCourseId(e.target.value)}
-              >
-                {courses?.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-            </div>
+            <Select
+              label="Ders / Branş"
+              value={selectedCourseId}
+              onChange={(e) => setSelectedCourseId(e.target.value)}
+            >
+              {courses?.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </Select>
           )}
 
           {slotTargetType === 'group' && (
-            <div className={styles.fieldGroup}>
-              <label className={styles.fieldLabel}>Sınıf / Grup</label>
-              <select
-                className={styles.select}
-                value={selectedGroupId}
-                onChange={(e) => setSelectedGroupId(e.target.value)}
-              >
-                {groups?.map((g) => (
-                  <option key={g.id} value={g.id}>{g.name}</option>
-                ))}
-              </select>
-            </div>
+            <Select
+              label="Sınıf / Grup"
+              value={selectedGroupId}
+              onChange={(e) => setSelectedGroupId(e.target.value)}
+            >
+              {groups?.map((g) => (
+                <option key={g.id} value={g.id}>{g.name}</option>
+              ))}
+            </Select>
           )}
 
-          <div className={styles.fieldGroup}>
-            <label className={styles.fieldLabel}>
-              {slotTargetType === 'custom' ? 'Etkinlik / Etüt Başlığı *' : 'Özel Başlık (Boş bırakılırsa ders/grup adı kullanılır)'}
-            </label>
-            <input
-              className={styles.input}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder={slotTargetType === 'custom' ? 'Örn: Bireysel Soru Çözüm Etüdü' : 'Opsiyonel özel başlık...'}
-              required={slotTargetType === 'custom'}
-            />
-          </div>
+          <Input
+            label={slotTargetType === 'custom' ? 'Etkinlik / Etüt Başlığı *' : 'Özel Başlık (Boş bırakılırsa ders/grup adı kullanılır)'}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder={slotTargetType === 'custom' ? 'Örn: Bireysel Soru Çözüm Etüdü' : 'Opsiyonel özel başlık...'}
+            required={slotTargetType === 'custom'}
+          />
 
           {conflict && <p className={styles.conflict}>{conflict}</p>}
 
