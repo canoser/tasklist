@@ -27,11 +27,11 @@ namespace MentorumApi.Data
         public Guid? ProgramId { get; set; }
     }
 
-    public class InviteRepository
+    public class InviteRepository : BaseRepository
     {
         private readonly DbConnectionFactory _db;
 
-        public InviteRepository(DbConnectionFactory db)
+        public InviteRepository(DbConnectionFactory db) : base(db)
         {
             _db = db;
         }
@@ -76,14 +76,6 @@ namespace MentorumApi.Data
             return await conn.QuerySingleOrDefaultAsync<User>(
                 "SELECT id AS Id, email AS Email, role AS Role, full_name AS FullName FROM users WHERE email = @Email",
                 new { Email = email });
-        }
-
-        public async Task<Guid?> GetStudentProgramIdAsync(Guid studentId)
-        {
-            using var conn = _db.CreateConnection();
-            return await conn.QuerySingleOrDefaultAsync<Guid?>(
-                "SELECT program_id FROM students WHERE id = @StudentId",
-                new { StudentId = studentId });
         }
 
         public async Task AddExistingStudentToProgramAsync(Guid studentId, Guid programId)

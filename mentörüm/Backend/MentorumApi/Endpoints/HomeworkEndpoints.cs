@@ -71,7 +71,7 @@ namespace MentorumApi.Endpoints
                 var userId = user.GetUserId();
                 if (userId == null) return Results.Unauthorized();
 
-                var role = user.FindFirst(ClaimTypes.Role)?.Value;
+                var role = user.GetUserRole();
                 var result = await repo.CompleteHomeworkAsync(assignmentId, userId.Value, role, req);
 
                 return result switch

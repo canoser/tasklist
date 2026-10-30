@@ -9,5 +9,8 @@ public static class ClaimsPrincipalExtensions
         var idStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         return Guid.TryParse(idStr, out var id) ? id : null;
     }
+
+    public static string? GetUserRole(this ClaimsPrincipal user) =>
+        user.FindFirst(ClaimTypes.Role)?.Value;
 }
 

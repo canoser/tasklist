@@ -210,12 +210,6 @@ namespace MentorumApi.Data
             return await conn.ExecuteScalarAsync<Guid?>("SELECT program_id FROM student_questions WHERE id = @Id", new { Id = questionId });
         }
 
-        public async Task<Guid?> GetStudentProgramIdAsync(Guid studentId)
-        {
-            using var conn = _connectionFactory.CreateConnection();
-            return await conn.ExecuteScalarAsync<Guid?>("SELECT program_id FROM students WHERE id = @Id", new { Id = studentId });
-        }
-
         public async Task<Guid?> GetProgramOwnerCoachIdAsync(Guid programId)
         {
             using var conn = _connectionFactory.CreateConnection();

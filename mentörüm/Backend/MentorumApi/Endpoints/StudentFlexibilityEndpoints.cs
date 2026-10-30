@@ -21,23 +21,9 @@ namespace MentorumApi.Endpoints
             {
                 var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
-                if (string.IsNullOrWhiteSpace(req.FirstName) || string.IsNullOrWhiteSpace(req.LastName))
-                    return Results.BadRequest(new { error = "Ad ve soyad zorunludur." });
 
                 var programId = await programRepo.EnsureDefaultWorkspaceAsync(coachId.Value);
-
-                if (!string.IsNullOrWhiteSpace(req.Email) && await repo.EmailExistsAsync(req.Email.ToLowerInvariant()))
-                    return Results.BadRequest(new { error = "Bu e-posta zaten kullanımda." });
-
-                try
-                {
-                    var studentId = await repo.CreateStudentAsync(programId, req);
-                    return Results.Ok(new { studentId });
-                }
-                catch (InvalidOperationException ex) when (ex.Message == "STUDENT_LIMIT_EXCEEDED")
-                {
-                    return Results.Conflict(new { error = "Öğrenci limiti aşıldı.", code = "STUDENT_LIMIT_EXCEEDED" });
-                }
+                return await ExecuteCreateStudentAsync(programId, req, repo);
             });
 
             studentRoot.MapPut("/{studentId:guid}", async (
@@ -68,16 +54,9 @@ namespace MentorumApi.Endpoints
             {
                 var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
-                if (string.IsNullOrWhiteSpace(req.FirstName) || string.IsNullOrWhiteSpace(req.LastName))
-                    return Results.BadRequest(new { error = "Ad ve soyad zorunludur." });
 
                 await guard.EnsureCoachInProgramAsync(coachId.Value, programId);
-
-                if (!string.IsNullOrWhiteSpace(req.Email) && await repo.EmailExistsAsync(req.Email.ToLowerInvariant()))
-                    return Results.BadRequest(new { error = "Bu e-posta zaten kullanımda." });
-
-                var studentId = await repo.CreateStudentAsync(programId, req);
-                return Results.Ok(new { studentId });
+                return await ExecuteCreateStudentAsync(programId, req, repo);
             });
 
             // B2: Sonradan e-posta ile davet gönderme
@@ -140,6 +119,25 @@ namespace MentorumApi.Endpoints
                 await repo.MoveToIndividualAsync(programId, studentId);
                 return Results.Ok(new { message = "Öğrenci bireysel koçluğa çekildi." });
             });
+        }
+
+        private static async Task<IResult> ExecuteCreateStudentAsync(Guid programId, CreateStudentRequest req, StudentRepository repo)
+        {
+            if (string.IsNullOrWhiteSpace(req.FirstName) || string.IsNullOrWhiteSpace(req.LastName))
+                return Results.BadRequest(new { error = "Ad ve soyad zorunludur." });
+
+            if (!string.IsNullOrWhiteSpace(req.Email) && await repo.EmailExistsAsync(req.Email.ToLowerInvariant()))
+                return Results.BadRequest(new { error = "Bu e-posta zaten kullanımda." });
+
+            try
+            {
+                var studentId = await repo.CreateStudentAsync(programId, req);
+                return Results.Ok(new { studentId });
+            }
+            catch (InvalidOperationException ex) when (ex.Message == "STUDENT_LIMIT_EXCEEDED")
+            {
+                return Results.Conflict(new { error = "Öğrenci limiti aşıldı.", code = "STUDENT_LIMIT_EXCEEDED" });
+            }
         }
     }
 }

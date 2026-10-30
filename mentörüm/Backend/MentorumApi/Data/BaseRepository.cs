@@ -75,5 +75,13 @@ namespace MentorumApi.Data
 
             return await connection.ExecuteAsync(template.RawSql, dp);
         }
+
+        public async Task<Guid?> GetStudentProgramIdAsync(Guid studentId)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            return await connection.ExecuteScalarAsync<Guid?>(
+                "SELECT program_id FROM students WHERE id = @StudentId",
+                new { StudentId = studentId });
+        }
     }
 }

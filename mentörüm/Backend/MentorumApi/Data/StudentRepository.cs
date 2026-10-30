@@ -476,14 +476,6 @@ namespace MentorumApi.Data
             catch { tx.Rollback(); throw; }
         }
 
-        public async Task<Guid?> GetProgramIdAsync(Guid studentId)
-        {
-            using var conn = _connectionFactory.CreateConnection();
-            return await conn.ExecuteScalarAsync<Guid?>(
-                "SELECT program_id FROM students WHERE id = @Id",
-                new { Id = studentId });
-        }
-
         private static string? NormalizeTrack(string? targetExam)
         {
             if (string.IsNullOrWhiteSpace(targetExam)) return null;

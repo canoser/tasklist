@@ -356,46 +356,44 @@ namespace MentorumApi.Data
         }
 
         /// <summary>Öğrenci veya veli için: yalnızca STUDENT_VISIBLE olanların summary + createdAt + ders/öğretmen alanları.</summary>
-        public async Task<IEnumerable<PublicTeacherNoteDto>> GetStudentVisibleTeacherNotesAsync(Guid studentId)
-        {
-            using var conn = _connectionFactory.CreateConnection();
-            return await conn.QueryAsync<PublicTeacherNoteDto>(@"
-                SELECT tn.id,
-                       tn.course_id AS CourseId,
-                       c.name AS CourseName,
-                       tn.teacher_id AS TeacherId,
-                       u.full_name AS TeacherName,
-                       tn.summary AS Summary,
-                       tn.created_at AS CreatedAt
-                FROM teacher_notes tn
-                LEFT JOIN courses c ON c.id = tn.course_id
-                LEFT JOIN users u ON u.id = tn.teacher_id
-                WHERE tn.student_id = @StudentId AND tn.visibility = 'STUDENT_VISIBLE'
-                ORDER BY tn.created_at DESC",
-                new { StudentId = studentId });
-        }
+        public Task<IEnumerable<PublicTeacherNoteDto>> GetStudentVisibleTeacherNotesAsync(Guid studentId) =>
+            QueryStudentTeacherNotesAsync(studentId, onlyStudentVisible: true);
 
         /// <summary>T30: Koç için öğrencinin tüm öğretmen notları (tam not + özet + görünürlük + öğretmen adı).</summary>
-        public async Task<IEnumerable<PublicTeacherNoteDto>> GetStudentTeacherNotesForCoachAsync(Guid studentId)
+        public Task<IEnumerable<PublicTeacherNoteDto>> GetStudentTeacherNotesForCoachAsync(Guid studentId) =>
+            QueryStudentTeacherNotesAsync(studentId, onlyStudentVisible: false);
+
+        private async Task<IEnumerable<PublicTeacherNoteDto>> QueryStudentTeacherNotesAsync(Guid studentId, bool onlyStudentVisible)
         {
             using var conn = _connectionFactory.CreateConnection();
-            return await conn.QueryAsync<PublicTeacherNoteDto>(@"
-                SELECT 
-                    tn.id, 
-                    tn.course_id AS CourseId, 
-                    c.name AS CourseName, 
-                    tn.teacher_id AS TeacherId, 
-                    u.full_name AS TeacherName, 
-                    tn.note AS Note, 
-                    tn.summary AS Summary, 
-                    tn.visibility AS Visibility, 
-                    tn.created_at AS CreatedAt
-                FROM teacher_notes tn
-                JOIN courses c ON c.id = tn.course_id
-                JOIN users u ON u.id = tn.teacher_id
-                WHERE tn.student_id = @StudentId
-                ORDER BY tn.created_at DESC",
-                new { StudentId = studentId });
+            var sql = onlyStudentVisible
+                ? @"SELECT tn.id,
+                           tn.course_id AS CourseId,
+                           c.name AS CourseName,
+                           tn.teacher_id AS TeacherId,
+                           u.full_name AS TeacherName,
+                           tn.summary AS Summary,
+                           tn.created_at AS CreatedAt
+                    FROM teacher_notes tn
+                    LEFT JOIN courses c ON c.id = tn.course_id
+                    LEFT JOIN users u ON u.id = tn.teacher_id
+                    WHERE tn.student_id = @StudentId AND tn.visibility = 'STUDENT_VISIBLE'
+                    ORDER BY tn.created_at DESC"
+                : @"SELECT tn.id,
+                           tn.course_id AS CourseId,
+                           c.name AS CourseName,
+                           tn.teacher_id AS TeacherId,
+                           u.full_name AS TeacherName,
+                           tn.note AS Note,
+                           tn.summary AS Summary,
+                           tn.visibility AS Visibility,
+                           tn.created_at AS CreatedAt
+                    FROM teacher_notes tn
+                    LEFT JOIN courses c ON c.id = tn.course_id
+                    LEFT JOIN users u ON u.id = tn.teacher_id
+                    WHERE tn.student_id = @StudentId
+                    ORDER BY tn.created_at DESC";
+            return await conn.QueryAsync<PublicTeacherNoteDto>(sql, new { StudentId = studentId });
         }
 
         public async Task<IEnumerable<RecentTeacherNoteDto>> GetRecentTeacherNotesForCoachAsync(Guid coachId, int limit = 10)

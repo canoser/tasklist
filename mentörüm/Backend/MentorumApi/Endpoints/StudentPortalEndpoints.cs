@@ -138,13 +138,13 @@ namespace MentorumApi.Endpoints
             });
 
             // --- V10: Günlük Durum (Mood Check-in) ---
-            self.MapPut("/checkin", async ([FromBody] UpsertCheckinRequest req, [FromServices] StudentCheckinRepository repo, [FromServices] StudentRepository studentRepo, ClaimsPrincipal user) =>
+            self.MapPut("/checkin", async ([FromBody] UpsertCheckinRequest req, [FromServices] StudentCheckinRepository repo, ClaimsPrincipal user) =>
             {
                 var studentId = user.GetUserId();
                 if (studentId == null) return Results.Unauthorized();
                 if (string.IsNullOrWhiteSpace(req.Mood)) return Results.BadRequest(new { error = "Durum gerekli." });
 
-                var programId = await studentRepo.GetProgramIdAsync(studentId.Value);
+                var programId = await repo.GetStudentProgramIdAsync(studentId.Value);
                 if (programId == null) return Results.Unauthorized();
 
                 await repo.UpsertAsync(studentId.Value, programId.Value, req.Mood, req.Note);
@@ -166,12 +166,12 @@ namespace MentorumApi.Endpoints
                 return Results.Ok(await repo.ListAsync(studentId.Value));
             });
 
-            self.MapPost("/notes", async ([FromBody] CreatePersonalNoteRequest req, [FromServices] StudentNotesRepository repo, [FromServices] StudentRepository studentRepo, ClaimsPrincipal user) =>
+            self.MapPost("/notes", async ([FromBody] CreatePersonalNoteRequest req, [FromServices] StudentNotesRepository repo, ClaimsPrincipal user) =>
             {
                 var studentId = user.GetUserId();
                 if (studentId == null) return Results.Unauthorized();
 
-                var programId = await studentRepo.GetProgramIdAsync(studentId.Value);
+                var programId = await repo.GetStudentProgramIdAsync(studentId.Value);
                 if (programId == null) return Results.Unauthorized();
 
                 var id = await repo.CreateAsync(studentId.Value, programId.Value, req);
@@ -202,13 +202,13 @@ namespace MentorumApi.Endpoints
                 return Results.Ok(await repo.ListAsync(studentId.Value));
             });
 
-            self.MapPost("/questions", async ([FromBody] CreateStudentQuestionRequest req, [FromServices] StudentQuestionsRepository repo, [FromServices] StudentRepository studentRepo, ClaimsPrincipal user) =>
+            self.MapPost("/questions", async ([FromBody] CreateStudentQuestionRequest req, [FromServices] StudentQuestionsRepository repo, ClaimsPrincipal user) =>
             {
                 var studentId = user.GetUserId();
                 if (studentId == null) return Results.Unauthorized();
                 if (string.IsNullOrWhiteSpace(req.TopicText)) return Results.BadRequest(new { error = "Konu gerekli." });
 
-                var programId = await studentRepo.GetProgramIdAsync(studentId.Value);
+                var programId = await repo.GetStudentProgramIdAsync(studentId.Value);
                 if (programId == null) return Results.Unauthorized();
 
                 var id = await repo.CreateAsync(studentId.Value, programId.Value, req);
@@ -239,7 +239,7 @@ namespace MentorumApi.Endpoints
                 return Results.Ok(await repo.ListAsync(studentId.Value));
             });
 
-            self.MapPost("/school-schedule", async ([FromBody] CreateSchoolScheduleRequest req, [FromServices] SchoolScheduleRepository repo, [FromServices] StudentRepository studentRepo, ClaimsPrincipal user) =>
+            self.MapPost("/school-schedule", async ([FromBody] CreateSchoolScheduleRequest req, [FromServices] SchoolScheduleRepository repo, ClaimsPrincipal user) =>
             {
                 var studentId = user.GetUserId();
                 if (studentId == null) return Results.Unauthorized();
@@ -249,7 +249,7 @@ namespace MentorumApi.Endpoints
                 if (!TimeSpan.TryParse(req.StartTime, out var startTime) || !TimeSpan.TryParse(req.EndTime, out var endTime) || startTime >= endTime)
                     return Results.BadRequest(new { error = "Başlangıç saati bitiş saatinden önce olmalıdır." });
 
-                var programId = await studentRepo.GetProgramIdAsync(studentId.Value);
+                var programId = await repo.GetStudentProgramIdAsync(studentId.Value);
                 if (programId == null) return Results.Unauthorized();
 
                 var id = await repo.CreateAsync(studentId.Value, programId.Value, req);

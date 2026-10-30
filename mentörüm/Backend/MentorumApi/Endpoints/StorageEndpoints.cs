@@ -26,7 +26,7 @@ namespace MentorumApi.Endpoints
             {
                 var senderId = user.GetUserId();
                 if (senderId == null) return Results.Unauthorized();
-                var role = user.FindFirst(ClaimTypes.Role)?.Value;
+                var role = user.GetUserRole();
 
                 var ext = Path.GetExtension(req.FileName).ToLowerInvariant();
                 var isImage = ImageExts.Contains(ext);
@@ -97,7 +97,7 @@ namespace MentorumApi.Endpoints
             {
                 var userId = user.GetUserId();
                 if (userId == null) return Results.Unauthorized();
-                var role = user.FindFirst(ClaimTypes.Role)?.Value;
+                var role = user.GetUserRole();
                 var upload = await repo.GetByIdAsync(id);
                 if (upload == null) return Results.NotFound(new { error = "Dosya bulunamadı." });
                 if (upload.Status == "DELETED") return Results.NotFound(new { error = "Dosya artık bulutta değil." });
