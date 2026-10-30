@@ -7,10 +7,11 @@ import {
   useUpdateStudentGoal,
   useStudentSubjectStats 
 } from '../studentApi';
-import { apiClient } from '../../../api/apiClient';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
+import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
+import ChangePasswordCard from '../../../components/common/ChangePasswordCard/ChangePasswordCard';
 import { Palette, FolderOpen, ChevronRight, Clock, FileText } from 'lucide-react';
 import styles from './StudentProfilePage.module.css';
 
@@ -29,24 +30,6 @@ const StudentProfilePage = () => {
   const [dept, setDept] = useState('');
   const [score, setScore] = useState('');
   const [goalMsg, setGoalMsg] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [pwMsg, setPwMsg] = useState('');
-  const [pwError, setPwError] = useState('');
-  const [pwSaving, setPwSaving] = useState(false);
-
-  const handleSetPassword = async () => {
-    if (!newPassword || newPassword.length < 6) { setPwError('Şifre en az 6 karakter olmalı.'); return; }
-    setPwError(''); setPwMsg(''); setPwSaving(true);
-    try {
-      const res = await apiClient.post('/me/password', { newPassword });
-      setPwMsg(res.message || 'Şifreniz oluşturuldu.');
-      setNewPassword('');
-    } catch (err) {
-      setPwError(err?.response?.data?.error || 'Şifre oluşturulamadı.');
-    } finally {
-      setPwSaving(false);
-    }
-  };
 
   useEffect(() => {
     if (goal) {
@@ -173,41 +156,17 @@ const StudentProfilePage = () => {
       </Card>
 
       {/* Şifre Oluştur / Değiştir */}
-      <Card className={styles.card} padding="lg">
-        <h3 className={styles.sectionTitle}>Şifre Oluştur / Değiştir</h3>
-        <p style={{ fontSize: '13px', color: 'var(--text-color-muted)', marginBottom: '12px' }}>
-          Google ile giriş yapmış olsanız bile bir şifre belirleyebilir, dilediğinizde e-posta + şifre ile girebilirsiniz.
-        </p>
-        <form onSubmit={(e) => { e.preventDefault(); handleSetPassword(); }}>
-          <Input 
-            label="Yeni Şifre" 
-            type="password" 
-            id="student-new-password"
-            name="new-password"
-            autoComplete="new-password"
-            value={newPassword} 
-            onChange={(e) => setNewPassword(e.target.value)} 
-            placeholder="En az 6 karakter" 
-          />
-          <div style={{ marginTop: '12px' }}>
-            <Button variant="primary" size="md" type="submit" disabled={pwSaving}>
-              {pwSaving ? 'Kaydediliyor...' : 'Şifreyi Kaydet'}
-            </Button>
-          </div>
-          {pwMsg && <span className={styles.msg}>{pwMsg}</span>}
-          {pwError && <span style={{ color: 'var(--color-danger)' }}>{pwError}</span>}
-        </form>
-      </Card>
+      <ChangePasswordCard className={styles.card} idPrefix="student" />
 
       {/* Sekmeler */}
-      <div className={styles.tabs}>
-        <button className={tab === 'exams' ? `${styles.tab} ${styles.tabActive}` : styles.tab} onClick={() => setTab('exams')}>
-          Sınav Sonuçları
-        </button>
-        <button className={tab === 'subjectStats' ? `${styles.tab} ${styles.tabActive}` : styles.tab} onClick={() => setTab('subjectStats')}>
-          Konu İstatistikleri ({subjectStats.length})
-        </button>
-      </div>
+      <SegmentedTabs
+        activeTab={tab}
+        onChange={setTab}
+        tabs={[
+          { id: 'exams', label: 'Sınav Sonuçları' },
+          { id: 'subjectStats', label: 'Konu İstatistikleri', count: subjectStats.length },
+        ]}
+      />
 
       {tab === 'exams' && (
         <div>

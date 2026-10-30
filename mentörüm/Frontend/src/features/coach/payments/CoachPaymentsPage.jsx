@@ -4,6 +4,9 @@ import { usePaymentPlans, useCollectPayment, useStudents, useCreatePaymentPlan }
 import Button from '../../../components/common/Button/Button';
 import Modal from '../../../components/common/Modal/Modal';
 import Input from '../../../components/common/Input/Input';
+import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
+import StatusBadge from '../../../components/common/StatusBadge/StatusBadge';
+import { formatCurrencyTRY } from '../../../constants/domainConstants';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { AlertTriangle, Check, Plus } from 'lucide-react';
@@ -174,14 +177,14 @@ export default function CoachPaymentsPage() {
       <div className={styles.kpiGrid}>
         <div className={styles.kpiCard}>
           <span className={styles.kpiLabel}>TOPLAM PLANLANAN</span>
-          <div className={styles.kpiValue}>₺{stats.totalPlanned.toLocaleString('tr-TR')}</div>
+          <div className={styles.kpiValue}>{formatCurrencyTRY(stats.totalPlanned)}</div>
           <span className={styles.kpiSubtext}>{plans.length} Aktif Ödeme Planı</span>
         </div>
 
         <div className={styles.kpiCard}>
           <span className={styles.kpiLabel}>TAHSİL EDİLEN</span>
           <div className={`${styles.kpiValue} ${styles.successValue}`}>
-            ₺{stats.totalCollected.toLocaleString('tr-TR')}
+            {formatCurrencyTRY(stats.totalCollected)}
           </div>
           <span className={styles.kpiSubtext}>Tamamlanan ödemeler</span>
         </div>
@@ -189,7 +192,7 @@ export default function CoachPaymentsPage() {
         <div className={styles.kpiCard}>
           <span className={styles.kpiLabel}>GECİKEN TAHSİLAT</span>
           <div className={`${styles.kpiValue} ${stats.totalOverdue > 0 ? styles.alertValue : ''}`}>
-            ₺{stats.totalOverdue.toLocaleString('tr-TR')}
+            {formatCurrencyTRY(stats.totalOverdue)}
           </div>
           <span className={styles.kpiSubtext} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
             {stats.totalOverdue > 0 && <AlertTriangle size={13} style={{ color: '#ef4444' }} />}
@@ -209,36 +212,17 @@ export default function CoachPaymentsPage() {
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>Ödeme Planları & Taksitler</h2>
 
-          <div className={styles.filterTabs}>
-            <button
-              type="button"
-              className={`${styles.filterBtn} ${filterStatus === 'ALL' ? styles.filterBtnActive : ''}`}
-              onClick={() => setFilterStatus('ALL')}
-            >
-              Tümü
-            </button>
-            <button
-              type="button"
-              className={`${styles.filterBtn} ${filterStatus === 'PENDING' ? styles.filterBtnActive : ''}`}
-              onClick={() => setFilterStatus('PENDING')}
-            >
-              Bekleyenler
-            </button>
-            <button
-              type="button"
-              className={`${styles.filterBtn} ${filterStatus === 'OVERDUE' ? styles.filterBtnActive : ''}`}
-              onClick={() => setFilterStatus('OVERDUE')}
-            >
-              Gecikenler
-            </button>
-            <button
-              type="button"
-              className={`${styles.filterBtn} ${filterStatus === 'PAID' ? styles.filterBtnActive : ''}`}
-              onClick={() => setFilterStatus('PAID')}
-            >
-              Tahsil Edilenler
-            </button>
-          </div>
+          <SegmentedTabs
+            tabs={[
+              { id: 'ALL', label: 'Tümü' },
+              { id: 'PENDING', label: 'Bekleyenler' },
+              { id: 'OVERDUE', label: 'Gecikenler' },
+              { id: 'PAID', label: 'Tahsil Edilenler' },
+            ]}
+            activeTab={filterStatus}
+            onChange={setFilterStatus}
+            size="sm"
+          />
         </div>
 
         {isLoading ? (
@@ -255,7 +239,7 @@ export default function CoachPaymentsPage() {
                       <span className={styles.studentName}>{plan.studentName || 'Öğrenci'}</span>
                     </div>
                     <span className={styles.planTotalBadge}>
-                      Toplam: ₺{parseFloat(plan.amount ?? plan.totalAmount ?? 0).toLocaleString('tr-TR')}
+                      Toplam: {formatCurrencyTRY(plan.amount ?? plan.totalAmount ?? 0)}
                     </span>
                   </div>
 
@@ -272,30 +256,26 @@ export default function CoachPaymentsPage() {
                             <span className={styles.itemDueDate}>
                               Vade: {item.dueDate ? format(new Date(item.dueDate), 'd MMMM yyyy', { locale: tr }) : 'Belirtilmedi'}
                             </span>
-                            <span
-                              className={`
-                                ${styles.itemStatusBadge}
-                                ${isPaid ? styles.statusPaid : isOverdue ? styles.statusOverdue : styles.statusPending}
-                              `}
-                            >
-                              {isPaid ? 'Ödendi' : isOverdue ? 'Gecikti' : 'Bekliyor'}
-                            </span>
+                            <StatusBadge
+                              status={isPaid ? 'PAID' : isOverdue ? 'OVERDUE' : 'PENDING'}
+                              label={isPaid ? 'Ödendi' : isOverdue ? 'Gecikti' : 'Bekliyor'}
+                            />
                           </div>
 
                           <div className={styles.itemAmountRow}>
                             <span className={styles.itemAmount}>
-                              ₺{parseFloat(displayAmount).toLocaleString('tr-TR')}
+                              {formatCurrencyTRY(displayAmount)}
                             </span>
                             {!isPaid && (
-                              <button
-                                type="button"
-                                className={styles.collectBtn}
+                              <Button
+                                variant="success"
+                                size="xs"
                                 onClick={() => handleCollect(item)}
                                 title="Tahsil edildi olarak kaydet"
                               >
                                 <Check size={13} strokeWidth={2.5} />
                                 <span>Tahsil Et</span>
-                              </button>
+                              </Button>
                             )}
                           </div>
                         </div>

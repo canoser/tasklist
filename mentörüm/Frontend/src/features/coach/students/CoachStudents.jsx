@@ -4,6 +4,9 @@ import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
 import Modal from '../../../components/common/Modal/Modal';
+import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
+import StatusBadge from '../../../components/common/StatusBadge/StatusBadge';
+import { STUDENT_GRADES } from '../../../constants/domainConstants';
 import CoachGroupsPage from '../groups/CoachGroupsPage';
 import CoachCoursesPage from '../courses/CoachCoursesPage';
 import AddOrInviteStudentPanel from './AddOrInviteStudentPanel';
@@ -140,32 +143,15 @@ const CoachStudents = () => {
         </div>
       </header>
 
-      <div className={styles.segmentedTabs}>
-        <button
-          type="button"
-          className={`${styles.segmentedBtn} ${activeTab === 'STUDENTS' ? styles.segmentedBtnActive : ''}`}
-          onClick={() => setActiveTab('STUDENTS')}
-        >
-          <Users size={16} />
-          <span>Bireysel Öğrenciler ({students?.length || 0})</span>
-        </button>
-        <button
-          type="button"
-          className={`${styles.segmentedBtn} ${activeTab === 'GROUPS' ? styles.segmentedBtnActive : ''}`}
-          onClick={() => setActiveTab('GROUPS')}
-        >
-          <FolderGit2 size={16} />
-          <span>Gruplar ({groups?.length || 0})</span>
-        </button>
-        <button
-          type="button"
-          className={`${styles.segmentedBtn} ${activeTab === 'COURSES' ? styles.segmentedBtnActive : ''}`}
-          onClick={() => setActiveTab('COURSES')}
-        >
-          <BookOpen size={16} />
-          <span>Dersler & Branşlar ({courses?.length || 0})</span>
-        </button>
-      </div>
+      <SegmentedTabs
+        activeTab={activeTab}
+        onChange={setActiveTab}
+        tabs={[
+          { id: 'STUDENTS', label: 'Bireysel Öğrenciler', icon: <Users size={16} />, count: students?.length || 0 },
+          { id: 'GROUPS', label: 'Gruplar', icon: <FolderGit2 size={16} />, count: groups?.length || 0 },
+          { id: 'COURSES', label: 'Dersler & Branşlar', icon: <BookOpen size={16} />, count: courses?.length || 0 },
+        ]}
+      />
 
       {activeTab === 'GROUPS' ? (
         <CoachGroupsPage
@@ -214,11 +200,11 @@ const CoachStudents = () => {
                 onChange={(e) => setGradeFilter(e.target.value)}
               >
                 <option value="">Tüm Sınıflar</option>
-                <option value="8">8. Sınıf / LGS</option>
-                {[9, 10, 11, 12].map((g) => (
-                  <option key={g} value={String(g)}>{g}. Sınıf</option>
+                {STUDENT_GRADES.map((g) => (
+                  <option key={g} value={g === 'Mezun' ? '13' : g}>
+                    {g === 'Mezun' ? 'Mezun' : `${g}. Sınıf`}
+                  </option>
                 ))}
-                <option value="Mezun">Mezun</option>
               </select>
             </div>
           </Card>
@@ -269,9 +255,7 @@ const CoachStudents = () => {
                       )}
                     </div>
                   </div>
-                  <div className={`${styles.statusBadge} ${student.isActive ? styles.active : styles.inactive}`}>
-                    {student.isActive ? 'Kayıtlı / Aktif' : 'Pasif'}
-                  </div>
+                  <StatusBadge status={student.isActive ? 'ACTIVE' : 'INACTIVE'} />
                 </div>
                 <div className={styles.cardFooter}>
                   <Button variant="ghost" size="sm" className={styles.cardActionBtn} onClick={(e) => { e.stopPropagation(); navigate(`/coach/students/${student.id}`); }}>Profili Gör</Button>
@@ -279,9 +263,11 @@ const CoachStudents = () => {
                   {student.inviteStatus === 'NOT_INVITED' && (
                     <Button variant="secondary" size="sm" className={styles.cardActionBtn} onClick={(e) => { e.stopPropagation(); handleOpenInviteModal(student); }}>Davet Et</Button>
                   )}
-                  <button
+                  <Button
                     type="button"
-                    className={styles.deleteIconBtn}
+                    variant="danger-outline"
+                    size="xs"
+                    iconOnly
                     onClick={(e) => {
                       e.stopPropagation();
                       setStudentToDelete(student);
@@ -290,7 +276,7 @@ const CoachStudents = () => {
                     aria-label="Öğrenciyi Sil"
                   >
                     <Trash2 size={15} />
-                  </button>
+                  </Button>
                 </div>
               </Card>
             ))}

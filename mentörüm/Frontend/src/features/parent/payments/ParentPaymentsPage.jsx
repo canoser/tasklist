@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
+import StatusBadge from '../../../components/common/StatusBadge/StatusBadge';
+import { formatCurrencyTRY } from '../../../constants/domainConstants';
 import { useParentChildren, useParentChildPayments, useCreatePaymentClaim } from '../parentApi';
 
 export default function ParentPaymentsPage() {
@@ -68,13 +70,13 @@ export default function ParentPaymentsPage() {
         <Card padding="md">
           <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Ödenen Toplam</div>
           <div style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--color-success, #10b981)', marginTop: '4px' }}>
-            {totalPaid.toLocaleString('tr-TR')} TRY
+            {formatCurrencyTRY(totalPaid)}
           </div>
         </Card>
         <Card padding="md">
           <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Kalan Toplam Bakiye</div>
           <div style={{ fontSize: '1.4rem', fontWeight: 700, color: totalDue > 0 ? 'var(--color-danger, #ef4444)' : 'var(--text-primary)', marginTop: '4px' }}>
-            {totalDue.toLocaleString('tr-TR')} TRY
+            {formatCurrencyTRY(totalDue)}
           </div>
         </Card>
       </div>
@@ -115,22 +117,16 @@ export default function ParentPaymentsPage() {
                         </span>
                       )}
                     </div>
-                    <span style={{
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
-                      padding: '3px 8px',
-                      borderRadius: '4px',
-                      background: isPaid ? 'rgba(16, 185, 129, 0.15)' : isPartial ? 'rgba(245, 158, 11, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-                      color: isPaid ? 'var(--color-success, #10b981)' : isPartial ? 'var(--color-warning, #f59e0b)' : 'var(--color-danger, #ef4444)'
-                    }}>
-                      {isPaid ? 'ÖDENDİ' : isPartial ? 'KISMİ ÖDENDİ' : 'ÖDENMEDİ'}
-                    </span>
+                    <StatusBadge
+                      status={isPaid ? 'PAID' : isPartial ? 'PARTIAL' : 'UNPAID'}
+                      label={isPaid ? 'ÖDENDİ' : isPartial ? 'KISMİ ÖDENDİ' : 'ÖDENMEDİ'}
+                    />
                   </div>
 
                   <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                    <span>Tutar: <strong>{p.baseAmount} TRY</strong></span>
-                    <span>Ödenen: <strong style={{ color: 'var(--color-success, #10b981)' }}>{p.paidAmount} TRY</strong></span>
-                    <span>Kalan: <strong style={{ color: remaining > 0 ? 'var(--color-danger, #ef4444)' : 'inherit' }}>{remaining} TRY</strong></span>
+                    <span>Tutar: <strong>{formatCurrencyTRY(p.baseAmount)}</strong></span>
+                    <span>Ödenen: <strong style={{ color: 'var(--color-success, #10b981)' }}>{formatCurrencyTRY(p.paidAmount)}</strong></span>
+                    <span>Kalan: <strong style={{ color: remaining > 0 ? 'var(--color-danger, #ef4444)' : 'inherit' }}>{formatCurrencyTRY(remaining)}</strong></span>
                   </div>
 
                   {!isPaid && claimingItemId !== p.id && (

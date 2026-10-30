@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { useStudentCourses, useStudentCourseResources, useUpdateResourceProgress } from '../studentSchoolApi';
-import { useStudentCurriculum } from '../studentApi';
+import { useStudentCourses, useStudentCourseResources, useUpdateResourceProgress, useStudentCurriculum } from '../studentApi';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
+import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
+import StatusBadge from '../../../components/common/StatusBadge/StatusBadge';
 import { 
   BookOpen, 
   FileText, 
@@ -12,10 +13,9 @@ import {
   ArrowLeft, 
   ExternalLink, 
   ChevronRight, 
-
   Target 
 } from 'lucide-react';
-import { useDownloadUrl } from '../../storage/storageApi';
+import { useOpenUpload } from '../../storage/storageApi';
 import styles from './StudentCoursesPage.module.css';
 
 const StudentCoursesPage = () => {
@@ -26,7 +26,7 @@ const StudentCoursesPage = () => {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const { data: resources, isLoading: resourcesLoading } = useStudentCourseResources(selectedCourse?.id);
   const updateProgress = useUpdateResourceProgress();
-  const download = useDownloadUrl();
+  const { openUpload } = useOpenUpload();
 
   // Müfredat & Konu Takibi (Profil'den taşındı)
   const { data: curriculum = [], isLoading: curriculumLoading } = useStudentCurriculum();
@@ -63,12 +63,7 @@ const StudentCoursesPage = () => {
   // Belge veya video açma
   const handleOpenResource = async (r) => {
     if (r.uploadId) {
-      try {
-        const res = await download.mutateAsync(r.uploadId);
-        window.open(res.url, '_blank', 'noopener');
-      } catch {
-        alert('Dosya açılamadı.');
-      }
+      await openUpload(r.uploadId);
     } else if (r.resourceRef) {
       window.open(r.resourceRef, '_blank', 'noopener');
     }
@@ -89,25 +84,22 @@ const StudentCoursesPage = () => {
       </header>
 
       {/* ── ÜST SEKME NAVİGASYONU ── */}
-      <div className={styles.topTabs}>
-        <button
-          type="button"
-          className={`${styles.topTabBtn} ${activeTab === 'courses' ? styles.topTabBtnActive : ''}`}
-          onClick={() => setActiveTab('courses')}
-        >
-          <BookOpen size={16} />
-          <span>Derslerim, Kaynaklar & Video Dersler</span>
-        </button>
-
-        <button
-          type="button"
-          className={`${styles.topTabBtn} ${activeTab === 'curriculum' ? styles.topTabBtnActive : ''}`}
-          onClick={() => setActiveTab('curriculum')}
-        >
-          <Target size={16} />
-          <span>Müfredat & Konu Takibi ({completedTopics}/{totalTopics})</span>
-        </button>
-      </div>
+      <SegmentedTabs
+        activeTab={activeTab}
+        onChange={setActiveTab}
+        tabs={[
+          {
+            id: 'courses',
+            label: 'Derslerim, Kaynaklar & Video Dersler',
+            icon: <BookOpen size={16} />,
+          },
+          {
+            id: 'curriculum',
+            label: `Müfredat & Konu Takibi (${completedTopics}/${totalTopics})`,
+            icon: <Target size={16} />,
+          },
+        ]}
+      />
 
       {/* ════════════════════════════════════════════════════════════
           1. SEKME: DERSLERİM, KAYNAKLAR & VİDEO DERSLER
@@ -333,18 +325,10 @@ const StudentCoursesPage = () => {
                     </div>
                   </div>
 
-                  <span 
-                    style={{ 
-                      fontSize: '0.72rem', 
-                      fontWeight: 700, 
-                      padding: '3px 8px', 
-                      borderRadius: 6,
-                      background: t.isCompleted ? 'rgba(16, 185, 129, 0.12)' : 'rgba(255, 255, 255, 0.05)',
-                      color: t.isCompleted ? '#10B981' : 'var(--text-color-muted)'
-                    }}
-                  >
-                    {t.isCompleted ? 'Tamamlandı' : 'Devam Ediyor'}
-                  </span>
+                  <StatusBadge
+                    status={t.isCompleted ? 'DONE' : 'PENDING'}
+                    label={t.isCompleted ? 'Tamamlandı' : 'Devam Ediyor'}
+                  />
                 </div>
               ))}
             </div>

@@ -5,8 +5,7 @@ import { Calendar, Clock, CheckCircle2, Circle, MessageSquare, ChevronRight, Boo
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
-import { useStudentCoachingTools, useToggleStudentHabit, useUpdateSessionPrep } from '../../studentApi';
-import { useStudentSchedule } from '../../studentSchoolApi';
+import { useStudentCoachingTools, useToggleStudentHabit, useUpdateSessionPrep, useStudentSchedule } from '../../studentApi';
 
 const PRIORITY_ORDER = { HIGH: 1, NORMAL: 2, LOW: 3 };
 

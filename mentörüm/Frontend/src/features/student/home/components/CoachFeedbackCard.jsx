@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Card from '../../../../components/common/Card/Card';
-
+import SegmentedTabs from '../../../../components/common/SegmentedTabs/SegmentedTabs';
 import { MessageSquare, AlertCircle, FileText, Download, HelpCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -47,55 +47,17 @@ const CoachFeedbackCard = ({ homeworks = [] }) => {
         )}
 
         {/* Sekmeler */}
-        <div style={{ display: 'flex', gap: '6px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
-          <button
-            type="button"
-            onClick={() => setActiveTab('notes')}
-            style={{
-              padding: '4px 10px',
-              borderRadius: '6px',
-              border: 'none',
-              background: activeTab === 'notes' ? 'var(--color-primary)' : 'transparent',
-              color: activeTab === 'notes' ? '#ffffff' : 'var(--text-color-muted)',
-              fontSize: '0.78rem',
-              fontWeight: 600,
-              cursor: 'pointer'
-            }}
-          >
-            Öğretmen Notları ({visibleTeacherNotes.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('questions')}
-            style={{
-              padding: '4px 10px',
-              borderRadius: '6px',
-              border: 'none',
-              background: activeTab === 'questions' ? 'var(--color-primary)' : 'transparent',
-              color: activeTab === 'questions' ? '#ffffff' : 'var(--text-color-muted)',
-              fontSize: '0.78rem',
-              fontWeight: 600,
-              cursor: 'pointer'
-            }}
-          >
-            Koç Yanıtları ({answeredQuestions.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('files')}
-            style={{
-              padding: '4px 10px',
-              borderRadius: '6px',
-              border: 'none',
-              background: activeTab === 'files' ? 'var(--color-primary)' : 'transparent',
-              color: activeTab === 'files' ? '#ffffff' : 'var(--text-color-muted)',
-              fontSize: '0.78rem',
-              fontWeight: 600,
-              cursor: 'pointer'
-            }}
-          >
-            Paylaşılan Dosyalar ({uploads.length})
-          </button>
+        <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
+          <SegmentedTabs
+            tabs={[
+              { id: 'notes', label: `Öğretmen Notları (${visibleTeacherNotes.length})` },
+              { id: 'questions', label: `Koç Yanıtları (${answeredQuestions.length})` },
+              { id: 'files', label: `Paylaşılan Dosyalar (${uploads.length})` },
+            ]}
+            activeTab={activeTab}
+            onChange={setActiveTab}
+            size="sm"
+          />
         </div>
 
         {/* 1. Öğretmen Notları */}

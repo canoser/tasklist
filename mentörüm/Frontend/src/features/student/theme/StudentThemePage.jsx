@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useUIStore } from '../../../store/uiStore';
-
+import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
 import { 
   Palette, 
   Sun, 
@@ -46,34 +46,15 @@ export default function StudentThemePage() {
       </header>
 
       {/* ── ÜST SEKME NAVİGASYONU (Uzun sayfayı 3 kompakt sekmeye böler) ── */}
-      <div className={styles.themeTabs}>
-        <button
-          type="button"
-          className={`${styles.themeTabBtn} ${activeTab === 'layout' ? styles.themeTabBtnActive : ''}`}
-          onClick={() => setActiveTab('layout')}
-        >
-          <LayoutGrid size={16} />
-          <span>Yerleşim Düzeni</span>
-        </button>
-
-        <button
-          type="button"
-          className={`${styles.themeTabBtn} ${activeTab === 'mode' ? styles.themeTabBtnActive : ''}`}
-          onClick={() => setActiveTab('mode')}
-        >
-          <Sun size={16} />
-          <span>Görünüm Modu</span>
-        </button>
-
-        <button
-          type="button"
-          className={`${styles.themeTabBtn} ${activeTab === 'style' ? styles.themeTabBtnActive : ''}`}
-          onClick={() => setActiveTab('style')}
-        >
-          <Palette size={16} />
-          <span>Tema & Stil</span>
-        </button>
-      </div>
+      <SegmentedTabs
+        tabs={[
+          { id: 'layout', label: 'Yerleşim Düzeni', icon: <LayoutGrid size={16} /> },
+          { id: 'mode', label: 'Görünüm Modu', icon: <Sun size={16} /> },
+          { id: 'style', label: 'Tema & Stil', icon: <Palette size={16} /> },
+        ]}
+        activeTab={activeTab}
+        onChange={setActiveTab}
+      />
 
       {/* ── 1. SEKME: ANA SAYFA YERLEŞİM DÜZENİ ── */}
       {activeTab === 'layout' && (
@@ -186,32 +167,15 @@ export default function StudentThemePage() {
             </p>
           </div>
 
-          <div className={styles.modeSelector}>
-            <button
-              type="button"
-              className={`${styles.modeBtn} ${themeMode === 'light' ? styles.modeBtnActive : ''}`}
-              onClick={() => setThemeMode('light')}
-            >
-              <Sun size={18} />
-              <span>Açık Mod</span>
-            </button>
-            <button
-              type="button"
-              className={`${styles.modeBtn} ${themeMode === 'dark' ? styles.modeBtnActive : ''}`}
-              onClick={() => setThemeMode('dark')}
-            >
-              <Moon size={18} />
-              <span>Koyu Mod</span>
-            </button>
-            <button
-              type="button"
-              className={`${styles.modeBtn} ${themeMode === 'system' ? styles.modeBtnActive : ''}`}
-              onClick={() => setThemeMode('system')}
-            >
-              <Monitor size={18} />
-              <span>Cihazla Aynı</span>
-            </button>
-          </div>
+          <SegmentedTabs
+            tabs={[
+              { id: 'light', label: 'Açık Mod', icon: <Sun size={18} /> },
+              { id: 'dark', label: 'Koyu Mod', icon: <Moon size={18} /> },
+              { id: 'system', label: 'Cihazla Aynı', icon: <Monitor size={18} /> },
+            ]}
+            activeTab={themeMode}
+            onChange={setThemeMode}
+          />
         </section>
       )}
 

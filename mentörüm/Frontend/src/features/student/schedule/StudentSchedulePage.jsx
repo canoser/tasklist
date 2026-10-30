@@ -1,20 +1,13 @@
 import React, { useState } from 'react';
-import { useStudentSchedule } from '../studentSchoolApi';
-import { useStudentSchoolSchedule, useCreateSchoolSchedule, useDeleteSchoolSchedule } from '../studentApi';
+import { useStudentSchedule, useStudentSchoolSchedule, useCreateSchoolSchedule, useDeleteSchoolSchedule } from '../studentApi';
+import { WEEKDAYS_ONE_INDEXED, WEEKDAY_PILLS } from '../../../constants/domainConstants';
 import Card from '../../../components/common/Card/Card';
+import Button from '../../../components/common/Button/Button';
 import { Trash2, Plus } from 'lucide-react';
 import styles from './StudentSchedulePage.module.css';
 
-const DAYS = ['', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
-const DAY_PILLS = [
-  { id: 1, label: 'Pzt' },
-  { id: 2, label: 'Sal' },
-  { id: 3, label: 'Çar' },
-  { id: 4, label: 'Per' },
-  { id: 5, label: 'Cum' },
-  { id: 6, label: 'Cts' },
-  { id: 7, label: 'Paz' },
-];
+const DAYS = WEEKDAYS_ONE_INDEXED;
+const DAY_PILLS = WEEKDAY_PILLS;
 const fmt = (t) => (t ? t.slice(0, 5) : '');
 
 const inputStyle = { padding: '8px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-app)', color: 'var(--text-primary)', colorScheme: 'dark' };
@@ -105,9 +98,9 @@ const StudentSchedulePage = ({ embedded = false }) => {
           <input type="time" value={start} onChange={(e) => setStart(e.target.value)} style={inputStyle} title="Başlangıç Saati" />
           <input type="time" value={end} onChange={(e) => setEnd(e.target.value)} style={inputStyle} title="Bitiş Saati" />
           <input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Etiket (örn. Okul)" style={{ ...inputStyle, minWidth: '140px' }} />
-          <button type="button" onClick={handleAdd} disabled={createSchedule.isPending || selectedDays.length === 0} style={{ padding: '8px 14px', borderRadius: '8px', border: 'none', background: 'var(--color-primary)', color: '#fff', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '5px', fontWeight: 600 }}>
+          <Button type="button" variant="primary" size="sm" onClick={handleAdd} disabled={createSchedule.isPending || selectedDays.length === 0}>
             <Plus size={15} /> {selectedDays.length > 1 ? `${selectedDays.length} Güne Ekle` : 'Ekle'}
-          </button>
+          </Button>
         </div>
 
         {schoolSchedule.length === 0 ? (
@@ -118,9 +111,9 @@ const StudentSchedulePage = ({ embedded = false }) => {
               <span style={{ fontWeight: 600, fontSize: '0.85rem', minWidth: '90px' }}>{DAYS[s.dayOfWeek]}</span>
               <span style={{ fontSize: '0.85rem' }}>{s.startTime} - {s.endTime}</span>
               <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{s.label}</span>
-              <button type="button" onClick={() => deleteSchedule.mutate(s.id)} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-danger)' }}>
-                <Trash2 size={15} />
-              </button>
+              <Button type="button" variant="danger-outline" size="xs" iconOnly onClick={() => deleteSchedule.mutate(s.id)} style={{ marginLeft: 'auto' }} title="Sil">
+                <Trash2 size={14} />
+              </Button>
             </div>
           ))
         )}

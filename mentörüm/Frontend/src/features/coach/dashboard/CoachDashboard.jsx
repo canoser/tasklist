@@ -13,6 +13,8 @@ import {
 import { usePrograms } from '../coachSchoolApi';
 import AssignHomeworkModal from '../homework/AssignHomeworkModal';
 import DashboardRightColumn from './DashboardRightColumn';
+import Button from '../../../components/common/Button/Button';
+import { formatCurrencyTRY } from '../../../constants/domainConstants';
 import { format, addDays, subDays } from 'date-fns';
 import {
   Users,
@@ -259,10 +261,10 @@ const CoachDashboard = () => {
             </div>
           </div>
           <div className={styles.kpiValue}>
-            ₺{financeStats.pendingCollection.toLocaleString('tr-TR')}
+            {formatCurrencyTRY(financeStats.pendingCollection)}
           </div>
           <div className={styles.kpiSubtext}>
-            Tahsil edilen: ₺{financeStats.totalCollected.toLocaleString('tr-TR')} • {paymentPlans.length} Plan
+            Tahsil edilen: {formatCurrencyTRY(financeStats.totalCollected)} • {paymentPlans.length} Plan
           </div>
         </div>
       </section>
@@ -296,14 +298,14 @@ const CoachDashboard = () => {
             <span className={styles.countPill}>{students.length} Öğrenci</span>
           </div>
 
-          <button
-            type="button"
-            className={styles.addStudentBtn}
+          <Button
+            variant="primary"
+            size="sm"
             onClick={() => navigate('/coach/students')}
           >
             <Plus size={15} strokeWidth={2.5} />
             <span>Yeni Öğrenci Ekle</span>
-          </button>
+          </Button>
         </div>
 
         {isStudentsLoading ? (
@@ -402,33 +404,36 @@ const CoachDashboard = () => {
                   </div>
 
                   <div className={styles.radarCardActions}>
-                    <button
-                      type="button"
+                    <Button
+                      variant="outline"
+                      size="xs"
                       className={styles.cardActionBtn}
                       onClick={() => handleOpenAssign(student)}
                       title="Ödev Ver"
                     >
                       <PlusCircle size={14} />
                       <span>Ödev Ver</span>
-                    </button>
-                    <button
-                      type="button"
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="xs"
                       className={styles.cardActionBtn}
                       onClick={() => navigate(`/coach/students/${student.id}`)}
                       title="Öğrenci Takvimi"
                     >
                       <CalendarIcon size={14} />
                       <span>Takvim</span>
-                    </button>
-                    <button
-                      type="button"
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="xs"
                       className={styles.cardActionBtn}
                       onClick={() => navigate(`/coach/students/${student.id}`)}
                       title="Detay Görüntüle"
                     >
                       <ArrowUpRight size={14} />
                       <span>Detay</span>
-                    </button>
+                    </Button>
                   </div>
                 </div>
               );

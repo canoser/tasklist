@@ -1,14 +1,14 @@
 import { useRef, useState, useEffect } from 'react';
-import axios from 'axios';
-import { useUploads, useRecipients, useStorageUsage, useCreateUploadUrl, useConfirmUpload, useRegisterDevice, useDownloadUrl } from './storageApi';
-import { compressImage } from '../../utils/imageCompressor';
+import { useUploads, useRecipients, useStorageUsage, useUploadFile, useRegisterDevice, useOpenUpload } from './storageApi';
 import { registerCurrentDevice } from '../../utils/device';
 import { useAuthStore } from '../auth/authStore';
-import { useStudentCourses } from '../student/studentSchoolApi';
+import { useStudentCourses } from '../student/studentApi';
 import { useStudents } from '../coach/coachApi';
 import { useTeacherCourses, useTeacherCourseStudents } from '../teacher/teacherApi';
 import LocalImageViewer from '../../components/common/LocalImageViewer/LocalImageViewer';
 import DevicePickerModal from '../../components/common/DevicePickerModal/DevicePickerModal';
+import Button from '../../components/common/Button/Button';
+import SegmentedTabs from '../../components/common/SegmentedTabs/SegmentedTabs';
 import { Settings, Upload, Image as ImageIcon, FileText, AlertTriangle, ExternalLink, Info } from 'lucide-react';
 import styles from './StoragePage.module.css';
 
@@ -25,15 +25,13 @@ export default function StoragePage() {
 
     const { data: uploads = [] } = useUploads();
     const { data: usage } = useStorageUsage(isCoach);
-    const createUpload = useCreateUploadUrl();
-    const confirmUpload = useConfirmUpload();
+    const uploadFile = useUploadFile();
     const registerDevice = useRegisterDevice();
 
     const [tab, setTab] = useState('images');
     const [courseId, setCourseId] = useState('');
     const [recipientId, setRecipientId] = useState('');
     const [pickerOpen, setPickerOpen] = useState(false);
-    const [uploading, setUploading] = useState(false);
     const fileRef = useRef(null);
 
     // Cihaz tanıma: Kullanıcı sayfaya geldiğinde arka planda sessizce kaydedilir (T11 & T14)
@@ -84,24 +82,16 @@ export default function StoragePage() {
             }
         }
 
-        setUploading(true);
         try {
-            const compressed = await compressImage(file);
-            const res = await createUpload.mutateAsync({
-                fileName: compressed.name,
-                fileSizeInBytes: compressed.size,
-                contentType: compressed.type,
+            await uploadFile.mutateAsync({
+                file,
                 programId: targetProgramId,
                 courseId: courseId || undefined,
                 recipientUserId: targetRecipientId,
             });
-            await axios.put(res.uploadUrl, compressed, { headers: { 'Content-Type': compressed.type } });
-            await confirmUpload.mutateAsync(res.uploadId);
             alert('Dosya başarıyla yüklendi.');
         } catch (err) {
             alert('Yükleme başarısız: ' + (err?.response?.data?.error || err?.message || 'bilinmeyen hata'));
-        } finally {
-            setUploading(false);
         }
     }
 
@@ -111,25 +101,16 @@ export default function StoragePage() {
                 <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <h2 className={styles.heading} style={{ margin: 0 }}>Dosyalarım</h2>
-                        <button 
+                        <Button 
                             type="button" 
-                            className={styles.settingsIconBtn} 
+                            variant="outline"
+                            size="xs"
+                            iconOnly
                             onClick={() => setPickerOpen(true)}
                             title="İndirme Cihazı Ayarı"
-                            style={{
-                                background: 'rgba(255, 255, 255, 0.05)',
-                                border: '1px solid var(--border-color)',
-                                borderRadius: '8px',
-                                padding: '6px',
-                                color: 'var(--text-color-muted, #94A3B8)',
-                                cursor: 'pointer',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                            }}
                         >
                             <Settings size={17} />
-                        </button>
+                        </Button>
                     </div>
                     <p className={styles.subheading} style={{ marginTop: '4px' }}>Resimler, ödev ekleri ve paylaşılan ders belgeleri</p>
                 </div>
@@ -229,15 +210,15 @@ export default function StoragePage() {
                         </>
                     )}
 
-                    <button 
-                        className={styles.btnPrimary} 
-                        disabled={uploading} 
+                    <Button 
+                        variant="primary"
+                        size="sm"
+                        disabled={uploadFile.isPending} 
                         onClick={() => fileRef.current?.click()}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                     >
                         <Upload size={15} />
-                        <span>{uploading ? 'Yükleniyor…' : 'Dosya Yükle'}</span>
-                    </button>
+                        <span>{uploadFile.isPending ? 'Yükleniyor…' : 'Dosya Yükle'}</span>
+                    </Button>
                     <input 
                         ref={fileRef} 
                         type="file" 
@@ -251,22 +232,24 @@ export default function StoragePage() {
                 </p>
             </div>
 
-            <div className={styles.tabs}>
-                <button 
-                    className={tab === 'images' ? styles.tabActive : styles.tab} 
-                    onClick={() => setTab('images')}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                >
-                    <ImageIcon size={15} /> Resimler ({uploads.filter((u) => IMAGE_TYPES.includes(u.contentType)).length})
-                </button>
-                <button 
-                    className={tab === 'docs' ? styles.tabActive : styles.tab} 
-                    onClick={() => setTab('docs')}
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                >
-                    <FileText size={15} /> Belgeler ({uploads.filter((u) => DOC_TYPES.includes(u.contentType)).length})
-                </button>
-            </div>
+            <SegmentedTabs
+                activeTab={tab}
+                onChange={setTab}
+                tabs={[
+                    {
+                        id: 'images',
+                        label: 'Resimler',
+                        icon: <ImageIcon size={15} />,
+                        count: uploads.filter((u) => IMAGE_TYPES.includes(u.contentType)).length,
+                    },
+                    {
+                        id: 'docs',
+                        label: 'Belgeler',
+                        icon: <FileText size={15} />,
+                        count: uploads.filter((u) => DOC_TYPES.includes(u.contentType)).length,
+                    },
+                ]}
+            />
 
             <div className={styles.receiveNotice}>
                 <Info size={14} className={styles.infoIcon} />
@@ -298,19 +281,10 @@ export default function StoragePage() {
 }
 
 function DocItem({ upload }) {
-    const download = useDownloadUrl();
-
-    async function handleOpen() {
-        try {
-            const res = await download.mutateAsync(upload.id);
-            window.open(res.url, '_blank', 'noopener');
-        } catch {
-            alert('Dosya açılamadı.');
-        }
-    }
+    const { openUpload } = useOpenUpload();
 
     return (
-        <button className={styles.docBtn} onClick={handleOpen}>
+        <button className={styles.docBtn} onClick={() => openUpload(upload.id)}>
             <span className={styles.docIcon} style={{ display: 'inline-flex', alignItems: 'center' }}><FileText size={16} /></span>
             <span className={styles.docName}>{upload.originalName}</span>
             <span className={styles.docAction} style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>

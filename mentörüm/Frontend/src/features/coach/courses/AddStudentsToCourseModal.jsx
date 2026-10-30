@@ -89,22 +89,23 @@ export default function AddStudentsToCourseModal({
           <span style={{ color: 'var(--text-secondary)' }}>
             Seçilen: <strong>{selectedIds.length}</strong> öğrenci
           </span>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              type="button"
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+            <Button
+              variant="ghost"
+              size="xs"
               onClick={handleSelectAll}
-              style={{ background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}
+              style={{ color: 'var(--color-primary)' }}
             >
               Listelenenleri Seç
-            </button>
+            </Button>
             <span style={{ color: 'var(--border-color)' }}>|</span>
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="xs"
               onClick={handleDeselectAll}
-              style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.8rem' }}
             >
               Temizle
-            </button>
+            </Button>
           </div>
         </div>
 

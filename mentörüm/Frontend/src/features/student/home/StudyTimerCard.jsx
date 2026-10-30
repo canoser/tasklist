@@ -1,6 +1,7 @@
 import React from 'react';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
+import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
 import { Timer, Zap, Play, Pause, RotateCcw, Check, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
 import { useStudyTimer } from './useStudyTimer';
 
@@ -30,9 +31,9 @@ export default function StudyTimerCard({ compact = false, collapsible = false })
             ) : (
               <Button size="sm" variant="secondary" onClick={t.handlePause} style={{ padding: '6px 12px', fontSize: '0.78rem' }}><Pause size={13} style={{ marginRight: 4 }} /> Duraklat</Button>
             )}
-            <button type="button" onClick={() => t.setIsExpanded(true)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: 4 }} title="Genişlet">
+            <Button variant="ghost" size="xs" iconOnly onClick={() => t.setIsExpanded(true)} title="Genişlet">
               <ChevronDown size={18} />
-            </button>
+            </Button>
           </div>
         </div>
       </Card>
@@ -44,32 +45,21 @@ export default function StudyTimerCard({ compact = false, collapsible = false })
   return (
     <Card padding={compact ? 'md' : 'lg'} style={{ marginBottom: compact ? '0.75rem' : '1.5rem', border: '1px solid var(--border-color)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: compact ? '0.6rem' : '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: compact ? '0.5rem' : '0.75rem' }}>
-        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-          {[
+        <SegmentedTabs
+          tabs={[
             { id: 'timer', icon: <Timer size={14} />, label: 'Canlı Kronometre' },
             { id: 'quicklog', icon: <Zap size={14} />, label: 'Hızlı Kayıt' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => t.setActiveTab(tab.id)}
-              style={{
-                background: t.activeTab === tab.id ? 'var(--color-primary-light, rgba(99, 102, 241, 0.15))' : 'transparent',
-                color: t.activeTab === tab.id ? 'var(--color-primary, #6366f1)' : 'var(--text-secondary)',
-                border: 'none', borderRadius: '6px', padding: compact ? '0.3rem 0.6rem' : '0.4rem 0.8rem',
-                fontWeight: 600, fontSize: compact ? '0.78rem' : '0.85rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '5px',
-              }}
-            >
-              {tab.icon} {tab.label}
-            </button>
-          ))}
-        </div>
+          ]}
+          activeTab={t.activeTab}
+          onChange={t.setActiveTab}
+          size="sm"
+        />
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {t.successMsg && <span style={{ fontSize: '0.8rem', color: 'var(--color-success, #10b981)', fontWeight: 600 }}>{t.successMsg}</span>}
           {collapsible && (
-            <button type="button" onClick={() => t.setIsExpanded(false)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: 2 }} title="Daralt">
+            <Button variant="ghost" size="xs" iconOnly onClick={() => t.setIsExpanded(false)} title="Daralt">
               <ChevronUp size={18} />
-            </button>
+            </Button>
           )}
         </div>
       </div>

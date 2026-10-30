@@ -4,9 +4,9 @@ import { apiClient } from '../../../api/apiClient';
 import { useParentChildren } from '../parentApi';
 import ChildSelector from '../../../components/common/ChildSelector/ChildSelector';
 import Card from '../../../components/common/Card/Card';
+import { WEEKDAYS_ONE_INDEXED } from '../../../constants/domainConstants';
 import styles from './ParentSchedulePage.module.css';
 
-const DAYS = ['', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
 const fmt = (t) => (t ? t.slice(0, 5) : '');
 
 const ParentSchedulePage = ({ studentId: propStudentId, embedded = false }) => {
@@ -49,7 +49,7 @@ const ParentSchedulePage = ({ studentId: propStudentId, embedded = false }) => {
         </Card>
       ) : (
         <div className={styles.list}>
-          {DAYS.map((d, i) => {
+          {WEEKDAYS_ONE_INDEXED.map((d, i) => {
             if (i === 0) return null;
             const daySlots = (grouped[i] || []).sort((a, b) => a.startTime.localeCompare(b.startTime));
             if (daySlots.length === 0) return null;

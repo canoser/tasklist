@@ -1,11 +1,10 @@
 import React, { useRef, useState } from 'react';
-import axios from 'axios';
-import { Clock, Paperclip, X, MessageSquare, Check, ChevronUp, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Clock, Paperclip, X, MessageSquare, ChevronUp, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useStudentHomework, useCompleteHomework, useRequestExtension } from '../studentApi';
-import { useCreateUploadUrl, useConfirmUpload } from '../../storage/storageApi';
-import { compressImage } from '../../../utils/imageCompressor';
+import { useUploadFile } from '../../storage/storageApi';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
+import StatusBadge from '../../../components/common/StatusBadge/StatusBadge';
 import { formatDate } from '../../../utils/dateUtils';
 import { PriorityBadge, AssignedViaBadge } from '../../../components/common/HomeworkStatusBadges';
 import HomeworkAttachmentList from '../../../components/common/HomeworkAttachmentList';
@@ -26,35 +25,21 @@ const HomeworkCard = ({ hw, onComplete, onRequestExtension }) => {
   const [showExtension, setShowExtension] = useState(false);
   const [reason, setReason] = useState('');
   const [attachments, setAttachments] = useState([]);
-  const [uploadingFile, setUploadingFile] = useState(false);
   const fileInputRef = useRef(null);
 
-  const createUpload = useCreateUploadUrl();
-  const confirmUpload = useConfirmUpload();
+  const uploadFile = useUploadFile();
 
   const handleAttachFile = async (e) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
 
-    setUploadingFile(true);
     try {
-      const isImg = file.type.startsWith('image/');
-      const fileToUpload = isImg ? await compressImage(file) : file;
-      const res = await createUpload.mutateAsync({
-        fileName: fileToUpload.name,
-        fileSizeInBytes: fileToUpload.size,
-        contentType: fileToUpload.type,
-        homeworkId: hw.id,
-      });
-      await axios.put(res.uploadUrl, fileToUpload, { headers: { 'Content-Type': fileToUpload.type } });
-      await confirmUpload.mutateAsync(res.uploadId);
-      setAttachments((prev) => [...prev, { id: res.uploadId, name: fileToUpload.name }]);
+      const res = await uploadFile.mutateAsync({ file, homeworkId: hw.id });
+      setAttachments((prev) => [...prev, { id: res.uploadId, name: res.fileName }]);
       setShowNoteDetails(true);
     } catch (err) {
       alert('Dosya yüklenemedi: ' + (err?.message || 'Hata'));
-    } finally {
-      setUploadingFile(false);
     }
   };
 
@@ -82,9 +67,7 @@ const HomeworkCard = ({ hw, onComplete, onRequestExtension }) => {
           </div>
           <h3 className={styles.hwTitle}>{hw.snapshotTitle}</h3>
         </div>
-        <span className={`${styles.statusBadge} ${hw.status === 'OVERDUE' ? styles.overdue : ''}`}>
-          {hw.status === 'OVERDUE' ? 'Gecikmiş' : 'Bekliyor'}
-        </span>
+        <StatusBadge status={hw.status} />
       </div>
       
       <p className={styles.hwDesc}>{hw.snapshotDesc}</p>
@@ -134,13 +117,14 @@ const HomeworkCard = ({ hw, onComplete, onRequestExtension }) => {
         <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '0.75rem', color: 'var(--text-color-muted, var(--text-secondary))', fontWeight: 600 }}>Ödev Notu & Ekleri</span>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="xs"
               onClick={() => setShowNoteDetails(false)}
-              style={{ background: 'none', border: 'none', color: 'var(--text-color-muted)', cursor: 'pointer', fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: '2px' }}
             >
               <ChevronUp size={14} /> Kapat
-            </button>
+            </Button>
           </div>
           <textarea
             value={note}
@@ -152,24 +136,15 @@ const HomeworkCard = ({ hw, onComplete, onRequestExtension }) => {
         </div>
       ) : (
         <div style={{ marginTop: '6px' }}>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="xs"
             onClick={() => setShowNoteDetails(true)}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'var(--color-primary, #10B981)',
-              fontSize: '0.78rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-              padding: '2px 0',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}
+            style={{ color: 'var(--color-primary, #10B981)', padding: '2px 6px' }}
           >
             <MessageSquare size={13} /> {note ? 'Notu / Ekleri Düzenle' : '+ Not veya Dosya Ekle'}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -195,13 +170,15 @@ const HomeworkCard = ({ hw, onComplete, onRequestExtension }) => {
               <span style={{ maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {att.name}
               </span>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="xs"
+                iconOnly
                 onClick={() => handleRemoveAttachment(att.id)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', color: 'var(--text-secondary)' }}
               >
                 <X size={14} />
-              </button>
+              </Button>
             </div>
           ))}
         </div>
@@ -222,18 +199,17 @@ const HomeworkCard = ({ hw, onComplete, onRequestExtension }) => {
           <Button
             size="sm"
             variant="ghost"
-            disabled={uploadingFile}
+            disabled={uploadFile.isPending}
             onClick={() => fileInputRef.current?.click()}
             title="Ödev Çözümü / Ek Yükle"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
           >
             <Paperclip size={14} />
-            <span>{uploadingFile ? 'Yükleniyor…' : 'Ek / Çözüm'}</span>
+            <span>{uploadFile.isPending ? 'Yükleniyor…' : 'Ek / Çözüm'}</span>
           </Button>
 
           <Button 
             size="sm" 
-            disabled={uploadingFile}
+            disabled={uploadFile.isPending}
             onClick={() => onComplete({
               homeworkId: hw.id,
               percentage,
@@ -262,9 +238,11 @@ const HomeworkCard = ({ hw, onComplete, onRequestExtension }) => {
           </div>
         </div>
       ) : (
-        <button type="button" onClick={() => setShowExtension(true)} style={{ marginTop: '10px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-primary)', fontSize: '0.8rem', fontWeight: 600, padding: 0, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-          <Clock size={14} /> Ek Süre İste
-        </button>
+        <div style={{ marginTop: '10px' }}>
+          <Button type="button" variant="ghost" size="xs" onClick={() => setShowExtension(true)} style={{ color: 'var(--color-primary)', padding: '2px 6px' }}>
+            <Clock size={14} /> Ek Süre İste
+          </Button>
+        </div>
       )}
     </Card>
   );
@@ -327,9 +305,7 @@ const StudentHomework = () => {
                     )}
                     <h3 className={styles.hwTitleCompleted}>{hw.snapshotTitle}</h3>
                   </div>
-                  <span className={styles.statusBadgeDone} style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                    <Check size={13} /> Tamamlandı
-                  </span>
+                  <StatusBadge status={hw.status} label="✓ Tamamlandı" />
                 </div>
                 <div className={styles.dueDate}>
                   Teslim Edildi: {formatDate(hw.completedAt, 'dd MMM yyyy')}

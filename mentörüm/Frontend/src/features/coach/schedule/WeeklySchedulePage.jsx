@@ -3,11 +3,13 @@ import { useParams } from 'react-router-dom';
 import { DndContext, PointerSensor, TouchSensor, KeyboardSensor, useSensor, useSensors, useDraggable, useDroppable } from '@dnd-kit/core';
 import { GripVertical } from 'lucide-react';
 import { useSchedule, useCourses, useGroups, useCreateScheduleSlot, useDeleteScheduleSlot } from '../coachSchoolApi';
+import { WEEKDAYS_ZERO_INDEXED } from '../../../constants/domainConstants';
 import Modal from '../../../components/common/Modal/Modal';
 import Button from '../../../components/common/Button/Button';
+import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
 import styles from './WeeklySchedulePage.module.css';
 
-const DAYS = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
+const DAYS = WEEKDAYS_ZERO_INDEXED;
 const HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
 
 const DraggableCard = ({ id, label, color }) => {
@@ -159,13 +161,15 @@ const WeeklySchedulePage = ({ programId: propProgramId, embedded = false }) => {
       {dragConflict && (
         <div className={styles.conflictAlert}>
           <span>{dragConflict}</span>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="xs"
+            iconOnly
             onClick={() => setDragConflict('')}
-            className={styles.conflictCloseBtn}
           >
             ✕
-          </button>
+          </Button>
         </div>
       )}
 
@@ -225,29 +229,16 @@ const WeeklySchedulePage = ({ programId: propProgramId, embedded = false }) => {
         maxWidth="460px"
       >
         <form onSubmit={handleModalSubmit} className={styles.modalForm}>
-          <div className={styles.typeTabs}>
-            <button
-              type="button"
-              className={`${styles.typeTabBtn} ${slotTargetType === 'course' ? styles.typeTabBtnActive : ''}`}
-              onClick={() => setSlotTargetType('course')}
-            >
-              📚 Ders Seç
-            </button>
-            <button
-              type="button"
-              className={`${styles.typeTabBtn} ${slotTargetType === 'group' ? styles.typeTabBtnActive : ''}`}
-              onClick={() => setSlotTargetType('group')}
-            >
-              🗂️ Grup Seç
-            </button>
-            <button
-              type="button"
-              className={`${styles.typeTabBtn} ${slotTargetType === 'custom' ? styles.typeTabBtnActive : ''}`}
-              onClick={() => setSlotTargetType('custom')}
-            >
-              📌 Özel Başlık
-            </button>
-          </div>
+          <SegmentedTabs
+            fullWidth
+            activeTab={slotTargetType}
+            onChange={setSlotTargetType}
+            tabs={[
+              { id: 'course', label: '📚 Ders Seç' },
+              { id: 'group', label: '🗂️ Grup Seç' },
+              { id: 'custom', label: '📌 Özel Başlık' },
+            ]}
+          />
 
           {slotTargetType === 'course' && (
             <div className={styles.fieldGroup}>

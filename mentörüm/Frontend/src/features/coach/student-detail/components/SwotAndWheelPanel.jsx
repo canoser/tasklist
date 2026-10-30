@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../../../../components/common/Card/Card';
 import Button from '../../../../components/common/Button/Button';
+import SegmentedTabs from '../../../../components/common/SegmentedTabs/SegmentedTabs';
 import { ShieldCheck, AlertTriangle, Sparkles, TrendingUp, Save } from 'lucide-react';
 
 const DEFAULT_WHEEL_AXES = [
@@ -115,40 +116,15 @@ const SwotAndWheelPanel = ({ toolsData, onSaveTools, autoSwot }) => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* Üst Başlık & Sekme Seçici */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button
-            type="button"
-            onClick={() => setActiveSection('SWOT')}
-            style={{
-              padding: '6px 14px',
-              borderRadius: '6px',
-              border: 'none',
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              cursor: 'pointer',
-              backgroundColor: activeSection === 'SWOT' ? 'var(--color-primary)' : 'var(--bg-color-main)',
-              color: activeSection === 'SWOT' ? '#fff' : 'var(--text-color-main)'
-            }}
-          >
-            SWOT Matrisi
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveSection('WHEEL')}
-            style={{
-              padding: '6px 14px',
-              borderRadius: '6px',
-              border: 'none',
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              cursor: 'pointer',
-              backgroundColor: activeSection === 'WHEEL' ? 'var(--color-primary)' : 'var(--bg-color-main)',
-              color: activeSection === 'WHEEL' ? '#fff' : 'var(--text-color-main)'
-            }}
-          >
-            Denge & Performans Çarkı
-          </button>
-        </div>
+        <SegmentedTabs
+          tabs={[
+            { id: 'SWOT', label: 'SWOT Matrisi' },
+            { id: 'WHEEL', label: 'Denge & Performans Çarkı' },
+          ]}
+          activeTab={activeSection}
+          onChange={setActiveSection}
+          size="sm"
+        />
 
         <Button variant="primary" size="sm" onClick={handleSaveAll}>
           <Save size={14} style={{ marginRight: '4px' }} />

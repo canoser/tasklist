@@ -2,6 +2,10 @@ import React from 'react';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import Modal from '../../../components/common/Modal/Modal';
+import Button from '../../../components/common/Button/Button';
+import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
+import StatusBadge from '../../../components/common/StatusBadge/StatusBadge';
+import { APPROVAL_ENTITY_LABELS, parseApprovalPayload, formatCurrencyTRY } from '../../../constants/domainConstants';
 import {
   CheckCircle2,
   AlertTriangle,
@@ -49,31 +53,16 @@ const DashboardRightColumn = ({
         {/* SOL BLOK (7 Kolon): 3 Sekmeli Canlı Operasyon Kutusu */}
         <section className={styles.operationCard}>
           <div className={styles.tabHeaderRow}>
-            <div className={styles.tabButtonsGroup}>
-              <button
-                type="button"
-                className={`${styles.tabBtn} ${activeTab === 'OVERDUE' ? styles.tabBtnActive : ''}`}
-                onClick={() => setActiveTab('OVERDUE')}
-              >
-                <span>Acil & Gecikenler ({overdueTasks.length})</span>
-              </button>
-
-              <button
-                type="button"
-                className={`${styles.tabBtn} ${activeTab === 'APPROVALS' ? styles.tabBtnActive : ''}`}
-                onClick={() => setActiveTab('APPROVALS')}
-              >
-                <span>Onay Bekleyenler ({coachApprovals.length})</span>
-              </button>
-
-              <button
-                type="button"
-                className={`${styles.tabBtn} ${activeTab === 'TEACHER_NOTES' ? styles.tabBtnActive : ''}`}
-                onClick={() => setActiveTab('TEACHER_NOTES')}
-              >
-                <span>Öğretmen Notları ({recentTeacherNotes.length})</span>
-              </button>
-            </div>
+            <SegmentedTabs
+              size="sm"
+              activeTab={activeTab}
+              onChange={setActiveTab}
+              tabs={[
+                { id: 'OVERDUE', label: 'Acil & Gecikenler', count: overdueTasks.length },
+                { id: 'APPROVALS', label: 'Onay Bekleyenler', count: coachApprovals.length },
+                { id: 'TEACHER_NOTES', label: 'Öğretmen Notları', count: recentTeacherNotes.length },
+              ]}
+            />
           </div>
 
           <div className={styles.tabContentList}>
@@ -109,26 +98,28 @@ const DashboardRightColumn = ({
                     </div>
 
                     <div className={styles.itemRight}>
-                      <span className={`${styles.statusBadge} ${styles.statusOverdue}`}>
-                        Gecikti
-                      </span>
-                      <button
+                      <StatusBadge status="OVERDUE" />
+                      <Button
                         type="button"
-                        className={styles.inlineCheckBtn}
+                        variant="success"
+                        size="xs"
+                        iconOnly
                         onClick={(e) => onCompleteTask(ev, e)}
                         title="Ödevi Onayla"
                         aria-label="Onayla"
                       >
                         <Check size={14} strokeWidth={2.5} />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         type="button"
-                        className={styles.inlineDetailBtn}
+                        variant="outline"
+                        size="xs"
+                        iconOnly
                         onClick={() => setSelectedEventModal(ev)}
                         title="Detay Görüntüle"
                       >
                         <ArrowUpRight size={14} strokeWidth={2} />
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ))
@@ -143,10 +134,7 @@ const DashboardRightColumn = ({
             {activeTab === 'APPROVALS' && (
               coachApprovals.length > 0 ? (
                 coachApprovals.map((item) => {
-                  let payload = item.payload;
-                  if (typeof payload === 'string') {
-                    try { payload = JSON.parse(payload); } catch { payload = {}; }
-                  }
+                  const payload = parseApprovalPayload(item.payload);
                   return (
                     <div key={item.id} className={styles.operationItemRow}>
                       <div className={styles.itemLeft}>
@@ -155,35 +143,34 @@ const DashboardRightColumn = ({
                         </div>
                         <div className={styles.itemInfoCol}>
                           <span className={styles.itemTitle}>
-                            {item.entityType === 'HOMEWORK_DONE' && 'Ödev Tamamlama Talebi'}
-                            {item.entityType === 'HOMEWORK_EXTENSION' && 'Ödev Ek Süre Talebi'}
-                            {item.entityType === 'PAYMENT_CLAIM' && 'Veli Ödeme Bildirimi'}
-                            {item.entityType === 'SCHEDULE_CHANGE' && 'Program Değişikliği Talebi'}
+                            {APPROVAL_ENTITY_LABELS[item.entityType] || item.entityType}
                           </span>
                           <div className={styles.itemMetaRow}>
                             <span>{payload?.studentName || payload?.note || 'Talep detayı mevcut'}</span>
-                            {payload?.amount && <strong>• ₺{parseFloat(payload.amount).toLocaleString('tr-TR')}</strong>}
+                            {payload?.amount && <strong>• {formatCurrencyTRY(payload.amount)}</strong>}
                           </div>
                         </div>
                       </div>
 
                       <div className={styles.itemRight}>
-                        <button
+                        <Button
                           type="button"
-                          className={styles.btnActionApprove}
+                          variant="success"
+                          size="xs"
                           onClick={(e) => onApprove(item.id, e)}
                         >
                           <Check size={13} strokeWidth={2.5} />
                           <span>Onayla</span>
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           type="button"
-                          className={styles.btnActionReject}
+                          variant="danger-outline"
+                          size="xs"
                           onClick={(e) => onReject(item.id, e)}
                         >
                           <X size={13} strokeWidth={2.5} />
                           <span>Reddet</span>
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   );
@@ -240,23 +227,25 @@ const DashboardRightColumn = ({
           <div className={styles.timelineHeader}>
             <h3 className={styles.timelineTitle}>Bugün & Yarın Zaman Çizelgesi</h3>
             <div className={styles.timelineActions}>
-              <button
+              <Button
                 type="button"
-                className={styles.timelineAddBtn}
+                variant="primary"
+                size="xs"
                 onClick={() => onOpenAssign()}
                 title="Yeni Ödev veya Görev Ata"
               >
                 <Plus size={13} strokeWidth={2.5} />
                 <span>Görev</span>
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
-                className={styles.timelineFullBtn}
+                variant="outline"
+                size="xs"
                 onClick={() => navigate('/coach/calendar')}
                 title="Aylık ve haftalık takvimi aç"
               >
                 <span>Takvim →</span>
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -367,9 +356,10 @@ const DashboardRightColumn = ({
 
             <div className={styles.modalFooterActions}>
               {selectedEventModal.studentId && (
-                <button
+                <Button
                   type="button"
-                  className={styles.modalStudentBtn}
+                  variant="primary"
+                  size="sm"
                   onClick={() => {
                     navigate(`/coach/students/${selectedEventModal.studentId}`);
                     setSelectedEventModal(null);
@@ -377,15 +367,16 @@ const DashboardRightColumn = ({
                 >
                   <ArrowUpRight size={16} />
                   <span>Öğrenci Sayfasına Git</span>
-                </button>
+                </Button>
               )}
-              <button
+              <Button
                 type="button"
-                className={styles.modalCloseBtn}
+                variant="ghost"
+                size="sm"
                 onClick={() => setSelectedEventModal(null)}
               >
                 Kapat
-              </button>
+              </Button>
             </div>
           </div>
         </Modal>

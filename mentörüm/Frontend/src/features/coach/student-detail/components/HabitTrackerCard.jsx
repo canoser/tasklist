@@ -136,14 +136,16 @@ const HabitTrackerCard = ({ habits = [], onSaveHabits, isCoach = true }) => {
                     })}
                     {isCoach && (
                       <td style={{ textAlign: 'center', padding: '6px' }}>
-                        <button
-                          type="button"
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          iconOnly
                           onClick={() => handleDeleteHabit(habit.id)}
-                          style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px' }}
+                          style={{ color: '#ef4444' }}
                           title="Sil"
                         >
                           <Trash2 size={14} />
-                        </button>
+                        </Button>
                       </td>
                     )}
                   </tr>

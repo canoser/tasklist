@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Pin, Trash2, Lock, Eye } from 'lucide-react';
-
+import Button from '../../../components/common/Button/Button';
+import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
 import { useStudentNotes, useCreateNote, useUpdateNote, useDeleteNote } from '../studentApi';
 
 export default function StudentNotesCard() {
@@ -32,77 +33,35 @@ export default function StudentNotesCard() {
         <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Başlık (opsiyonel)" style={inputStyle} />
         <textarea value={content} onChange={(e) => setContent(e.target.value)} rows={2} placeholder="Notun..." style={inputStyle} />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-          {/* Şık Segmented Pill Butonları (T08) */}
-          <div style={{ display: 'inline-flex', padding: 2, background: 'var(--bg-app)', borderRadius: 8, border: '1px solid var(--border-color)' }}>
-            <button
-              type="button"
-              onClick={() => setVisibility('PRIVATE')}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                padding: '4px 8px',
-                borderRadius: 6,
-                border: 'none',
-                cursor: 'pointer',
-                background: visibility === 'PRIVATE' ? 'var(--bg-card)' : 'transparent',
-                color: visibility === 'PRIVATE' ? 'var(--color-primary)' : 'var(--text-secondary)',
-                boxShadow: visibility === 'PRIVATE' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <Lock size={12} /> Sadece Ben
-            </button>
-            <button
-              type="button"
-              onClick={() => setVisibility('COACH')}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                padding: '4px 8px',
-                borderRadius: 6,
-                border: 'none',
-                cursor: 'pointer',
-                background: visibility === 'COACH' ? 'var(--bg-card)' : 'transparent',
-                color: visibility === 'COACH' ? 'var(--color-primary)' : 'var(--text-secondary)',
-                boxShadow: visibility === 'COACH' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              <Eye size={12} /> Koçum da Görsün
-            </button>
-          </div>
+          <SegmentedTabs
+            size="sm"
+            activeTab={visibility}
+            onChange={setVisibility}
+            tabs={[
+              { id: 'PRIVATE', label: 'Sadece Ben', icon: <Lock size={12} /> },
+              { id: 'COACH', label: 'Koçum da Görsün', icon: <Eye size={12} /> },
+            ]}
+          />
 
-          <button 
-            type="button" 
-            onClick={handleAdd} 
-            style={{ 
-              padding: '6px 14px', 
-              borderRadius: '8px', 
-              border: 'none', 
-              background: 'var(--color-primary, #10B981)', 
-              color: '#fff', 
-              cursor: 'pointer', 
-              fontSize: '0.8rem', 
-              fontWeight: 600,
-              transition: 'opacity 0.15s'
-            }}
-          >
+          <Button type="button" variant="primary" size="sm" onClick={handleAdd}>
             Ekle
-          </button>
+          </Button>
         </div>
       </div>
 
       {notes.map((n) => (
         <div key={n.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', padding: '8px 0', borderBottom: '1px solid var(--border-color)' }}>
-          <button type="button" onClick={() => updateNote.mutateAsync({ id: n.id, data: { title: n.title, content: n.content, visibility: n.visibility, isPinned: !n.isPinned } })} style={{ background: 'none', border: 'none', cursor: 'pointer', color: n.isPinned ? 'var(--color-warning)' : 'var(--text-secondary)' }}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="xs"
+            iconOnly
+            onClick={() => updateNote.mutateAsync({ id: n.id, data: { title: n.title, content: n.content, visibility: n.visibility, isPinned: !n.isPinned } })}
+            style={{ color: n.isPinned ? 'var(--color-warning)' : 'var(--text-secondary)' }}
+            title="Sabitle"
+          >
             <Pin size={15} />
-          </button>
+          </Button>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
               <strong style={{ fontSize: '0.85rem' }}>{n.title}</strong>
@@ -113,9 +72,16 @@ export default function StudentNotesCard() {
             </div>
             <p style={{ margin: '2px 0 0', fontSize: '0.8rem', color: 'var(--text-primary)', wordBreak: 'break-word' }}>{n.content}</p>
           </div>
-          <button type="button" onClick={() => deleteNote.mutateAsync(n.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-danger)' }}>
-            <Trash2 size={15} />
-          </button>
+          <Button
+            type="button"
+            variant="danger-outline"
+            size="xs"
+            iconOnly
+            onClick={() => deleteNote.mutateAsync(n.id)}
+            title="Sil"
+          >
+            <Trash2 size={14} />
+          </Button>
         </div>
       ))}
       {notes.length === 0 && <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Henüz not yok.</p>}

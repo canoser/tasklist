@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
+import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
+import StatusBadge from '../../../components/common/StatusBadge/StatusBadge';
+import { STUDENT_GRADES, STUDENT_TRACKS } from '../../../constants/domainConstants';
 import { CheckCircle2, Mail, Zap, ChevronDown, Copy, Check } from 'lucide-react';
 import { useSendInvite, usePendingInvites, useCreateStudent } from '../coachApi';
 import styles from './CoachStudents.module.css';
@@ -122,24 +125,19 @@ const AddOrInviteStudentPanel = ({ showAddForm, onCloseAddForm, programs }) => {
     <>
       {showAddForm && (
         <Card className={styles.addFormCard}>
-          <div className={styles.formModeTabs}>
-            <button
-              type="button"
-              className={`${styles.formModeBtn} ${formMode === 'DIRECT' ? styles.formModeBtnActive : ''}`}
-              onClick={() => { setFormMode('DIRECT'); setDirectError(''); setDirectSuccessData(null); }}
-            >
-              <Zap size={14} />
-              <span>⚡ Doğrudan Ekle (Hızlı Kayıt)</span>
-            </button>
-            <button
-              type="button"
-              className={`${styles.formModeBtn} ${formMode === 'INVITE' ? styles.formModeBtnActive : ''}`}
-              onClick={() => { setFormMode('INVITE'); setInviteMsg(''); }}
-            >
-              <Mail size={14} />
-              <span>✉️ E-posta ile Davet Gönder</span>
-            </button>
-          </div>
+          <SegmentedTabs
+            activeTab={formMode}
+            onChange={(id) => {
+              setFormMode(id);
+              setDirectError('');
+              setDirectSuccessData(null);
+              setInviteMsg('');
+            }}
+            tabs={[
+              { id: 'DIRECT', label: '⚡ Doğrudan Ekle (Hızlı Kayıt)', icon: <Zap size={14} /> },
+              { id: 'INVITE', label: '✉️ E-posta ile Davet Gönder', icon: <Mail size={14} /> },
+            ]}
+          />
 
           {formMode === 'DIRECT' ? (
             directSuccessData ? (
@@ -200,12 +198,11 @@ const AddOrInviteStudentPanel = ({ showAddForm, onCloseAddForm, programs }) => {
                       onChange={(e) => setDirectClassLevel(e.target.value)}
                     >
                       <option value="">Seçiniz</option>
-                      <option value="8">8. Sınıf / LGS</option>
-                      <option value="9">9. Sınıf</option>
-                      <option value="10">10. Sınıf</option>
-                      <option value="11">11. Sınıf</option>
-                      <option value="12">12. Sınıf</option>
-                      <option value="Mezun">Mezun</option>
+                      {STUDENT_GRADES.map((g) => (
+                        <option key={g} value={g === 'Mezun' ? '13' : g}>
+                          {g === 'Mezun' ? 'Mezun' : `${g}. Sınıf`}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
@@ -217,10 +214,9 @@ const AddOrInviteStudentPanel = ({ showAddForm, onCloseAddForm, programs }) => {
                       onChange={(e) => setDirectTargetExam(e.target.value)}
                     >
                       <option value="">Seçiniz (opsiyonel)</option>
-                      <option value="SAY">SAY (Sayısal)</option>
-                      <option value="EA">EA (Eşit Ağırlık)</option>
-                      <option value="SOZ">SÖZ (Sözel)</option>
-                      <option value="ORTAOKUL">LGS / Ortaokul</option>
+                      {STUDENT_TRACKS.map((t) => (
+                        <option key={t.value} value={t.value}>{t.label}</option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -345,7 +341,7 @@ const AddOrInviteStudentPanel = ({ showAddForm, onCloseAddForm, programs }) => {
                     </div>
                   </div>
                   <div className={styles.pendingActions}>
-                    <span className={styles.pendingBadge}>Bekliyor</span>
+                    <StatusBadge status="PENDING" />
                     <Button
                       size="sm"
                       variant="outline"

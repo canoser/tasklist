@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Flame, Smile, Moon, AlertCircle } from 'lucide-react';
 import Card from '../../../components/common/Card/Card';
+import Button from '../../../components/common/Button/Button';
 import { useStudentCheckins, useSaveCheckin } from '../studentApi';
 
 const MOODS = [
@@ -44,22 +45,14 @@ export default function MoodCheckinCard({ compact = false }) {
               <Icon size={15} /> {currentMood.label}
             </span>
           </div>
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="xs"
             onClick={() => setIsEditing(true)}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'var(--color-primary, #10B981)',
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-              padding: '4px 8px',
-              borderRadius: '6px',
-            }}
+            style={{ color: 'var(--color-primary, #10B981)' }}
           >
             Değiştir
-          </button>
+          </Button>
         </div>
       </Card>
     );

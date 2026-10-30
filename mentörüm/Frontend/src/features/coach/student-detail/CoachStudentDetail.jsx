@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import Modal from '../../../components/common/Modal/Modal';
+import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
 import AssignHomeworkModal from '../homework/AssignHomeworkModal';
 import styles from './CoachStudentDetail.module.css';
 import {
@@ -22,9 +23,9 @@ import {
   useCoachStudentQuestions,
   useStudentCheckinsForCoach,
   useUpdateStudent,
+  downloadStudentReportPdf,
 } from '../coachApi';
 import EditStudentModal from './EditStudentModal';
-import { apiClient } from '../../../api/apiClient';
 import { queryKeys } from '../../../api/queryKeys';
 import WeeklyTimeBudgetCard from './WeeklyTimeBudgetCard';
 import SwotAndWheelPanel from './components/SwotAndWheelPanel';
@@ -105,15 +106,7 @@ const CoachStudentDetail = () => {
 
   const handleDownloadReport = async () => {
     try {
-      const blob = await apiClient.get(`/students/${id}/report.pdf`, { responseType: 'blob' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `veli-rapor-${student?.fullName?.split(' ')[0] || 'ogrenci'}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
+      await downloadStudentReportPdf(id, student?.fullName);
     } catch {
       alert('Rapor indirilemedi.');
     }
@@ -145,23 +138,28 @@ const CoachStudentDetail = () => {
         </div>
       </header>
 
-      <div className={styles.groupTabs}>
-        {GROUP_TABS.map((g) => {
-          const Icon = g.icon;
-          return (
-            <button key={g.id} type="button" className={`${styles.groupTab} ${activeGroupObj.id === g.id ? styles.groupTabActive : ''}`} onClick={() => setActiveTab(g.defaultTab)}>
-              <Icon size={16} /> <span>{g.label}</span>
-            </button>
-          );
-        })}
+      <div style={{ marginBottom: 10 }}>
+        <SegmentedTabs
+          activeTab={activeGroupObj.id}
+          onChange={(groupId) => {
+            const grp = GROUP_TABS.find((g) => g.id === groupId);
+            if (grp) setActiveTab(grp.defaultTab);
+          }}
+          tabs={GROUP_TABS.map((g) => {
+            const Icon = g.icon;
+            return { id: g.id, label: g.label, icon: <Icon size={16} /> };
+          })}
+        />
       </div>
 
-      <div className={styles.subPills}>
-        {activeGroupObj.pills.map((p) => (
-          <button key={p.id} className={`${styles.subPill} ${activeTab === p.id ? styles.subPillActive : ''}`} onClick={() => setActiveTab(p.id)}>
-            {p.label}
-          </button>
-        ))}
+      <div style={{ marginBottom: 14 }}>
+        <SegmentedTabs
+          variant="pills"
+          size="sm"
+          activeTab={activeTab}
+          onChange={setActiveTab}
+          tabs={activeGroupObj.pills}
+        />
       </div>
 
       <div className={styles.tabContent}>

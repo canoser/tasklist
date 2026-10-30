@@ -10,6 +10,7 @@ import tr from 'date-fns/locale/tr';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
+import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
 import PersonalEventModal from '../../../components/common/PersonalEventModal/PersonalEventModal';
 import { useStudentCalendar, useStudentSessions } from '../studentApi';
 import { usePersonalEvents, useCheckinPersonalEvent } from '../../../hooks/usePersonalEvents';
@@ -102,48 +103,14 @@ const StudentCalendarPage = () => {
       </header>
 
       {/* Üst Sekme Seçici: Takvimim / Okul & Haftalık Şablon (T10) */}
-      <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
-        <button
-          type="button"
-          onClick={() => setActiveTab('calendar')}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '8px 16px',
-            borderRadius: '8px',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '0.85rem',
-            fontWeight: 600,
-            background: activeTab === 'calendar' ? 'var(--color-primary, #10B981)' : 'transparent',
-            color: activeTab === 'calendar' ? '#FFFFFF' : 'var(--text-color-muted, #94A3B8)',
-            transition: 'all 0.15s ease'
-          }}
-        >
-          <CalendarIcon size={16} /> Takvimim
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('schedule')}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '8px 16px',
-            borderRadius: '8px',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '0.85rem',
-            fontWeight: 600,
-            background: activeTab === 'schedule' ? 'var(--color-primary, #10B981)' : 'transparent',
-            color: activeTab === 'schedule' ? '#FFFFFF' : 'var(--text-color-muted, #94A3B8)',
-            transition: 'all 0.15s ease'
-          }}
-        >
-          <CalendarDays size={16} /> Okul & Haftalık Şablon
-        </button>
-      </div>
+      <SegmentedTabs
+        activeTab={activeTab}
+        onChange={setActiveTab}
+        tabs={[
+          { id: 'calendar', label: 'Takvimim', icon: <CalendarIcon size={16} /> },
+          { id: 'schedule', label: 'Okul & Haftalık Şablon', icon: <CalendarDays size={16} /> },
+        ]}
+      />
 
       {activeTab === 'calendar' ? (
         <>

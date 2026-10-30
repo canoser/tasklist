@@ -14,6 +14,7 @@ import GoalStreakCard from './GoalStreakCard';
 import StudentQuestionsCard from './StudentQuestionsCard';
 import TodayAgendaCard from './components/TodayAgendaCard';
 import CoachFeedbackCard from './components/CoachFeedbackCard';
+import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
 import styles from './StudentHome.module.css';
 
 const StudentHome = () => {
@@ -44,20 +45,16 @@ const StudentHome = () => {
   const renderTabbedNotesAndQuestions = () => (
     <div className={styles.tabbedCard}>
       <div className={styles.tabCardHeader}>
-        <button
-          type="button"
-          className={`${styles.tabPillBtn} ${activeTabbedSection === 'notes' ? styles.active : ''}`}
-          onClick={() => setActiveTabbedSection('notes')}
-        >
-          <StickyNote size={14} /> Kişisel Notlarım
-        </button>
-        <button
-          type="button"
-          className={`${styles.tabPillBtn} ${activeTabbedSection === 'questions' ? styles.active : ''}`}
-          onClick={() => setActiveTabbedSection('questions')}
-        >
-          <HelpCircle size={14} /> Takıldıklarım & Sorular
-        </button>
+        <SegmentedTabs
+          tabs={[
+            { id: 'notes', label: 'Kişisel Notlarım', icon: <StickyNote size={14} /> },
+            { id: 'questions', label: 'Takıldıklarım & Sorular', icon: <HelpCircle size={14} /> },
+          ]}
+          activeTab={activeTabbedSection}
+          onChange={setActiveTabbedSection}
+          size="sm"
+          fullWidth
+        />
       </div>
 
       <div>

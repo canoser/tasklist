@@ -13,7 +13,9 @@ import {
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
-import { useDownloadUrl } from '../../storage/storageApi';
+import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
+import StatusBadge from '../../../components/common/StatusBadge/StatusBadge';
+import { useOpenUpload } from '../../storage/storageApi';
 import TeacherStudentNotesModal from './TeacherStudentNotesModal';
 import styles from './TeacherCoursesPage.module.css';
 import { useLevels, useSubjects, useUnits, useTopics } from '../../coach/coachApi';
@@ -24,7 +26,7 @@ const TeacherCoursesPage = () => {
   const { data: courses, isLoading } = useTeacherCourses();
   const [selected, setSelected] = useState(null);
   const [tab, setTab] = useState('students');
-  const download = useDownloadUrl();
+  const { openUpload } = useOpenUpload();
 
   const [hwAllStudents, setHwAllStudents] = useState(false);
   const [hwStudentId, setHwStudentId] = useState('');
@@ -255,11 +257,17 @@ const TeacherCoursesPage = () => {
             </div>
           )}
 
-          <div className={styles.tabs}>
-            <button className={tab === 'students' ? `${styles.tab} ${styles.tabActive}` : styles.tab} onClick={() => setTab('students')}>Öğrencilerim</button>
-            {course?.canViewHomework && <button className={tab === 'homework' ? `${styles.tab} ${styles.tabActive}` : styles.tab} onClick={() => setTab('homework')}>Ödevler</button>}
-            {course?.canViewExams && <button className={tab === 'exams' ? `${styles.tab} ${styles.tabActive}` : styles.tab} onClick={() => setTab('exams')}>Sınavlar</button>}
-            <button className={tab === 'resources' ? `${styles.tab} ${styles.tabActive}` : styles.tab} onClick={() => setTab('resources')}>Kaynaklar ({resources.length})</button>
+          <div style={{ marginBottom: '1rem' }}>
+            <SegmentedTabs
+              tabs={[
+                { id: 'students', label: 'Öğrencilerim' },
+                ...(course?.canViewHomework ? [{ id: 'homework', label: 'Ödevler' }] : []),
+                ...(course?.canViewExams ? [{ id: 'exams', label: 'Sınavlar' }] : []),
+                { id: 'resources', label: `Kaynaklar (${resources.length})` },
+              ]}
+              activeTab={tab}
+              onChange={setTab}
+            />
           </div>
 
           {tab === 'students' && (
@@ -408,32 +416,21 @@ const TeacherCoursesPage = () => {
                       </a>
                     )}
                     {r.uploadId && (
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          try {
-                            const res = await download.mutateAsync(r.uploadId);
-                            window.open(res.url, '_blank', 'noopener');
-                          } catch {
-                            alert('Dosya açılamadı.');
-                          }
-                        }}
-                        style={{ background: 'none', border: 'none', color: 'var(--color-primary)', cursor: 'pointer', padding: 0, fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}
-                      >
-                        📄 Yüklenen Belgeyi Aç ↗
-                      </button>
+                      <div style={{ marginTop: '4px' }}>
+                        <Button
+                          variant="outline"
+                          size="xs"
+                          onClick={() => openUpload(r.uploadId)}
+                        >
+                          📄 Yüklenen Belgeyi Aç ↗
+                        </Button>
+                      </div>
                     )}
                   </div>
-                  <span style={{
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
-                    padding: '2px 8px',
-                    borderRadius: '4px',
-                    background: r.isCompleted ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
-                    color: r.isCompleted ? 'var(--color-success, #10b981)' : 'var(--color-warning, #f59e0b)'
-                  }}>
-                    {r.isCompleted ? 'Tamamlandı' : 'Devam Ediyor'}
-                  </span>
+                  <StatusBadge
+                    status={r.isCompleted ? 'DONE' : 'PENDING'}
+                    label={r.isCompleted ? 'Tamamlandı' : 'Devam Ediyor'}
+                  />
                 </Card>
               ))}
               {resources?.length === 0 && <p className={styles.empty}>Henüz ders kaynağı eklenmemiş.</p>}

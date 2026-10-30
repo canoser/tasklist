@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Card from '../../../../components/common/Card/Card';
 import Button from '../../../../components/common/Button/Button';
 import Input from '../../../../components/common/Input/Input';
+import SegmentedTabs from '../../../../components/common/SegmentedTabs/SegmentedTabs';
 import { useAddExamResult, useSubjects, useTopics } from '../../coachApi';
 import { Trash2, Plus } from 'lucide-react';
 import styles from '../CoachStudentDetail.module.css';
@@ -58,14 +59,16 @@ const ExamScoreRow = ({ row, index, grade, subjects, examType, studentTrack, onC
             ))}
           </select>
         </div>
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="xs"
+          iconOnly
           onClick={() => onRemove(index)}
-          style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: 4 }}
+          style={{ color: '#ef4444' }}
           title="Satırı Kaldır"
         >
           <Trash2 size={16} />
-        </button>
+        </Button>
       </div>
 
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -341,38 +344,15 @@ export default function ExamsTab({ studentId, student }) {
       <h4>Yeni Sınav Ekle</h4>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 14 }}>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', background: '#e2e8f0', padding: 2, borderRadius: 8 }}>
-            <button
-              type="button"
-              onClick={() => setExamEntryMode('quick')}
-              style={{
-                padding: '6px 12px',
-                borderRadius: 6,
-                border: 'none',
-                background: examEntryMode === 'quick' ? '#ffffff' : 'transparent',
-                fontWeight: examEntryMode === 'quick' ? 600 : 400,
-                cursor: 'pointer',
-                fontSize: '0.85rem',
-              }}
-            >
-              Hızlı Toplam Net
-            </button>
-            <button
-              type="button"
-              onClick={() => setExamEntryMode('detailed')}
-              style={{
-                padding: '6px 12px',
-                borderRadius: 6,
-                border: 'none',
-                background: examEntryMode === 'detailed' ? '#ffffff' : 'transparent',
-                fontWeight: examEntryMode === 'detailed' ? 600 : 400,
-                cursor: 'pointer',
-                fontSize: '0.85rem',
-              }}
-            >
-              Detaylı Giriş (Ders / Konu)
-            </button>
-          </div>
+          <SegmentedTabs
+            tabs={[
+              { id: 'quick', label: 'Hızlı Toplam Net' },
+              { id: 'detailed', label: 'Detaylı Giriş (Ders / Konu)' },
+            ]}
+            activeTab={examEntryMode}
+            onChange={setExamEntryMode}
+            size="sm"
+          />
 
           <div style={{ minWidth: '130px' }}>
             <select

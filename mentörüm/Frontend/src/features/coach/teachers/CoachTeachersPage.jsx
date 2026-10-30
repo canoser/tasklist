@@ -4,6 +4,7 @@ import { useTeachers, useDeactivateTeacher, usePrograms, useCourses } from '../c
 import Button from '../../../components/common/Button/Button';
 import Card from '../../../components/common/Card/Card';
 import Modal from '../../../components/common/Modal/Modal';
+import StatusBadge from '../../../components/common/StatusBadge/StatusBadge';
 import AddTeacherModal from './AddTeacherModal';
 import { Trash2, Plus, Mail, Phone, BookOpen, Users, GraduationCap } from 'lucide-react';
 import styles from './CoachTeachersPage.module.css';
@@ -30,14 +31,13 @@ const CoachTeachersPage = () => {
             Programınızda ders veren öğretmenler, branşları ve ders atamaları.
           </p>
         </div>
-        <button
-          type="button"
-          className={styles.addBtn}
+        <Button
+          variant="primary"
           onClick={() => setIsAddModalOpen(true)}
         >
           <Plus size={16} strokeWidth={2.2} />
-          <span>+ Yeni Öğretmen Ekle</span>
-        </button>
+          <span>Yeni Öğretmen Ekle</span>
+        </Button>
       </header>
 
       {isLoading ? (
@@ -74,9 +74,10 @@ const CoachTeachersPage = () => {
                     {t.branch && (
                       <span className={styles.branchBadge}>{t.branch}</span>
                     )}
-                    <span className={t.isActive ? styles.statusActive : styles.statusInactive}>
-                      {t.isActive ? 'Aktif' : 'Pasif'}
-                    </span>
+                    <StatusBadge
+                      status={t.isActive ? 'ACTIVE' : 'INACTIVE'}
+                      label={t.isActive ? 'Aktif' : 'Pasif'}
+                    />
                   </div>
                 </div>
               </div>

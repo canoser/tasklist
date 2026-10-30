@@ -1,22 +1,19 @@
 import React, { useState, useRef } from 'react';
-import axios from 'axios';
 import { Check, HelpCircle, Camera, X, Image as ImageIcon } from 'lucide-react';
 import Card from '../../../components/common/Card/Card';
+import Button from '../../../components/common/Button/Button';
 import { useStudentQuestions, useCreateQuestion, useResolveQuestion } from '../studentApi';
-import { useCreateUploadUrl, useConfirmUpload } from '../../storage/storageApi';
-import { compressImage } from '../../../utils/imageCompressor';
+import { useUploadFile } from '../../storage/storageApi';
 import LocalImageViewer from '../../../components/common/LocalImageViewer/LocalImageViewer';
 
 export default function StudentQuestionsCard() {
   const { data: questions = [] } = useStudentQuestions();
   const createQuestion = useCreateQuestion();
   const resolveQuestion = useResolveQuestion();
-  const createUpload = useCreateUploadUrl();
-  const confirmUpload = useConfirmUpload();
+  const uploadFile = useUploadFile();
 
   const [text, setText] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
   const [viewingUploadId, setViewingUploadId] = useState(null);
   const fileInputRef = useRef(null);
 
@@ -30,19 +27,11 @@ export default function StudentQuestionsCard() {
   const handleAdd = async () => {
     if (!text.trim() && !selectedFile) return;
 
-    setIsUploading(true);
     let uploadId = null;
 
     try {
       if (selectedFile) {
-        const compressed = await compressImage(selectedFile);
-        const res = await createUpload.mutateAsync({
-          fileName: compressed.name,
-          fileSizeInBytes: compressed.size,
-          contentType: compressed.type,
-        });
-        await axios.put(res.uploadUrl, compressed, { headers: { 'Content-Type': compressed.type } });
-        await confirmUpload.mutateAsync(res.uploadId);
+        const res = await uploadFile.mutateAsync({ file: selectedFile });
         uploadId = res.uploadId;
       }
 
@@ -56,10 +45,10 @@ export default function StudentQuestionsCard() {
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err) {
       alert('Soru veya fotoğraf eklenirken hata: ' + (err?.message || 'Bilinmeyen hata'));
-    } finally {
-      setIsUploading(false);
     }
   };
+
+  const isUploading = uploadFile.isPending || createQuestion.isPending;
 
   return (
     <Card padding="md">
@@ -92,43 +81,26 @@ export default function StudentQuestionsCard() {
             onChange={handleFileChange}
           />
 
-          <button
+          <Button
             type="button"
+            variant={selectedFile ? 'primary' : 'outline'}
+            size="sm"
+            iconOnly
             onClick={() => fileInputRef.current?.click()}
             title="Soru Fotoğrafı Ekle"
-            style={{
-              padding: '0 10px',
-              borderRadius: '8px',
-              border: '1px solid var(--border-color)',
-              background: selectedFile ? 'rgba(59, 130, 246, 0.2)' : 'var(--bg-card)',
-              color: selectedFile ? 'var(--color-primary)' : 'var(--text-secondary)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
           >
             <Camera size={18} />
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
+            variant="primary"
+            size="sm"
             disabled={isUploading}
             onClick={handleAdd}
-            style={{
-              padding: '0 16px',
-              borderRadius: '8px',
-              border: 'none',
-              background: 'var(--color-primary)',
-              color: '#fff',
-              cursor: isUploading ? 'not-allowed' : 'pointer',
-              fontWeight: 600,
-              fontSize: '0.875rem',
-              opacity: isUploading ? 0.6 : 1
-            }}
           >
             {isUploading ? 'Yükleniyor…' : 'Ekle'}
-          </button>
+          </Button>
         </div>
 
         {/* Seçilen Fotoğraf Önizleme Çipi */}
@@ -149,16 +121,18 @@ export default function StudentQuestionsCard() {
             <span style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {selectedFile.name}
             </span>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="xs"
+              iconOnly
               onClick={() => {
                 setSelectedFile(null);
                 if (fileInputRef.current) fileInputRef.current.value = '';
               }}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', color: 'var(--text-secondary)' }}
             >
               <X size={14} />
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -192,43 +166,29 @@ export default function StudentQuestionsCard() {
 
           {/* Soru Fotoğrafı Varsa Göster Butonu */}
           {q.uploadId && (
-            <button
+            <Button
               type="button"
+              variant={viewingUploadId === q.uploadId ? 'primary' : 'outline'}
+              size="xs"
               onClick={() => setViewingUploadId(viewingUploadId === q.uploadId ? null : q.uploadId)}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-                padding: '3px 8px',
-                borderRadius: '6px',
-                border: '1px solid var(--border-color)',
-                background: viewingUploadId === q.uploadId ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                color: 'var(--color-primary)',
-                cursor: 'pointer',
-                fontSize: '0.75rem',
-                flexShrink: 0
-              }}
             >
               <Camera size={13} />
               <span>{viewingUploadId === q.uploadId ? 'Gizle' : 'Fotoğraf'}</span>
-            </button>
+            </Button>
           )}
 
           {q.status === 'OPEN' && (
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="xs"
+              iconOnly
               onClick={() => resolveQuestion.mutateAsync(q.id)}
               title="Çözüldü işaretle"
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                color: 'var(--color-success, #10b981)',
-                flexShrink: 0
-              }}
+              style={{ color: 'var(--color-success, #10b981)' }}
             >
               <Check size={16} />
-            </button>
+            </Button>
           )}
         </div>
       ))}
@@ -248,13 +208,15 @@ export default function StudentQuestionsCard() {
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
             <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>Soru Görseli</span>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="xs"
+              iconOnly
               onClick={() => setViewingUploadId(null)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}
             >
               <X size={16} />
-            </button>
+            </Button>
           </div>
           <div style={{ maxWidth: '320px', maxHeight: '240px', overflow: 'hidden', borderRadius: '6px' }}>
             <LocalImageViewer uploadId={viewingUploadId} originalName="Soru Görseli" />

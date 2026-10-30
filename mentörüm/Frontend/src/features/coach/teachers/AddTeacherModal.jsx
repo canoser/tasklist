@@ -2,26 +2,14 @@ import React, { useState } from 'react';
 import Modal from '../../../components/common/Modal/Modal';
 import Input from '../../../components/common/Input/Input';
 import Button from '../../../components/common/Button/Button';
+import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
+import { TEACHER_BRANCH_OPTIONS } from '../../../constants/domainConstants';
 import { useDirectCreateTeacher } from '../coachSchoolApi';
 import { useSendInvite } from '../coachApi';
 import { Zap, Mail } from 'lucide-react';
 import styles from './AddTeacherModal.module.css';
 
-const BRANCH_OPTIONS = [
-  'Matematik',
-  'Geometri',
-  'Fizik',
-  'Kimya',
-  'Biyoloji',
-  'Türkçe',
-  'Türk Dili ve Edebiyatı',
-  'Tarih',
-  'Coğrafya',
-  'Felsefe / Din',
-  'İngilizce / Yabancı Dil',
-  'Rehberlik & Psikolojik Danışmanlık',
-  'Diğer',
-];
+const BRANCH_OPTIONS = TEACHER_BRANCH_OPTIONS;
 
 export default function AddTeacherModal({ open, onClose, programId, courses = [] }) {
   const [mode, setMode] = useState('DIRECT'); // 'DIRECT' | 'INVITE'
@@ -130,23 +118,20 @@ export default function AddTeacherModal({ open, onClose, programId, courses = []
 
   return (
     <Modal isOpen={open} onClose={handleClose} title="Öğretmen Ekle" maxWidth="500px">
-      <div className={styles.tabs}>
-        <button
-          type="button"
-          className={`${styles.tabBtn} ${mode === 'DIRECT' ? styles.tabBtnActive : ''}`}
-          onClick={() => { setMode('DIRECT'); setErrorMsg(''); setSuccessMsg(''); }}
-        >
-          <Zap size={15} />
-          <span>⚡ Doğrudan Ekle</span>
-        </button>
-        <button
-          type="button"
-          className={`${styles.tabBtn} ${mode === 'INVITE' ? styles.tabBtnActive : ''}`}
-          onClick={() => { setMode('INVITE'); setErrorMsg(''); setSuccessMsg(''); }}
-        >
-          <Mail size={15} />
-          <span>✉️ E-posta ile Davet</span>
-        </button>
+      <div style={{ marginBottom: 14 }}>
+        <SegmentedTabs
+          fullWidth
+          activeTab={mode}
+          onChange={(id) => {
+            setMode(id);
+            setErrorMsg('');
+            setSuccessMsg('');
+          }}
+          tabs={[
+            { id: 'DIRECT', label: '⚡ Doğrudan Ekle', icon: <Zap size={15} /> },
+            { id: 'INVITE', label: '✉️ E-posta ile Davet', icon: <Mail size={15} /> },
+          ]}
+        />
       </div>
 
       {mode === 'DIRECT' ? (

@@ -8,6 +8,7 @@ import { startOfMonth, endOfMonth } from 'date-fns';
 import tr from 'date-fns/locale/tr';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import Card from '../../../components/common/Card/Card';
+import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
 import { useParentChildren, useParentChildCalendar } from '../parentApi';
 import ChildSelector from '../../../components/common/ChildSelector/ChildSelector';
 import ParentSchedulePage from '../schedule/ParentSchedulePage';
@@ -75,41 +76,16 @@ const ParentCalendarPage = () => {
       </header>
       <ChildSelector children={children} selectedId={student.studentId} onSelect={setSelectedChildId} />
 
-      <div style={{ display: 'inline-flex', background: 'var(--bg-color-surface-elevated, var(--bg-app))', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '4px', gap: '4px', width: 'fit-content', marginBottom: '12px' }}>
-        <button
-          type="button"
-          onClick={() => setActiveTab('calendar')}
-          style={{
-            padding: '7px 14px',
-            borderRadius: '6px',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '0.85rem',
-            fontWeight: 600,
-            background: activeTab === 'calendar' ? 'var(--bg-color-surface)' : 'transparent',
-            color: activeTab === 'calendar' ? 'var(--color-primary)' : 'var(--text-color-muted)',
-            boxShadow: activeTab === 'calendar' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none'
-          }}
-        >
-          🗓️ Akademik Takvim
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('schedule')}
-          style={{
-            padding: '7px 14px',
-            borderRadius: '6px',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '0.85rem',
-            fontWeight: 600,
-            background: activeTab === 'schedule' ? 'var(--bg-color-surface)' : 'transparent',
-            color: activeTab === 'schedule' ? 'var(--color-primary)' : 'var(--text-color-muted)',
-            boxShadow: activeTab === 'schedule' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none'
-          }}
-        >
-          📅 Haftalık Ders Programı
-        </button>
+      <div style={{ marginBottom: '12px' }}>
+        <SegmentedTabs
+          tabs={[
+            { id: 'calendar', label: '🗓️ Akademik Takvim' },
+            { id: 'schedule', label: '📅 Haftalık Ders Programı' },
+          ]}
+          activeTab={activeTab}
+          onChange={setActiveTab}
+          size="sm"
+        />
       </div>
 
       {activeTab === 'schedule' ? (

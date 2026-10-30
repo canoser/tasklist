@@ -1,9 +1,9 @@
 import React from 'react';
 import { useTeacherSchedule } from '../teacherApi';
 import Card from '../../../components/common/Card/Card';
+import { WEEKDAYS_ONE_INDEXED } from '../../../constants/domainConstants';
 import styles from './TeacherSchedulePage.module.css';
 
-const DAYS = ['', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
 const fmt = (t) => (t ? t.slice(0, 5) : '');
 
 const TeacherSchedulePage = () => {
@@ -19,7 +19,7 @@ const TeacherSchedulePage = () => {
       <h1 className={styles.title}>Programım</h1>
       {isLoading && <p>Yükleniyor...</p>}
       <div className={styles.list}>
-        {DAYS.map((d, i) => {
+        {WEEKDAYS_ONE_INDEXED.map((d, i) => {
           if (i === 0) return null;
           const daySlots = (grouped[i] || []).sort((a, b) => a.startTime.localeCompare(b.startTime));
           if (daySlots.length === 0) return null;

@@ -9,6 +9,8 @@ import tr from 'date-fns/locale/tr';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import '../../../components/common/Calendar/CalendarOverrides.css';
 import Card from '../../../components/common/Card/Card';
+import Button from '../../../components/common/Button/Button';
+import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
 import PersonalEventModal from '../../../components/common/PersonalEventModal/PersonalEventModal';
 import WeeklySchedulePage from '../schedule/WeeklySchedulePage';
 import { Calendar as CalendarIcon, Clock, SlidersHorizontal, ChevronDown, ChevronUp, RotateCcw } from 'lucide-react';
@@ -159,27 +161,17 @@ const CalendarPage = () => {
 
       {/* Kontrol Çubuğu: 2'li Sekme + Yeni Etkinlik Ekle */}
       <div className={styles.actionBar}>
-        <div className={styles.segmentedTabs}>
-          <button
-            type="button"
-            className={`${styles.segmentedBtn} ${activeTab === 'CALENDAR' ? styles.segmentedBtnActive : ''}`}
-            onClick={() => setActiveTab('CALENDAR')}
-          >
-            <CalendarIcon size={16} />
-            <span>Akademik Takvim</span>
-          </button>
-          <button
-            type="button"
-            className={`${styles.segmentedBtn} ${activeTab === 'SCHEDULE' ? styles.segmentedBtnActive : ''}`}
-            onClick={() => setActiveTab('SCHEDULE')}
-          >
-            <Clock size={16} />
-            <span>Haftalık Ders Programı</span>
-          </button>
-        </div>
+        <SegmentedTabs
+          activeTab={activeTab}
+          onChange={setActiveTab}
+          tabs={[
+            { id: 'CALENDAR', label: 'Akademik Takvim', icon: <CalendarIcon size={16} /> },
+            { id: 'SCHEDULE', label: 'Haftalık Ders Programı', icon: <Clock size={16} /> },
+          ]}
+        />
 
         {activeTab === 'CALENDAR' && (
-          <button className={styles.addBtn} onClick={() => setIsEventModalOpen(true)}>+ Yeni Etkinlik</button>
+          <Button variant="primary" size="sm" onClick={() => setIsEventModalOpen(true)}>+ Yeni Etkinlik</Button>
         )}
       </div>
 
@@ -226,14 +218,15 @@ const CalendarPage = () => {
               </button>
 
               {activeFiltersCount > 0 && (
-                <button
+                <Button
                   type="button"
-                  className={styles.resetFiltersBtn}
+                  variant="ghost"
+                  size="xs"
                   onClick={handleResetFilters}
                 >
                   <RotateCcw size={13} />
                   <span>Temizle</span>
-                </button>
+                </Button>
               )}
             </div>
 

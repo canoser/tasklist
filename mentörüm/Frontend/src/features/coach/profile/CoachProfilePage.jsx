@@ -3,10 +3,11 @@ import { useSearchParams } from 'react-router-dom';
 import { User, Settings } from 'lucide-react';
 import { useMe } from '../coachSchoolApi';
 import { useUpdateCoachProfile } from '../coachApi';
-import { apiClient } from '../../../api/apiClient';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
+import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
+import ChangePasswordCard from '../../../components/common/ChangePasswordCard/ChangePasswordCard';
 import CoachProgramSettingsPage from '../settings/CoachProgramSettingsPage';
 import styles from './CoachProfilePage.module.css';
 
@@ -18,10 +19,6 @@ const CoachProfilePage = () => {
 
   const [bio, setBio] = useState('');
   const [specialty, setSpecialty] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [pwMsg, setPwMsg] = useState('');
-  const [pwError, setPwError] = useState('');
-  const [pwSaving, setPwSaving] = useState(false);
 
   useEffect(() => {
     const t = searchParams.get('tab');
@@ -33,20 +30,6 @@ const CoachProfilePage = () => {
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setSearchParams(tab === 'program' ? { tab: 'program' } : {}, { replace: true });
-  };
-
-  const handleSetPassword = async () => {
-    if (!newPassword || newPassword.length < 6) { setPwError('Şifre en az 6 karakter olmalı.'); return; }
-    setPwError(''); setPwMsg(''); setPwSaving(true);
-    try {
-      const res = await apiClient.post('/me/password', { newPassword });
-      setPwMsg(res.message || 'Şifreniz oluşturuldu.');
-      setNewPassword('');
-    } catch (err) {
-      setPwError(err?.response?.data?.error || 'Şifre oluşturulamadı.');
-    } finally {
-      setPwSaving(false);
-    }
   };
 
   useEffect(() => {
@@ -65,24 +48,14 @@ const CoachProfilePage = () => {
         <p className={styles.subtitle}>Kişisel koçluk profilinizi, hesap güvenliğinizi ve program yöneticilerinizi yönetin.</p>
       </div>
 
-      <div className={styles.segmentedTabs}>
-        <button
-          type="button"
-          className={`${styles.segmentedBtn} ${activeTab === 'profile' ? styles.segmentedBtnActive : ''}`}
-          onClick={() => handleTabChange('profile')}
-        >
-          <User size={16} />
-          <span>Profil & Hesap Güvenliği</span>
-        </button>
-        <button
-          type="button"
-          className={`${styles.segmentedBtn} ${activeTab === 'program' ? styles.segmentedBtnActive : ''}`}
-          onClick={() => handleTabChange('program')}
-        >
-          <Settings size={16} />
-          <span>Program & Yardımcı Koçlar</span>
-        </button>
-      </div>
+      <SegmentedTabs
+        activeTab={activeTab}
+        onChange={handleTabChange}
+        tabs={[
+          { id: 'profile', label: 'Profil & Hesap Güvenliği', icon: <User size={16} /> },
+          { id: 'program', label: 'Program & Yardımcı Koçlar', icon: <Settings size={16} /> },
+        ]}
+      />
 
       {activeTab === 'program' ? (
         <CoachProgramSettingsPage embedded={true} />
@@ -141,31 +114,7 @@ const CoachProfilePage = () => {
             </form>
           </Card>
 
-          <Card className={styles.formCard} padding="lg">
-            <h3 className={styles.sectionTitle}>Şifre Oluştur / Değiştir</h3>
-            <p style={{ fontSize: '13px', color: 'var(--text-color-muted)', marginBottom: '12px' }}>
-              Google ile giriş yapmış olsanız bile bir şifre belirleyebilir, dilediğinizde e-posta + şifre ile girebilirsiniz.
-            </p>
-            <form onSubmit={(e) => { e.preventDefault(); handleSetPassword(); }}>
-              <Input
-                label="Yeni Şifre"
-                type="password"
-                id="coach-new-password"
-                name="new-password"
-                autoComplete="new-password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="En az 6 karakter"
-              />
-              <div className={styles.formActions} style={{ marginTop: '12px' }}>
-                <Button variant="primary" size="md" type="submit" disabled={pwSaving}>
-                  {pwSaving ? 'Kaydediliyor...' : 'Şifreyi Kaydet'}
-                </Button>
-                {pwMsg && <span className={styles.successMessage}>✓ {pwMsg}</span>}
-                {pwError && <span style={{ color: 'var(--color-danger)' }}>{pwError}</span>}
-              </div>
-            </form>
-          </Card>
+          <ChangePasswordCard className={styles.formCard} idPrefix="coach" />
         </>
       )}
     </div>

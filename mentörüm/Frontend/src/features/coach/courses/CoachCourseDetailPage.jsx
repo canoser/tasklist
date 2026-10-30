@@ -1,6 +1,5 @@
 import React, { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { Paperclip, X, FileText } from 'lucide-react';
 import {
   useCourses, useCourseStudents, useCourseGroups, useCourseResources,
@@ -8,11 +7,11 @@ import {
   useUpdateCourse, useGroups, useTeachers,
 } from '../coachSchoolApi';
 
-import { useCreateUploadUrl, useConfirmUpload, useDownloadUrl } from '../../storage/storageApi';
-import { compressImage } from '../../../utils/imageCompressor';
+import { useUploadFile, useOpenUpload } from '../../storage/storageApi';
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
 import Card from '../../../components/common/Card/Card';
+import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
 import AddStudentsToCourseModal from './AddStudentsToCourseModal';
 import styles from './CoachCourseDetailPage.module.css';
 
@@ -56,31 +55,22 @@ const CoachCourseDetailPage = () => {
   const removeGroup = useRemoveCourseGroup();
   const createResource = useCreateResource();
   const updateCourse = useUpdateCourse();
-  const createUpload = useCreateUploadUrl();
-  const confirmUpload = useConfirmUpload();
-  const download = useDownloadUrl();
+  const uploadFile = useUploadFile();
+  const { openUpload } = useOpenUpload();
   const [selectedFile, setSelectedFile] = useState(null);
-  const [uploadingRes, setUploadingRes] = useState(false);
   const fileInputRef = useRef(null);
   const [permValues, setPermValues] = useState({});
 
   const handleAddResource = async () => {
     if (!resTitle.trim() && !selectedFile) return;
-    setUploadingRes(true);
     let uploadId = null;
     try {
       if (selectedFile) {
-        const isImg = selectedFile.type.startsWith('image/');
-        const fileToUpload = isImg ? await compressImage(selectedFile) : selectedFile;
-        const res = await createUpload.mutateAsync({
-          fileName: fileToUpload.name,
-          fileSizeInBytes: fileToUpload.size,
-          contentType: fileToUpload.type,
+        const res = await uploadFile.mutateAsync({
+          file: selectedFile,
           programId,
           courseId,
         });
-        await axios.put(res.uploadUrl, fileToUpload, { headers: { 'Content-Type': fileToUpload.type } });
-        await confirmUpload.mutateAsync(res.uploadId);
         uploadId = res.uploadId;
       }
       await createResource.mutateAsync({
@@ -97,10 +87,10 @@ const CoachCourseDetailPage = () => {
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err) {
       alert('Kaynak eklenemedi: ' + (err?.message || 'Hata'));
-    } finally {
-      setUploadingRes(false);
     }
   };
+
+  const uploadingRes = uploadFile.isPending || createResource.isPending;
 
   const openPermissions = () => {
     if (course) {
@@ -136,13 +126,16 @@ const CoachCourseDetailPage = () => {
         <h1 className={styles.title}>{course?.name || 'Ders'}</h1>
       </div>
 
-      <div className={styles.tabs}>
-        {['students', 'groups', 'resources', 'permissions'].map((t) => (
-          <button key={t} className={tab === t ? `${styles.tab} ${styles.tabActive}` : styles.tab} onClick={() => (t === 'permissions' ? openPermissions() : setTab(t))}>
-            {{ students: 'Öğrenciler', groups: 'Gruplar', resources: 'Kaynaklar', permissions: 'İzinler' }[t]}
-          </button>
-        ))}
-      </div>
+      <SegmentedTabs
+        activeTab={tab}
+        onChange={(t) => (t === 'permissions' ? openPermissions() : setTab(t))}
+        tabs={[
+          { id: 'students', label: 'Öğrenciler', count: students?.length || 0 },
+          { id: 'groups', label: 'Gruplar', count: groups?.length || 0 },
+          { id: 'resources', label: 'Kaynaklar', count: resources?.length || 0 },
+          { id: 'permissions', label: 'İzinler' },
+        ]}
+      />
 
       {tab === 'students' && (
         <div>
@@ -219,9 +212,9 @@ const CoachCourseDetailPage = () => {
               <div style={{ marginTop: '8px', display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(59, 130, 246, 0.1)', padding: '4px 8px', borderRadius: '6px', fontSize: '0.8rem' }}>
                 <FileText size={14} style={{ color: 'var(--color-primary)' }} />
                 <span>{selectedFile.name}</span>
-                <button type="button" onClick={() => { setSelectedFile(null); if (fileInputRef.current) fileInputRef.current.value = ''; }} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex' }}>
+                <Button type="button" variant="ghost" size="xs" iconOnly onClick={() => { setSelectedFile(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}>
                   <X size={14} />
-                </button>
+                </Button>
               </div>
             )}
           </Card>
@@ -235,15 +228,7 @@ const CoachCourseDetailPage = () => {
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={async () => {
-                    try {
-                      const res = await download.mutateAsync(r.uploadId);
-                      window.open(res.url, '_blank', 'noopener');
-                    } catch {
-                      alert('Dosya açılamadı.');
-                    }
-                  }}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                  onClick={() => openUpload(r.uploadId)}
                 >
                   <FileText size={14} />
                   <span>Dosyayı İndir / Aç ↗</span>

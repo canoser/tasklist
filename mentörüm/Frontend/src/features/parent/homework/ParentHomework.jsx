@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useParentChildren, useParentChildHomework } from '../parentApi';
 import Card from '../../../components/common/Card/Card';
+import StatusBadge from '../../../components/common/StatusBadge/StatusBadge';
 import { formatDate } from '../../../utils/dateUtils';
 import { PriorityBadge, AssignedViaBadge } from '../../../components/common/HomeworkStatusBadges';
 import HomeworkAttachmentList from '../../../components/common/HomeworkAttachmentList';
-import { Check, AlertCircle, CheckCircle2, Lock } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Lock } from 'lucide-react';
 import styles from './ParentHomework.module.css';
 
 const ParentHomework = () => {
@@ -89,9 +90,10 @@ const ParentHomework = () => {
                     </div>
                     <h3 className={styles.hwTitle}>{hw.snapshotTitle}</h3>
                   </div>
-                  <span className={`${styles.statusBadge} ${hw.status === 'OVERDUE' ? styles.overdue : ''}`}>
-                    {hw.status === 'OVERDUE' ? 'Gecikmiş' : 'Bekliyor'}
-                  </span>
+                  <StatusBadge
+                    status={hw.status}
+                    label={hw.status === 'OVERDUE' ? 'Gecikmiş' : 'Bekliyor'}
+                  />
                 </div>
                 
                 <p className={styles.hwDesc}>{hw.snapshotDesc}</p>
@@ -161,9 +163,7 @@ const ParentHomework = () => {
                     </div>
                     <h3 className={styles.hwTitleCompleted}>{hw.snapshotTitle}</h3>
                   </div>
-                  <span className={styles.statusBadgeDone} style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                    <Check size={13} /> Tamamlandı
-                  </span>
+                  <StatusBadge status="DONE" label="Tamamlandı" />
                 </div>
                 <div className={styles.dueDate}>
                   Teslim: {formatDate(hw.completedAt, 'dd MMM yyyy')}

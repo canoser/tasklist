@@ -9,6 +9,8 @@ import {
 } from '../coachSchoolApi';
 import Button from '../../../components/common/Button/Button';
 import Card from '../../../components/common/Card/Card';
+import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
+import StatusBadge from '../../../components/common/StatusBadge/StatusBadge';
 import EditTeacherModal from './EditTeacherModal';
 import {
   ArrowLeft,
@@ -98,9 +100,10 @@ const CoachTeacherDetailPage = () => {
             <div className={styles.nameRow}>
               <h1 className={styles.teacherName}>{teacher.fullName}</h1>
               {teacher.branch && <span className={styles.branchBadge}>{teacher.branch}</span>}
-              <span className={teacher.isActive ? styles.statusActive : styles.statusInactive}>
-                {teacher.isActive ? 'Aktif Öğretmen' : 'Pasif'}
-              </span>
+              <StatusBadge
+                status={teacher.isActive ? 'ACTIVE' : 'INACTIVE'}
+                label={teacher.isActive ? 'Aktif Öğretmen' : 'Pasif'}
+              />
             </div>
 
             <div className={styles.contactRow}>
@@ -134,62 +137,57 @@ const CoachTeacherDetailPage = () => {
       </Card>
 
       {/* Ana Sekmeler */}
-      <div className={styles.tabNav}>
-        <button
-          className={`${styles.tabBtn} ${activeTab === 'students' ? styles.tabBtnActive : ''}`}
-          onClick={() => setActiveTab('students')}
-        >
-          <Users size={16} />
-          <span>Öğrenciler ({activeStudents.length + pastStudents.length})</span>
-        </button>
-
-        <button
-          className={`${styles.tabBtn} ${activeTab === 'homework' ? styles.tabBtnActive : ''}`}
-          onClick={() => setActiveTab('homework')}
-        >
-          <CheckCircle size={16} />
-          <span>Ödevler & Dönüş Oranları</span>
-          {homeworkStats && homeworkStats.totalHomeworks > 0 && (
-            <span className={styles.tabCounter}>%{homeworkStats.returnRate}</span>
-          )}
-        </button>
-
-        <button
-          className={`${styles.tabBtn} ${activeTab === 'exams' ? styles.tabBtnActive : ''}`}
-          onClick={() => setActiveTab('exams')}
-        >
-          <Award size={16} />
-          <span>Sınavlar & Netler ({examStats?.totalExams || 0})</span>
-        </button>
-
-        <button
-          className={`${styles.tabBtn} ${activeTab === 'courses' ? styles.tabBtnActive : ''}`}
-          onClick={() => setActiveTab('courses')}
-        >
-          <BookOpen size={16} />
-          <span>Verdiği Dersler ({teacher.courses?.length || 0})</span>
-        </button>
-      </div>
+      <SegmentedTabs
+        tabs={[
+          {
+            id: 'students',
+            label: `Öğrenciler (${activeStudents.length + pastStudents.length})`,
+            icon: <Users size={16} />,
+          },
+          {
+            id: 'homework',
+            label: 'Ödevler & Dönüş Oranları',
+            icon: <CheckCircle size={16} />,
+            badge: homeworkStats && homeworkStats.totalHomeworks > 0 ? `%${homeworkStats.returnRate}` : null,
+          },
+          {
+            id: 'exams',
+            label: `Sınavlar & Netler (${examStats?.totalExams || 0})`,
+            icon: <Award size={16} />,
+          },
+          {
+            id: 'courses',
+            label: `Verdiği Dersler (${teacher.courses?.length || 0})`,
+            icon: <BookOpen size={16} />,
+          },
+        ]}
+        activeTab={activeTab}
+        onChange={setActiveTab}
+      />
 
       {/* SEKME 1: ÖĞRENCİLER */}
       {activeTab === 'students' && (
         <div className={styles.tabContent}>
           {/* Alt Sekmeler: Aktif vs Geçmiş */}
-          <div className={styles.subTabNav}>
-            <button
-              className={`${styles.subTabBtn} ${studentSubTab === 'active' ? styles.subTabBtnActive : ''}`}
-              onClick={() => setStudentSubTab('active')}
-            >
-              <UserCheck size={15} />
-              <span>Aktif Öğrenciler ({activeStudents.length})</span>
-            </button>
-            <button
-              className={`${styles.subTabBtn} ${studentSubTab === 'past' ? styles.subTabBtnActive : ''}`}
-              onClick={() => setStudentSubTab('past')}
-            >
-              <UserX size={15} />
-              <span>Geçmiş Öğrenciler ({pastStudents.length})</span>
-            </button>
+          <div style={{ marginBottom: 14 }}>
+            <SegmentedTabs
+              tabs={[
+                {
+                  id: 'active',
+                  label: `Aktif Öğrenciler (${activeStudents.length})`,
+                  icon: <UserCheck size={15} />,
+                },
+                {
+                  id: 'past',
+                  label: `Geçmiş Öğrenciler (${pastStudents.length})`,
+                  icon: <UserX size={15} />,
+                },
+              ]}
+              activeTab={studentSubTab}
+              onChange={setStudentSubTab}
+              variant="pills"
+              size="sm"
+            />
           </div>
 
           {isStudentsLoading ? (
@@ -256,9 +254,10 @@ const CoachTeacherDetailPage = () => {
                         </div>
                       </td>
                       <td>
-                        <span className={s.isActive ? styles.statusActive : styles.statusInactive}>
-                          {s.isActive ? 'Aktif' : 'Ayrıldı'}
-                        </span>
+                        <StatusBadge
+                          status={s.isActive ? 'ACTIVE' : 'INACTIVE'}
+                          label={s.isActive ? 'Aktif' : 'Ayrıldı'}
+                        />
                       </td>
                       <td>
                         <Button
@@ -379,21 +378,16 @@ const CoachTeacherDetailPage = () => {
                           </div>
                         </td>
                         <td>
-                          <span
-                            className={
+                          <StatusBadge
+                            status={item.lastStatus || 'PENDING'}
+                            label={
                               item.lastStatus === 'DONE'
-                                ? styles.statusActive
+                                ? 'Tamamlandı'
                                 : item.lastStatus === 'OVERDUE'
-                                ? styles.statusOverdue
-                                : styles.statusPending
+                                ? 'Gecikmiş'
+                                : 'Bekliyor'
                             }
-                          >
-                            {item.lastStatus === 'DONE'
-                              ? 'Tamamlandı'
-                              : item.lastStatus === 'OVERDUE'
-                              ? 'Gecikmiş'
-                              : 'Bekliyor'}
-                          </span>
+                          />
                         </td>
                         <td>
                           <span className={styles.mutedText}>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Modal from '../../../components/common/Modal/Modal';
 import Button from '../../../components/common/Button/Button';
+import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
 import { useAuthStore } from '../../auth/authStore';
 import { useStudents, useStudent } from '../coachApi';
 import { usePrograms, useTeachers } from '../coachSchoolApi';
@@ -65,74 +66,16 @@ export default function ViewAsModal({ isOpen, onClose }) {
           <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
             Hangi Rol Gözüyle Bakmak İstiyorsunuz?
           </label>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              type="button"
-              onClick={() => { setRole('Student'); setTargetId(''); }}
-              style={{
-                flex: 1,
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                padding: '0.5rem',
-                borderRadius: '6px',
-                border: '1px solid var(--border-color)',
-                background: role === 'Student' ? 'var(--color-primary-light, rgba(99, 102, 241, 0.15))' : 'var(--bg-app)',
-                color: role === 'Student' ? 'var(--color-primary)' : 'var(--text-secondary)',
-                fontWeight: 600,
-                fontSize: '0.85rem',
-                cursor: 'pointer'
-              }}
-            >
-              <GraduationCap size={15} />
-              <span>Öğrenci</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => { setRole('Teacher'); setTargetId(''); }}
-              style={{
-                flex: 1,
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                padding: '0.5rem',
-                borderRadius: '6px',
-                border: '1px solid var(--border-color)',
-                background: role === 'Teacher' ? 'var(--color-primary-light, rgba(99, 102, 241, 0.15))' : 'var(--bg-app)',
-                color: role === 'Teacher' ? 'var(--color-primary)' : 'var(--text-secondary)',
-                fontWeight: 600,
-                fontSize: '0.85rem',
-                cursor: 'pointer'
-              }}
-            >
-              <UserCheck size={15} />
-              <span>Öğretmen</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => { setRole('Parent'); setTargetId(''); }}
-              style={{
-                flex: 1,
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                padding: '0.5rem',
-                borderRadius: '6px',
-                border: '1px solid var(--border-color)',
-                background: role === 'Parent' ? 'var(--color-primary-light, rgba(99, 102, 241, 0.15))' : 'var(--bg-app)',
-                color: role === 'Parent' ? 'var(--color-primary)' : 'var(--text-secondary)',
-                fontWeight: 600,
-                fontSize: '0.85rem',
-                cursor: 'pointer'
-              }}
-            >
-              <Users size={15} />
-              <span>Veli</span>
-            </button>
-          </div>
+          <SegmentedTabs
+            tabs={[
+              { id: 'Student', label: 'Öğrenci', icon: <GraduationCap size={15} /> },
+              { id: 'Teacher', label: 'Öğretmen', icon: <UserCheck size={15} /> },
+              { id: 'Parent', label: 'Veli', icon: <Users size={15} /> },
+            ]}
+            activeTab={role}
+            onChange={(val) => { setRole(val); setTargetId(''); }}
+            fullWidth
+          />
         </div>
 
         <div>
