@@ -121,9 +121,68 @@
 
 ---
 
-## 3. Doğrulama Kriterleri (`AGENTS.md` §A5–A7, §C3)
+### Faz 3 — Ortak UI Primitifleri (`<Button>`, `<SegmentedTabs>`, `<Modal>`) ve Tekrarlı Kod Standardizasyonu (`AGENTS.md` §A8)
+
+#### [x] U9 — Ortak `Button` Primitifinin Güçlendirilmesi ve 4 Özel Overlay'in `Modal` Bileşenine Geçirilmesi
+- **Dosyalar:** `Button.jsx`, `Button.module.css`, `PersonalEventModal.jsx`, `DevicePickerModal.jsx`, `AssignHomeworkModal.jsx`, `InstallAppButton.jsx`
+- **Yap:**
+  1. `Button.module.css` içindeki `.content` sınıfına `display: inline-flex; align-items: center; justify-content: center; gap: 6px;` ekleyerek ikon + metin hizalama kusurunu gider.
+  2. `.variant-secondary` ve `.variant-ghost` stillerindeki sabit `rgba(255, 255, 255, 0.08)` değerlerini açık/koyu tema uyumlu CSS değişkenlerine (`var(--bg-color-muted)`, `var(--border-color)`, `var(--text-color-main)`) bağla.
+  3. `Button.jsx` ve `Button.module.css` içine `size="xs"`, `variant="danger-outline"`, `variant="success"` ve `iconOnly` prop desteğini ekle.
+  4. Kod tabanında ortak `Modal.jsx` kullanmadan kendi `position: fixed` overlay'ini kuran **4 dosyayı** (`PersonalEventModal.jsx`, `DevicePickerModal.jsx`, `AssignHomeworkModal.jsx`, `InstallAppButton.jsx` tablet kurulum rehberi) ortak `<Modal>` bileşenine geçir (zaten `<Modal>` kullanan 14 dosyaya dokunma; ayrıca `EditTeacherModal.jsx:80` içindeki `open={open}` prop uyumsuzluğunu gider).
+- **Kabul:** `<Button>` içindeki ikon+metinler her temada kusursuz hizalanır; tüm uygulama genelinde özel modal overlay kalmaz.
+
+#### [x] U10 — `?tab=` URL Senkron Destekli Ortak `SegmentedTabs` Bileşeninin Oluşturulması ve Sekme Göçü
+- **Dosyalar:** `Frontend/src/components/common/SegmentedTabs/SegmentedTabs.jsx`, `SegmentedTabs.module.css` + 22 sekme/filtre kullanan sayfa/bileşen
+- **Yap:**
+  1. Ortak `SegmentedTabs` bileşenini oluştur:
+     - Props: `tabs={[{ id, label, icon, count, badge }]}`, `activeTab`, `onChange`, `variant="segmented" | "pills" | "underline"`, `size="sm" | "md"`, `urlParam` (opsiyonel `?tab=` URL arama parametresi senkronizasyonu).
+  2. Elle yazılmış sekme ve durum filtre çubuklarını sayfa sayfa `<SegmentedTabs>` bileşenine geçir:
+     - **URL Senkronlu Sayfalar:** `CoachStudents.jsx` (`STUDENTS | GROUPS | COURSES`), `CoachProfilePage.jsx` (`profile | program`), `StudentCalendarPage.jsx` (`calendar | schedule`).
+     - **Koç Paneli Sekmeleri:** `CalendarPage.jsx`, `ApprovalsPage.jsx` (`PENDING | APPROVED | REJECTED | ALL`), `CoachCourseDetailPage.jsx`, `AdminPanelPage.jsx`, `DashboardRightColumn.jsx`, `CoachPaymentsPage.jsx`, `CoachTeacherDetailPage.jsx`, `CoachStudentDetail.jsx`, `SwotAndWheelPanel.jsx`, `ExamsTab.jsx`, `WeeklySchedulePage.jsx`, `AddOrInviteStudentPanel.jsx`, `AddTeacherModal.jsx`, `ViewAsModal.jsx`.
+     - **Öğrenci, Veli & Öğretmen Sekmeleri:** `StudentCoursesPage.jsx`, `StudentHome.jsx`, `StudyTimerCard.jsx`, `CoachFeedbackCard.jsx`, `StudentProfilePage.jsx`, `StudentThemePage.jsx`, `ParentCalendarPage.jsx`, `TeacherCoursesPage.jsx`.
+- **Kabul:** Tüm sekme ve durum filtre çubukları tek ortak bileşenden çalışır; `?tab=` URL senkronizasyonu sıfır kayıpla korunur.
+
+#### [x] U11 — Koç Paneli Sayfalarındaki Standart Aksiyon `<button>` Etiketlerinin Sayfa Sayfa `<Button>`'a Geçirilmesi
+- **Dosyalar:** `ApprovalsPage.jsx`, `CalendarPage.jsx`, `WeeklySchedulePage.jsx`, `CoachStudents.jsx`, `CoachDashboard.jsx`, `DashboardRightColumn.jsx`, `CoachPaymentsPage.jsx`, `CoachTeachersPage.jsx`, `CoachCourseDetailPage.jsx`, `AdminPanelPage.jsx`, `CoachTeacherDetailPage.jsx`, `ExamsTab.jsx`, `HabitTrackerCard.jsx`, `AddStudentsToCourseModal.jsx`
+- **Yap:**
+  1. `AGENTS.md` §A8 Allowlist kapsamındaki standart CTA, form (`submit`/`button`), kart aksiyon (`Profili Gör`, `Ödev Ata`, `Üyeleri Yönet`, `Onayla`, `Reddet`, `Tümünü Onayla`) ve kompakt ikon (`Sil`) butonlarını sayfa sayfa ortak `<Button>` bileşenine geçir.
+  2. `AGENTS.md` §A8 Denylist kapsamındaki özel kontrollere (renk seçici `.colorSwatch`, takvim lejant filtre çipleri, saat hücresi `+` butonları, sol menü/alt bar navigasyon öğeleri) dokunma.
+  3. Her sayfa geçişinde `onClick`, `type`, `disabled` ve `loading` davranışlarının birebir korunduğunu doğrula.
+- **Kabul:** Koç panelindeki tüm standart aksiyon butonları ortak `<Button>` bileşenini kullanır.
+
+#### [x] U12 — Öğrenci, Veli ve Öğretmen Portalları Standart Aksiyon `<button>` Geçişi + Görsel/Davranışsal Doğrulama
+- **Dosyalar:** `StudentSchedulePage.jsx`, `StudentCalendarPage.jsx`, `StudentCoursesPage.jsx`, `StudentHomework.jsx`, `StudentNotesCard.jsx`, `StudentQuestionsCard.jsx`, `TodayAgendaCard.jsx`, `StudyTimerCard.jsx`, `MoodCheckinCard.jsx`, `StoragePage.jsx`, `TeacherCoursesPage.jsx`
+- **Yap:**
+  1. Öğrenci, Veli ve Öğretmen portallarındaki standart aksiyon/form `<button>` etiketlerini sayfa sayfa ortak `<Button>` bileşenine geçir (Denylist'teki gün seçici haplar `Pzt..Paz`, mood seçiciler ve lejant çipleri hariç).
+  2. Her sayfa grubunun ardından hem statik (`npm run build`, `npx oxlint`, `dotnet test`) hem de prop/handler `git diff` doğrulaması yap.
+- **Kabul:** Tüm rollerde standart butonlar, modallar ve sekmeler tek ortak kod bloğundan beslenir.
+
+#### [x] U13 — Frontend Tekrarlı İş Akışları, Rozetler (`StatusBadge`), Sabitler ve API Hook Tekilleştirmesi (`TEKRARLI_KOD_TARAMA_RAPORU.md` Kat. 2–6)
+- **Dosyalar:** `StatusBadge.jsx`, `HomeworkStatusBadges.jsx`, `ChangePasswordCard.jsx`, `authStore.js`, `storageApi.js`, `studentApi.js`, `coachStudentsApi.js`, `coachSchoolApi.js`, `usePersonalEvents.js`, `AdminPanelPage.jsx`, `EditStudentModal.jsx` + ilgili sayfalar
+- **Yap:**
+  1. **Rozet Birleştirmesi:** `HomeworkStatusBadges.jsx` ve `StatusBadge.jsx` yapılarını birleştir; 8 dosyadaki (`AdminPanelPage`, `ApprovalsPage`, `DashboardRightColumn`, `CoachPaymentsPage`, `CoachStudents`, `CoachTeachersPage`, `CoachTeacherDetailPage`, `ParentHomework`, `ParentPaymentsPage`, `StudentHomework`, `TeacherCoursesPage`) elle yazılmış `.statusBadge` sınıflarını ortak bileşene geçir.
+  2. **Tekrarlı İş Akışları:**
+     - 4 dosyada kopyalanan `compressImage → createUploadUrl → axios.put → confirmUpload` akışını `storageApi.js` içinde tekil `useUploadFile()` hook'una; 5 dosyada kopyalanan `getDownloadUrl → window.open` akışını `useOpenUpload()` hook'una indir.
+     - 4 Layout dosyasındaki `handleLogout` akışını `authStore.logoutUser(navigate)` metoduna, 3 Profil sayfasındaki Şifre Değiştirme kartını `<ChangePasswordCard />` bileşenine ve 2 sayfadaki PDF rapor indirme fonksiyonunu `downloadStudentReportPdf()` yardımcısına tekilleştir.
+     - `AdminPanelPage.jsx:70-72` içindeki 3 ardışık `window.prompt()` çağrısını ortak `<Modal>` formuna dönüştür.
+  3. **Sabitler ve A5/A6 Temizliği:**
+     - `DAYS`, `ENTITY_TYPE_LABELS`, Sınıf (`4..12`, `Mezun`) ve Alan (`SAY`, `EA`, `SÖZ`, `DİL`, `LGS`) sabitlerini `Frontend/src/constants/domainConstants.js` altında topla (`EditStudentModal.jsx` içindeki serbest metin sınıf/alan girdilerini standart `<select>`'e çevir).
+     - 28 satırlık `studentSchoolApi.js` dosyasını `studentApi.js` ile birleştir (`AGENTS.md` §A5) ve kalan opak `(data) =>` mutation'ları explicit destructuring'e geçir (`AGENTS.md` §A6).
+
+#### [x] U14 — Backend Tekrarlı Sorgu ve Endpoint Bloklarının Tekilleştirilmesi (`TEKRARLI_KOD_TARAMA_RAPORU.md` Kat. 7–8)
+- **Dosyalar:** `StudentFlexibilityEndpoints.cs`, `SchoolAccessRepository.cs`, `BaseRepository.cs` (`GetStudentProgramIdAsync`), `ClaimsPrincipalExtensions.cs`
+- **Yap:**
+  1. `StudentFlexibilityEndpoints.cs` içindeki iki ayrı öğrenci oluşturma bloğunu tekilleştirerek `/api/v1/programs/{programId}/students` rotasında eksik olan `STUDENT_LIMIT_EXCEEDED` → `409 Conflict` yakalamasını tamamla.
+  2. 3 ayrı Repository'de (`StudentRepository`, `InviteRepository`, `UploadRepository`) tekrarlanan `GetStudentProgramIdAsync` sorgusunu `BaseRepository` üzerinden tekilleştir.
+  3. `SchoolAccessRepository.cs` içindeki `GetStudentVisibleTeacherNotesAsync` ve `GetStudentTeacherNotesForCoachAsync` sorgularını ortak parametreli metottan besle.
+
+---
+
+## 3. Doğrulama Kriterleri (`AGENTS.md` §A5–A8, §C3)
 - [x] Tüm değiştirilen/eklenen dosyalar **Ajan-Optimum Hibrit** sınırları içinde (hiçbir dosya 520 satırı aşmaz).
 - [x] `dotnet build Backend/Mentorum.sln` & `dotnet test Backend/Mentorum.sln` → 0 uyarı, 0 hata (81/81 xUnit testi geçti).
 - [x] `npm --prefix Frontend run build` → 0 hata.
 - [x] `npx --prefix Frontend oxlint Frontend/src` → **0 uyarı, 0 hata**.
+- [x] Faz 3 (`U9`–`U14`) sayfa bazlı prop/handler diff denetimi ve doğrulaması tamamlandı.
 
