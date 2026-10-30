@@ -13,14 +13,14 @@ namespace MentorumApi.Endpoints
 
             group.MapGet("/", async (Guid programId, Guid courseId, [FromServices] CourseResourceRepository repo, ClaimsPrincipal user) =>
             {
-                var coachId = GetUserId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 return Results.Ok(await repo.GetResourcesAsync(programId, courseId, coachId.Value));
             });
 
             group.MapPost("/", async (Guid programId, Guid courseId, [FromBody] CreateCourseResourceRequest req, [FromServices] CourseResourceRepository repo, [FromServices] NotificationRepository notifications, ClaimsPrincipal user) =>
             {
-                var coachId = GetUserId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 try
                 {
@@ -40,7 +40,7 @@ namespace MentorumApi.Endpoints
 
             group.MapPut("/{resourceId:guid}", async (Guid programId, Guid courseId, Guid resourceId, [FromBody] UpdateCourseResourceRequest req, [FromServices] CourseResourceRepository repo, ClaimsPrincipal user) =>
             {
-                var coachId = GetUserId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 var ok = await repo.UpdateResourceAsync(programId, resourceId, coachId.Value, req);
                 return ok ? Results.Ok(new { message = "Güncellendi." }) : Results.NotFound(new { error = "Kaynak bulunamadı." });
@@ -48,7 +48,7 @@ namespace MentorumApi.Endpoints
 
             group.MapDelete("/{resourceId:guid}", async (Guid programId, Guid courseId, Guid resourceId, [FromServices] CourseResourceRepository repo, ClaimsPrincipal user) =>
             {
-                var coachId = GetUserId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 var ok = await repo.DeleteResourceAsync(programId, resourceId, coachId.Value);
                 return ok ? Results.Ok(new { message = "Kaynak silindi." }) : Results.NotFound(new { error = "Kaynak bulunamadı." });
@@ -59,31 +59,25 @@ namespace MentorumApi.Endpoints
 
             student.MapGet("/courses", async ([FromServices] SchoolAccessRepository repo, ClaimsPrincipal user) =>
             {
-                var studentId = GetUserId(user);
+                var studentId = user.GetUserId();
                 if (studentId == null) return Results.Unauthorized();
                 return Results.Ok(await repo.GetStudentCoursesAsync(studentId.Value));
             });
 
             student.MapGet("/courses/{courseId:guid}/resources", async (Guid courseId, [FromServices] CourseResourceRepository repo, ClaimsPrincipal user) =>
             {
-                var studentId = GetUserId(user);
+                var studentId = user.GetUserId();
                 if (studentId == null) return Results.Unauthorized();
                 return Results.Ok(await repo.GetStudentCourseResourcesAsync(courseId, studentId.Value));
             });
 
             student.MapPut("/resources/{resourceId:guid}/progress", async (Guid resourceId, [FromBody] UpdateResourceProgressRequest req, [FromServices] CourseResourceRepository repo, ClaimsPrincipal user) =>
             {
-                var studentId = GetUserId(user);
+                var studentId = user.GetUserId();
                 if (studentId == null) return Results.Unauthorized();
                 var ok = await repo.UpsertProgressAsync(resourceId, studentId.Value, req);
                 return ok ? Results.Ok(new { message = "İlerleme kaydedildi." }) : Results.NotFound(new { error = "Kaynak bulunamadı veya derste değilsiniz." });
             });
-        }
-
-        private static Guid? GetUserId(ClaimsPrincipal user)
-        {
-            var idStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            return Guid.TryParse(idStr, out var id) ? id : null;
         }
     }
 }

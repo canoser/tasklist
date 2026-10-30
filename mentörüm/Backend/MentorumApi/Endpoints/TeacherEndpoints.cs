@@ -15,7 +15,7 @@ namespace MentorumApi.Endpoints
 
             group.MapGet("/", async (Guid programId, [FromServices] TeacherRepository repo, ClaimsPrincipal user) =>
             {
-                var coachId = GetCoachId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 return Results.Ok(await repo.GetTeachersAsync(programId, coachId.Value));
             });
@@ -26,7 +26,7 @@ namespace MentorumApi.Endpoints
                 [FromServices] TeacherRepository repo,
                 ClaimsPrincipal user) =>
             {
-                var coachId = GetCoachId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 if (string.IsNullOrWhiteSpace(req.FirstName) || string.IsNullOrWhiteSpace(req.LastName))
                     return Results.BadRequest(new { error = "Ad ve soyad zorunludur." });
@@ -44,7 +44,7 @@ namespace MentorumApi.Endpoints
 
             group.MapGet("/{teacherId:guid}", async (Guid programId, Guid teacherId, [FromServices] TeacherRepository repo, ClaimsPrincipal user) =>
             {
-                var coachId = GetCoachId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 var t = await repo.GetTeacherDetailAsync(programId, teacherId, coachId.Value);
                 return t == null ? Results.NotFound(new { error = "Öğretmen bulunamadı." }) : Results.Ok(t);
@@ -52,7 +52,7 @@ namespace MentorumApi.Endpoints
 
             group.MapDelete("/{teacherId:guid}", async (Guid programId, Guid teacherId, [FromServices] TeacherRepository repo, [FromServices] NotificationRepository notifications, ClaimsPrincipal user) =>
             {
-                var coachId = GetCoachId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 var r = await repo.DeactivateTeacherAsync(programId, teacherId, coachId.Value);
                 if (r == "OK")
@@ -70,7 +70,7 @@ namespace MentorumApi.Endpoints
                 [FromServices] TeacherRepository repo,
                 ClaimsPrincipal user) =>
             {
-                var coachId = GetCoachId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 if (string.IsNullOrWhiteSpace(req.FullName))
                     return Results.BadRequest(new { error = "Öğretmen adı ve soyadı zorunludur." });
@@ -93,7 +93,7 @@ namespace MentorumApi.Endpoints
                 [FromServices] TeacherRepository repo,
                 ClaimsPrincipal user) =>
             {
-                var coachId = GetCoachId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 try
                 {
@@ -112,7 +112,7 @@ namespace MentorumApi.Endpoints
                 [FromServices] TeacherRepository repo,
                 ClaimsPrincipal user) =>
             {
-                var coachId = GetCoachId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 try
                 {
@@ -131,7 +131,7 @@ namespace MentorumApi.Endpoints
                 [FromServices] TeacherRepository repo,
                 ClaimsPrincipal user) =>
             {
-                var coachId = GetCoachId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 try
                 {
@@ -149,14 +149,14 @@ namespace MentorumApi.Endpoints
 
             me.MapGet("/courses", async ([FromServices] SchoolAccessRepository repo, ClaimsPrincipal user) =>
             {
-                var teacherId = GetCoachId(user);
+                var teacherId = user.GetUserId();
                 if (teacherId == null) return Results.Unauthorized();
                 return Results.Ok(await repo.GetTeacherCoursesAsync(teacherId.Value));
             });
 
             me.MapGet("/courses/{courseId:guid}/students", async (Guid courseId, [FromServices] SchoolAccessRepository repo, ClaimsPrincipal user) =>
             {
-                var teacherId = GetCoachId(user);
+                var teacherId = user.GetUserId();
                 if (teacherId == null) return Results.Unauthorized();
                 var access = await repo.GetCourseAccessAsync(courseId, teacherId.Value);
                 if (access == null) return Results.NotFound(new { error = "Ders bulunamadı." });
@@ -167,7 +167,7 @@ namespace MentorumApi.Endpoints
 
             me.MapGet("/courses/{courseId:guid}/homework", async (Guid courseId, [FromServices] SchoolAccessRepository repo, ClaimsPrincipal user) =>
             {
-                var teacherId = GetCoachId(user);
+                var teacherId = user.GetUserId();
                 if (teacherId == null) return Results.Unauthorized();
                 var access = await repo.GetCourseAccessAsync(courseId, teacherId.Value);
                 if (access == null) return Results.NotFound(new { error = "Ders bulunamadı." });
@@ -177,7 +177,7 @@ namespace MentorumApi.Endpoints
 
             me.MapGet("/courses/{courseId:guid}/exams", async (Guid courseId, [FromServices] SchoolAccessRepository repo, ClaimsPrincipal user) =>
             {
-                var teacherId = GetCoachId(user);
+                var teacherId = user.GetUserId();
                 if (teacherId == null) return Results.Unauthorized();
                 var access = await repo.GetCourseAccessAsync(courseId, teacherId.Value);
                 if (access == null) return Results.NotFound(new { error = "Ders bulunamadı." });
@@ -187,7 +187,7 @@ namespace MentorumApi.Endpoints
 
             me.MapGet("/courses/{courseId:guid}/resources", async (Guid courseId, [FromServices] SchoolAccessRepository accessRepo, [FromServices] CourseResourceRepository resourceRepo, ClaimsPrincipal user) =>
             {
-                var teacherId = GetCoachId(user);
+                var teacherId = user.GetUserId();
                 if (teacherId == null) return Results.Unauthorized();
                 var access = await accessRepo.GetCourseAccessAsync(courseId, teacherId.Value);
                 if (access == null) return Results.NotFound(new { error = "Ders bulunamadı." });
@@ -197,7 +197,7 @@ namespace MentorumApi.Endpoints
             // --- Öğretmen kendi profili + oluşturma yetkileri (Aşama 3 & 5) ---
             me.MapGet("/me", async ([FromServices] TeacherRepository repo, ClaimsPrincipal user) =>
             {
-                var teacherId = GetCoachId(user);
+                var teacherId = user.GetUserId();
                 if (teacherId == null) return Results.Unauthorized();
                 var profile = await repo.GetTeacherProfileAsync(teacherId.Value);
                 return profile == null ? Results.NotFound(new { error = "Profil bulunamadı." }) : Results.Ok(profile);
@@ -205,7 +205,7 @@ namespace MentorumApi.Endpoints
 
             me.MapPost("/courses/{courseId:guid}/homework", async (Guid courseId, [FromBody] TeacherCreateHomeworkRequest req, [FromServices] SchoolAccessRepository repo, ClaimsPrincipal user) =>
             {
-                var teacherId = GetCoachId(user);
+                var teacherId = user.GetUserId();
                 if (teacherId == null) return Results.Unauthorized();
                 try
                 {
@@ -218,7 +218,7 @@ namespace MentorumApi.Endpoints
 
             me.MapPost("/courses/{courseId:guid}/exams", async (Guid courseId, [FromBody] TeacherCreateExamRequest req, [FromServices] SchoolAccessRepository repo, ClaimsPrincipal user) =>
             {
-                var teacherId = GetCoachId(user);
+                var teacherId = user.GetUserId();
                 if (teacherId == null) return Results.Unauthorized();
                 try
                 {
@@ -237,7 +237,7 @@ namespace MentorumApi.Endpoints
                 [FromServices] SchoolAccessRepository repo,
                 ClaimsPrincipal user) =>
             {
-                var teacherId = GetCoachId(user);
+                var teacherId = user.GetUserId();
                 if (teacherId == null) return Results.Unauthorized();
                 try
                 {
@@ -260,7 +260,7 @@ namespace MentorumApi.Endpoints
                 [FromServices] SchoolAccessRepository repo,
                 ClaimsPrincipal user) =>
             {
-                var teacherId = GetCoachId(user);
+                var teacherId = user.GetUserId();
                 if (teacherId == null) return Results.Unauthorized();
                 try
                 {
@@ -277,7 +277,7 @@ namespace MentorumApi.Endpoints
                 [FromServices] SchoolAccessRepository repo,
                 ClaimsPrincipal user) =>
             {
-                var teacherId = GetCoachId(user);
+                var teacherId = user.GetUserId();
                 if (teacherId == null) return Results.Unauthorized();
                 try
                 {
@@ -286,12 +286,6 @@ namespace MentorumApi.Endpoints
                 catch (UnauthorizedAccessException) { return Results.NotFound(new { error = "Ders veya öğrenci bulunamadı." }); }
                 catch (InvalidOperationException) { return Results.Forbid(); }
             });
-        }
-
-        private static Guid? GetCoachId(ClaimsPrincipal user)
-        {
-            var idStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            return Guid.TryParse(idStr, out var id) ? id : null;
         }
     }
 }

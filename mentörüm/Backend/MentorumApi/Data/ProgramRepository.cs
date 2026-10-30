@@ -18,7 +18,7 @@ namespace MentorumApi.Data
                        (SELECT COUNT(1) FROM students s WHERE s.program_id = cp.id) AS student_count,
                        (SELECT COUNT(1) FROM teachers t WHERE t.program_id = cp.id) AS teacher_count,
                        (SELECT COUNT(1) FROM courses c WHERE c.program_id = cp.id) AS course_count,
-                       (SELECT COUNT(1) FROM homework_assignments ha WHERE ha.program_id = cp.id AND ha.status = 'OVERDUE') AS overdue_count
+                       (SELECT COUNT(1) FROM homework_assignments ha WHERE ha.program_id = cp.id AND (ha.status = 'OVERDUE' OR (ha.status = 'PENDING' AND ha.due_date < CURRENT_DATE))) AS overdue_count
                 FROM coaching_programs cp
                 JOIN program_coaches pc ON pc.program_id = cp.id AND pc.coach_id = @CoachId
                 WHERE cp.is_active = 1
@@ -36,14 +36,6 @@ namespace MentorumApi.Data
                 FROM coaching_programs cp
                 JOIN program_coaches pc ON pc.program_id = cp.id AND pc.coach_id = @CoachId
                 WHERE cp.id = @ProgramId",
-                new { ProgramId = programId, CoachId = coachId });
-        }
-
-        public async Task<string?> GetCoachRoleAsync(Guid programId, Guid coachId)
-        {
-            using var conn = _connectionFactory.CreateConnection();
-            return await conn.ExecuteScalarAsync<string?>(@"
-                SELECT role FROM program_coaches WHERE program_id = @ProgramId AND coach_id = @CoachId",
                 new { ProgramId = programId, CoachId = coachId });
         }
 
@@ -127,7 +119,11 @@ namespace MentorumApi.Data
                 tx.Commit();
                 return programId;
             }
-            catch { tx.Rollback(); throw; }
+            catch
+            {
+                tx.Rollback();
+                throw;
+            }
         }
 
         public async Task<bool> UpdateProgramAsync(Guid programId, Guid coachId, UpdateProgramRequest req)
@@ -222,7 +218,7 @@ namespace MentorumApi.Data
             }
         }
 
-        public async Task<string> RemoveCoachAsync(Guid programId, Guid adminCoachId, Guid coachId)
+        public async Task<string> RemoveCoachAsync(Guid programId, Guid adminCoachId, Guid targetCoachId)
         {
             using var conn = _connectionFactory.CreateConnection();
             conn.Open();
@@ -235,12 +231,14 @@ namespace MentorumApi.Data
                 if (adminRole != "YONETICI") return "FORBIDDEN";
 
                 var targetRole = await conn.ExecuteScalarAsync<string?>(@"
-                    SELECT role FROM program_coaches WHERE program_id = @ProgramId AND coach_id = @CoachId",
-                    new { ProgramId = programId, CoachId = coachId }, tx);
-                if (targetRole == "YONETICI") return "CANNOT_REMOVE_ADMIN";
+                    SELECT role FROM program_coaches WHERE program_id = @ProgramId AND coach_id = @TargetCoachId",
+                    new { ProgramId = programId, TargetCoachId = targetCoachId }, tx);
                 if (targetRole == null) return "NOT_MEMBER";
+                if (targetRole == "YONETICI") return "CANNOT_REMOVE_ADMIN";
 
-                await conn.ExecuteAsync("DELETE FROM program_coaches WHERE program_id = @ProgramId AND coach_id = @CoachId", new { ProgramId = programId, CoachId = coachId }, tx);
+                await conn.ExecuteAsync(@"
+                    DELETE FROM program_coaches WHERE program_id = @ProgramId AND coach_id = @TargetCoachId",
+                    new { ProgramId = programId, TargetCoachId = targetCoachId }, tx);
 
                 tx.Commit();
                 return "OK";
@@ -269,7 +267,6 @@ namespace MentorumApi.Data
                     new { ProgramId = programId, TargetCoachId = targetCoachId }, tx);
                 if (targetRole != "YARDIMCI") return "TARGET_NOT_ASSISTANT";
 
-                // Önce eski yöneticiyi yardımcıya indir (tek yönetici index'ini ihlal etmemek için)
                 await conn.ExecuteAsync(@"
                     UPDATE program_coaches SET role = 'YARDIMCI'
                     WHERE program_id = @ProgramId AND coach_id = @AdminCoachId",
@@ -405,6 +402,34 @@ namespace MentorumApi.Data
             return await conn.QueryAsync<AdminUserDto>(sql, dp);
         }
 
+        public async Task<bool> ChangeUserPasswordByAdminAsync(Guid userId, string passwordHash)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            conn.Open();
+            var exists = await conn.ExecuteScalarAsync<int?>(
+                "SELECT 1 FROM users WHERE id = @Id",
+                new { Id = userId });
+            if (exists == null) return false;
+
+            using var tx = conn.BeginTransaction();
+            try
+            {
+                await conn.ExecuteAsync(
+                    "UPDATE users SET password_hash = @Hash WHERE id = @Id",
+                    new { Hash = passwordHash, Id = userId }, tx);
+                await conn.ExecuteAsync(
+                    "UPDATE refresh_tokens SET is_revoked = 1 WHERE user_id = @Id AND is_revoked = 0",
+                    new { Id = userId }, tx);
+                tx.Commit();
+                return true;
+            }
+            catch
+            {
+                tx.Rollback();
+                throw;
+            }
+        }
+
         private async Task EnsureStudentPersonalProgramAsync(IDbConnection conn, IDbTransaction tx, Guid userId)
         {
             var existingProgramId = await conn.QuerySingleOrDefaultAsync<Guid?>(
@@ -431,5 +456,3 @@ namespace MentorumApi.Data
         }
     }
 }
-
-

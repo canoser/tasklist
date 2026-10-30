@@ -97,10 +97,10 @@ namespace MentorumApi.Data
                 FROM course_resources r
                 WHERE r.id = @ResourceId
                   AND EXISTS (
-                      SELECT 1 FROM course_students cs WHERE cs.course_id = r.course_id AND cs.student_id = @StudentId AND cs.is_active = 1
-                      UNION
-                      SELECT 1 FROM course_groups cg JOIN student_group_members sgm ON sgm.group_id = cg.group_id
-                      WHERE cg.course_id = r.course_id AND sgm.student_id = @StudentId
+                      SELECT 1 FROM vw_active_course_students v WHERE v.course_id = r.course_id AND v.student_id = @StudentId
+
+
+
                   )
                 ON CONFLICT (course_resource_id, student_id) DO UPDATE
                 SET progress = COALESCE(@Progress, course_resource_progress.progress),

@@ -19,7 +19,7 @@ namespace MentorumApi.Endpoints
                 [FromServices] PaymentRepository repo,
                 ClaimsPrincipal user) =>
             {
-                var coachId = GetUserId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 var plans = await repo.GetPlansAsync(programId, coachId.Value);
                 return Results.Ok(plans);
@@ -30,7 +30,7 @@ namespace MentorumApi.Endpoints
                 [FromServices] PaymentRepository repo,
                 ClaimsPrincipal user) =>
             {
-                var coachId = GetUserId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 var plans = await repo.GetPlansForCoachAsync(coachId.Value);
                 return Results.Ok(plans);
@@ -43,18 +43,11 @@ namespace MentorumApi.Endpoints
                 [FromServices] PaymentRepository repo,
                 ClaimsPrincipal user) =>
             {
-                var coachId = GetUserId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
 
-                try
-                {
-                    var planId = await repo.CreatePlanAsync(programId, coachId.Value, req);
-                    return Results.Ok(new { id = planId });
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    return Results.Json(new { error = ex.Message }, statusCode: 403);
-                }
+                var planId = await repo.CreatePlanAsync(programId, coachId.Value, req);
+                return Results.Ok(new { id = planId });
             });
 
             // Plan Güncelleme
@@ -65,7 +58,7 @@ namespace MentorumApi.Endpoints
                 [FromServices] PaymentRepository repo,
                 ClaimsPrincipal user) =>
             {
-                var coachId = GetUserId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
 
                 var ok = await repo.UpdatePlanAsync(programId, planId, coachId.Value, req);
@@ -79,7 +72,7 @@ namespace MentorumApi.Endpoints
                 [FromServices] PaymentRepository repo,
                 ClaimsPrincipal user) =>
             {
-                var coachId = GetUserId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
 
                 var ok = await repo.DeletePlanAsync(programId, planId, coachId.Value);
@@ -93,51 +86,36 @@ namespace MentorumApi.Endpoints
                 [FromServices] PaymentRepository repo,
                 ClaimsPrincipal user) =>
             {
-                var coachId = GetUserId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
 
-                try
-                {
-                    var ok = await repo.CollectPaymentAsync(itemId, coachId.Value, req);
-                    return Results.Ok(new { message = "Tahsilat kaydedildi." });
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    return Results.Json(new { error = ex.Message }, statusCode: 403);
-                }
+                await repo.CollectPaymentAsync(itemId, coachId.Value, req);
+                return Results.Ok(new { message = "Tahsilat kaydedildi." });
             });
 
-            // 2. Veli Grubu
+            // 2. Veli Grubu (/api/v1/parents ana grup + /api/v1/parent geriye dönük uyumluluk alias'ı)
+            var parentsGroup = app.MapGroup("/api/v1/parents").RequireAuthorization("RequireParentRole");
             var parentGroup = app.MapGroup("/api/v1/parent").RequireAuthorization("RequireParentRole");
 
-            // Veli için çocuğun ödemelerini görüntüleme (can_view_payments=1 zorunlu)
-            parentGroup.MapGet("/children/{studentId:guid}/payments", async (
+            async Task<IResult> GetParentPaymentsHandler(
                 Guid studentId,
                 [FromServices] PaymentRepository repo,
-                ClaimsPrincipal user) =>
+                ClaimsPrincipal user)
             {
-                var parentId = GetUserId(user);
+                var parentId = user.GetUserId();
                 if (parentId == null) return Results.Unauthorized();
 
-                try
-                {
-                    var items = await repo.GetStudentPaymentsForParentAsync(studentId, parentId.Value);
-                    return Results.Ok(items);
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    return Results.Json(new { error = ex.Message }, statusCode: 403);
-                }
-            });
+                var items = await repo.GetStudentPaymentsForParentAsync(studentId, parentId.Value);
+                return Results.Ok(items);
+            }
 
-            // Veli "ödeme yaptım" bildirimi -> onay merkezine (T29)
-            parentGroup.MapPost("/children/{studentId:guid}/payment-claims", async (
+            async Task<IResult> CreatePaymentClaimHandler(
                 Guid studentId,
                 [FromBody] CreatePaymentClaimRequest req,
                 [FromServices] PaymentRepository repo,
-                ClaimsPrincipal user) =>
+                ClaimsPrincipal user)
             {
-                var parentId = GetUserId(user);
+                var parentId = user.GetUserId();
                 if (parentId == null) return Results.Unauthorized();
 
                 try
@@ -145,21 +123,16 @@ namespace MentorumApi.Endpoints
                     var approvalId = await repo.CreatePaymentClaimAsync(studentId, parentId.Value, req);
                     return Results.Ok(new { approvalId, message = "Ödeme bildirimi koç onayına iletildi." });
                 }
-                catch (UnauthorizedAccessException ex)
-                {
-                    return Results.Json(new { error = ex.Message }, statusCode: 403);
-                }
                 catch (InvalidOperationException ex)
                 {
                     return Results.BadRequest(new { error = ex.Message });
                 }
-            });
-        }
+            }
 
-        private static Guid? GetUserId(ClaimsPrincipal user)
-        {
-            var idStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            return Guid.TryParse(idStr, out var id) ? id : null;
+            parentsGroup.MapGet("/children/{studentId:guid}/payments", GetParentPaymentsHandler);
+            parentGroup.MapGet("/children/{studentId:guid}/payments", GetParentPaymentsHandler);
+            parentsGroup.MapPost("/children/{studentId:guid}/payment-claims", CreatePaymentClaimHandler);
+            parentGroup.MapPost("/children/{studentId:guid}/payment-claims", CreatePaymentClaimHandler);
         }
     }
 }

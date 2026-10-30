@@ -14,10 +14,10 @@ namespace MentorumApi.Endpoints
                 [FromServices] ReportsRepository repo,
                 ClaimsPrincipal user) =>
             {
-                var userIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!Guid.TryParse(userIdStr, out var userId)) return Results.Unauthorized();
+                var userId = user.GetUserId();
+                if (userId == null) return Results.Unauthorized();
 
-                var report = await repo.GetOverviewReportAsync(userId);
+                var report = await repo.GetOverviewReportAsync(userId.Value);
                 return Results.Ok(report);
             });
 
@@ -26,10 +26,10 @@ namespace MentorumApi.Endpoints
                 [FromServices] ReportsRepository repo,
                 ClaimsPrincipal user) =>
             {
-                var userIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!Guid.TryParse(userIdStr, out var userId)) return Results.Unauthorized();
+                var userId = user.GetUserId();
+                if (userId == null) return Results.Unauthorized();
 
-                var report = await repo.GetStudentReportAsync(userId, id);
+                var report = await repo.GetStudentReportAsync(userId.Value, id);
                 if (report == null) return Results.NotFound(new { error = "Öğrenci bulunamadı veya size ait değil." });
 
                 return Results.Ok(report);
@@ -39,10 +39,10 @@ namespace MentorumApi.Endpoints
                 [FromServices] ReportsRepository repo,
                 ClaimsPrincipal user) =>
             {
-                var userIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!Guid.TryParse(userIdStr, out var userId)) return Results.Unauthorized();
+                var userId = user.GetUserId();
+                if (userId == null) return Results.Unauthorized();
 
-                return Results.Ok(await repo.GetDetailReportAsync(userId));
+                return Results.Ok(await repo.GetDetailReportAsync(userId.Value));
             });
         }
     }

@@ -37,10 +37,7 @@ namespace MentorumApi.Data
 
                     programId = groupProg.Value;
 
-                    var groupStudents = await conn.QueryAsync<Guid>(
-                        "SELECT student_id FROM student_group_members WHERE group_id = @GroupId AND is_active = 1",
-                        new { GroupId = req.GroupId.Value }, tx);
-
+                    var groupStudents = await GroupRepository.GetActiveMemberIdsAsync(conn, req.GroupId.Value, tx);
                     targetStudentIds.AddRange(groupStudents);
                 }
                 else

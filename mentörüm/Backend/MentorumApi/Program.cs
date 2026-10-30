@@ -1,3 +1,4 @@
+global using MentorumApi.Extensions;
 using Serilog;
 using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -71,7 +72,10 @@ try
     builder.Services.AddScoped<GoogleAuthService>();
     builder.Services.AddHttpClient();
     builder.Services.AddSingleton<IEmailService, ResendEmailService>();
+    builder.Services.AddScoped<AuthRepository>();
+    builder.Services.AddScoped<InviteRepository>();
     builder.Services.AddScoped<StudentRepository>();
+    builder.Services.AddScoped<StudentCoachingToolsRepository>();
     builder.Services.AddScoped<CurriculumRepository>();
     builder.Services.AddScoped<HomeworkRepository>();
     builder.Services.AddScoped<ExamRepository>();
@@ -148,39 +152,7 @@ try
         Log.Information("Migration modunda çalıştırılıyor...");
         using var scope = app.Services.CreateScope();
         var dbFactory = scope.ServiceProvider.GetRequiredService<DbConnectionFactory>();
-        using var conn = dbFactory.CreateConnection();
-        conn.Open();
-
-        // Uygulanan migration'ları takip eden tablo. Migration dosyaları idempotenttir;
-        // bu yüzden ilk çalıştırmada tek `001_schema.sql` tüm şemayı kurar.
-        conn.Execute("CREATE TABLE IF NOT EXISTS _schema_migrations (filename TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW())");
-
-        var migrationsDir = Path.Combine(AppContext.BaseDirectory, "Data", "Migrations");
-        var files = Directory.Exists(migrationsDir)
-            ? Directory.GetFiles(migrationsDir, "*.sql").OrderBy(f => f, StringComparer.OrdinalIgnoreCase).ToArray()
-            : Array.Empty<string>();
-
-        var applied = new HashSet<string>(
-            conn.Query<string>("SELECT filename FROM _schema_migrations"),
-            StringComparer.OrdinalIgnoreCase);
-
-        foreach (var path in files)
-        {
-            var fileName = Path.GetFileName(path);
-            if (applied.Contains(fileName))
-            {
-                Log.Information("Atlandı (uygulanmış): {File}", fileName);
-                continue;
-            }
-
-            var sql = File.ReadAllText(path);
-            conn.Execute(sql);
-            conn.Execute(
-                "INSERT INTO _schema_migrations (filename) VALUES (@File) ON CONFLICT (filename) DO NOTHING",
-                new { File = fileName });
-            Log.Information("Migration uygulandı: {File}", fileName);
-        }
-
+        MigrationRunner.Run(dbFactory);
         Log.Information("Migration tamamlandı. Uygulama kapatılıyor.");
         return;
     }
@@ -258,6 +230,18 @@ try
             errorCode = "FORBIDDEN";
             errorMessage = unauthEx.Message;
         }
+        else if (ex is Microsoft.AspNetCore.Http.BadHttpRequestException badReqEx)
+        {
+            statusCode = badReqEx.StatusCode;
+            errorCode = "BAD_REQUEST";
+            errorMessage = badReqEx.InnerException?.Message ?? badReqEx.Message;
+        }
+        else if (ex is System.Text.Json.JsonException jsonEx)
+        {
+            statusCode = 400;
+            errorCode = "INVALID_JSON";
+            errorMessage = jsonEx.Message;
+        }
 
         context.Response.StatusCode = statusCode;
         var responseObj = new
@@ -287,6 +271,7 @@ try
     app.MapInviteEndpoints();
     app.MapParentEndpoints();
     app.MapStudentEndpoints();
+    app.MapStudentPortalEndpoints();
     app.MapCurriculumEndpoints();
     app.MapHomeworkEndpoints();
     app.MapExamEndpoints();

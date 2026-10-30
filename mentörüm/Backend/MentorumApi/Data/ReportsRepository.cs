@@ -14,7 +14,7 @@ namespace MentorumApi.Data
                 SELECT 
                     (SELECT COUNT(*) FROM students WHERE program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId) AND is_active = 1) AS TotalStudents,
                     (SELECT COUNT(*) FROM homework_assignments WHERE program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId) AND status IN ('DONE', 'LATE_DONE') AND completed_at >= CURRENT_DATE) AS CompletedToday,
-                    (SELECT COUNT(*) FROM homework_assignments WHERE program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId) AND status = 'OVERDUE') AS TotalOverdue,
+                    (SELECT COUNT(*) FROM homework_assignments WHERE program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId) AND (status = 'OVERDUE' OR (status = 'PENDING' AND due_date < CURRENT_DATE))) AS TotalOverdue,
                     (SELECT COUNT(*) FROM homework_assignments WHERE program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId) AND due_date >= date_trunc('week', CURRENT_DATE)) AS AssignedThisWeek,
                     
                     -- Başarı Oranı (Tamamlanan / Toplam)
@@ -42,7 +42,7 @@ namespace MentorumApi.Data
             var sql = @"
                 SELECT 
                     (SELECT COUNT(*) FROM homework_assignments WHERE student_id = @StudentId AND status IN ('DONE', 'LATE_DONE')) AS TotalCompleted,
-                    (SELECT COUNT(*) FROM homework_assignments WHERE student_id = @StudentId AND status = 'OVERDUE') AS TotalOverdue,
+                    (SELECT COUNT(*) FROM homework_assignments WHERE student_id = @StudentId AND (status = 'OVERDUE' OR (status = 'PENDING' AND due_date < CURRENT_DATE))) AS TotalOverdue,
                     (SELECT COUNT(*) FROM homework_assignments WHERE student_id = @StudentId) AS TotalAssigned,
                     
                     (
@@ -91,7 +91,7 @@ namespace MentorumApi.Data
                 FROM homework_assignments h
                 JOIN users u ON u.id = h.student_id
                 WHERE h.program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)
-                  AND h.status = 'OVERDUE'
+                  AND (h.status = 'OVERDUE' OR (h.status = 'PENDING' AND h.due_date < CURRENT_DATE))
                 ORDER BY h.due_date ASC",
                 new { CoachId = coachId });
             result.OverdueHomework = overdue.ToList();

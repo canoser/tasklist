@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace MentorumApi.DTOs
 {
     public class StudentCheckinDto
@@ -63,6 +65,7 @@ namespace MentorumApi.DTOs
         public Guid? UploadId { get; set; }
     }
 
+    [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
     public class CoachReplyQuestionRequest
     {
         public string? Reply { get; set; }
@@ -116,6 +119,7 @@ namespace MentorumApi.DTOs
         public List<string> Threats { get; set; } = new();
     }
 
+    [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
     public class UpdateCoachingToolsRequest
     {
         public string? SwotData { get; set; }
@@ -132,6 +136,7 @@ namespace MentorumApi.DTOs
         public int? WeeklyTargetQuestions { get; set; }
     }
 
+    [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
     public class ToggleHabitRequest
     {
         public string HabitId { get; set; } = "";

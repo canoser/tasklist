@@ -24,7 +24,7 @@ namespace MentorumApi.Endpoints
                 [FromServices] IStorageService storage,
                 ClaimsPrincipal user) =>
             {
-                var senderId = GetUserId(user);
+                var senderId = user.GetUserId();
                 if (senderId == null) return Results.Unauthorized();
                 var role = user.FindFirst(ClaimTypes.Role)?.Value;
 
@@ -75,7 +75,7 @@ namespace MentorumApi.Endpoints
 
             group.MapPost("/{id:guid}/confirm", async (Guid id, [FromServices] UploadRepository repo, [FromServices] IStorageService storage, ClaimsPrincipal user) =>
             {
-                var senderId = GetUserId(user);
+                var senderId = user.GetUserId();
                 if (senderId == null) return Results.Unauthorized();
                 var upload = await repo.GetByIdAsync(id);
                 if (upload == null || upload.SenderUserId != senderId.Value)
@@ -95,7 +95,7 @@ namespace MentorumApi.Endpoints
 
             group.MapGet("/{id:guid}/url", async (Guid id, [FromServices] UploadRepository repo, [FromServices] ProgramAccessGuard guard, [FromServices] IStorageService storage, ClaimsPrincipal user) =>
             {
-                var userId = GetUserId(user);
+                var userId = user.GetUserId();
                 if (userId == null) return Results.Unauthorized();
                 var role = user.FindFirst(ClaimTypes.Role)?.Value;
                 var upload = await repo.GetByIdAsync(id);
@@ -109,7 +109,10 @@ namespace MentorumApi.Endpoints
                         && await guard.IsTeacherOfCourseAsync(userId.Value, upload.CourseId.Value)
                         && await guard.CanTeacherShareFilesAsync(userId.Value, upload.CourseId.Value),
                     "Student" => upload.SenderUserId == userId.Value || upload.RecipientUserId == userId.Value,
-                    "Parent" => upload.SenderUserId == userId.Value || upload.RecipientUserId == userId.Value,
+                    "Parent" => upload.SenderUserId == userId.Value
+                        || upload.RecipientUserId == userId.Value
+                        || await guard.IsParentOfStudentAsync(userId.Value, upload.RecipientUserId)
+                        || await guard.IsParentOfStudentAsync(userId.Value, upload.SenderUserId),
                     _ => false
                 };
 
@@ -133,7 +136,7 @@ namespace MentorumApi.Endpoints
 
             group.MapPost("/{id:guid}/deliver", async (Guid id, [FromBody] DeliverRequest req, [FromServices] UploadRepository repo, [FromServices] IStorageService storage, ClaimsPrincipal user) =>
             {
-                var userId = GetUserId(user);
+                var userId = user.GetUserId();
                 if (userId == null) return Results.Unauthorized();
                 var upload = await repo.GetByIdAsync(id);
                 if (upload == null || upload.RecipientUserId != userId.Value)
@@ -148,14 +151,14 @@ namespace MentorumApi.Endpoints
 
             group.MapGet("/", async ([FromServices] UploadRepository repo, ClaimsPrincipal user) =>
             {
-                var userId = GetUserId(user);
+                var userId = user.GetUserId();
                 if (userId == null) return Results.Unauthorized();
                 return Results.Ok(await repo.ListForUserAsync(userId.Value));
             });
 
             group.MapGet("/recipients", async ([FromQuery] Guid courseId, [FromServices] UploadRepository repo, [FromServices] ProgramAccessGuard guard, ClaimsPrincipal user) =>
             {
-                var studentId = GetUserId(user);
+                var studentId = user.GetUserId();
                 if (studentId == null) return Results.Unauthorized();
                 if (!await guard.IsStudentInCourseAsync(studentId.Value, courseId))
                     return Results.Json(new { error = "Derse erişiminiz yok." }, statusCode: 403);
@@ -165,7 +168,7 @@ namespace MentorumApi.Endpoints
             var coachGroup = app.MapGroup("/api/v1/coach").RequireAuthorization("RequireCoachRole");
             coachGroup.MapGet("/storage-usage", async ([FromServices] UploadRepository repo, ClaimsPrincipal user) =>
             {
-                var coachId = GetUserId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 var usedBytes = await repo.GetUsedBytesAsync(coachId.Value);
                 var settings = await repo.GetCoachStorageAsync(coachId.Value);
@@ -195,7 +198,7 @@ namespace MentorumApi.Endpoints
             var homeworkAttach = app.MapGroup("/api/v1/homework").RequireAuthorization("RequireCoachRole");
             homeworkAttach.MapGet("/{homeworkId:guid}/attachments", async (Guid homeworkId, [FromServices] UploadRepository repo, [FromServices] ProgramAccessGuard guard, ClaimsPrincipal user) =>
             {
-                var coachId = GetUserId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 var programId = await repo.GetHomeworkProgramIdAsync(homeworkId);
                 if (programId == null || !await guard.IsCoachInProgramAsync(coachId.Value, programId.Value))
@@ -207,7 +210,7 @@ namespace MentorumApi.Endpoints
             var shareToggle = app.MapGroup("/api/v1/courses").RequireAuthorization("RequireCoachRole");
             shareToggle.MapPut("/{courseId:guid}/teacher-file-sharing", async (Guid courseId, [FromBody] TeacherFileSharingRequest req, [FromServices] UploadRepository repo, [FromServices] ProgramAccessGuard guard, ClaimsPrincipal user) =>
             {
-                var coachId = GetUserId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 if (!await guard.IsCoachOfCourseAsync(coachId.Value, courseId))
                     return Results.NotFound(new { error = "Ders bulunamadı." });
@@ -274,12 +277,6 @@ namespace MentorumApi.Endpoints
             }
 
             return (programId.Value, recipient, courseId, homeworkId, questionId);
-        }
-
-        private static Guid? GetUserId(ClaimsPrincipal user)
-        {
-            var idStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            return Guid.TryParse(idStr, out var id) ? id : null;
         }
     }
 }

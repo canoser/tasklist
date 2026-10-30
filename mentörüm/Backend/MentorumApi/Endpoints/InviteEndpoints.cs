@@ -1,9 +1,6 @@
-using System.Security.Cryptography;
 using System.Security.Claims;
-using Dapper;
 using MentorumApi.Data;
 using MentorumApi.DTOs;
-using MentorumApi.Models;
 using MentorumApi.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,12 +15,12 @@ namespace MentorumApi.Endpoints
             // Koç davet gönderir
             group.MapPost("/send", async (
                 [FromBody] InviteRequest req,
-                [FromServices] DbConnectionFactory db,
+                [FromServices] InviteRepository repo,
                 [FromServices] IEmailService emailService,
-                System.Security.Claims.ClaimsPrincipal user) =>
+                ClaimsPrincipal user) =>
             {
-                var coachIdStr = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-                if (!Guid.TryParse(coachIdStr, out var coachId)) return Results.Unauthorized();
+                var coachId = user.GetUserId();
+                if (coachId == null) return Results.Unauthorized();
 
                 if (!string.IsNullOrWhiteSpace(req.Role))
                 {
@@ -40,62 +37,42 @@ namespace MentorumApi.Endpoints
                 if (req.Role != "Student" && req.Role != "Parent" && req.Role != "Teacher" && req.Role != "Coach")
                     return Results.BadRequest(new { error = "Geçersiz rol. Student, Parent, Teacher veya Coach olabilir." });
 
-                using var conn = db.CreateConnection();
-                
                 if (req.Role == "Parent")
                 {
                     if (req.RelatedId == null) return Results.BadRequest(new { error = "Veli daveti için öğrenci ID gerekli." });
-                    var studentOwned = await conn.QuerySingleOrDefaultAsync<int?>(
-                        @"SELECT 1 FROM students s JOIN program_coaches pc ON pc.program_id = s.program_id AND pc.coach_id = @CoachId WHERE s.id = @RelatedId",
-                        new { req.RelatedId, CoachId = coachId });
-                    if (studentOwned == null) return Results.BadRequest(new { error = "Öğrenci bulunamadı veya yetkiniz yok." });
+                    if (!await repo.CanCoachInviteParentAsync(coachId.Value, req.RelatedId.Value))
+                        return Results.BadRequest(new { error = "Öğrenci bulunamadı veya yetkiniz yok." });
                 }
                 else // Student, Teacher, Coach → related_id = program_id
                 {
                     if (req.RelatedId == null) return Results.BadRequest(new { error = "Davet için program ID gerekli." });
-                    var isAdmin = await conn.QuerySingleOrDefaultAsync<int?>(
-                        "SELECT 1 FROM program_coaches WHERE program_id = @ProgramId AND coach_id = @CoachId AND role = 'YONETICI'",
-                        new { ProgramId = req.RelatedId, CoachId = coachId });
-                    if (isAdmin == null) return Results.BadRequest(new { error = "Program bulunamadı veya yönetici değilsiniz." });
+                    if (!await repo.IsCoachProgramAdminAsync(coachId.Value, req.RelatedId.Value))
+                        return Results.BadRequest(new { error = "Program bulunamadı veya yönetici değilsiniz." });
                 }
 
                 // V13.2: öğretmen limiti kontrolü (program sahibi koçun limiti)
-                if (req.Role == "Teacher")
+                if (req.Role == "Teacher" && req.RelatedId != null)
                 {
-                    var maxTeachers = await conn.QuerySingleOrDefaultAsync<int?>(
-                        @"SELECT COALESCE(c.max_teachers, (SELECT value::int FROM system_settings WHERE key = 'default_max_teachers'))
-                          FROM coaches c
-                          WHERE c.id = (SELECT coach_id FROM program_coaches WHERE program_id = @ProgramId AND role = 'YONETICI' LIMIT 1)",
-                        new { ProgramId = req.RelatedId });
-                    if (maxTeachers.HasValue)
-                    {
-                        var teacherCount = await conn.ExecuteScalarAsync<int>(
-                            "SELECT COUNT(1) FROM teachers WHERE program_id = @ProgramId AND is_active = 1",
-                            new { ProgramId = req.RelatedId });
-                        if (teacherCount >= maxTeachers.Value)
-                            return Results.Conflict(new { error = "Öğretmen limiti aşıldı.", code = "TEACHER_LIMIT_EXCEEDED" });
-                    }
+                    if (await repo.IsTeacherLimitExceededAsync(req.RelatedId.Value))
+                        return Results.Conflict(new { error = "Öğretmen limiti aşıldı.", code = "TEACHER_LIMIT_EXCEEDED" });
                 }
 
                 var emailLower = req.Email.ToLowerInvariant();
-                var existingUser = await conn.QuerySingleOrDefaultAsync<User>(
-                    "SELECT id AS Id, email AS Email, role AS Role, full_name AS FullName FROM users WHERE email = @Email",
-                    new { Email = emailLower });
+                var existingUser = await repo.GetUserByEmailAsync(emailLower);
 
                 if (existingUser != null)
                 {
                     if (req.Role == "Student" && existingUser.Role == "Student")
                     {
-                        var existingProgramId = await conn.QuerySingleOrDefaultAsync<Guid?>(
-                            "SELECT program_id FROM students WHERE id = @StudentId",
-                            new { StudentId = existingUser.Id });
+                        var existingProgramId = await repo.GetStudentProgramIdAsync(existingUser.Id);
 
                         if (existingProgramId != null)
                         {
                             if (existingProgramId.Value != req.RelatedId)
                             {
-                                return Results.Conflict(new { 
-                                    error = "Bu öğrenci şu anda aktif başka bir koçluk veya okul programına kayıtlıdır. Transfer işlemi için sistem yöneticisine başvurunuz." 
+                                return Results.Conflict(new
+                                {
+                                    error = "Bu öğrenci şu anda aktif başka bir koçluk veya okul programına kayıtlıdır. Transfer işlemi için sistem yöneticisine başvurunuz."
                                 });
                             }
                             // Aynı programda zaten kayıtlı: şifre sıfırlama için yeni davet oluştur (re-invite) → aşağıda token üretilir.
@@ -103,14 +80,12 @@ namespace MentorumApi.Endpoints
                         else
                         {
                             // Yalnızca sisteme önceden kaydolmuş ama henüz hiçbir programa bağlanmamış öğrenci eklenebilir
-                            await conn.ExecuteAsync(@"
-                                INSERT INTO students (id, program_id, is_active)
-                                VALUES (@Id, @ProgramId, 1)",
-                                new { Id = existingUser.Id, ProgramId = req.RelatedId });
+                            await repo.AddExistingStudentToProgramAsync(existingUser.Id, req.RelatedId!.Value);
 
-                            return Results.Ok(new { 
-                                message = $"'{existingUser.FullName}' adlı öğrenci programa başarıyla eklendi.", 
-                                directAdded = true 
+                            return Results.Ok(new
+                            {
+                                message = $"'{existingUser.FullName}' adlı öğrenci programa başarıyla eklendi.",
+                                directAdded = true
                             });
                         }
                     }
@@ -128,19 +103,8 @@ namespace MentorumApi.Endpoints
                 var code = InviteCode.Generate();
                 var expiresAt = DateTime.UtcNow.AddHours(48); // Kısa geçerlilik: 48 saat
                 var inviteLink = $"https://mentorum.dersmatris.com/invite/{code}";
-                
-                await conn.ExecuteAsync(@"
-                    INSERT INTO invite_tokens (id, token, code, email, role, related_id, expires_at)
-                    VALUES (@Id, @Token, @Code, @Email, @Role, @RelatedId, @ExpiresAt)",
-                    new { 
-                        Id = Guid.NewGuid(), 
-                        Token = token, 
-                        Code = code,
-                        Email = emailLower, 
-                        Role = req.Role, 
-                        RelatedId = req.RelatedId,
-                        ExpiresAt = expiresAt 
-                    });
+
+                await repo.CreateInviteTokenAsync(token, code, emailLower, req.Role, req.RelatedId, expiresAt);
 
                 if (req.SendEmail)
                 {
@@ -153,40 +117,22 @@ namespace MentorumApi.Endpoints
 
             // Koçun programlarına ait bekleyen davetleri listele (Öğrenci + Veli davetleri)
             group.MapGet("/pending", async (
-                [FromServices] DbConnectionFactory db,
+                [FromServices] InviteRepository repo,
                 ClaimsPrincipal user) =>
             {
-                var coachIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!Guid.TryParse(coachIdStr, out var coachId)) return Results.Unauthorized();
+                var coachId = user.GetUserId();
+                if (coachId == null) return Results.Unauthorized();
 
-                using var conn = db.CreateConnection();
-                var pending = await conn.QueryAsync(@"
-                    SELECT it.id, it.email, it.code, it.role, it.created_at AS CreatedAt, it.expires_at AS ExpiresAt,
-                           COALESCE(cp.name, cp_parent.name, 'Genel') AS ProgramName,
-                           COALESCE(it.related_id, s.program_id) AS ProgramId
-                    FROM invite_tokens it
-                    LEFT JOIN coaching_programs cp ON cp.id = it.related_id AND it.role != 'Parent'
-                    LEFT JOIN students s ON s.id = it.related_id AND it.role = 'Parent'
-                    LEFT JOIN coaching_programs cp_parent ON cp_parent.id = s.program_id
-                    WHERE (
-                        (it.role != 'Parent' AND it.related_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId))
-                        OR
-                        (it.role = 'Parent' AND s.program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId))
-                    )
-                      AND it.is_used = 0
-                      AND it.expires_at > NOW()
-                    ORDER BY it.created_at DESC",
-                    new { CoachId = coachId });
-
+                var pending = await repo.GetPendingInvitesForCoachAsync(coachId.Value);
                 return Results.Ok(pending);
             }).RequireAuthorization("RequireCoachRole");
 
             // Davet detayını görüntüle (token validasyonu)
             group.MapGet("/{token}", async (
                 string token,
-                [FromServices] DbConnectionFactory db) =>
+                [FromServices] InviteRepository repo) =>
             {
-                var invite = await GetInviteByCodeAsync(db, token);
+                var invite = await repo.GetInviteByCodeAsync(token);
                 if (invite == null)
                     return Results.NotFound(new { error = "Davet bulunamadı." });
                 if (invite.IsUsed == 1)
@@ -201,144 +147,26 @@ namespace MentorumApi.Endpoints
             group.MapPost("/{token}/accept", async (
                 string token,
                 [FromBody] InviteAcceptRequest req,
-                [FromServices] DbConnectionFactory db,
+                [FromServices] InviteRepository repo,
                 [FromServices] JwtService jwt,
                 HttpContext ctx) =>
             {
-                var invite = await GetInviteByCodeAsync(db, token);
+                var invite = await repo.GetInviteByCodeAsync(token);
                 if (invite == null || invite.IsUsed == 1 || invite.ExpiresAt < DateTime.UtcNow)
                     return Results.BadRequest(new { error = "Geçersiz, kullanılmış veya süresi dolmuş davet." });
 
                 if (invite.Role == "Student" && invite.RelatedId == null)
                     return Results.BadRequest(new { error = "Öğrenci davetinde koç bilgisi eksik." });
 
-                using var conn = db.CreateConnection();
-                conn.Open(); // Transaction için bağlantı açık olmalı
-
-                var existingUserId = await conn.ExecuteScalarAsync<Guid?>("SELECT id FROM users WHERE email = @Email", new { Email = invite.Email });
-
-                Guid userId;
-                User user;
-                var isPasswordReset = existingUserId.HasValue;
-
-                if (isPasswordReset)
-                {
-                    userId = existingUserId.Value;
-                    user = await conn.QuerySingleOrDefaultAsync<User>(
-                        "SELECT id AS Id, email AS Email, password_hash AS PasswordHash, google_id AS GoogleId, role AS Role, full_name AS FullName, avatar_url AS AvatarUrl, is_active AS IsActive, is_admin AS IsAdmin, approval_status AS ApprovalStatus, created_at AS CreatedAt, updated_at AS UpdatedAt FROM users WHERE id = @Id",
-                        new { Id = userId })
-                        ?? throw new InvalidOperationException("Kullanıcı bulunamadı.");
-                }
-                else
-                {
-                    userId = Guid.NewGuid();
-                    user = new User 
-                    {
-                        Id = userId,
-                        Email = invite.Email,
-                        PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.Password),
-                        Role = invite.Role,
-                        FullName = req.FullName,
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow
-                    };
-                }
-
-                using var tx = conn.BeginTransaction();
-                try 
-                {
-                    if (isPasswordReset)
-                    {
-                        // Re-invite: mevcut kullanıcının şifresini sıfırla (yeni kayıt açma).
-                        var newHash = BCrypt.Net.BCrypt.HashPassword(req.Password);
-                        await conn.ExecuteAsync("UPDATE users SET password_hash = @Hash, updated_at = NOW() WHERE id = @Id", new { Hash = newHash, Id = userId }, tx);
-
-                        if (invite.Role == "Parent" && invite.RelatedId != null)
-                        {
-                            await conn.ExecuteAsync("INSERT INTO parents (id) VALUES (@Id) ON CONFLICT (id) DO NOTHING", new { Id = userId }, tx);
-                            await conn.ExecuteAsync(@"
-                                INSERT INTO student_parents (id, student_id, parent_id, parent_email, is_accepted, can_view_exams, can_view_homework, can_view_calendar, can_view_study_stats, can_view_payments)
-                                VALUES (@Id, @StudentId, @ParentId, @ParentEmail, 1, 1, 1, 1, 1, 0)
-                                ON CONFLICT DO NOTHING",
-                                new { Id = Guid.NewGuid(), StudentId = invite.RelatedId, ParentId = userId, ParentEmail = user.Email }, tx);
-                        }
-                    }
-                    else
-                    {
-                        await conn.ExecuteAsync(@"
-                            INSERT INTO users (id, email, password_hash, role, full_name, created_at, updated_at) 
-                            VALUES (@Id, @Email, @PasswordHash, @Role, @FullName, @CreatedAt, @UpdatedAt)", 
-                            user, tx);
-
-                    if (user.Role == "Student")
-                    {
-                        // Öğrenci olarak kaydedildi. Daveti atan CoachId = RelatedId olabilir
-                        await conn.ExecuteAsync(@"
-                            INSERT INTO students (id, program_id, is_active) 
-                            VALUES (@Id, @ProgramId, 1)", 
-                            new { Id = userId, ProgramId = invite.RelatedId }, tx);
-                    }
-                    else if (user.Role == "Parent")
-                    {
-                        await conn.ExecuteAsync("INSERT INTO parents (id) VALUES (@Id) ON CONFLICT (id) DO NOTHING", new { Id = userId }, tx);
-                        
-                        // Öğrenci - Veli ilişkisini kur
-                        if (invite.RelatedId != null)
-                        {
-                            await conn.ExecuteAsync(@"
-                                INSERT INTO student_parents (id, student_id, parent_id, parent_email, is_accepted, can_view_exams, can_view_homework, can_view_calendar, can_view_study_stats, can_view_payments)
-                                VALUES (@Id, @StudentId, @ParentId, @ParentEmail, 1, 1, 1, 1, 1, 0)
-                                ON CONFLICT DO NOTHING",
-                                new { Id = Guid.NewGuid(), StudentId = invite.RelatedId, ParentId = userId, ParentEmail = user.Email }, tx);
-                        }
-                    }
-
-                    else if (user.Role == "Teacher")
-                    {
-                        await conn.ExecuteAsync("INSERT INTO teachers (id, program_id, is_active) VALUES (@Id, @ProgramId, 1)", new { Id = userId, ProgramId = invite.RelatedId }, tx);
-                        await conn.ExecuteAsync(@"
-                            INSERT INTO program_teachers (id, program_id, teacher_id)
-                            VALUES (@Id, @ProgramId, @TeacherId)",
-                            new { Id = Guid.NewGuid(), ProgramId = invite.RelatedId, TeacherId = userId }, tx);
-                    }
-                    else if (user.Role == "Coach")
-                    {
-                        // Yardımcı koç: onaysız (davet eden yönetici kefil), kendi programını açamaz (max_programs=0)
-                        await conn.ExecuteAsync(@"
-                            INSERT INTO coaches (id, plan_type, approval_status, max_programs)
-                            VALUES (@Id, 'free', 'APPROVED', 0)", 
-                            new { Id = userId }, tx);
-                        await conn.ExecuteAsync(@"
-                            INSERT INTO program_coaches (id, program_id, coach_id, role)
-                            VALUES (@Id, @ProgramId, @CoachId, 'YARDIMCI')",
-                            new { Id = Guid.NewGuid(), ProgramId = invite.RelatedId, CoachId = userId }, tx);
-                    }
-                    }
-
-                    // Token'ı kullanıldı işaretle
-                    var inviteClaimed = await conn.ExecuteAsync("UPDATE invite_tokens SET is_used = 1 WHERE id = @Id AND is_used = 0", new { Id = invite.Id }, tx);
-                    if (inviteClaimed == 0)
-                    {
-                        tx.Rollback();
-                        return Results.BadRequest(new { error = "Bu davet zaten kullanılmış." });
-                    }
-                    tx.Commit();
-                }
-                catch
-                {
-                    tx.Rollback();
-                    throw;
-                }
+                var refreshToken = jwt.GenerateRefreshToken();
+                var (user, alreadyUsed) = await repo.AcceptInviteAsync(invite, req, refreshToken);
+                if (alreadyUsed || user == null)
+                    return Results.BadRequest(new { error = "Bu davet zaten kullanılmış." });
 
                 var tokenStr = jwt.GenerateAccessToken(user);
-                var refreshToken = jwt.GenerateRefreshToken();
 
-                await conn.ExecuteAsync(@"
-                    INSERT INTO refresh_tokens (id, user_id, token, expires_at)
-                    VALUES (@Id, @UserId, @Token, @ExpiresAt)",
-                    new { Id = Guid.NewGuid(), UserId = user.Id, Token = refreshToken, ExpiresAt = DateTime.UtcNow.AddDays(7) });
-
-                ctx.Response.Cookies.Append("refresh_token", refreshToken, new CookieOptions {
+                ctx.Response.Cookies.Append("refresh_token", refreshToken, new CookieOptions
+                {
                     HttpOnly = true,
                     Secure = true,
                     SameSite = SameSiteMode.Strict,
@@ -353,26 +181,5 @@ namespace MentorumApi.Endpoints
                 });
             });
         }
-
-        // Daveti koda göre getirir (normalize + sorgu). Bulunamazsa null döner.
-        private static async Task<InviteQueryModel?> GetInviteByCodeAsync(DbConnectionFactory db, string token)
-        {
-            using var conn = db.CreateConnection();
-            var code = InviteCode.Normalize(token);
-            return await conn.QuerySingleOrDefaultAsync<InviteQueryModel>(
-                "SELECT id AS Id, email AS Email, role AS Role, related_id AS RelatedId, expires_at AS ExpiresAt, is_used AS IsUsed FROM invite_tokens WHERE code = @Code",
-                new { Code = code });
-        }
     }
 }
-
-public class InviteQueryModel
-{
-    public Guid Id { get; set; }
-    public string Email { get; set; } = string.Empty;
-    public string Role { get; set; } = string.Empty;
-    public Guid? RelatedId { get; set; }
-    public DateTime ExpiresAt { get; set; }
-    public int IsUsed { get; set; }
-}
-

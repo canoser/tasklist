@@ -7,6 +7,14 @@ namespace MentorumApi.Data
     {
         public QuestionCollectionRepository(DbConnectionFactory connectionFactory) : base(connectionFactory) { }
 
+        public async Task<Guid?> GetDefaultCoachProgramIdAsync(Guid coachId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            return await conn.ExecuteScalarAsync<Guid?>(
+                "SELECT program_id FROM program_coaches WHERE coach_id = @CoachId ORDER BY created_at LIMIT 1",
+                new { CoachId = coachId });
+        }
+
         public async Task<Guid> CreateAsync(Guid coachId, Guid programId, string title)
         {
             var id = Guid.NewGuid();

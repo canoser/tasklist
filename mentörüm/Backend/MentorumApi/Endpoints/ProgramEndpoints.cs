@@ -1,4 +1,3 @@
-using Dapper;
 using MentorumApi.Data;
 using MentorumApi.DTOs;
 using MentorumApi.Services;
@@ -16,14 +15,14 @@ namespace MentorumApi.Endpoints
 
             group.MapGet("/", async ([FromServices] ProgramRepository repo, ClaimsPrincipal user) =>
             {
-                var coachId = GetCoachId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 return Results.Ok(await repo.GetProgramsByCoachAsync(coachId.Value));
             });
 
             group.MapPost("/", async ([FromBody] CreateProgramRequest req, [FromServices] ProgramRepository repo, ClaimsPrincipal user) =>
             {
-                var coachId = GetCoachId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 try
                 {
@@ -38,7 +37,7 @@ namespace MentorumApi.Endpoints
 
             group.MapGet("/{id:guid}", async (Guid id, [FromServices] ProgramRepository repo, ClaimsPrincipal user) =>
             {
-                var coachId = GetCoachId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 var p = await repo.GetProgramAsync(id, coachId.Value);
                 return p == null ? Results.NotFound(new { error = "Program bulunamadı." }) : Results.Ok(p);
@@ -46,7 +45,7 @@ namespace MentorumApi.Endpoints
 
             group.MapPut("/{id:guid}", async (Guid id, [FromBody] UpdateProgramRequest req, [FromServices] ProgramRepository repo, ClaimsPrincipal user) =>
             {
-                var coachId = GetCoachId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 return await repo.UpdateProgramAsync(id, coachId.Value, req)
                     ? Results.Ok(new { message = "Güncellendi." })
@@ -55,7 +54,7 @@ namespace MentorumApi.Endpoints
 
             group.MapDelete("/{id:guid}", async (Guid id, [FromServices] ProgramRepository repo, ClaimsPrincipal user) =>
             {
-                var coachId = GetCoachId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 var r = await repo.ArchiveProgramAsync(id, coachId.Value);
                 return r switch
@@ -68,14 +67,14 @@ namespace MentorumApi.Endpoints
 
             group.MapGet("/{id:guid}/coaches", async (Guid id, [FromServices] ProgramRepository repo, ClaimsPrincipal user) =>
             {
-                var coachId = GetCoachId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 return Results.Ok(await repo.GetProgramCoachesAsync(id, coachId.Value));
             });
 
             group.MapPost("/{id:guid}/coaches", async (Guid id, [FromBody] AddProgramCoachRequest req, [FromServices] ProgramRepository repo, ClaimsPrincipal user) =>
             {
-                var coachId = GetCoachId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 var r = await repo.AddCoachAsync(id, coachId.Value, req.CoachId);
                 return r switch
@@ -90,7 +89,7 @@ namespace MentorumApi.Endpoints
 
             group.MapDelete("/{id:guid}/coaches/{coachId:guid}", async (Guid id, Guid coachId, [FromServices] ProgramRepository repo, ClaimsPrincipal user) =>
             {
-                var adminId = GetCoachId(user);
+                var adminId = user.GetUserId();
                 if (adminId == null) return Results.Unauthorized();
                 var r = await repo.RemoveCoachAsync(id, adminId.Value, coachId);
                 return r switch
@@ -105,7 +104,7 @@ namespace MentorumApi.Endpoints
 
             group.MapPost("/{id:guid}/transfer-admin", async (Guid id, [FromBody] TransferAdminRequest req, [FromServices] ProgramRepository repo, ClaimsPrincipal user) =>
             {
-                var adminId = GetCoachId(user);
+                var adminId = user.GetUserId();
                 if (adminId == null) return Results.Unauthorized();
                 var r = await repo.TransferAdminAsync(id, adminId.Value, req.CoachId);
                 return r switch
@@ -123,18 +122,14 @@ namespace MentorumApi.Endpoints
                 Guid id,
                 [FromQuery] int? limit,
                 [FromServices] AuditLogRepository auditRepo,
-                [FromServices] DbConnectionFactory db,
+                [FromServices] ProgramAccessGuard guard,
                 ClaimsPrincipal user) =>
             {
-                var coachId = GetCoachId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
 
-                using var conn = db.CreateConnection();
-                var isMember = await conn.ExecuteScalarAsync<int?>(
-                    "SELECT 1 FROM program_coaches WHERE program_id = @ProgramId AND coach_id = @CoachId",
-                    new { ProgramId = id, CoachId = coachId.Value });
-
-                if (isMember == null) return Results.Forbid();
+                if (!await guard.IsCoachInProgramAsync(coachId.Value, id))
+                    return Results.Forbid();
 
                 var logs = await auditRepo.GetByProgramAsync(id, limit ?? 100);
                 return Results.Ok(logs);
@@ -146,12 +141,15 @@ namespace MentorumApi.Endpoints
                 [FromQuery] Guid studentId,
                 [FromServices] ProgramRepository programRepo,
                 [FromServices] CurriculumRepository curriculumRepo,
+                [FromServices] ProgramAccessGuard guard,
                 ClaimsPrincipal user) =>
             {
-                var coachId = GetCoachId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 var p = await programRepo.GetProgramAsync(id, coachId.Value);
                 if (p == null) return Results.NotFound(new { error = "Program bulunamadı." });
+                if (!await guard.IsStudentInProgramAsync(studentId, id))
+                    return Results.Forbid();
                 var progress = await curriculumRepo.GetStudentCurriculumAsync(studentId);
                 return Results.Ok(progress);
             });
@@ -170,7 +168,7 @@ namespace MentorumApi.Endpoints
 
             admin.MapPost("/users/{userId:guid}/approve", async (Guid userId, [FromBody] ApproveUserRequest req, [FromServices] ProgramRepository repo, ClaimsPrincipal user) =>
             {
-                var adminId = GetCoachId(user);
+                var adminId = user.GetUserId();
                 if (adminId == null) return Results.Unauthorized();
                 var role = req.Role == "Student" || req.Role == "Parent" || req.Role == "Coach" ? req.Role : "Coach";
                 var ok = await repo.ApproveUserAsync(userId, role, req.MaxStudents, req.MaxTeachers, req.StorageQuotaMb, adminId.Value);
@@ -179,7 +177,7 @@ namespace MentorumApi.Endpoints
 
             admin.MapPost("/users/{userId:guid}/reject", async (Guid userId, [FromServices] ProgramRepository repo, ClaimsPrincipal user) =>
             {
-                var adminId = GetCoachId(user);
+                var adminId = user.GetUserId();
                 if (adminId == null) return Results.Unauthorized();
                 var ok = await repo.RejectUserAsync(userId);
                 return ok ? Results.Ok(new { message = "Kullanıcı reddedildi." }) : Results.NotFound(new { error = "Kullanıcı bulunamadı." });
@@ -187,7 +185,7 @@ namespace MentorumApi.Endpoints
 
             admin.MapPost("/users", async ([FromBody] AddUserRequest req, [FromServices] ProgramRepository repo, [FromServices] IEmailService emailService, ClaimsPrincipal user) =>
             {
-                var adminId = GetCoachId(user);
+                var adminId = user.GetUserId();
                 if (adminId == null) return Results.Unauthorized();
                 if (string.IsNullOrEmpty(req.Email) || string.IsNullOrEmpty(req.FullName))
                     return Results.BadRequest(new { error = "Eksik bilgi" });
@@ -208,32 +206,16 @@ namespace MentorumApi.Endpoints
             admin.MapPost("/users/{userId:guid}/password", async (
                 Guid userId,
                 [FromBody] AdminChangePasswordRequest req,
-                [FromServices] DbConnectionFactory db) =>
+                [FromServices] ProgramRepository repo) =>
             {
                 var newPassword = req.NewPassword?.Trim() ?? "";
                 if (newPassword.Length < 6)
                     return Results.BadRequest(new { error = "Yeni şifre en az 6 karakter olmalı." });
 
-                using var conn = db.CreateConnection();
-                conn.Open();
-                var exists = await conn.ExecuteScalarAsync<int>("SELECT 1 FROM users WHERE id = @Id", new { Id = userId });
-                if (exists == 0)
-                    return Results.NotFound(new { error = "Kullanıcı bulunamadı." });
-
                 var hash = BCrypt.Net.BCrypt.HashPassword(newPassword);
-                using var tx = conn.BeginTransaction();
-                try
-                {
-                    await conn.ExecuteAsync(
-                        "UPDATE users SET password_hash = @Hash WHERE id = @Id",
-                        new { Hash = hash, Id = userId }, tx);
-                    // Güvenlik: kullanıcının mevcut oturumlarını/refresh token'larını iptal et.
-                    await conn.ExecuteAsync(
-                        "UPDATE refresh_tokens SET is_revoked = 1 WHERE user_id = @Id AND is_revoked = 0",
-                        new { Id = userId }, tx);
-                    tx.Commit();
-                }
-                catch { tx.Rollback(); throw; }
+                var ok = await repo.ChangeUserPasswordByAdminAsync(userId, hash);
+                if (!ok)
+                    return Results.NotFound(new { error = "Kullanıcı bulunamadı." });
 
                 return Results.Ok(new { message = "Şifre güncellendi. Kullanıcının eski oturumları kapatıldı." });
             });
@@ -257,7 +239,7 @@ namespace MentorumApi.Endpoints
                 if (req.MaxAttempts < 0 || req.MaxAttempts > 1000)
                     return Results.BadRequest(new { error = "Limit 0-1000 arasında olmalı." });
 
-                var adminId = GetCoachId(user);
+                var adminId = user.GetUserId();
                 var ok = await repo.UpdateRuleAsync(req.Path.Trim(), req.MaxAttempts, adminId);
                 if (!ok)
                     return Results.NotFound(new { error = "Kural bulunamadı." });
@@ -265,12 +247,6 @@ namespace MentorumApi.Endpoints
                 cache.Remove("rl_rule:" + req.Path.Trim());  // 30sn'lik önbelleği geçersiz kıl
                 return Results.Ok(new { message = "Kural güncellendi." });
             });
-        }
-
-        private static Guid? GetCoachId(ClaimsPrincipal user)
-        {
-            var idStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            return Guid.TryParse(idStr, out var id) ? id : null;
         }
 
         private static string GenerateRandomPassword()
@@ -283,11 +259,6 @@ namespace MentorumApi.Endpoints
             foreach (var b in bytes) sb.Append(chars[b % chars.Length]);
             return sb.ToString();
         }
-    }
-
-    public class ApproveCoachRequest
-    {
-        public int? MaxPrograms { get; set; }
     }
 
     public class ApproveUserRequest

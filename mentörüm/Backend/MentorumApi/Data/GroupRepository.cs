@@ -1,3 +1,4 @@
+using System.Data;
 using Dapper;
 using MentorumApi.DTOs;
 
@@ -7,6 +8,16 @@ namespace MentorumApi.Data
     {
         private readonly DbConnectionFactory _connectionFactory;
         public GroupRepository(DbConnectionFactory connectionFactory) { _connectionFactory = connectionFactory; }
+
+        public static Task<IEnumerable<Guid>> GetActiveMemberIdsAsync(IDbConnection conn, Guid groupId, IDbTransaction? tx = null) =>
+            conn.QueryAsync<Guid>("SELECT student_id FROM student_group_members WHERE group_id = @GroupId AND is_active = 1", new { GroupId = groupId }, tx);
+
+        public async Task<IEnumerable<Guid>> GetActiveMemberIdsAsync(Guid groupId, IDbTransaction? tx = null)
+        {
+            if (tx?.Connection != null) return await GetActiveMemberIdsAsync(tx.Connection, groupId, tx);
+            using var conn = _connectionFactory.CreateConnection();
+            return await GetActiveMemberIdsAsync(conn, groupId);
+        }
 
         private async Task<bool> IsMemberAsync(Guid programId, Guid coachId)
         {
@@ -98,7 +109,7 @@ namespace MentorumApi.Data
             if (!await IsMemberAsync(programId, coachId)) return "FORBIDDEN";
             using var conn = _connectionFactory.CreateConnection();
             var rows = await conn.ExecuteAsync(@"
-                DELETE FROM student_group_members
+                UPDATE student_group_members SET is_active = 0
                 WHERE group_id = @GroupId AND student_id = @StudentId AND program_id = @ProgramId",
                 new { GroupId = groupId, StudentId = studentId, ProgramId = programId });
             return rows > 0 ? "OK" : "NOT_FOUND";

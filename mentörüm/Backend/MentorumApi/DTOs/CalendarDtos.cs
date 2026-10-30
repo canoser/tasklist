@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization;
 
 namespace MentorumApi.DTOs
 {
@@ -52,15 +53,18 @@ namespace MentorumApi.DTOs
         public string? Notes { get; set; }
         public string? ActionItems { get; set; }
         public string? PrepNotes { get; set; }
+        public string? GrowData { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 
+    [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
     public class CreateCoachingSessionRequest
     {
         public DateTime? SessionDate { get; set; }
         public string? Title { get; set; }
         public string? Notes { get; set; }
         public string? ActionItems { get; set; }
+        public string? GrowData { get; set; }
     }
 
     public class UpdateSessionPrepRequest

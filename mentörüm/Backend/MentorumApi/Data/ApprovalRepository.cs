@@ -7,38 +7,20 @@ namespace MentorumApi.Data
     {
         public ApprovalRepository(DbConnectionFactory connectionFactory) : base(connectionFactory) { }
 
-        public async Task<IEnumerable<ApprovalItemDto>> ListAsync(Guid programId, string? status = null)
+        public Task<IEnumerable<ApprovalItemDto>> ListAsync(Guid programId, string? status = null)
+            => ListCoreAsync(programId, null, status);
+
+        public Task<IEnumerable<ApprovalItemDto>> ListForCoachAsync(Guid coachId, string? status = null)
+            => ListCoreAsync(null, coachId, status);
+
+        private async Task<IEnumerable<ApprovalItemDto>> ListCoreAsync(Guid? programId, Guid? coachId, string? status)
         {
             using var conn = _connectionFactory.CreateConnection();
-            var sql = @"
-                SELECT 
-                    id, 
-                    program_id AS ProgramId, 
-                    entity_type AS EntityType, 
-                    entity_id AS EntityId, 
-                    payload::text AS Payload, 
-                    status AS Status, 
-                    created_by AS CreatedBy, 
-                    created_at AS CreatedAt, 
-                    resolved_at AS ResolvedAt, 
-                    resolved_by AS ResolvedBy, 
-                    rejection_reason AS RejectionReason 
-                FROM approval_items 
-                WHERE program_id = @ProgramId";
+            var whereClause = programId.HasValue
+                ? "program_id = @ProgramId"
+                : "program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)";
 
-            if (!string.IsNullOrWhiteSpace(status))
-            {
-                sql += " AND status = @Status";
-            }
-            sql += " ORDER BY created_at DESC";
-
-            return await conn.QueryAsync<ApprovalItemDto>(sql, new { ProgramId = programId, Status = status });
-        }
-
-        public async Task<IEnumerable<ApprovalItemDto>> ListForCoachAsync(Guid coachId, string? status = null)
-        {
-            using var conn = _connectionFactory.CreateConnection();
-            var sql = @"
+            var sql = $@"
                 SELECT
                     id,
                     program_id AS ProgramId,
@@ -52,7 +34,7 @@ namespace MentorumApi.Data
                     resolved_by AS ResolvedBy,
                     rejection_reason AS RejectionReason
                 FROM approval_items
-                WHERE program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)";
+                WHERE {whereClause}";
 
             if (!string.IsNullOrWhiteSpace(status))
             {
@@ -60,7 +42,7 @@ namespace MentorumApi.Data
             }
             sql += " ORDER BY created_at DESC";
 
-            return await conn.QueryAsync<ApprovalItemDto>(sql, new { CoachId = coachId, Status = status });
+            return await conn.QueryAsync<ApprovalItemDto>(sql, new { ProgramId = programId, CoachId = coachId, Status = status });
         }
 
         public async Task<Guid> CreateAsync(Guid programId, string entityType, Guid entityId, string payload, Guid createdBy)

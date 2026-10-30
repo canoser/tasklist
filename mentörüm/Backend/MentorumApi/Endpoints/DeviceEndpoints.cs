@@ -13,7 +13,7 @@ namespace MentorumApi.Endpoints
 
             group.MapPost("/devices", async ([FromBody] UpsertDeviceRequest req, [FromServices] DeviceRepository repo, ClaimsPrincipal user) =>
             {
-                var userId = GetUserId(user);
+                var userId = user.GetUserId();
                 if (userId == null) return Results.Unauthorized();
                 if (string.IsNullOrWhiteSpace(req.DeviceUid))
                     return Results.BadRequest(new { error = "deviceUid gerekli." });
@@ -31,14 +31,14 @@ namespace MentorumApi.Endpoints
 
             group.MapGet("/devices", async ([FromServices] DeviceRepository repo, ClaimsPrincipal user) =>
             {
-                var userId = GetUserId(user);
+                var userId = user.GetUserId();
                 if (userId == null) return Results.Unauthorized();
                 return Results.Ok(await repo.ListAsync(userId.Value));
             });
 
             group.MapPut("/users/me/download-device", async ([FromBody] SetDownloadDeviceRequest req, [FromServices] DeviceRepository repo, ClaimsPrincipal user) =>
             {
-                var userId = GetUserId(user);
+                var userId = user.GetUserId();
                 if (userId == null) return Results.Unauthorized();
                 var ok = await repo.SetDownloadDeviceAsync(userId.Value, req.DeviceId);
                 return ok ? Results.Ok(new { message = "İndirme cihazı güncellendi." }) : Results.NotFound(new { error = "Cihaz bulunamadı." });
@@ -46,17 +46,11 @@ namespace MentorumApi.Endpoints
 
             group.MapPut("/users/me/hide-device-picker", async ([FromServices] DeviceRepository repo, ClaimsPrincipal user) =>
             {
-                var userId = GetUserId(user);
+                var userId = user.GetUserId();
                 if (userId == null) return Results.Unauthorized();
                 await repo.SetHideDevicePickerAsync(userId.Value);
                 return Results.Ok(new { message = "Cihaz seçici ipucu gizlendi." });
             });
-        }
-
-        private static Guid? GetUserId(ClaimsPrincipal user)
-        {
-            var idStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            return Guid.TryParse(idStr, out var id) ? id : null;
         }
     }
 }

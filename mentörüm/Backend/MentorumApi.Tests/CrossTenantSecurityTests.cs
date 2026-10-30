@@ -27,10 +27,17 @@ namespace MentorumApi.Tests
 
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
+            var userId = Request.Headers.TryGetValue("X-Test-UserId", out var uid) && !string.IsNullOrWhiteSpace(uid)
+                ? uid.ToString()
+                : "11111111-1111-1111-1111-111111111111";
+            var role = Request.Headers.TryGetValue("X-Test-Role", out var r) && !string.IsNullOrWhiteSpace(r)
+                ? r.ToString()
+                : "Coach";
+
             var claims = new[] 
             {
-                new Claim(ClaimTypes.NameIdentifier, "11111111-1111-1111-1111-111111111111"),
-                new Claim(ClaimTypes.Role, "Coach")
+                new Claim(ClaimTypes.NameIdentifier, userId),
+                new Claim(ClaimTypes.Role, role)
             };
             var identity = new ClaimsIdentity(claims, "Test");
             var principal = new ClaimsPrincipal(identity);
@@ -59,16 +66,10 @@ namespace MentorumApi.Tests
             Environment.SetEnvironmentVariable("JWT_ISSUER", "TestIssuer");
             Environment.SetEnvironmentVariable("JWT_AUDIENCE", "TestAudience");
 
+            await MentorumApi.Data.MigrationRunner.RunAsync(connectionString);
+
             using var conn = new Npgsql.NpgsqlConnection(connectionString);
             await conn.OpenAsync();
-            
-            var migrationsPath = Path.Combine(AppContext.BaseDirectory, "../../../../MentorumApi/Data/Migrations");
-            var migrationFiles = Directory.GetFiles(migrationsPath, "*.sql").OrderBy(f => f);
-            foreach (var file in migrationFiles)
-            {
-                var sql = await File.ReadAllTextAsync(file);
-                await conn.ExecuteAsync(sql);
-            }
 
             // Coach A (1111...), Coach B (2222...)
             // Student A (3333...) is assigned to Coach B.
@@ -166,6 +167,7 @@ namespace MentorumApi.Tests
 
     public class CrossTenantSecurityTests : IClassFixture<IntegrationTestFixture>, IClassFixture<WebApplicationFactory<Program>>
     {
+        private readonly IntegrationTestFixture _fixture;
         private readonly WebApplicationFactory<Program> _factory;
 
         public CrossTenantSecurityTests(IntegrationTestFixture fixture, WebApplicationFactory<Program> factory)
@@ -174,6 +176,7 @@ namespace MentorumApi.Tests
             Environment.SetEnvironmentVariable("JWT_ISSUER", "TestIssuer");
             Environment.SetEnvironmentVariable("JWT_AUDIENCE", "TestAudience");
             
+            _fixture = fixture;
             _factory = factory;
         }
 
@@ -229,6 +232,234 @@ namespace MentorumApi.Tests
             var client = CreateAuthClient();
             var response = await client.GetAsync($"/api/v1/students/{studentId}/sessions");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task MigrationRunner_RunAsync_WhenCalledRepeatedly_IsIdempotent()
+        {
+            var connStr = _fixture.PostgreSqlContainer.GetConnectionString();
+            await MentorumApi.Data.MigrationRunner.RunAsync(connStr);
+
+            using var conn = new Npgsql.NpgsqlConnection(connStr);
+            var count = await conn.ExecuteScalarAsync<int>("SELECT COUNT(1) FROM _schema_migrations WHERE filename = '001_schema.sql'");
+            Assert.Equal(1, count);
+        }
+
+        [Fact]
+        public async Task CoachingTools_And_GrowSession_PersistAndReturnStructuredJson()
+        {
+            var studentId = Guid.Parse("55555555-5555-5555-5555-555555555555");
+            var client = CreateAuthClient();
+
+            var putToolsRes = await client.PutAsync(
+                $"/api/v1/students/{studentId}/coaching-tools",
+                new StringContent(
+                    "{\"swotData\":\"{\\\"strengths\\\":\\\"Analitik\\\"}\",\"wheelData\":\"{\\\"Uyku\\\":8}\",\"habitsData\":\"[{\\\"id\\\":\\\"h1\\\",\\\"title\\\":\\\"Kitap\\\",\\\"completedDates\\\":[]}]\"}",
+                    System.Text.Encoding.UTF8,
+                    "application/json"));
+            Assert.Equal(HttpStatusCode.OK, putToolsRes.StatusCode);
+
+            var getToolsRes = await client.GetAsync($"/api/v1/students/{studentId}/coaching-tools");
+            Assert.Equal(HttpStatusCode.OK, getToolsRes.StatusCode);
+            var toolsBody = await getToolsRes.Content.ReadAsStringAsync();
+            Assert.Contains("Analitik", toolsBody);
+            Assert.Contains("Kitap", toolsBody);
+
+            var postSessionRes = await client.PostAsync(
+                $"/api/v1/students/{studentId}/sessions",
+                new StringContent(
+                    "{\"title\":\"GROW Seansı 1\",\"notes\":\"Notlar\",\"actionItems\":\"Aksiyon\",\"growData\":\"{\\\"goal\\\":\\\"İlk 5000\\\",\\\"reality\\\":\\\"75 net\\\",\\\"options\\\":\\\"Branş denemesi\\\",\\\"willAction\\\":\\\"Günde 2 deneme\\\"}\"}",
+                    System.Text.Encoding.UTF8,
+                    "application/json"));
+            Assert.Equal(HttpStatusCode.OK, postSessionRes.StatusCode);
+
+            var getSessionsRes = await client.GetAsync($"/api/v1/students/{studentId}/sessions");
+            Assert.Equal(HttpStatusCode.OK, getSessionsRes.StatusCode);
+            var sessionsBody = await getSessionsRes.Content.ReadAsStringAsync();
+            Assert.Contains("İlk 5000", sessionsBody);
+            Assert.Contains("Günde 2 deneme", sessionsBody);
+        }
+
+        [Fact]
+        public async Task RemovedGroupMember_IsSoftDeletedAndExcludedFromCourseRoster()
+        {
+            var programId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+            var courseId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
+            var groupId = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd");
+            var tempStudentId = Guid.Parse("66666666-6666-6666-6666-666666666699");
+
+            var connStr = _fixture.PostgreSqlContainer.GetConnectionString();
+            using (var conn = new Npgsql.NpgsqlConnection(connStr))
+            {
+                await conn.ExecuteAsync(@"
+                    INSERT INTO users (id, email, role, full_name) VALUES (@Id, 'temp_roster@test.com', 'Student', 'Temp Roster Student') ON CONFLICT DO NOTHING;
+                    INSERT INTO students (id, program_id, is_active) VALUES (@Id, @ProgramId, 1) ON CONFLICT DO NOTHING;
+                    INSERT INTO student_group_members (id, group_id, student_id, program_id, is_active) VALUES (gen_random_uuid(), @GroupId, @Id, @ProgramId, 1);",
+                    new { Id = tempStudentId, ProgramId = programId, GroupId = groupId });
+            }
+
+            var client = CreateAuthClient();
+            var delRes = await client.DeleteAsync($"/api/v1/programs/{programId}/groups/{groupId}/members/{tempStudentId}");
+            Assert.Equal(HttpStatusCode.OK, delRes.StatusCode);
+
+            var rosterRes = await client.GetAsync($"/api/v1/programs/{programId}/courses/{courseId}/students");
+            Assert.Equal(HttpStatusCode.OK, rosterRes.StatusCode);
+            var rosterBody = await rosterRes.Content.ReadAsStringAsync();
+            Assert.DoesNotContain(tempStudentId.ToString(), rosterBody);
+        }
+
+        [Fact]
+        public async Task GetProgramCurriculumProgress_WhenStudentBelongsToForeignProgram_ReturnsForbidden()
+        {
+            var programAId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+            var foreignStudentId = Guid.Parse("33333333-3333-3333-3333-333333333333"); // Program B öğrencisi
+            var client = CreateAuthClient();
+
+            var res = await client.GetAsync($"/api/v1/programs/{programAId}/curriculum/progress?studentId={foreignStudentId}");
+            Assert.Equal(HttpStatusCode.Forbidden, res.StatusCode);
+        }
+
+        [Fact]
+        public async Task CollectPayment_WhenAmountIsZeroOrNegative_ReturnsBadRequest()
+        {
+            var programAId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+            var studentBId = Guid.Parse("55555555-5555-5555-5555-555555555555");
+            var planId = Guid.NewGuid();
+            var itemId = Guid.NewGuid();
+
+            var connStr = _fixture.PostgreSqlContainer.GetConnectionString();
+            using (var conn = new Npgsql.NpgsqlConnection(connStr))
+            {
+                await conn.ExecuteAsync(@"
+                    INSERT INTO payment_plans (id, program_id, student_id, period_type, amount, currency, start_date, is_active, created_by)
+                    VALUES (@PlanId, @ProgramId, @StudentId, 'MONTHLY', 1000, 'TRY', CURRENT_DATE, 1, '11111111-1111-1111-1111-111111111111');
+                    INSERT INTO payment_items (id, plan_id, due_date, base_amount, paid_amount, status, currency)
+                    VALUES (@ItemId, @PlanId, CURRENT_DATE, 1000, 0, 'PENDING', 'TRY');",
+                    new { PlanId = planId, ItemId = itemId, ProgramId = programAId, StudentId = studentBId });
+            }
+
+            var client = CreateAuthClient();
+            var res = await client.PostAsync(
+                $"/api/v1/payment-items/{itemId}/collect",
+                new StringContent("{\"amount\":0}", System.Text.Encoding.UTF8, "application/json"));
+
+            Assert.Equal(HttpStatusCode.BadRequest, res.StatusCode);
+        }
+
+        [Fact]
+        public async Task ParentCreatePaymentClaim_WithItemId_Succeeds()
+        {
+            var programAId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+            var studentBId = Guid.Parse("55555555-5555-5555-5555-555555555555");
+            var acceptedParentId = Guid.Parse("bbbb2222-2222-2222-2222-222222222222");
+            var planId = Guid.NewGuid();
+            var itemId = Guid.NewGuid();
+
+            var connStr = _fixture.PostgreSqlContainer.GetConnectionString();
+            using (var conn = new Npgsql.NpgsqlConnection(connStr))
+            {
+                await conn.ExecuteAsync(@"
+                    INSERT INTO users (id, email, role, full_name) VALUES (@ParentId, 'accepted_parent_v18@test.com', 'Parent', 'Kabul Edilmis Veli') ON CONFLICT DO NOTHING;
+                    INSERT INTO parents (id) VALUES (@ParentId) ON CONFLICT DO NOTHING;
+                    INSERT INTO student_parents (id, student_id, parent_id, parent_email, is_accepted, can_view_payments)
+                    VALUES (gen_random_uuid(), @StudentId, @ParentId, 'accepted_parent_v18@test.com', 1, 1) ON CONFLICT DO NOTHING;
+                    INSERT INTO payment_plans (id, program_id, student_id, period_type, amount, currency, start_date, is_active, created_by)
+                    VALUES (@PlanId, @ProgramId, @StudentId, 'MONTHLY', 2000, 'TRY', CURRENT_DATE, 1, '11111111-1111-1111-1111-111111111111');
+                    INSERT INTO payment_items (id, plan_id, due_date, base_amount, paid_amount, status, currency)
+                    VALUES (@ItemId, @PlanId, CURRENT_DATE, 2000, 0, 'PENDING', 'TRY');",
+                    new { ParentId = acceptedParentId, StudentId = studentBId, ProgramId = programAId, PlanId = planId, ItemId = itemId });
+            }
+
+            var client = CreateAuthClient();
+            client.DefaultRequestHeaders.Add("X-Test-UserId", acceptedParentId.ToString());
+            client.DefaultRequestHeaders.Add("X-Test-Role", "Parent");
+
+            var res = await client.PostAsync(
+                $"/api/v1/parents/children/{studentBId}/payment-claims",
+                new StringContent($"{{\"itemId\":\"{itemId}\",\"amount\":500,\"notes\":\"Dekont gonderildi\"}}", System.Text.Encoding.UTF8, "application/json"));
+
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        }
+
+        [Fact]
+        public async Task OverdueHomeworkJob_WithMultiCoachProgram_DoesNotThrowAndRespects7DayCutoff()
+        {
+            var programAId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"); // 2 koç: 1111... (YONETICI) ve 8888... (YARDIMCI)
+            var studentBId = Guid.Parse("55555555-5555-5555-5555-555555555555");
+            var recentHwId = Guid.NewGuid();
+            var ancientHwId = Guid.NewGuid();
+
+            var connStr = _fixture.PostgreSqlContainer.GetConnectionString();
+            using (var conn = new Npgsql.NpgsqlConnection(connStr))
+            {
+                await conn.ExecuteAsync("DELETE FROM notifications WHERE type = 'HOMEWORK_OVERDUE';");
+                await conn.ExecuteAsync(@"
+                    INSERT INTO homework_assignments (id, snapshot_title, student_id, program_id, created_by, due_date, status)
+                    VALUES
+                    (@RecentId, 'Son 2 Gunluk Geciken', @StudentId, @ProgramId, '11111111-1111-1111-1111-111111111111', CURRENT_DATE - INTERVAL '2 days', 'PENDING'),
+                    (@AncientId, '15 Gunluk Eski Geciken', @StudentId, @ProgramId, '11111111-1111-1111-1111-111111111111', CURRENT_DATE - INTERVAL '15 days', 'PENDING');",
+                    new { RecentId = recentHwId, AncientId = ancientHwId, StudentId = studentBId, ProgramId = programAId });
+            }
+
+            using (var scope = _factory.Services.CreateScope())
+            {
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger<MentorumApi.Services.Background.OverdueHomeworkJob>>();
+                var job = new MentorumApi.Services.Background.OverdueHomeworkJob(logger, _factory.Services);
+                await job.ProcessJobsAsync();
+            }
+
+            using (var conn = new Npgsql.NpgsqlConnection(connStr))
+            {
+                var recentStatus = await conn.ExecuteScalarAsync<string>("SELECT status FROM homework_assignments WHERE id = @Id", new { Id = recentHwId });
+                var ancientStatus = await conn.ExecuteScalarAsync<string>("SELECT status FROM homework_assignments WHERE id = @Id", new { Id = ancientHwId });
+                Assert.Equal("OVERDUE", recentStatus);
+                Assert.Equal("OVERDUE", ancientStatus);
+
+                // Program A'daki her iki koç (1111... ve 8888...) bildirim almalı (PK çakışması olmadan)
+                var coachANotifCount = await conn.ExecuteScalarAsync<int>(
+                    "SELECT COUNT(1) FROM notifications WHERE user_id = '11111111-1111-1111-1111-111111111111'::uuid AND type = 'HOMEWORK_OVERDUE'");
+                var assistantNotifCount = await conn.ExecuteScalarAsync<int>(
+                    "SELECT COUNT(1) FROM notifications WHERE user_id = '88888888-8888-8888-8888-888888888888'::uuid AND type = 'HOMEWORK_OVERDUE'");
+                Assert.True(coachANotifCount >= 1);
+                Assert.True(assistantNotifCount >= 1);
+            }
+        }
+
+        [Fact]
+        public async Task CompleteHomework_ContractDriftAndOptimisticConcurrency_Return400And409()
+        {
+            var programAId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+            var studentBId = Guid.Parse("55555555-5555-5555-5555-555555555555");
+            var hwId = Guid.NewGuid();
+
+            var connStr = _fixture.PostgreSqlContainer.GetConnectionString();
+            using (var conn = new Npgsql.NpgsqlConnection(connStr))
+            {
+                await conn.ExecuteAsync(@"
+                    INSERT INTO homework_assignments (id, snapshot_title, student_id, program_id, created_by, due_date, status, version)
+                    VALUES (@Id, 'V18 Concurrency Test', @StudentId, @ProgramId, '11111111-1111-1111-1111-111111111111', CURRENT_DATE + INTERVAL '2 days', 'PENDING', 1);",
+                    new { Id = hwId, StudentId = studentBId, ProgramId = programAId });
+            }
+
+            var client = CreateAuthClient();
+
+            // B10: Bilinmeyen JSON alanı (studentNotes) gönderildiğinde 400 BadRequest dönmeli
+            var driftRes = await client.PostAsync(
+                $"/api/v1/homework/assignments/{hwId}/complete",
+                new StringContent("{\"studentNotes\":\"yanlis alan adi\"}", System.Text.Encoding.UTF8, "application/json"));
+            Assert.Equal(HttpStatusCode.BadRequest, driftRes.StatusCode);
+
+            // S3: Uyuşmayan expectedVersion (999 != 1) gönderildiğinde 409 Conflict dönmeli
+            var staleRes = await client.PostAsync(
+                $"/api/v1/homework/assignments/{hwId}/complete",
+                new StringContent("{\"note\":\"Gecersiz versiyon\",\"expectedVersion\":999}", System.Text.Encoding.UTF8, "application/json"));
+            Assert.Equal(HttpStatusCode.Conflict, staleRes.StatusCode);
+
+            // Doğru alan adı (note) ve doğru expectedVersion (1) ile 200 OK dönmeli
+            var okRes = await client.PostAsync(
+                $"/api/v1/homework/assignments/{hwId}/complete",
+                new StringContent("{\"note\":\"Tamamlandi\",\"completionPercentage\":100,\"expectedVersion\":1}", System.Text.Encoding.UTF8, "application/json"));
+            Assert.Equal(HttpStatusCode.OK, okRes.StatusCode);
         }
 
         private HttpClient CreateAuthClient()

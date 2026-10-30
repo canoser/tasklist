@@ -1,4 +1,3 @@
-using Dapper;
 using MentorumApi.Data;
 using MentorumApi.DTOs;
 using Microsoft.AspNetCore.Mvc;
@@ -17,14 +16,14 @@ namespace MentorumApi.Endpoints
 
             coach.MapGet("/", async (Guid programId, [FromServices] ScheduleRepository repo, ClaimsPrincipal user) =>
             {
-                var coachId = GetUserId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 return Results.Ok(await repo.GetSlotsAsync(programId, coachId.Value));
             });
 
             coach.MapPost("/", async (Guid programId, [FromBody] CreateScheduleSlotRequest req, [FromServices] ScheduleRepository repo, ClaimsPrincipal user) =>
             {
-                var coachId = GetUserId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 try
                 {
@@ -59,7 +58,7 @@ namespace MentorumApi.Endpoints
 
             coach.MapPut("/{slotId:guid}", async (Guid programId, Guid slotId, [FromBody] UpdateScheduleSlotRequest req, [FromServices] ScheduleRepository repo, ClaimsPrincipal user) =>
             {
-                var coachId = GetUserId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 try
                 {
@@ -82,7 +81,7 @@ namespace MentorumApi.Endpoints
 
             coach.MapDelete("/{slotId:guid}", async (Guid programId, Guid slotId, [FromServices] ScheduleRepository repo, ClaimsPrincipal user) =>
             {
-                var coachId = GetUserId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 var ok = await repo.DeleteSlotAsync(programId, slotId, coachId.Value);
                 return ok ? Results.Ok(new { message = "Slot silindi." }) : Results.NotFound(new { error = "Slot bulunamadı." });
@@ -92,7 +91,7 @@ namespace MentorumApi.Endpoints
             var teacher = app.MapGroup("/api/v1/teacher/schedule").RequireAuthorization("RequireTeacherRole");
             teacher.MapGet("/", async ([FromServices] ScheduleRepository repo, ClaimsPrincipal user) =>
             {
-                var teacherId = GetUserId(user);
+                var teacherId = user.GetUserId();
                 if (teacherId == null) return Results.Unauthorized();
                 var slots = await repo.GetTeacherSlotsAsync(teacherId.Value);
                 var sanitized = slots.Select(s => s.IsBusyOnly ? new ScheduleSlotDto
@@ -116,7 +115,7 @@ namespace MentorumApi.Endpoints
             var student = app.MapGroup("/api/v1/student/schedule").RequireAuthorization("RequireStudentRole");
             student.MapGet("/", async ([FromServices] ScheduleRepository repo, ClaimsPrincipal user) =>
             {
-                var studentId = GetUserId(user);
+                var studentId = user.GetUserId();
                 if (studentId == null) return Results.Unauthorized();
                 return Results.Ok(await repo.GetStudentSlotsAsync(studentId.Value));
             });
@@ -125,29 +124,20 @@ namespace MentorumApi.Endpoints
             var parent = app.MapGroup("/api/v1/parent").RequireAuthorization("RequireParentRole");
             parent.MapGet("/schedule", async ([FromServices] ScheduleRepository repo, ClaimsPrincipal user) =>
             {
-                var parentId = GetUserId(user);
+                var parentId = user.GetUserId();
                 if (parentId == null) return Results.Unauthorized();
                 return Results.Ok(await repo.GetParentSlotsAsync(parentId.Value));
             });
 
             // Veli — belirli çocuğun programı (çocuk seçici; çok çocuklu velide karışmayı önler)
-            parent.MapGet("/children/{studentId:guid}/schedule", async (Guid studentId, [FromServices] ScheduleRepository repo, [FromServices] DbConnectionFactory db, ClaimsPrincipal user) =>
+            parent.MapGet("/children/{studentId:guid}/schedule", async (Guid studentId, [FromServices] ScheduleRepository repo, [FromServices] ParentVisibilityRepository parentRepo, ClaimsPrincipal user) =>
             {
-                var parentId = GetUserId(user);
+                var parentId = user.GetUserId();
                 if (parentId == null) return Results.Unauthorized();
-                using var conn = db.CreateConnection();
-                var rel = await conn.ExecuteScalarAsync<int>(
-                    "SELECT 1 FROM student_parents WHERE parent_id = @ParentId AND student_id = @StudentId AND is_accepted = 1 AND COALESCE(can_view_calendar, 0) = 1",
-                    new { ParentId = parentId.Value, StudentId = studentId });
-                if (rel == 0) return Results.Forbid();
+                if (!await parentRepo.CanViewCalendarAsync(parentId.Value, studentId))
+                    return Results.Forbid();
                 return Results.Ok(await repo.GetStudentSlotsAsync(studentId));
             });
-        }
-
-        private static Guid? GetUserId(ClaimsPrincipal user)
-        {
-            var idStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            return Guid.TryParse(idStr, out var id) ? id : null;
         }
     }
 }

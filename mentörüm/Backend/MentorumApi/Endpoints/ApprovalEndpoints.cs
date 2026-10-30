@@ -20,18 +20,10 @@ namespace MentorumApi.Endpoints
                 [FromServices] ProgramAccessGuard guard,
                 ClaimsPrincipal user) =>
             {
-                var coachIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!Guid.TryParse(coachIdStr, out var coachId)) return Results.Unauthorized();
+                var coachId = user.GetUserId();
+                if (coachId == null) return Results.Unauthorized();
 
-                try
-                {
-                    await guard.EnsureCoachInProgramAsync(coachId, programId);
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    return Results.Json(new { error = "Bu programa erişim yetkiniz yok." }, statusCode: 403);
-                }
-
+                await guard.EnsureCoachInProgramAsync(coachId.Value, programId);
                 var items = await repo.ListAsync(programId, status);
                 return Results.Ok(items);
             });
@@ -42,10 +34,10 @@ namespace MentorumApi.Endpoints
                 [FromServices] ApprovalRepository repo,
                 ClaimsPrincipal user) =>
             {
-                var coachIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!Guid.TryParse(coachIdStr, out var coachId)) return Results.Unauthorized();
+                var coachId = user.GetUserId();
+                if (coachId == null) return Results.Unauthorized();
 
-                var items = await repo.ListForCoachAsync(coachId, status);
+                var items = await repo.ListForCoachAsync(coachId.Value, status);
                 return Results.Ok(items);
             });
 
@@ -55,17 +47,13 @@ namespace MentorumApi.Endpoints
                 [FromServices] ApprovalRepository repo,
                 ClaimsPrincipal user) =>
             {
-                var coachIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!Guid.TryParse(coachIdStr, out var coachId)) return Results.Unauthorized();
+                var coachId = user.GetUserId();
+                if (coachId == null) return Results.Unauthorized();
 
                 try
                 {
-                    await repo.ApproveAsync(id, coachId);
+                    await repo.ApproveAsync(id, coachId.Value);
                     return Results.Ok(new { message = "Talep onaylandı." });
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    return Results.Json(new { error = ex.Message }, statusCode: 403);
                 }
                 catch (InvalidOperationException ex)
                 {
@@ -80,17 +68,13 @@ namespace MentorumApi.Endpoints
                 [FromServices] ApprovalRepository repo,
                 ClaimsPrincipal user) =>
             {
-                var coachIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!Guid.TryParse(coachIdStr, out var coachId)) return Results.Unauthorized();
+                var coachId = user.GetUserId();
+                if (coachId == null) return Results.Unauthorized();
 
                 try
                 {
-                    await repo.RejectAsync(id, coachId, req?.Reason);
+                    await repo.RejectAsync(id, coachId.Value, req?.Reason);
                     return Results.Ok(new { message = "Talep reddedildi." });
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    return Results.Json(new { error = ex.Message }, statusCode: 403);
                 }
                 catch (InvalidOperationException ex)
                 {

@@ -34,21 +34,11 @@ namespace MentorumApi.Data
 
             // Öğretmenlerin sorumlu olduğu tekil öğrenci sayılarını çek
             var studentCounts = await conn.QueryAsync<(Guid TeacherId, int Count)>(@"
-                SELECT c.teacher_id AS TeacherId, COUNT(DISTINCT sid) AS Count
-                FROM (
-                    SELECT c.teacher_id, cs.student_id AS sid
-                    FROM course_students cs
-                    JOIN courses c ON c.id = cs.course_id
-                    JOIN students s ON s.id = cs.student_id
-                    WHERE c.program_id = @ProgramId AND c.is_active = 1 AND cs.is_active = 1 AND s.is_active = 1 AND c.teacher_id IS NOT NULL
-                    UNION
-                    SELECT c.teacher_id, sgm.student_id AS sid
-                    FROM course_groups cg
-                    JOIN courses c ON c.id = cg.course_id
-                    JOIN student_group_members sgm ON sgm.group_id = cg.group_id
-                    JOIN students s ON s.id = sgm.student_id
-                    WHERE c.program_id = @ProgramId AND c.teacher_id IS NOT NULL AND c.is_active = 1 AND sgm.is_active = 1 AND s.is_active = 1
-                ) c
+                SELECT c.teacher_id AS TeacherId, COUNT(DISTINCT v.student_id) AS Count
+                FROM vw_active_course_students v
+                JOIN courses c ON c.id = v.course_id
+                JOIN students s ON s.id = v.student_id
+                WHERE c.program_id = @ProgramId AND c.is_active = 1 AND s.is_active = 1 AND c.teacher_id IS NOT NULL
                 GROUP BY c.teacher_id",
                 new { ProgramId = programId });
 
@@ -62,20 +52,6 @@ namespace MentorumApi.Data
             }
 
             return teachers;
-        }
-
-        public async Task<TeacherDto?> GetTeacherAsync(Guid programId, Guid teacherId, Guid coachId)
-        {
-            using var conn = _connectionFactory.CreateConnection();
-            return await conn.QuerySingleOrDefaultAsync<TeacherDto>(@"
-                SELECT t.id, u.full_name AS FullName, u.email AS Email, u.avatar_url AS AvatarUrl,
-                       t.branch AS Branch, t.phone AS Phone,
-                       t.is_active AS IsActive, t.created_at AS CreatedAt
-                FROM teachers t
-                JOIN users u ON u.id = t.id
-                WHERE t.id = @TeacherId AND t.program_id = @ProgramId
-                  AND EXISTS (SELECT 1 FROM program_coaches pc WHERE pc.program_id = @ProgramId AND pc.coach_id = @CoachId)",
-                new { ProgramId = programId, TeacherId = teacherId, CoachId = coachId });
         }
 
         public async Task<Guid> DirectCreateTeacherAsync(Guid programId, DirectCreateTeacherRequest req, Guid coachId)
@@ -239,18 +215,11 @@ namespace MentorumApi.Data
             teacher.Courses = courses.ToList();
 
             teacher.StudentCount = await conn.ExecuteScalarAsync<int>(@"
-                SELECT COUNT(DISTINCT sid) FROM (
-                    SELECT cs.student_id AS sid FROM course_students cs
-                    JOIN courses c ON c.id = cs.course_id
-                    JOIN students s ON s.id = cs.student_id
-                    WHERE c.teacher_id = @TeacherId AND c.program_id = @ProgramId AND c.is_active = 1 AND cs.is_active = 1 AND s.is_active = 1
-                    UNION
-                    SELECT sgm.student_id FROM course_groups cg
-                    JOIN courses c ON c.id = cg.course_id
-                    JOIN student_group_members sgm ON sgm.group_id = cg.group_id AND sgm.is_active = 1
-                    JOIN students s ON s.id = sgm.student_id
-                    WHERE c.teacher_id = @TeacherId AND c.program_id = @ProgramId AND c.is_active = 1 AND s.is_active = 1
-                ) t",
+                SELECT COUNT(DISTINCT v.student_id)
+                FROM vw_active_course_students v
+                JOIN courses c ON c.id = v.course_id
+                JOIN students s ON s.id = v.student_id
+                WHERE c.teacher_id = @TeacherId AND c.program_id = @ProgramId AND c.is_active = 1 AND s.is_active = 1",
                 new { TeacherId = teacherId, ProgramId = programId });
 
             return teacher;
@@ -389,7 +358,9 @@ namespace MentorumApi.Data
 
             var rawRows = (await conn.QueryAsync<(Guid Id, Guid StudentId, string StudentName, string CourseTitle, string Status, DateTime? DueDate, DateTime? CompletedAt)>(@"
                 SELECT ha.id AS Id, ha.student_id AS StudentId, u.full_name AS StudentName,
-                       c.name AS CourseTitle, ha.status AS Status, ha.due_date AS DueDate, ha.completed_at AS CompletedAt
+                       c.name AS CourseTitle,
+                       CASE WHEN ha.status = 'PENDING' AND ha.due_date < CURRENT_DATE THEN 'OVERDUE' ELSE ha.status END AS Status,
+                       ha.due_date AS DueDate, ha.completed_at AS CompletedAt
                 FROM homework_assignments ha
                 JOIN courses c ON c.id = ha.course_id
                 JOIN users u ON u.id = ha.student_id

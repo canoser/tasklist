@@ -18,8 +18,8 @@ namespace MentorumApi.Endpoints
                 [FromServices] ProgramAccessGuard guard,
                 ClaimsPrincipal user) =>
             {
-                var coachIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!Guid.TryParse(coachIdStr, out var coachId)) return Results.Unauthorized();
+                var coachId = user.GetUserId();
+                if (coachId == null) return Results.Unauthorized();
 
                 if (!req.StudentId.HasValue && !req.GroupId.HasValue)
                 {
@@ -46,23 +46,12 @@ namespace MentorumApi.Endpoints
                 }
 
                 // Merkezi IDOR kontrolü: koç yalnızca kendi programındaki öğrenciye veya gruba sınav girebilir.
-                try
+                if (req.StudentId.HasValue)
                 {
-                    if (req.StudentId.HasValue)
-                    {
-                        await guard.EnsureCoachOwnsStudentAsync(coachId, req.StudentId.Value);
-                    }
-                    var examId = await repo.CreateExamResultAsync(coachId, req);
-                    return Results.Ok(new { examId });
+                    await guard.EnsureCoachOwnsStudentAsync(coachId.Value, req.StudentId.Value);
                 }
-                catch (ArgumentException ex)
-                {
-                    return Results.BadRequest(new { error = ex.Message, code = "VALIDATION_ERROR" });
-                }
-                catch (UnauthorizedAccessException ex)
-                {
-                    return Results.Json(new { error = ex.Message }, statusCode: 403);
-                }
+                var examId = await repo.CreateExamResultAsync(coachId.Value, req);
+                return Results.Ok(new { examId });
             });
         }
     }

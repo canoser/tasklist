@@ -16,10 +16,10 @@ namespace MentorumApi.Endpoints
                 [FromServices] NotificationRepository repo,
                 ClaimsPrincipal user) =>
             {
-                var userIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!Guid.TryParse(userIdStr, out var userId)) return Results.Unauthorized();
+                var userId = user.GetUserId();
+                if (userId == null) return Results.Unauthorized();
 
-                var notifications = await repo.GetUserNotificationsAsync(userId);
+                var notifications = await repo.GetUserNotificationsAsync(userId.Value);
                 return Results.Ok(notifications);
             });
 
@@ -29,10 +29,10 @@ namespace MentorumApi.Endpoints
                 [FromServices] NotificationRepository repo,
                 ClaimsPrincipal user) =>
             {
-                var userIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!Guid.TryParse(userIdStr, out var userId)) return Results.Unauthorized();
+                var userId = user.GetUserId();
+                if (userId == null) return Results.Unauthorized();
 
-                var success = await repo.MarkAsReadAsync(id, userId);
+                var success = await repo.MarkAsReadAsync(id, userId.Value);
                 if (!success) return Results.NotFound(new { error = "Bildirim bulunamadı veya size ait değil." });
 
                 return Results.Ok(new { success = true });
@@ -43,10 +43,10 @@ namespace MentorumApi.Endpoints
                 [FromServices] NotificationRepository repo,
                 ClaimsPrincipal user) =>
             {
-                var userIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!Guid.TryParse(userIdStr, out var userId)) return Results.Unauthorized();
+                var userId = user.GetUserId();
+                if (userId == null) return Results.Unauthorized();
 
-                await repo.MarkAllAsReadAsync(userId);
+                await repo.MarkAllAsReadAsync(userId.Value);
                 return Results.Ok(new { success = true });
             });
         }

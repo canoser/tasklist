@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace MentorumApi.DTOs
 {
@@ -62,6 +63,7 @@ namespace MentorumApi.DTOs
         public string? Notes { get; set; }
     }
 
+    [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
     public class CollectPaymentRequest
     {
         [Required]
@@ -70,6 +72,7 @@ namespace MentorumApi.DTOs
         public string? ReceiptUrl { get; set; }
     }
 
+    [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
     public class CreatePaymentClaimRequest
     {
         [Required]

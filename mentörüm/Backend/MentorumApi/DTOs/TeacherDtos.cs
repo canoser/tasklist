@@ -182,6 +182,10 @@ namespace MentorumApi.DTOs
     public class PublicTeacherNoteDto
     {
         public Guid Id { get; set; }
+        public Guid? CourseId { get; set; }
+        public string? CourseName { get; set; }
+        public Guid? TeacherId { get; set; }
+        public string? TeacherName { get; set; }
         public string? Summary { get; set; }
         public DateTime CreatedAt { get; set; }
     }

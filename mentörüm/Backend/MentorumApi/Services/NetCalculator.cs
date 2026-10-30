@@ -4,23 +4,32 @@ namespace MentorumApi.Services
 {
     public static class NetCalculator
     {
+        public const string ExamTypeOkul = "Okul";
+        public const string ExamTypeDiger = "Diğer";
+        public const string ExamTypeLgs = "LGS";
+        public const string TrackOrtaokul = "ORTAOKUL";
+
+        public const decimal DivisorSchoolOrOther = 0m;
+        public const decimal DivisorMiddleSchool = 3.0m;
+        public const decimal DivisorHighSchool = 4.0m;
+
         public static decimal ResolveDivisor(string? examType, string? studentTrack)
         {
-            if (string.Equals(examType, "Okul", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(examType, "Diğer", StringComparison.OrdinalIgnoreCase))
-                return 0m;
+            if (string.Equals(examType, ExamTypeOkul, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(examType, ExamTypeDiger, StringComparison.OrdinalIgnoreCase))
+                return DivisorSchoolOrOther;
 
-            if (string.Equals(examType, "LGS", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(studentTrack, "ORTAOKUL", StringComparison.OrdinalIgnoreCase))
-                return 3.0m;
+            if (string.Equals(examType, ExamTypeLgs, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(studentTrack, TrackOrtaokul, StringComparison.OrdinalIgnoreCase))
+                return DivisorMiddleSchool;
 
-            return 4.0m; // TYT, AYT, Deneme ve Lise (SAY, EA, SOZ)
+            return DivisorHighSchool; // TYT, AYT, Deneme ve Lise (SAY, EA, SOZ)
         }
 
         public static decimal ComputeNet(int correct, int wrong, int blank, string? track, string? examType = null)
         {
             decimal divisor = ResolveDivisor(examType, track);
-            if (divisor <= 0m)
+            if (divisor <= DivisorSchoolOrOther)
                 return correct;
 
             decimal rawNet = correct - (wrong / divisor);

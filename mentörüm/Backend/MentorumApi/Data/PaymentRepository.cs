@@ -86,10 +86,17 @@ namespace MentorumApi.Data
             }
         }
 
-        public async Task<IEnumerable<PaymentPlanDto>> GetPlansAsync(Guid programId, Guid coachId)
+        public Task<IEnumerable<PaymentPlanDto>> GetPlansAsync(Guid programId, Guid coachId)
+            => QueryPlansCoreAsync(coachId, programId);
+
+        public Task<IEnumerable<PaymentPlanDto>> GetPlansForCoachAsync(Guid coachId)
+            => QueryPlansCoreAsync(coachId, null);
+
+        private async Task<IEnumerable<PaymentPlanDto>> QueryPlansCoreAsync(Guid coachId, Guid? programId)
         {
             using var conn = _connectionFactory.CreateConnection();
-            var plansSql = @"
+            var programFilter = programId.HasValue ? "pp.program_id = @ProgramId AND " : "";
+            var plansSql = $@"
                 SELECT 
                     pp.id AS Id,
                     pp.program_id AS ProgramId,
@@ -106,15 +113,14 @@ namespace MentorumApi.Data
                 FROM payment_plans pp
                 JOIN users u_s ON u_s.id = pp.student_id
                 LEFT JOIN users u_p ON u_p.id = pp.parent_id
-                WHERE pp.program_id = @ProgramId
-                  AND pp.is_active = 1
+                WHERE {programFilter}pp.is_active = 1
                   AND pp.program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)
                 ORDER BY pp.created_at DESC";
 
             var plans = (await conn.QueryAsync<PaymentPlanDto>(plansSql, new { ProgramId = programId, CoachId = coachId })).ToList();
             if (!plans.Any()) return plans;
 
-            var planIds = plans.Select(p => p.Id).ToList();
+            var planIds = plans.Select(p => p.Id).ToArray();
             var itemsSql = @"
                 SELECT 
                     pi.id AS Id,
@@ -131,61 +137,7 @@ namespace MentorumApi.Data
                 WHERE pi.plan_id = ANY(@PlanIds)
                 ORDER BY pi.due_date ASC";
 
-            var items = (await conn.QueryAsync<PaymentItemDto>(itemsSql, new { PlanIds = planIds.ToArray() })).ToList();
-
-            foreach (var plan in plans)
-            {
-                plan.Items = items.Where(i => i.PlanId == plan.Id).ToList();
-            }
-
-            return plans;
-        }
-
-        public async Task<IEnumerable<PaymentPlanDto>> GetPlansForCoachAsync(Guid coachId)
-        {
-            using var conn = _connectionFactory.CreateConnection();
-            var plansSql = @"
-                SELECT
-                    pp.id AS Id,
-                    pp.program_id AS ProgramId,
-                    pp.student_id AS StudentId,
-                    u_s.full_name AS StudentName,
-                    pp.parent_id AS ParentId,
-                    u_p.full_name AS ParentName,
-                    pp.period_type AS PeriodType,
-                    pp.amount AS Amount,
-                    pp.currency AS Currency,
-                    pp.month_day AS MonthDay,
-                    pp.start_date AS StartDate,
-                    pp.is_active AS IsActive
-                FROM payment_plans pp
-                JOIN users u_s ON u_s.id = pp.student_id
-                LEFT JOIN users u_p ON u_p.id = pp.parent_id
-                WHERE pp.is_active = 1
-                  AND pp.program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)
-                ORDER BY pp.created_at DESC";
-
-            var plans = (await conn.QueryAsync<PaymentPlanDto>(plansSql, new { CoachId = coachId })).ToList();
-            if (!plans.Any()) return plans;
-
-            var planIds = plans.Select(p => p.Id).ToList();
-            var itemsSql = @"
-                SELECT
-                    pi.id AS Id,
-                    pi.plan_id AS PlanId,
-                    pi.due_date AS DueDate,
-                    pi.base_amount AS BaseAmount,
-                    pi.paid_amount AS PaidAmount,
-                    pi.status AS Status,
-                    pi.currency AS Currency,
-                    pi.paid_at AS PaidAt,
-                    pi.rolled_from_item_id AS RolledFromItemId,
-                    pi.notes AS Notes
-                FROM payment_items pi
-                WHERE pi.plan_id = ANY(@PlanIds)
-                ORDER BY pi.due_date ASC";
-
-            var items = (await conn.QueryAsync<PaymentItemDto>(itemsSql, new { PlanIds = planIds.ToArray() })).ToList();
+            var items = (await conn.QueryAsync<PaymentItemDto>(itemsSql, new { PlanIds = planIds })).ToList();
 
             foreach (var plan in plans)
             {
@@ -237,6 +189,9 @@ namespace MentorumApi.Data
 
         public async Task<bool> CollectPaymentAsync(Guid itemId, Guid coachId, CollectPaymentRequest req)
         {
+            if (req.Amount <= 0)
+                throw new ArgumentException("Tahsilat tutarı sıfırdan büyük olmalıdır.");
+
             using var conn = _connectionFactory.CreateConnection();
             conn.Open();
             using var tx = conn.BeginTransaction();

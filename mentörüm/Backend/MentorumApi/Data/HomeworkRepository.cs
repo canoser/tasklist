@@ -59,9 +59,7 @@ namespace MentorumApi.Data
 
                     if (groupProgramId != null)
                     {
-                        var members = await conn.QueryAsync<Guid>(
-                            "SELECT student_id FROM student_group_members WHERE group_id = @GroupId",
-                            new { req.GroupId }, tx);
+                        var members = await GroupRepository.GetActiveMemberIdsAsync(conn, req.GroupId.Value, tx);
                         foreach (var m in members)
                             targetStudentIds.Add((m, groupProgramId.Value));
                     }
@@ -122,9 +120,20 @@ namespace MentorumApi.Data
             }
         }
 
-        public async Task<IEnumerable<HomeworkItemDto>> GetStudentHomeworksAsync(Guid coachId, Guid studentId)
+        public Task<IEnumerable<HomeworkItemDto>> GetStudentHomeworksAsync(Guid coachId, Guid studentId)
+            => QueryStudentHomeworksCoreAsync(studentId, coachId, orderDesc: true);
+
+        public Task<IEnumerable<HomeworkItemDto>> GetStudentHomeworksForPortalAsync(Guid studentId)
+            => QueryStudentHomeworksCoreAsync(studentId, null, orderDesc: false);
+
+        private async Task<IEnumerable<HomeworkItemDto>> QueryStudentHomeworksCoreAsync(Guid studentId, Guid? coachId, bool orderDesc)
         {
-            var sql = @"
+            var coachFilter = coachId.HasValue
+                ? "AND h.program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)"
+                : "";
+            var orderDir = orderDesc ? "DESC" : "ASC";
+
+            var sql = $@"
                 SELECT 
                     h.id as Id, 
                     h.snapshot_title as SnapshotTitle, 
@@ -149,8 +158,8 @@ namespace MentorumApi.Data
                 LEFT JOIN curriculum_topics ct ON ct.id = h.curriculum_topic_id
                 LEFT JOIN courses c ON c.id = h.course_id
                 WHERE h.student_id = @StudentId
-                  AND h.program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)
-                ORDER BY h.due_date DESC";
+                  {coachFilter}
+                ORDER BY h.due_date {orderDir}";
 
             using var conn = _connectionFactory.CreateConnection();
             var list = (await conn.QueryAsync<HomeworkItemDto>(sql, new { CoachId = coachId, StudentId = studentId })).ToList();
@@ -174,6 +183,94 @@ namespace MentorumApi.Data
                 }
             }
             return list;
+        }
+
+        public async Task<string> CompleteHomeworkAsync(Guid assignmentId, Guid userId, string? role, CompleteHomeworkRequest req)
+        {
+            var whereClause = role == "Coach"
+                ? "AND program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @UserId)"
+                : "AND student_id = @UserId";
+
+            int percentage = req.CompletionPercentage >= 0 && req.CompletionPercentage <= 100 ? req.CompletionPercentage : 100;
+            string status = percentage == 100 ? "DONE" : "PENDING";
+
+            using var conn = _connectionFactory.CreateConnection();
+            conn.Open();
+            using var tx = conn.BeginTransaction();
+            try
+            {
+                var currentVersion = await conn.QuerySingleOrDefaultAsync<int?>(
+                    $"SELECT COALESCE(version, 1) FROM homework_assignments WHERE id = @Id {whereClause} FOR UPDATE",
+                    new { Id = assignmentId, UserId = userId }, tx);
+
+                if (currentVersion == null)
+                    return "NOT_FOUND";
+
+                if (req.ExpectedVersion.HasValue && currentVersion.Value != req.ExpectedVersion.Value)
+                    return "CONCURRENCY_CONFLICT";
+
+                await conn.ExecuteAsync(
+                    $@"UPDATE homework_assignments
+                       SET status = @Status,
+                           completed_at = @Now,
+                           completion_percentage = @Pct,
+                           student_note = CASE WHEN @Note IS NULL THEN student_note ELSE @Note END,
+                           version = COALESCE(version, 1) + 1,
+                           updated_at = NOW()
+                       WHERE id = @Id {whereClause}",
+                    new
+                    {
+                        Now = percentage == 100 ? DateTime.UtcNow : (DateTime?)null,
+                        Status = status,
+                        Pct = percentage,
+                        Id = assignmentId,
+                        UserId = userId,
+                        Note = req.Note
+                    }, tx);
+
+                if (req.AttachmentIds != null && req.AttachmentIds.Count > 0)
+                {
+                    await conn.ExecuteAsync(@"
+                        UPDATE uploads
+                        SET homework_id = @HomeworkId, updated_at = NOW()
+                        WHERE id = ANY(@UploadIds) AND sender_user_id = @UserId AND status = 'UPLOADED'",
+                        new { HomeworkId = assignmentId, UploadIds = req.AttachmentIds.ToArray(), UserId = userId }, tx);
+                }
+
+                tx.Commit();
+                return "OK";
+            }
+            catch
+            {
+                tx.Rollback();
+                throw;
+            }
+        }
+
+        public async Task<Guid?> GetAssignmentProgramIdForStudentAsync(Guid assignmentId, Guid studentId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            return await conn.QuerySingleOrDefaultAsync<Guid?>(
+                "SELECT program_id FROM homework_assignments WHERE id = @Id AND student_id = @StudentId",
+                new { Id = assignmentId, StudentId = studentId });
+        }
+
+        public async Task<bool> HasPendingExtensionAsync(Guid assignmentId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            var exists = await conn.ExecuteScalarAsync<int?>(
+                "SELECT 1 FROM approval_items WHERE entity_type = 'HOMEWORK_EXTENSION' AND entity_id = @Id AND status = 'PENDING' LIMIT 1",
+                new { Id = assignmentId });
+            return exists != null;
+        }
+
+        public async Task<bool> CanParentViewHomeworkAsync(Guid parentId, Guid studentId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            var relation = await conn.ExecuteScalarAsync<int?>(
+                "SELECT 1 FROM student_parents WHERE parent_id = @ParentId AND student_id = @StudentId AND is_accepted = 1 AND COALESCE(can_view_homework, 0) = 1",
+                new { ParentId = parentId, StudentId = studentId });
+            return relation != null;
         }
     }
 }

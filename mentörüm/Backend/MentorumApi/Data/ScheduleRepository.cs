@@ -131,19 +131,13 @@ namespace MentorumApi.Data
             }
             else if (groupId.HasValue)
             {
-                var gStudents = await conn.QueryAsync<Guid>(
-                    "SELECT student_id FROM student_group_members WHERE group_id = @GroupId AND is_active = 1",
-                    new { GroupId = groupId.Value });
+                var gStudents = await GroupRepository.GetActiveMemberIdsAsync(conn, groupId.Value);
                 targetStudentList.AddRange(gStudents);
             }
             else if (courseId.HasValue)
             {
-                var cStudents = await conn.QueryAsync<Guid>(@"
-                    SELECT cs.student_id FROM course_students cs WHERE cs.course_id = @CourseId AND cs.is_active = 1
-                    UNION
-                    SELECT sgm.student_id FROM course_groups cg 
-                    JOIN student_group_members sgm ON sgm.group_id = cg.group_id AND sgm.is_active = 1
-                    WHERE cg.course_id = @CourseId",
+                var cStudents = await conn.QueryAsync<Guid>(
+                    "SELECT student_id FROM vw_active_course_students WHERE course_id = @CourseId",
                     new { CourseId = courseId.Value });
                 targetStudentList.AddRange(cStudents);
             }
@@ -158,13 +152,9 @@ namespace MentorumApi.Data
                     JOIN LATERAL (
                         SELECT s.student_id AS sid WHERE s.student_id = ANY(@TargetStudents)
                         UNION
-                        SELECT cs.student_id AS sid FROM course_students cs WHERE cs.course_id = s.course_id AND cs.student_id = ANY(@TargetStudents) AND cs.is_active = 1
+                        SELECT v.student_id AS sid FROM vw_active_course_students v WHERE v.course_id = s.course_id AND v.student_id = ANY(@TargetStudents)
                         UNION
                         SELECT sgm.student_id AS sid FROM student_group_members sgm WHERE sgm.group_id = s.group_id AND sgm.student_id = ANY(@TargetStudents) AND sgm.is_active = 1
-                        UNION
-                        SELECT sgm2.student_id AS sid FROM course_groups cg 
-                        JOIN student_group_members sgm2 ON sgm2.group_id = cg.group_id AND sgm2.is_active = 1 
-                        WHERE cg.course_id = s.course_id AND sgm2.student_id = ANY(@TargetStudents)
                     ) st ON true
                     JOIN users u ON u.id = st.sid
                     WHERE s.is_active = 1
@@ -326,8 +316,8 @@ namespace MentorumApi.Data
                 WHERE s.is_active = 1
                   AND (
                       s.student_id = @StudentId
-                      OR s.course_id IN (SELECT course_id FROM course_students WHERE student_id = @StudentId AND is_active = 1)
-                      OR s.group_id IN (SELECT group_id FROM student_group_members WHERE student_id = @StudentId AND is_active = 1)
+                      OR s.course_id IN (SELECT course_id FROM vw_active_course_students WHERE student_id = @StudentId)
+                      OR s.group_id IN (SELECT group_id FROM vw_active_student_groups WHERE student_id = @StudentId)
                   )
                 ORDER BY s.day_of_week, s.start_time", new { StudentId = studentId });
         }
@@ -342,8 +332,8 @@ namespace MentorumApi.Data
                 WHERE s.is_active = 1
                   AND (
                       s.student_id IN (SELECT student_id FROM student_parents WHERE parent_id = @ParentId AND is_accepted = 1 AND COALESCE(can_view_calendar, 0) = 1)
-                      OR s.course_id IN (SELECT cs.course_id FROM course_students cs WHERE cs.student_id IN (SELECT student_id FROM student_parents WHERE parent_id = @ParentId AND is_accepted = 1 AND COALESCE(can_view_calendar, 0) = 1) AND cs.is_active = 1)
-                      OR s.group_id IN (SELECT sgm.group_id FROM student_group_members sgm WHERE sgm.student_id IN (SELECT student_id FROM student_parents WHERE parent_id = @ParentId AND is_accepted = 1 AND COALESCE(can_view_calendar, 0) = 1) AND sgm.is_active = 1)
+                      OR s.course_id IN (SELECT v.course_id FROM vw_active_course_students v WHERE v.student_id IN (SELECT student_id FROM student_parents WHERE parent_id = @ParentId AND is_accepted = 1 AND COALESCE(can_view_calendar, 0) = 1))
+                      OR s.group_id IN (SELECT sgm.group_id FROM vw_active_student_groups sgm WHERE sgm.student_id IN (SELECT student_id FROM student_parents WHERE parent_id = @ParentId AND is_accepted = 1 AND COALESCE(can_view_calendar, 0) = 1))
                   )
                 ORDER BY s.day_of_week, s.start_time", new { ParentId = parentId });
         }

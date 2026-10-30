@@ -38,14 +38,8 @@ namespace MentorumApi.Data
         public async Task<IEnumerable<Guid>> GetCourseStudentIdsAsync(Guid courseId)
         {
             using var conn = _connectionFactory.CreateConnection();
-            return await conn.QueryAsync<Guid>(@"
-                SELECT DISTINCT student_id FROM (
-                    SELECT cs.student_id FROM course_students cs WHERE cs.course_id = @CourseId AND cs.is_active = 1
-                    UNION
-                    SELECT sgm.student_id FROM course_groups cg
-                    JOIN student_group_members sgm ON sgm.group_id = cg.group_id AND sgm.is_active = 1
-                    WHERE cg.course_id = @CourseId
-                ) AS t",
+            return await conn.QueryAsync<Guid>(
+                "SELECT student_id FROM vw_active_course_students WHERE course_id = @CourseId",
                 new { CourseId = courseId });
         }
 
@@ -65,22 +59,6 @@ namespace MentorumApi.Data
                 "SELECT program_id FROM program_teachers WHERE teacher_id = @TeacherId AND is_active = 1",
                 new { TeacherId = teacherId });
             return ids.ToList();
-        }
-
-        public async Task<Guid?> GetStudentProgramIdAsync(Guid studentId)
-        {
-            using var conn = _connectionFactory.CreateConnection();
-            return await conn.ExecuteScalarAsync<Guid?>(@"
-                SELECT program_id FROM students WHERE id = @StudentId",
-                new { StudentId = studentId });
-        }
-
-        public async Task<Guid?> GetGroupProgramIdAsync(Guid groupId)
-        {
-            using var conn = _connectionFactory.CreateConnection();
-            return await conn.ExecuteScalarAsync<Guid?>(@"
-                SELECT program_id FROM student_groups WHERE id = @GroupId",
-                new { GroupId = groupId });
         }
 
         public async Task<bool> IsStudentInCourseAsync(Guid courseId, Guid studentId)
@@ -142,13 +120,7 @@ namespace MentorumApi.Data
                        s.coaching_start_date AS CoachingStartDate, s.target_department AS TargetDepartment, s.target_score AS TargetScore
                 FROM users u
                 JOIN students s ON u.id = s.id
-                WHERE s.id IN (
-                    SELECT cs.student_id FROM course_students cs WHERE cs.course_id = @CourseId AND cs.is_active = 1
-                    UNION
-                    SELECT sgm.student_id FROM course_groups cg 
-                    JOIN student_group_members sgm ON sgm.group_id = cg.group_id AND sgm.is_active = 1
-                    WHERE cg.course_id = @CourseId
-                )
+                WHERE s.id IN (SELECT student_id FROM vw_active_course_students WHERE course_id = @CourseId)
                 ORDER BY u.full_name",
                 new { CourseId = courseId });
         }
@@ -163,13 +135,7 @@ namespace MentorumApi.Data
                 JOIN users u ON u.id = h.student_id
                 WHERE h.program_id = (SELECT program_id FROM courses WHERE id = @CourseId)
                   AND h.course_id = @CourseId
-                  AND h.student_id IN (
-                    SELECT cs.student_id FROM course_students cs WHERE cs.course_id = @CourseId AND cs.is_active = 1
-                    UNION
-                    SELECT sgm.student_id FROM course_groups cg 
-                    JOIN student_group_members sgm ON sgm.group_id = cg.group_id AND sgm.is_active = 1
-                    WHERE cg.course_id = @CourseId
-                )
+                  AND h.student_id IN (SELECT student_id FROM vw_active_course_students WHERE course_id = @CourseId)
                 ORDER BY h.due_date DESC",
                 new { CourseId = courseId });
         }
@@ -183,13 +149,7 @@ namespace MentorumApi.Data
                 JOIN users u ON u.id = e.student_id
                 WHERE e.program_id = (SELECT program_id FROM courses WHERE id = @CourseId)
                   AND e.course_id = @CourseId
-                  AND e.student_id IN (
-                    SELECT cs.student_id FROM course_students cs WHERE cs.course_id = @CourseId AND cs.is_active = 1
-                    UNION
-                    SELECT sgm.student_id FROM course_groups cg 
-                    JOIN student_group_members sgm ON sgm.group_id = cg.group_id AND sgm.is_active = 1
-                    WHERE cg.course_id = @CourseId
-                )
+                  AND e.student_id IN (SELECT student_id FROM vw_active_course_students WHERE course_id = @CourseId)
                 ORDER BY e.exam_date DESC",
                 new { CourseId = courseId });
         }
@@ -209,13 +169,7 @@ namespace MentorumApi.Data
                 LEFT JOIN users u ON u.id = c.teacher_id
                 LEFT JOIN subjects s ON s.id = c.subject_id
                 WHERE c.is_active = 1
-                  AND c.id IN (
-                      SELECT cs.course_id FROM course_students cs WHERE cs.student_id = @StudentId AND cs.is_active = 1
-                      UNION
-                      SELECT cg.course_id FROM course_groups cg
-                      JOIN student_group_members sgm ON sgm.group_id = cg.group_id AND sgm.is_active = 1
-                      WHERE sgm.student_id = @StudentId
-                  )
+                  AND c.id IN (SELECT course_id FROM vw_active_course_students WHERE student_id = @StudentId)
                 ORDER BY (CASE WHEN c.type = 'OZEL_DERS' THEN 'OZEL_DERS' ELSE c.id::text END), c.name",
                 new { StudentId = studentId });
         }
@@ -401,15 +355,23 @@ namespace MentorumApi.Data
                 new { CourseId = courseId, StudentId = studentId });
         }
 
-        /// <summary>Öğrenci veya veli için: yalnızca STUDENT_VISIBLE olanların summary + createdAt alanları.</summary>
+        /// <summary>Öğrenci veya veli için: yalnızca STUDENT_VISIBLE olanların summary + createdAt + ders/öğretmen alanları.</summary>
         public async Task<IEnumerable<PublicTeacherNoteDto>> GetStudentVisibleTeacherNotesAsync(Guid studentId)
         {
             using var conn = _connectionFactory.CreateConnection();
             return await conn.QueryAsync<PublicTeacherNoteDto>(@"
-                SELECT id, summary AS Summary, created_at AS CreatedAt
-                FROM teacher_notes
-                WHERE student_id = @StudentId AND visibility = 'STUDENT_VISIBLE'
-                ORDER BY created_at DESC",
+                SELECT tn.id,
+                       tn.course_id AS CourseId,
+                       c.name AS CourseName,
+                       tn.teacher_id AS TeacherId,
+                       u.full_name AS TeacherName,
+                       tn.summary AS Summary,
+                       tn.created_at AS CreatedAt
+                FROM teacher_notes tn
+                LEFT JOIN courses c ON c.id = tn.course_id
+                LEFT JOIN users u ON u.id = tn.teacher_id
+                WHERE tn.student_id = @StudentId AND tn.visibility = 'STUDENT_VISIBLE'
+                ORDER BY tn.created_at DESC",
                 new { StudentId = studentId });
         }
 

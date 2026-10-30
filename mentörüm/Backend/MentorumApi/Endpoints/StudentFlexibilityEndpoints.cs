@@ -19,7 +19,7 @@ namespace MentorumApi.Endpoints
                 [FromServices] ProgramRepository programRepo,
                 ClaimsPrincipal user) =>
             {
-                var coachId = GetUserId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 if (string.IsNullOrWhiteSpace(req.FirstName) || string.IsNullOrWhiteSpace(req.LastName))
                     return Results.BadRequest(new { error = "Ad ve soyad zorunludur." });
@@ -47,17 +47,10 @@ namespace MentorumApi.Endpoints
                 [FromServices] ProgramAccessGuard guard,
                 ClaimsPrincipal user) =>
             {
-                var coachId = GetUserId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
 
-                try
-                {
-                    await guard.EnsureCoachOwnsStudentAsync(coachId.Value, studentId);
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    return Results.Json(new { error = "Öğrenci bulunamadı veya yetkiniz yok." }, statusCode: 403);
-                }
+                await guard.EnsureCoachOwnsStudentAsync(coachId.Value, studentId);
 
                 var ok = await repo.UpdateStudentAsync(studentId, req);
                 return ok ? Results.Ok(new { message = "Öğrenci bilgileri güncellendi." }) : Results.NotFound(new { error = "Öğrenci bulunamadı." });
@@ -73,13 +66,12 @@ namespace MentorumApi.Endpoints
                 [FromServices] ProgramAccessGuard guard,
                 ClaimsPrincipal user) =>
             {
-                var coachId = GetUserId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 if (string.IsNullOrWhiteSpace(req.FirstName) || string.IsNullOrWhiteSpace(req.LastName))
                     return Results.BadRequest(new { error = "Ad ve soyad zorunludur." });
 
-                try { await guard.EnsureCoachInProgramAsync(coachId.Value, programId); }
-                catch (UnauthorizedAccessException) { return Results.Json(new { error = "Program bulunamadı." }, statusCode: 403); }
+                await guard.EnsureCoachInProgramAsync(coachId.Value, programId);
 
                 if (!string.IsNullOrWhiteSpace(req.Email) && await repo.EmailExistsAsync(req.Email.ToLowerInvariant()))
                     return Results.BadRequest(new { error = "Bu e-posta zaten kullanımda." });
@@ -97,12 +89,11 @@ namespace MentorumApi.Endpoints
                 [FromServices] ProgramAccessGuard guard,
                 ClaimsPrincipal user) =>
             {
-                var coachId = GetUserId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 if (string.IsNullOrWhiteSpace(req.Email)) return Results.BadRequest(new { error = "E-posta gerekli." });
 
-                try { await guard.EnsureCoachOwnsStudentAsync(coachId.Value, studentId); }
-                catch (UnauthorizedAccessException) { return Results.Json(new { error = "Öğrenci bulunamadı." }, statusCode: 403); }
+                await guard.EnsureCoachOwnsStudentAsync(coachId.Value, studentId);
 
                 if (await repo.EmailExistsAsync(req.Email.ToLowerInvariant()))
                     return Results.BadRequest(new { error = "Bu e-posta zaten kullanımda." });
@@ -122,11 +113,10 @@ namespace MentorumApi.Endpoints
                 [FromServices] ProgramAccessGuard guard,
                 ClaimsPrincipal user) =>
             {
-                var coachId = GetUserId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
 
-                try { await guard.EnsureCoachOwnsStudentAsync(coachId.Value, studentId); }
-                catch (UnauthorizedAccessException) { return Results.Json(new { error = "Öğrenci bulunamadı." }, statusCode: 403); }
+                await guard.EnsureCoachOwnsStudentAsync(coachId.Value, studentId);
 
                 var ok = await repo.MoveToGroupAsync(programId, studentId, req.GroupId);
                 return ok
@@ -142,21 +132,14 @@ namespace MentorumApi.Endpoints
                 [FromServices] ProgramAccessGuard guard,
                 ClaimsPrincipal user) =>
             {
-                var coachId = GetUserId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
 
-                try { await guard.EnsureCoachOwnsStudentAsync(coachId.Value, studentId); }
-                catch (UnauthorizedAccessException) { return Results.Json(new { error = "Öğrenci bulunamadı." }, statusCode: 403); }
+                await guard.EnsureCoachOwnsStudentAsync(coachId.Value, studentId);
 
                 await repo.MoveToIndividualAsync(programId, studentId);
                 return Results.Ok(new { message = "Öğrenci bireysel koçluğa çekildi." });
             });
-        }
-
-        private static Guid? GetUserId(ClaimsPrincipal user)
-        {
-            var idStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            return Guid.TryParse(idStr, out var id) ? id : null;
         }
     }
 }

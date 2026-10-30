@@ -80,7 +80,7 @@ namespace MentorumApi.Tests
         public async Task GetStudentProgramId_ReturnsProgramB_ForStudentA()
         {
             var studentA = Guid.Parse("33333333-3333-3333-3333-333333333333");
-            Assert.Equal(ProgramB, await _repo.GetStudentProgramIdAsync(studentA));
+            Assert.True(await new Services.ProgramAccessGuard(_dbFactory).IsStudentInProgramAsync(studentA, ProgramB));
         }
 
         [Fact]

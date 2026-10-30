@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace MentorumApi.DTOs
 {
@@ -49,6 +50,7 @@ namespace MentorumApi.DTOs
         public string? ObjectKey { get; set; }
     }
 
+    [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
     public class CompleteHomeworkRequest
     {
         public int CompletionPercentage { get; set; } = 100;

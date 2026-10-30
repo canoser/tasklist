@@ -17,9 +17,9 @@ namespace MentorumApi.Data
                        s.invite_status AS InviteStatus,
                        (SELECT g.name FROM student_group_members m JOIN student_groups g ON g.id = m.group_id WHERE m.student_id = u.id AND m.is_active = 1 LIMIT 1) AS GroupName,
                        (SELECT COUNT(1) FROM course_students cs JOIN courses c ON c.id = cs.course_id WHERE cs.student_id = u.id AND cs.is_active = 1 AND c.type = 'OZEL_DERS') > 0 AS HasIndividualCourse,
-                       (SELECT COUNT(1) FROM homework_assignments ha WHERE ha.student_id = u.id AND ha.status IN ('PENDING','OVERDUE')) AS active_homework_count,
+                       (SELECT COUNT(1) FROM homework_assignments ha WHERE ha.student_id = u.id AND ha.status = 'PENDING' AND ha.due_date >= CURRENT_DATE) AS active_homework_count,
                        (SELECT COUNT(1) FROM homework_assignments ha WHERE ha.student_id = u.id AND ha.status IN ('DONE','LATE_DONE')) AS completed_homework_count,
-                       (SELECT COUNT(1) FROM homework_assignments ha WHERE ha.student_id = u.id AND ha.status = 'OVERDUE') AS overdue_homework_count,
+                       (SELECT COUNT(1) FROM homework_assignments ha WHERE ha.student_id = u.id AND (ha.status = 'OVERDUE' OR (ha.status = 'PENDING' AND ha.due_date < CURRENT_DATE))) AS overdue_homework_count,
                        COALESCE((SELECT SUM(minutes) FROM study_sessions ss WHERE ss.student_id = u.id AND (ss.started_at >= date_trunc('week', CURRENT_DATE) OR (ss.started_at IS NULL AND ss.created_at >= date_trunc('week', CURRENT_DATE)))), 0) AS ThisWeekStudyMinutes,
                        COALESCE((SELECT SUM(question_count) FROM study_sessions ss WHERE ss.student_id = u.id AND (ss.started_at >= date_trunc('week', CURRENT_DATE) OR (ss.started_at IS NULL AND ss.created_at >= date_trunc('week', CURRENT_DATE)))), 0) AS ThisWeekQuestionCount,
                        (SELECT total_net FROM exam_results er WHERE er.student_id = u.id ORDER BY er.exam_date DESC LIMIT 1) AS LastExamNet,
@@ -207,51 +207,6 @@ namespace MentorumApi.Data
                     updated_at = @Now
                 WHERE id = @StudentId",
                 new { StudentId = studentId, req.TargetUniversity, req.TargetDepartment, req.TargetScore, Now = DateTime.UtcNow });
-        }
-
-        public async Task<IEnumerable<CoachingSessionDto>> GetCoachingSessionsAsync(Guid coachId, Guid studentId)
-        {
-            var check = await GetStudentDetailAsync(coachId, studentId);
-            if (check == null) return Array.Empty<CoachingSessionDto>();
-
-            using var conn = _connectionFactory.CreateConnection();
-            return await conn.QueryAsync<CoachingSessionDto>(@"
-                SELECT id AS Id, coach_id AS CoachId, student_id AS StudentId, session_date AS SessionDate, title AS Title, notes AS Notes, action_items AS ActionItems, prep_notes AS PrepNotes, created_at AS CreatedAt
-                FROM coaching_sessions
-                WHERE student_id = @StudentId
-                ORDER BY session_date DESC NULLS LAST",
-                new { StudentId = studentId });
-        }
-
-        public async Task<IEnumerable<CoachingSessionDto>> GetStudentSessionsAsync(Guid studentId)
-        {
-            using var conn = _connectionFactory.CreateConnection();
-            return await conn.QueryAsync<CoachingSessionDto>(@"
-                SELECT id AS Id, coach_id AS CoachId, student_id AS StudentId, session_date AS SessionDate, title AS Title, notes AS Notes, action_items AS ActionItems, prep_notes AS PrepNotes, created_at AS CreatedAt
-                FROM coaching_sessions
-                WHERE student_id = @StudentId
-                ORDER BY session_date DESC NULLS LAST",
-                new { StudentId = studentId });
-        }
-
-        public async Task<bool> UpdateSessionPrepAsync(Guid studentId, Guid sessionId, string prepNotes)
-        {
-            using var conn = _connectionFactory.CreateConnection();
-            var rows = await conn.ExecuteAsync(@"
-                UPDATE coaching_sessions SET prep_notes = @PrepNotes WHERE id = @SessionId AND student_id = @StudentId",
-                new { PrepNotes = prepNotes, SessionId = sessionId, StudentId = studentId });
-            return rows > 0;
-        }
-
-        public async Task<Guid> CreateCoachingSessionAsync(Guid coachId, Guid studentId, CreateCoachingSessionRequest req)
-        {
-            var id = Guid.NewGuid();
-            using var conn = _connectionFactory.CreateConnection();
-            await conn.ExecuteAsync(@"
-                INSERT INTO coaching_sessions (id, coach_id, student_id, session_date, title, notes, action_items)
-                VALUES (@Id, @CoachId, @StudentId, @SessionDate, @Title, @Notes, @ActionItems)",
-                new { Id = id, CoachId = coachId, StudentId = studentId, req.SessionDate, Title = req.Title ?? "Koçluk Görüşmesi", req.Notes, req.ActionItems });
-            return id;
         }
 
         public async Task<bool> EmailExistsAsync(string email)
@@ -464,57 +419,27 @@ namespace MentorumApi.Data
             using var tx = conn.BeginTransaction();
             try
             {
-                // IDOR Kontrolü: Öğrenci bu koçun yetkili olduğu bir programa mı kayıtlı?
                 var owned = await conn.ExecuteScalarAsync<int?>(@"
                     SELECT 1 FROM students s
                     WHERE s.id = @StudentId
                       AND s.program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @CoachId)",
                     new { StudentId = studentId, CoachId = coachId }, tx);
-
                 if (owned == null) return false;
 
-                // 1. Grup üyeliklerini pasife al
-                await conn.ExecuteAsync(@"
-                    UPDATE student_group_members 
-                    SET is_active = 0 
-                    WHERE student_id = @StudentId",
-                    new { StudentId = studentId }, tx);
-
-                // 2. Özel ders ve kurs kayıtlarını pasife al
-                await conn.ExecuteAsync(@"
-                    UPDATE course_students 
-                    SET is_active = 0 
-                    WHERE student_id = @StudentId",
-                    new { StudentId = studentId }, tx);
-
-                // 3. Öğrenci tablosunda pasife al
-                await conn.ExecuteAsync(@"
-                    UPDATE students 
-                    SET is_active = 0, updated_at = NOW() 
-                    WHERE id = @StudentId",
-                    new { StudentId = studentId }, tx);
-
-                // 4. Kullanıcı tablosunda pasife al
-                await conn.ExecuteAsync(@"
-                    UPDATE users 
-                    SET is_active = 0 
-                    WHERE id = @StudentId",
-                    new { StudentId = studentId }, tx);
+                await conn.ExecuteAsync("UPDATE student_group_members SET is_active = 0 WHERE student_id = @StudentId", new { StudentId = studentId }, tx);
+                await conn.ExecuteAsync("UPDATE course_students SET is_active = 0 WHERE student_id = @StudentId", new { StudentId = studentId }, tx);
+                await conn.ExecuteAsync("UPDATE students SET is_active = 0, updated_at = NOW() WHERE id = @StudentId", new { StudentId = studentId }, tx);
+                await conn.ExecuteAsync("UPDATE users SET is_active = 0 WHERE id = @StudentId", new { StudentId = studentId }, tx);
 
                 tx.Commit();
                 return true;
             }
-            catch
-            {
-                tx.Rollback();
-                throw;
-            }
+            catch { tx.Rollback(); throw; }
         }
 
         public async Task<bool> UpdateStudentAsync(Guid studentId, UpdateStudentRequest req)
         {
             var track = NormalizeTrack(req.TargetExam);
-
             using var conn = _connectionFactory.CreateConnection();
             conn.Open();
             using var tx = conn.BeginTransaction();
@@ -524,57 +449,39 @@ namespace MentorumApi.Data
                 {
                     var currentName = await conn.QuerySingleOrDefaultAsync<string>(
                         "SELECT full_name FROM users WHERE id = @StudentId", new { StudentId = studentId }, tx);
-
                     if (currentName != null)
                     {
                         var parts = currentName.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
-                        var currentFirst = parts.Length > 0 ? parts[0] : "";
-                        var currentLast = parts.Length > 1 ? parts[1] : "";
-
-                        var newFirst = !string.IsNullOrWhiteSpace(req.FirstName) ? req.FirstName.Trim() : currentFirst;
-                        var newLast = !string.IsNullOrWhiteSpace(req.LastName) ? req.LastName.Trim() : currentLast;
-                        var newFullName = $"{newFirst} {newLast}".Trim();
-
+                        var newFirst = !string.IsNullOrWhiteSpace(req.FirstName) ? req.FirstName.Trim() : (parts.Length > 0 ? parts[0] : "");
+                        var newLast = !string.IsNullOrWhiteSpace(req.LastName) ? req.LastName.Trim() : (parts.Length > 1 ? parts[1] : "");
                         await conn.ExecuteAsync(
                             "UPDATE users SET full_name = @FullName, updated_at = NOW() WHERE id = @StudentId",
-                            new { FullName = newFullName, StudentId = studentId }, tx);
+                            new { FullName = $"{newFirst} {newLast}".Trim(), StudentId = studentId }, tx);
                     }
                 }
 
                 var rows = await conn.ExecuteAsync(@"
                     UPDATE students SET
-                        grade = COALESCE(@Grade, grade),
-                        track = COALESCE(@Track, track),
-                        phone = COALESCE(@Phone, phone),
-                        target_university = COALESCE(@TargetUniversity, target_university),
-                        target_department = COALESCE(@TargetDepartment, target_department),
-                        target_score = COALESCE(@TargetScore, target_score),
-                        monthly_milestone = COALESCE(@MonthlyMilestone, monthly_milestone),
-                        weekly_target_minutes = COALESCE(@WeeklyTargetMinutes, weekly_target_minutes),
-                        weekly_target_questions = COALESCE(@WeeklyTargetQuestions, weekly_target_questions),
+                        grade = COALESCE(@Grade, grade), track = COALESCE(@Track, track), phone = COALESCE(@Phone, phone),
+                        target_university = COALESCE(@TargetUniversity, target_university), target_department = COALESCE(@TargetDepartment, target_department),
+                        target_score = COALESCE(@TargetScore, target_score), monthly_milestone = COALESCE(@MonthlyMilestone, monthly_milestone),
+                        weekly_target_minutes = COALESCE(@WeeklyTargetMinutes, weekly_target_minutes), weekly_target_questions = COALESCE(@WeeklyTargetQuestions, weekly_target_questions),
                         updated_at = NOW()
                     WHERE id = @StudentId",
-                    new {
-                        Grade = req.ClassLevel,
-                        Track = track,
-                        req.Phone,
-                        req.TargetUniversity,
-                        req.TargetDepartment,
-                        req.TargetScore,
-                        req.MonthlyMilestone,
-                        req.WeeklyTargetMinutes,
-                        req.WeeklyTargetQuestions,
-                        StudentId = studentId
-                    }, tx);
+                    new { Grade = req.ClassLevel, Track = track, req.Phone, req.TargetUniversity, req.TargetDepartment, req.TargetScore, req.MonthlyMilestone, req.WeeklyTargetMinutes, req.WeeklyTargetQuestions, StudentId = studentId }, tx);
 
                 tx.Commit();
                 return rows > 0;
             }
-            catch
-            {
-                tx.Rollback();
-                throw;
-            }
+            catch { tx.Rollback(); throw; }
+        }
+
+        public async Task<Guid?> GetProgramIdAsync(Guid studentId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            return await conn.ExecuteScalarAsync<Guid?>(
+                "SELECT program_id FROM students WHERE id = @Id",
+                new { Id = studentId });
         }
 
         private static string? NormalizeTrack(string? targetExam)

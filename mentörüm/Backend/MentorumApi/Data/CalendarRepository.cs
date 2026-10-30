@@ -202,8 +202,8 @@ namespace MentorumApi.Data
                 {
                     sqlBuilder.Append(@" AND (
                         s.student_id = @StudentId
-                        OR s.course_id IN (SELECT course_id FROM course_students WHERE student_id = @StudentId AND is_active = 1)
-                        OR s.group_id IN (SELECT group_id FROM student_group_members WHERE student_id = @StudentId)
+                        OR s.course_id IN (SELECT course_id FROM vw_active_course_students WHERE student_id = @StudentId)
+                        OR s.group_id IN (SELECT group_id FROM vw_active_student_groups WHERE student_id = @StudentId)
                     )");
                 }
                 if (courseId.HasValue)
@@ -219,16 +219,16 @@ namespace MentorumApi.Data
             {
                 sqlBuilder.Append(@"
                     AND (s.student_id = @UserId
-                         OR s.course_id IN (SELECT course_id FROM course_students WHERE student_id = @UserId AND is_active = 1)
-                         OR s.group_id IN (SELECT group_id FROM student_group_members WHERE student_id = @UserId))
+                         OR s.course_id IN (SELECT course_id FROM vw_active_course_students WHERE student_id = @UserId)
+                         OR s.group_id IN (SELECT group_id FROM vw_active_student_groups WHERE student_id = @UserId))
                 ");
             }
             else if (role == "Parent")
             {
                 sqlBuilder.Append(@"
                     AND (s.student_id = @StudentId
-                         OR s.course_id IN (SELECT course_id FROM course_students WHERE student_id = @StudentId AND is_active = 1)
-                         OR s.group_id IN (SELECT group_id FROM student_group_members WHERE student_id = @StudentId))
+                         OR s.course_id IN (SELECT course_id FROM vw_active_course_students WHERE student_id = @StudentId)
+                         OR s.group_id IN (SELECT group_id FROM vw_active_student_groups WHERE student_id = @StudentId))
                     AND EXISTS (
                         SELECT 1 FROM student_parents sp 
                         WHERE sp.student_id = @StudentId 

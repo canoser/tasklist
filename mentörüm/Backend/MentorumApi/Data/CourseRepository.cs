@@ -22,15 +22,7 @@ namespace MentorumApi.Data
                    (COALESCE(c.teacher_can_add_notes, 0) = 1) AS TeacherCanAddNotes,
                    (COALESCE(c.teacher_can_view_schedule, 0) = 1) AS TeacherCanViewSchedule,
                    (COALESCE(c.teacher_can_manage_schedule, 0) = 1) AS TeacherCanManageSchedule,
-                   (
-                       SELECT COUNT(DISTINCT sid) FROM (
-                           SELECT cs.student_id AS sid FROM course_students cs WHERE cs.course_id = c.id AND cs.is_active = 1
-                           UNION
-                           SELECT sgm.student_id AS sid FROM course_groups cg
-                           JOIN student_group_members sgm ON sgm.group_id = cg.group_id AND sgm.is_active = 1
-                           WHERE cg.course_id = c.id
-                       ) roster
-                   ) AS StudentCount";
+                   (SELECT COUNT(1) FROM vw_active_course_students v WHERE v.course_id = c.id) AS StudentCount";
 
         private async Task<bool> IsMemberAsync(Guid programId, Guid coachId)
         {
@@ -178,12 +170,12 @@ namespace MentorumApi.Data
                 throw new InvalidOperationException("STUDENT_NOT_IN_PROGRAM");
 
             var rows = await conn.ExecuteAsync(@"
-                INSERT INTO course_students (id, course_id, student_id, program_id)
-                SELECT @Id, c.id, s.id, @ProgramId
+                INSERT INTO course_students (id, course_id, student_id, program_id, is_active)
+                SELECT @Id, c.id, s.id, @ProgramId, 1
                 FROM courses c
                 JOIN students s ON s.id = @StudentId AND s.program_id = @ProgramId
                 WHERE c.id = @CourseId AND c.program_id = @ProgramId
-                ON CONFLICT (course_id, student_id) DO NOTHING",
+                ON CONFLICT (course_id, student_id) DO UPDATE SET is_active = 1",
                 new { Id = Guid.NewGuid(), CourseId = courseId, StudentId = studentId, ProgramId = programId });
             return rows > 0 ? "OK" : "NOT_FOUND";
         }
@@ -193,7 +185,8 @@ namespace MentorumApi.Data
             if (!await IsMemberAsync(programId, coachId)) return "FORBIDDEN";
             using var conn = _connectionFactory.CreateConnection();
             var rows = await conn.ExecuteAsync(@"
-                DELETE FROM course_students
+                UPDATE course_students
+                SET is_active = 0
                 WHERE course_id = @CourseId AND student_id = @StudentId AND program_id = @ProgramId",
                 new { CourseId = courseId, StudentId = studentId, ProgramId = programId });
             return rows > 0 ? "OK" : "NOT_FOUND";
@@ -234,14 +227,9 @@ namespace MentorumApi.Data
                 JOIN students s ON s.id = u.id AND s.program_id = @ProgramId
                 WHERE u.is_active = 1
                   AND s.id IN (
-                    SELECT cs.student_id FROM course_students cs
-                    JOIN courses c ON c.id = cs.course_id AND c.program_id = @ProgramId
-                    WHERE cs.course_id = @CourseId AND cs.is_active = 1
-                    UNION
-                    SELECT sgm.student_id FROM course_groups cg
-                    JOIN courses c ON c.id = cg.course_id AND c.program_id = @ProgramId
-                    JOIN student_group_members sgm ON sgm.group_id = cg.group_id
-                    WHERE cg.course_id = @CourseId AND sgm.is_active = 1
+                    SELECT v.student_id FROM vw_active_course_students v
+                    JOIN courses c ON c.id = v.course_id AND c.program_id = @ProgramId
+                    WHERE v.course_id = @CourseId
                 )
                 ORDER BY u.full_name",
                 new { CourseId = courseId, ProgramId = programId });

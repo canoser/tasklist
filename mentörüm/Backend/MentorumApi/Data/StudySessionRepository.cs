@@ -193,16 +193,5 @@ namespace MentorumApi.Data
                 };
             });
         }
-
-        public async Task<bool> UpdatePrepAsync(Guid studentId, Guid sessionId, string prepNotes)
-        {
-            using var conn = _connectionFactory.CreateConnection();
-            var rows = await conn.ExecuteAsync(@"
-                UPDATE coaching_sessions 
-                SET prep_notes = @PrepNotes 
-                WHERE id = @SessionId AND student_id = @StudentId",
-                new { PrepNotes = prepNotes, SessionId = sessionId, StudentId = studentId });
-            return rows > 0;
-        }
     }
 }

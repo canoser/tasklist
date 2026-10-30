@@ -14,14 +14,14 @@ namespace MentorumApi.Endpoints
 
             group.MapGet("/", async (Guid programId, [FromServices] GroupRepository repo, ClaimsPrincipal user) =>
             {
-                var coachId = GetCoachId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 return Results.Ok(await repo.GetGroupsAsync(programId, coachId.Value));
             });
 
             group.MapPost("/", async (Guid programId, [FromBody] CreateGroupRequest req, [FromServices] GroupRepository repo, [FromServices] ProgramAccessGuard guard, ClaimsPrincipal user) =>
             {
-                var coachId = GetCoachId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 if (!await guard.IsCoachInProgramAsync(coachId.Value, programId)) return Results.NotFound(new { error = "Program bulunamadı veya yetkiniz yok." });
                 try
@@ -37,7 +37,7 @@ namespace MentorumApi.Endpoints
 
             group.MapGet("/{groupId:guid}", async (Guid programId, Guid groupId, [FromServices] GroupRepository repo, [FromServices] ProgramAccessGuard guard, ClaimsPrincipal user) =>
             {
-                var coachId = GetCoachId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 if (!await guard.IsCoachInProgramAsync(coachId.Value, programId)) return Results.NotFound(new { error = "Grup bulunamadı." });
                 var g = await repo.GetGroupAsync(programId, groupId, coachId.Value);
@@ -46,7 +46,7 @@ namespace MentorumApi.Endpoints
 
             group.MapPut("/{groupId:guid}", async (Guid programId, Guid groupId, [FromBody] UpdateGroupRequest req, [FromServices] GroupRepository repo, ClaimsPrincipal user) =>
             {
-                var coachId = GetCoachId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 var ok = await repo.UpdateGroupAsync(programId, groupId, coachId.Value, req);
                 return ok ? Results.Ok(new { message = "Güncellendi." }) : Results.NotFound(new { error = "Grup bulunamadı." });
@@ -54,7 +54,7 @@ namespace MentorumApi.Endpoints
 
             group.MapDelete("/{groupId:guid}", async (Guid programId, Guid groupId, [FromServices] GroupRepository repo, ClaimsPrincipal user) =>
             {
-                var coachId = GetCoachId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 var ok = await repo.DeleteGroupAsync(programId, groupId, coachId.Value);
                 return ok ? Results.Ok(new { message = "Grup silindi." }) : Results.NotFound(new { error = "Grup bulunamadı." });
@@ -62,7 +62,7 @@ namespace MentorumApi.Endpoints
 
             group.MapPost("/{groupId:guid}/members", async (Guid programId, Guid groupId, [FromBody] AddGroupMemberRequest req, [FromServices] GroupRepository repo, ClaimsPrincipal user) =>
             {
-                var coachId = GetCoachId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 var r = await repo.AddMemberAsync(programId, groupId, req.StudentId, coachId.Value);
                 return r switch
@@ -75,7 +75,7 @@ namespace MentorumApi.Endpoints
 
             group.MapGet("/{groupId:guid}/members", async (Guid programId, Guid groupId, [FromServices] GroupRepository repo, ClaimsPrincipal user) =>
             {
-                var coachId = GetCoachId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 var members = await repo.GetGroupMembersAsync(programId, groupId, coachId.Value);
                 return Results.Ok(members);
@@ -83,17 +83,11 @@ namespace MentorumApi.Endpoints
 
             group.MapDelete("/{groupId:guid}/members/{studentId:guid}", async (Guid programId, Guid groupId, Guid studentId, [FromServices] GroupRepository repo, ClaimsPrincipal user) =>
             {
-                var coachId = GetCoachId(user);
+                var coachId = user.GetUserId();
                 if (coachId == null) return Results.Unauthorized();
                 var r = await repo.RemoveMemberAsync(programId, groupId, studentId, coachId.Value);
                 return r == "OK" ? Results.Ok(new { message = "Üye çıkarıldı." }) : Results.NotFound(new { error = "Üye bulunamadı." });
             });
-        }
-
-        private static Guid? GetCoachId(ClaimsPrincipal user)
-        {
-            var idStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            return Guid.TryParse(idStr, out var id) ? id : null;
         }
     }
 }

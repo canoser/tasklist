@@ -25,11 +25,11 @@ namespace MentorumApi.Endpoints
                 [FromServices] CalendarRepository repo,
                 ClaimsPrincipal user) =>
             {
-                var userIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!Guid.TryParse(userIdStr, out var userId)) return Results.Unauthorized();
+                var userId = user.GetUserId();
+                if (userId == null) return Results.Unauthorized();
 
                 if ((to - from).TotalDays > 62) return Results.BadRequest(new { error = "Tarih aralığı en fazla 62 gün olabilir." });
-                var events = await repo.GetCalendarEventsAsync(userId, "Coach", from, to, studentId, programId, courseId, teacherId, eventType);
+                var events = await repo.GetCalendarEventsAsync(userId.Value, "Coach", from, to, studentId, programId, courseId, teacherId, eventType);
                 return Results.Ok(events);
             });
 
@@ -40,11 +40,11 @@ namespace MentorumApi.Endpoints
                 [FromServices] CalendarRepository repo,
                 ClaimsPrincipal user) =>
             {
-                var userIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!Guid.TryParse(userIdStr, out var userId)) return Results.Unauthorized();
+                var userId = user.GetUserId();
+                if (userId == null) return Results.Unauthorized();
 
                 if ((to - from).TotalDays > 62) return Results.BadRequest(new { error = "Tarih aralığı en fazla 62 gün olabilir." });
-                var events = await repo.GetCalendarEventsAsync(userId, "Student", from, to, null);
+                var events = await repo.GetCalendarEventsAsync(userId.Value, "Student", from, to, null);
                 return Results.Ok(events);
             });
 
@@ -56,11 +56,11 @@ namespace MentorumApi.Endpoints
                 [FromServices] CalendarRepository repo,
                 ClaimsPrincipal user) =>
             {
-                var userIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!Guid.TryParse(userIdStr, out var userId)) return Results.Unauthorized();
+                var userId = user.GetUserId();
+                if (userId == null) return Results.Unauthorized();
 
                 if ((to - from).TotalDays > 62) return Results.BadRequest(new { error = "Tarih aralığı en fazla 62 gün olabilir." });
-                var events = await repo.GetCalendarEventsAsync(userId, "Parent", from, to, id);
+                var events = await repo.GetCalendarEventsAsync(userId.Value, "Parent", from, to, id);
                 return Results.Ok(events);
             });
 
@@ -68,26 +68,26 @@ namespace MentorumApi.Endpoints
             var meEventsGroup = app.MapGroup("/api/v1/me/events").RequireAuthorization();
             meEventsGroup.MapGet("/", async ([FromServices] CalendarRepository repo, ClaimsPrincipal user) =>
             {
-                var userIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!Guid.TryParse(userIdStr, out var userId)) return Results.Unauthorized();
+                var userId = user.GetUserId();
+                if (userId == null) return Results.Unauthorized();
 
-                return Results.Ok(await repo.GetPersonalEventsAsync(userId));
+                return Results.Ok(await repo.GetPersonalEventsAsync(userId.Value));
             });
             meEventsGroup.MapPost("/", async ([FromBody] CreatePersonalEventRequest req, [FromServices] CalendarRepository repo, ClaimsPrincipal user) =>
             {
-                var userIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!Guid.TryParse(userIdStr, out var userId)) return Results.Unauthorized();
+                var userId = user.GetUserId();
+                if (userId == null) return Results.Unauthorized();
 
                 if (string.IsNullOrWhiteSpace(req.Title)) return Results.BadRequest(new { error = "Başlık gerekli." });
-                var id = await repo.CreatePersonalEventAsync(userId, req);
+                var id = await repo.CreatePersonalEventAsync(userId.Value, req);
                 return Results.Ok(new { id });
             });
             meEventsGroup.MapPatch("/{eventId:guid}/checkin", async (Guid eventId, [FromBody] CheckinEventRequest req, [FromServices] CalendarRepository repo, ClaimsPrincipal user) =>
             {
-                var userIdStr = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!Guid.TryParse(userIdStr, out var userId)) return Results.Unauthorized();
+                var userId = user.GetUserId();
+                if (userId == null) return Results.Unauthorized();
 
-                var ok = await repo.UpdatePersonalEventCheckinAsync(userId, eventId, req.CheckedIn, req.ActualMinutes);
+                var ok = await repo.UpdatePersonalEventCheckinAsync(userId.Value, eventId, req.CheckedIn, req.ActualMinutes);
                 return ok ? Results.Ok(new { message = "Güncellendi." }) : Results.NotFound(new { error = "Etkinlik bulunamadı." });
             });
         }
