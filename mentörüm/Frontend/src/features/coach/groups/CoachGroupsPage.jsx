@@ -38,10 +38,10 @@ const GroupItem = ({ group, programId }) => {
   return (
     <Card className={styles.item} padding="md">
       <div className={styles.itemHeader}>
-        <div>
-          <strong style={{ fontSize: '1.05rem', color: 'var(--text-primary)' }}>{group.name}</strong>
-          <span className={styles.meta} style={{ marginLeft: '0.75rem' }}>
-            Üye: <strong>{group.memberCount}</strong>
+        <div className={styles.itemTitleGroup}>
+          <strong style={{ fontSize: '1.02rem', color: 'var(--text-color-main)' }}>{group.name}</strong>
+          <span className={styles.metaBadge}>
+            {group.memberCount} Öğrenci
           </span>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -58,7 +58,7 @@ const GroupItem = ({ group, programId }) => {
       {isExpanded && (
         <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-            <h4 style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-primary)' }}>
+            <h4 style={{ margin: 0, fontSize: '0.92rem', color: 'var(--text-color-main)' }}>
               Grup Üyeleri ({members.length})
             </h4>
             <Button size="sm" onClick={() => setIsModalOpen(true)}>
@@ -67,9 +67,9 @@ const GroupItem = ({ group, programId }) => {
           </div>
 
           {membersLoading ? (
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Üyeler yükleniyor...</p>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-color-muted)' }}>Üyeler yükleniyor...</p>
           ) : members.length === 0 ? (
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0.5rem 0' }}>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-color-muted)', margin: '0.5rem 0' }}>
               Bu grupta henüz öğrenci yok. Öğrenci eklemek için butona tıklayın.
             </p>
           ) : (
@@ -89,14 +89,14 @@ const GroupItem = ({ group, programId }) => {
                   }}
                 >
                   <div>
-                    <strong style={{ color: 'var(--text-primary)' }}>{m.fullName}</strong>
+                    <strong style={{ color: 'var(--text-color-main)' }}>{m.fullName}</strong>
                     {m.grade && (
-                      <span style={{ marginLeft: '0.5rem', color: 'var(--text-secondary)' }}>
+                      <span style={{ marginLeft: '0.5rem', color: 'var(--text-color-muted)' }}>
                         ({m.grade}. Sınıf)
                       </span>
                     )}
                     {m.email && (
-                      <span style={{ marginLeft: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
+                      <span style={{ marginLeft: '0.5rem', color: 'var(--text-color-muted)', fontSize: '0.8rem' }}>
                         {m.email}
                       </span>
                     )}
@@ -127,7 +127,7 @@ const GroupItem = ({ group, programId }) => {
   );
 };
 
-const CoachGroupsPage = ({ programId: propProgramId }) => {
+const CoachGroupsPage = ({ programId: propProgramId, embedded = false, showCreateForm = true, onCloseCreateForm }) => {
   const { programId: routeProgramId } = useParams();
   const programId = propProgramId || routeProgramId;
   const { data: groups, isLoading } = useGroups(programId);
@@ -139,18 +139,35 @@ const CoachGroupsPage = ({ programId: propProgramId }) => {
     if (!name.trim()) return;
     await createGroup.mutateAsync({ programId, data: { name: name.trim() } });
     setName('');
+    if (onCloseCreateForm) onCloseCreateForm();
   };
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Grup Programları</h1>
+    <div className={embedded ? styles.containerEmbedded : styles.container}>
+      {!embedded && <h1 className={styles.title}>Grup Programları</h1>}
 
-      <Card className={styles.card} padding="md">
-        <form onSubmit={handleCreate} className={styles.form}>
-          <Input label="Grup Adı" value={name} onChange={(e) => setName(e.target.value)} placeholder="Örn: 12-A" />
-          <Button type="submit" isLoading={createGroup.isPending}>Grup Oluştur</Button>
-        </form>
-      </Card>
+      {showCreateForm && (
+        <Card className={styles.card} padding="md">
+          <form onSubmit={handleCreate} className={styles.formRow}>
+            <Input
+              label="Yeni Grup Adı"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Örn: 12-A Sayısal Grubu"
+            />
+            <div style={{ display: 'flex', gap: 8 }}>
+              {onCloseCreateForm && (
+                <Button type="button" variant="ghost" onClick={onCloseCreateForm}>
+                  İptal
+                </Button>
+              )}
+              <Button type="submit" isLoading={createGroup.isPending} disabled={!name.trim()}>
+                Grup Oluştur
+              </Button>
+            </div>
+          </form>
+        </Card>
+      )}
 
       <div className={styles.list}>
         {isLoading && <p>Yükleniyor...</p>}
@@ -163,4 +180,3 @@ const CoachGroupsPage = ({ programId: propProgramId }) => {
 };
 
 export default CoachGroupsPage;
-

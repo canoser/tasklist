@@ -43,8 +43,9 @@ const PERMISSION_DEFINITIONS = [
   { key: 'teacherCanManageSchedule', label: 'Programı Değiştirebilsin' },
 ];
 
-const CoachCoursesPage = () => {
-  const { programId } = useParams();
+const CoachCoursesPage = ({ programId: propProgramId, embedded = false, showCreateForm = true, onCloseCreateForm }) => {
+  const { programId: routeProgramId } = useParams();
+  const programId = propProgramId || routeProgramId;
   const navigate = useNavigate();
   const { data: courses, isLoading } = useCourses(programId);
   const createCourse = useCreateCourse();
@@ -84,72 +85,93 @@ const CoachCoursesPage = () => {
     setSelectedColor(COLOR_PALETTE[0]);
     setPermissions(DEFAULT_PERMISSIONS);
     setShowPermissions(false);
+    if (onCloseCreateForm) onCloseCreateForm();
   };
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Dersler</h1>
+    <div className={embedded ? styles.containerEmbedded : styles.container}>
+      {!embedded && <h1 className={styles.title}>Dersler</h1>}
 
-      <Card className={styles.card} padding="md">
-        <form onSubmit={handleCreate} className={styles.form}>
-          <Input label="Ders Adı" value={name} onChange={(e) => setName(e.target.value)} placeholder="Örn: Matematik" />
-          <Input label="Tür" value={type} onChange={(e) => setType(e.target.value)} placeholder="DERS" />
-          
-          <div className={styles.fieldGroup}>
-            <label className={styles.fieldLabel}>Ders Rengi</label>
-            <div className={styles.colorPicker}>
-              {COLOR_PALETTE.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  aria-label={`Renk seç: ${c}`}
-                  className={`${styles.colorSwatch} ${selectedColor === c ? styles.colorSwatchSelected : ''}`}
-                  style={{ backgroundColor: c }}
-                  onClick={() => setSelectedColor(c)}
-                />
-              ))}
+      {showCreateForm && (
+        <Card className={styles.card} padding="md">
+          <form onSubmit={handleCreate} className={styles.form}>
+            <div className={styles.formTopGrid}>
+              <Input label="Ders Adı" value={name} onChange={(e) => setName(e.target.value)} placeholder="Örn: AYT Matematik" />
+              <div className={styles.fieldGroup}>
+                <label className={styles.fieldLabel}>Ders Türü</label>
+                <select value={type} onChange={(e) => setType(e.target.value)} className={styles.select}>
+                  <option value="DERS">Akademik Ders (Grup / Sınıf)</option>
+                  <option value="OZEL_DERS">Bireysel Özel Ders / Koçluk</option>
+                </select>
+              </div>
+              <div className={styles.fieldGroup}>
+                <label className={styles.fieldLabel}>Sorumlu Öğretmen</label>
+                <select value={teacherId} onChange={(e) => setTeacherId(e.target.value)} className={styles.select}>
+                  <option value="">Öğretmen Seçin (Opsiyonel)</option>
+                  {teachers.map((t) => <option key={t.id} value={t.id}>{t.fullName}</option>)}
+                </select>
+              </div>
             </div>
-          </div>
 
-          <select value={teacherId} onChange={(e) => setTeacherId(e.target.value)} className={styles.select}>
-            <option value="">Öğretmen (opsiyonel)</option>
-            {teachers.map((t) => <option key={t.id} value={t.id}>{t.fullName}</option>)}
-          </select>
-
-          {/* Gelişmiş İzinler Akordeonu */}
-          <div>
-            <button
-              type="button"
-              className={styles.accordionButton}
-              onClick={() => setShowPermissions(prev => !prev)}
-            >
-              <span>⚙️ Gelişmiş Öğretmen İzinleri</span>
-              <span>{showPermissions ? '▲ Kapat' : '▼ Yapılandır'}</span>
-            </button>
-
-            {showPermissions && (
-              <div className={styles.permissionsPanel}>
-                {PERMISSION_DEFINITIONS.map(p => (
-                  <div key={p.key} className={styles.permissionRow}>
-                    <span className={styles.permissionTitle}>{p.label}</span>
-                    <label className={styles.switch}>
-                      <input
-                        type="checkbox"
-                        checked={permissions[p.key]}
-                        onChange={() => handleTogglePermission(p.key)}
-                      />
-                      <span className={styles.slider} />
-                    </label>
-                  </div>
+            <div className={styles.fieldGroup}>
+              <label className={styles.fieldLabel}>Ders Rengi</label>
+              <div className={styles.colorPicker}>
+                {COLOR_PALETTE.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    aria-label={`Renk seç: ${c}`}
+                    className={`${styles.colorSwatch} ${selectedColor === c ? styles.colorSwatchSelected : ''}`}
+                    style={{ backgroundColor: c }}
+                    onClick={() => setSelectedColor(c)}
+                  />
                 ))}
               </div>
-            )}
-          </div>
+            </div>
 
-          <Button type="submit" isLoading={createCourse.isPending}>Ders Oluştur</Button>
-        </form>
-        <p className={styles.note}>Ders oluşturulduktan sonra da ders detayındaki "İzinler" sekmesinden yetkileri güncelleyebilirsiniz.</p>
-      </Card>
+            <div>
+              <button
+                type="button"
+                className={styles.accordionButton}
+                onClick={() => setShowPermissions(prev => !prev)}
+              >
+                <span>⚙️ Gelişmiş Öğretmen İzinleri</span>
+                <span>{showPermissions ? '▲ Kapat' : '▼ Yapılandır'}</span>
+              </button>
+
+              {showPermissions && (
+                <div className={styles.permissionsPanel}>
+                  {PERMISSION_DEFINITIONS.map(p => (
+                    <div key={p.key} className={styles.permissionRow}>
+                      <span className={styles.permissionTitle}>{p.label}</span>
+                      <label className={styles.switch}>
+                        <input
+                          type="checkbox"
+                          checked={permissions[p.key]}
+                          onChange={() => handleTogglePermission(p.key)}
+                        />
+                        <span className={styles.slider} />
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+              {onCloseCreateForm && (
+                <Button type="button" variant="ghost" onClick={onCloseCreateForm}>
+                  İptal
+                </Button>
+              )}
+              <Button type="submit" isLoading={createCourse.isPending} disabled={!name.trim()}>
+                Ders Oluştur
+              </Button>
+            </div>
+          </form>
+          <p className={styles.note}>Ders oluşturulduktan sonra da ders detayındaki "İzinler" sekmesinden yetkileri güncelleyebilirsiniz.</p>
+        </Card>
+      )}
 
       <div className={styles.list}>
         {isLoading && <p>Yükleniyor...</p>}
@@ -157,13 +179,17 @@ const CoachCoursesPage = () => {
           <Card key={c.id} className={styles.item} padding="md" style={{ borderLeft: `5px solid ${c.color || 'var(--color-primary)'}` }}>
             <div className={styles.itemHeader}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: c.color || 'var(--color-primary)', display: 'inline-block' }} />
-                <strong>{c.name}</strong>
+                <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: c.color || 'var(--color-primary)', display: 'inline-block', flexShrink: 0 }} />
+                <strong style={{ color: 'var(--text-color-main)', fontSize: '0.98rem' }}>{c.name}</strong>
               </div>
-              <span className={styles.type}>{c.type}</span>
+              <span className={styles.type}>{c.type === 'OZEL_DERS' ? 'Özel Ders' : 'Ders'}</span>
             </div>
-            <div className={styles.meta}>Öğrenci: {c.studentCount}</div>
-            <Button size="sm" variant="outline" onClick={() => navigate(`/coach/programs/${programId}/courses/${c.id}`)}>Detay</Button>
+            <div className={styles.itemFooter}>
+              <span className={styles.meta}>Kayıtlı Öğrenci: <strong>{c.studentCount ?? 0}</strong></span>
+              <Button size="sm" variant="outline" onClick={() => navigate(`/coach/programs/${programId}/courses/${c.id}`)}>
+                Detay & Kaynaklar →
+              </Button>
+            </div>
           </Card>
         ))}
       </div>
@@ -172,4 +198,3 @@ const CoachCoursesPage = () => {
 };
 
 export default CoachCoursesPage;
-

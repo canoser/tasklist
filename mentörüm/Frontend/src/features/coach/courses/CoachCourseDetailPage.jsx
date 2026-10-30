@@ -120,8 +120,19 @@ const CoachCourseDetailPage = () => {
 
   return (
     <div className={styles.container}>
+      <div style={{ fontSize: '0.8rem', color: 'var(--text-color-muted)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <span style={{ cursor: 'pointer', color: 'var(--color-primary)', fontWeight: 600 }} onClick={() => navigate('/coach/students')}>
+          Öğrenciler & Programlar
+        </span>
+        <span>/</span>
+        <span style={{ cursor: 'pointer', color: 'var(--color-primary)', fontWeight: 600 }} onClick={() => navigate('/coach/students?tab=COURSES')}>
+          Dersler & Branşlar
+        </span>
+        <span>/</span>
+        <span>{course?.name || 'Ders Detayı'}</span>
+      </div>
       <div className={styles.header}>
-        <Button size="sm" variant="outline" onClick={() => navigate(`/coach/programs/${programId}/courses`)}>← Geri</Button>
+        <Button size="sm" variant="outline" onClick={() => navigate('/coach/students?tab=COURSES')}>← Derslere Dön</Button>
         <h1 className={styles.title}>{course?.name || 'Ders'}</h1>
       </div>
 

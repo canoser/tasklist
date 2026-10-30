@@ -340,7 +340,7 @@ const AddOrInviteStudentPanel = ({ showAddForm, onCloseAddForm, programs }) => {
                   <div className={styles.pendingInfo}>
                     <div className={styles.pendingEmail}>{inv.email}</div>
                     <div className={styles.pendingMeta}>
-                      <span>Program: <strong>{inv.programname || 'Genel'}</strong></span>
+                      <span>Program: <strong>{inv.programName || 'Genel'}</strong></span>
                       <span> • Kod: <code className={styles.codeBadge}>{inv.code}</code></span>
                     </div>
                   </div>

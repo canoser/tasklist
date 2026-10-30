@@ -1,8 +1,144 @@
-.container { padding: var(--spacing-md); max-width: 900px; margin: 0 auto; }
-.title { font-size: 1.5rem; font-weight: 700; margin-bottom: var(--spacing-md); color: var(--text-color-main); }
-.list { display: flex; flex-direction: column; gap: var(--spacing-sm); margin-top: var(--spacing-md); }
-.item { margin: 0; }
-.itemHeader { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-.badge { font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; background: var(--color-primary); color: #fff; }
-.email { font-size: 0.85rem; color: var(--text-color-muted); margin-bottom: var(--spacing-sm); }
-.actions { display: flex; gap: var(--spacing-xs); }
+.container {
+  padding: var(--spacing-md);
+  max-width: 840px;
+  margin: 0 auto;
+}
+
+.containerEmbedded {
+  width: 100%;
+  padding: 0;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: var(--spacing-md);
+  color: var(--text-color-main);
+}
+
+.headerCard {
+  background: var(--bg-color-surface) !important;
+  border: 1px solid var(--border-color);
+  margin-bottom: var(--spacing-md);
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-color-main);
+  margin: 0 0 4px;
+}
+
+.sectionSubtitle {
+  font-size: 0.84rem;
+  color: var(--text-color-muted);
+  margin: 0;
+}
+
+.select {
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-color-surface);
+  color: var(--text-color-main);
+  font-size: 0.85rem;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.item {
+  margin: 0;
+  background: var(--bg-color-surface) !important;
+  border: 1px solid var(--border-color);
+}
+
+.itemHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.coachName {
+  font-size: 0.98rem;
+  color: var(--text-color-main);
+}
+
+.badgeAdmin {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.badgeAssistant {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--color-primary);
+}
+
+.email {
+  font-size: 0.84rem;
+  color: var(--text-color-muted);
+  margin-top: 2px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-color);
+}
+
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modalHint {
+  font-size: 0.85rem;
+  color: var(--text-color-muted);
+  margin: 0;
+  line-height: 1.45;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.inviteSuccessBox {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.inviteSuccessHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-success, #16a34a);
+  font-size: 0.95rem;
+}

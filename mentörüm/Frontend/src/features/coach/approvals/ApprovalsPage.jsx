@@ -5,6 +5,7 @@ import styles from './ApprovalsPage.module.css';
 
 const ENTITY_TYPE_LABELS = {
   HOMEWORK_DONE: 'Ödev Tamamlama',
+  HOMEWORK_EXTENSION: 'Ödev Ek Süre Talebi',
   SCHEDULE_CHANGE: 'Program Değişikliği',
   PAYMENT_CLAIM: 'Ödeme Bildirimi'
 };
@@ -58,33 +59,72 @@ export default function ApprovalsPage() {
       }
     }
 
-    if (item.entity_type === 'PAYMENT_CLAIM') {
+    const studentLine = payload?.studentName ? (
+      <div style={{ marginBottom: 4 }}>
+        <strong>Öğrenci:</strong> {payload.studentName}
+      </div>
+    ) : null;
+
+    if (item.entityType === 'PAYMENT_CLAIM') {
       return (
         <div>
-          <strong>Tutar:</strong> {payload.amount || '-'} {payload.currency || 'TRY'} | 
-          <strong> Yöntem:</strong> {payload.method || 'Banka Havalesi'}
-          {payload.notes && <div><strong>Not:</strong> {payload.notes}</div>}
+          {studentLine}
+          <strong>Tutar:</strong> {payload?.amount || '-'} {payload?.currency || 'TRY'} | 
+          <strong> Yöntem:</strong> {payload?.method || 'Banka Havalesi'}
+          {payload?.notes && <div><strong>Not:</strong> {payload.notes}</div>}
         </div>
       );
     }
 
-    if (item.entity_type === 'HOMEWORK_DONE') {
+    if (item.entityType === 'HOMEWORK_DONE') {
       return (
         <div>
-          <strong>Öğrenci Notu:</strong> {payload.studentNotes || 'Belirtilmedi'}
+          {studentLine}
+          {(payload?.homeworkTitle || payload?.title) && (
+            <div><strong>Ödev:</strong> {payload.homeworkTitle || payload.title}</div>
+          )}
+          <div>
+            <strong>Öğrenci Notu:</strong> {payload?.note || payload?.studentNotes || 'Belirtilmedi'}
+          </div>
         </div>
       );
     }
 
-    if (item.entity_type === 'SCHEDULE_CHANGE') {
+    if (item.entityType === 'HOMEWORK_EXTENSION') {
       return (
         <div>
-          <strong>Değişiklik Talebi:</strong> {payload.reason || payload.description || 'Detay girilmedi'}
+          {studentLine}
+          {(payload?.homeworkTitle || payload?.title) && (
+            <div><strong>Ödev:</strong> {payload.homeworkTitle || payload.title}</div>
+          )}
+          {payload?.requestedDays && (
+            <div><strong>Talep Edilen Süre:</strong> +{payload.requestedDays} gün</div>
+          )}
+          {payload?.requestedDueDate && (
+            <div><strong>Talep Edilen Tarih:</strong> {new Date(payload.requestedDueDate).toLocaleDateString('tr-TR')}</div>
+          )}
+          <div>
+            <strong>Gerekçe:</strong> {payload?.reason || payload?.note || 'Belirtilmedi'}
+          </div>
         </div>
       );
     }
 
-    return <div>{JSON.stringify(payload)}</div>;
+    if (item.entityType === 'SCHEDULE_CHANGE') {
+      return (
+        <div>
+          {studentLine}
+          <strong>Değişiklik Talebi:</strong> {payload?.reason || payload?.description || 'Detay girilmedi'}
+        </div>
+      );
+    }
+
+    return (
+      <div>
+        {studentLine}
+        {payload?.reason || payload?.note || payload?.description || 'Detay bulunmuyor'}
+      </div>
+    );
   };
 
   return (
@@ -160,10 +200,10 @@ export default function ApprovalsPage() {
               <div className={styles.itemInfo}>
                 <div className={styles.itemHeader}>
                   <span className={styles.entityBadge}>
-                    {ENTITY_TYPE_LABELS[item.entity_type] || item.entity_type}
+                    {ENTITY_TYPE_LABELS[item.entityType] || item.entityType}
                   </span>
                   <span className={styles.date}>
-                    {item.created_at ? new Date(item.created_at).toLocaleString('tr-TR') : ''}
+                    {item.createdAt ? new Date(item.createdAt).toLocaleString('tr-TR') : ''}
                   </span>
                   <span className={`${styles.statusBadge} ${
                     item.status === 'PENDING' ? styles.statusPending :
@@ -178,9 +218,9 @@ export default function ApprovalsPage() {
                   {renderPayloadDetails(item)}
                 </div>
 
-                {item.rejection_reason && (
+                {item.rejectionReason && (
                   <div className={styles.rejectionReason}>
-                    Red Gerekçesi: {item.rejection_reason}
+                    Red Gerekçesi: {item.rejectionReason}
                   </div>
                 )}
 

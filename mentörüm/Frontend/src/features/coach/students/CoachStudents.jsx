@@ -5,17 +5,18 @@ import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
 import Modal from '../../../components/common/Modal/Modal';
 import CoachGroupsPage from '../groups/CoachGroupsPage';
+import CoachCoursesPage from '../courses/CoachCoursesPage';
 import AddOrInviteStudentPanel from './AddOrInviteStudentPanel';
-import { Users, FolderGit2, BookOpen, CheckCircle2, AlertCircle, School, Mail, Search, UserPlus, Trash2 } from 'lucide-react';
+import { Users, FolderGit2, BookOpen, CheckCircle2, AlertCircle, School, Mail, Search, UserPlus, Trash2, Plus } from 'lucide-react';
 import { useStudents, useDeleteStudent, useInviteStudent } from '../coachApi';
 import AssignHomeworkModal from '../homework/AssignHomeworkModal';
-import { usePrograms } from '../coachSchoolApi';
+import { usePrograms, useGroups, useCourses } from '../coachSchoolApi';
 import styles from './CoachStudents.module.css';
 
 const CoachStudents = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'STUDENTS'); // 'STUDENTS' | 'GROUPS'
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'STUDENTS'); // 'STUDENTS' | 'GROUPS' | 'COURSES'
   const { data: students, isLoading } = useStudents();
   const { data: programs } = usePrograms();
   const deleteStudentMutation = useDeleteStudent();
@@ -25,6 +26,16 @@ const CoachStudents = () => {
   const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || searchParams.get('search') || '');
   const [programFilter, setProgramFilter] = useState('');
   const [gradeFilter, setGradeFilter] = useState(searchParams.get('grade') || '');
+  const activeProgramId = programFilter || ((programs && programs.length > 0) ? programs[0].id : null);
+  const { data: groups } = useGroups(activeProgramId);
+  const { data: courses } = useCourses(activeProgramId);
+
+  const urlTabParam = searchParams.get('tab');
+  useEffect(() => {
+    if (urlTabParam && ['STUDENTS', 'GROUPS', 'COURSES'].includes(urlTabParam) && urlTabParam !== activeTab) {
+      setActiveTab(urlTabParam);
+    }
+  }, [urlTabParam]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Dışarıdan (örn. üst bar ⌘K araması) gelen ?q= / ?search= değişimini state'e senkronize et
   const urlQueryParam = searchParams.get('q') ?? searchParams.get('search');
@@ -44,6 +55,8 @@ const CoachStudents = () => {
   }, [activeTab, searchTerm, gradeFilter, setSearchParams]);
 
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showGroupForm, setShowGroupForm] = useState(false);
+  const [showCourseForm, setShowCourseForm] = useState(false);
 
   // Modal State (Gölge profile sonradan e-posta daveti göndermek için)
   const [inviteTarget, setInviteTarget] = useState(null);
@@ -51,7 +64,6 @@ const CoachStudents = () => {
   const [targetError, setTargetError] = useState('');
   const [targetSuccess, setTargetSuccess] = useState('');
 
-  const activeProgramId = (programs && programs.length > 0) ? programs[0].id : null;
   const inviteStudent = useInviteStudent(activeProgramId);
 
   const handleOpenInviteModal = (student) => {
@@ -93,24 +105,38 @@ const CoachStudents = () => {
         <div className={styles.titleArea}>
           <div className={styles.titleRow}>
             <h1 className={styles.title}>Öğrenciler & Programlar</h1>
-            <Button
-              variant={showAddForm ? 'secondary' : 'primary'}
-              size="sm"
-              onClick={() => setShowAddForm(!showAddForm)}
-            >
-              <UserPlus size={15} />
-              <span>{showAddForm ? '✕ Formu Kapat' : '+ Yeni Öğrenci Ekle'}</span>
-            </Button>
+            {activeTab === 'STUDENTS' && (
+              <Button
+                variant={showAddForm ? 'secondary' : 'primary'}
+                size="sm"
+                onClick={() => setShowAddForm(!showAddForm)}
+              >
+                <UserPlus size={15} />
+                <span>{showAddForm ? '✕ Formu Kapat' : '+ Yeni Öğrenci Ekle'}</span>
+              </Button>
+            )}
+            {activeTab === 'GROUPS' && (
+              <Button
+                variant={showGroupForm ? 'secondary' : 'primary'}
+                size="sm"
+                onClick={() => setShowGroupForm(!showGroupForm)}
+              >
+                <Plus size={15} />
+                <span>{showGroupForm ? '✕ Formu Kapat' : '+ Yeni Grup Oluştur'}</span>
+              </Button>
+            )}
+            {activeTab === 'COURSES' && (
+              <Button
+                variant={showCourseForm ? 'secondary' : 'primary'}
+                size="sm"
+                onClick={() => setShowCourseForm(!showCourseForm)}
+              >
+                <Plus size={15} />
+                <span>{showCourseForm ? '✕ Formu Kapat' : '+ Yeni Ders Oluştur'}</span>
+              </Button>
+            )}
           </div>
-          <p className={styles.subtitle}>Bireysel koçluk yaptığınız öğrencileri ve grup programlarınızı yönetin.</p>
-          {activeProgramId && (
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px' }}>
-              <Button size="sm" variant="outline" onClick={() => navigate(`/coach/programs/${activeProgramId}/courses`)}>📚 Dersler</Button>
-              <Button size="sm" variant="outline" onClick={() => navigate(`/coach/programs/${activeProgramId}/schedule`)}>🗓️ Haftalık Program</Button>
-              <Button size="sm" variant="outline" onClick={() => navigate(`/coach/programs/${activeProgramId}/audit-logs`)}>🛡️ İşlem Geçmişi</Button>
-              <Button size="sm" variant="outline" onClick={() => navigate(`/coach/programs/${activeProgramId}/settings`)}>⚙️ Ayarlar</Button>
-            </div>
-          )}
+          <p className={styles.subtitle}>Bireysel koçluk yaptığınız öğrencileri, grup sınıflarınızı ve ders/branşlarınızı tek merkezden yönetin.</p>
         </div>
       </header>
 
@@ -121,7 +147,7 @@ const CoachStudents = () => {
           onClick={() => setActiveTab('STUDENTS')}
         >
           <Users size={16} />
-          <span>Bireysel Programlar</span>
+          <span>Bireysel Öğrenciler ({students?.length || 0})</span>
         </button>
         <button
           type="button"
@@ -129,12 +155,32 @@ const CoachStudents = () => {
           onClick={() => setActiveTab('GROUPS')}
         >
           <FolderGit2 size={16} />
-          <span>Grup Programları</span>
+          <span>Gruplar ({groups?.length || 0})</span>
+        </button>
+        <button
+          type="button"
+          className={`${styles.segmentedBtn} ${activeTab === 'COURSES' ? styles.segmentedBtnActive : ''}`}
+          onClick={() => setActiveTab('COURSES')}
+        >
+          <BookOpen size={16} />
+          <span>Dersler & Branşlar ({courses?.length || 0})</span>
         </button>
       </div>
 
       {activeTab === 'GROUPS' ? (
-        <CoachGroupsPage programId={programFilter || programs?.[0]?.id} />
+        <CoachGroupsPage
+          programId={activeProgramId}
+          embedded={true}
+          showCreateForm={showGroupForm || (groups && groups.length === 0)}
+          onCloseCreateForm={() => setShowGroupForm(false)}
+        />
+      ) : activeTab === 'COURSES' ? (
+        <CoachCoursesPage
+          programId={activeProgramId}
+          embedded={true}
+          showCreateForm={showCourseForm || (courses && courses.length === 0)}
+          onCloseCreateForm={() => setShowCourseForm(false)}
+        />
       ) : (
         <>
           <AddOrInviteStudentPanel
@@ -228,24 +274,23 @@ const CoachStudents = () => {
                   </div>
                 </div>
                 <div className={styles.cardFooter}>
-                  <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); navigate(`/coach/students/${student.id}`); }}>Profili Gör</Button>
-                  <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); setAssignModalStudent(student); }}>Ödev Ata</Button>
+                  <Button variant="ghost" size="sm" className={styles.cardActionBtn} onClick={(e) => { e.stopPropagation(); navigate(`/coach/students/${student.id}`); }}>Profili Gör</Button>
+                  <Button variant="secondary" size="sm" className={styles.cardActionBtn} onClick={(e) => { e.stopPropagation(); setAssignModalStudent(student); }}>Ödev Ata</Button>
                   {student.inviteStatus === 'NOT_INVITED' && (
-                    <Button variant="secondary" size="sm" onClick={(e) => { e.stopPropagation(); handleOpenInviteModal(student); }}>Davet Et</Button>
+                    <Button variant="secondary" size="sm" className={styles.cardActionBtn} onClick={(e) => { e.stopPropagation(); handleOpenInviteModal(student); }}>Davet Et</Button>
                   )}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    style={{ color: 'var(--color-danger, #ef4444)', marginLeft: 'auto' }}
+                  <button
+                    type="button"
+                    className={styles.deleteIconBtn}
                     onClick={(e) => {
                       e.stopPropagation();
                       setStudentToDelete(student);
                     }}
                     title="Öğrenciyi Sil"
+                    aria-label="Öğrenciyi Sil"
                   >
-                    <Trash2 size={14} />
-                    <span>Sil</span>
-                  </Button>
+                    <Trash2 size={15} />
+                  </button>
                 </div>
               </Card>
             ))}

@@ -31,7 +31,7 @@ export default function WeeklyTimeBudgetCard({ studentId }) {
   // Dakikaları saate çevirme
   const toHours = (mins) => ((mins || 0) / 60).toFixed(1);
 
-  const totalTracked = budget.totalTrackedMinutes ?? budget.TotalTrackedMinutes ?? 0;
+  const totalTracked = budget.totalTrackedMinutes ?? 0;
   const totalMins = totalTracked > 0 ? totalTracked : 1;
 
   const categoryConfig = {
@@ -44,29 +44,29 @@ export default function WeeklyTimeBudgetCard({ studentId }) {
     OTHER: { label: 'Diğer Aktiviteler', color: CATEGORY_COLORS.other, icon: <Pin size={16} /> }
   };
 
-  const rawCategories = budget.categories || budget.Categories || [];
+  const rawCategories = budget.categories || [];
   let categories = [];
 
   if (rawCategories.length > 0) {
     categories = rawCategories.map(rc => {
-      const catKey = (rc.category || rc.Category || 'OTHER').toUpperCase();
-      const cfg = categoryConfig[catKey] || { label: rc.category || rc.Category || 'Aktivite', color: CATEGORY_COLORS.other, icon: <Pin size={16} /> };
+      const catKey = (rc.category || 'OTHER').toUpperCase();
+      const cfg = categoryConfig[catKey] || { label: rc.category || 'Aktivite', color: CATEGORY_COLORS.other, icon: <Pin size={16} /> };
       return {
         label: cfg.label,
-        mins: rc.totalMinutes ?? rc.TotalMinutes ?? 0,
+        mins: rc.totalMinutes ?? 0,
         color: cfg.color,
         icon: cfg.icon,
-        percentage: rc.percentage ?? rc.Percentage ?? 0
+        percentage: rc.percentage ?? 0
       };
     });
   } else {
-    const studyMins = budget.totalStudyMinutes ?? budget.TotalStudyMinutes ?? 0;
-    const sleepMins = budget.sleepMinutes ?? budget.SleepMinutes ?? 0;
-    const schoolMins = budget.schoolMinutes ?? budget.SchoolMinutes ?? 0;
-    const sportMins = budget.sportMinutes ?? budget.SportMinutes ?? 0;
-    const socialMins = budget.socialMinutes ?? budget.SocialMinutes ?? 0;
-    const otherMins = budget.otherMinutes ?? budget.OtherMinutes ?? 0;
-    const restMins = budget.restMinutes ?? budget.RestMinutes ?? 0;
+    const studyMins = budget.totalStudyMinutes ?? 0;
+    const sleepMins = budget.sleepMinutes ?? 0;
+    const schoolMins = budget.schoolMinutes ?? 0;
+    const sportMins = budget.sportMinutes ?? 0;
+    const socialMins = budget.socialMinutes ?? 0;
+    const otherMins = budget.otherMinutes ?? 0;
+    const restMins = budget.restMinutes ?? 0;
 
     categories = [
       { label: 'Ders Çalışma & Etüt', mins: studyMins, color: CATEGORY_COLORS.study, icon: <BookOpen size={16} /> },

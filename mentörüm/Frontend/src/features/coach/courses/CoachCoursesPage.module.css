@@ -1,19 +1,96 @@
-.container { padding: var(--spacing-md); max-width: 900px; margin: 0 auto; }
-.title { font-size: 1.5rem; font-weight: 700; margin-bottom: var(--spacing-md); color: var(--text-color-main); }
-.card { margin-bottom: var(--spacing-md); }
-.form { display: flex; flex-direction: column; gap: var(--spacing-sm); }
-.list { display: flex; flex-direction: column; gap: var(--spacing-sm); }
-.item { margin: 0; }
-.itemHeader { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-.type { font-size: 0.75rem; color: var(--text-color-muted); }
-.meta { font-size: 0.85rem; color: var(--text-color-muted); }
+.container {
+  padding: var(--spacing-md);
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.containerEmbedded {
+  width: 100%;
+  padding: 0;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: var(--spacing-md);
+  color: var(--text-color-main);
+}
+
+.card {
+  margin-bottom: var(--spacing-md);
+  background: var(--bg-color-surface) !important;
+  border: 1px solid var(--border-color);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.formTopGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--spacing-md);
+  align-items: end;
+}
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.item {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--bg-color-surface) !important;
+  border: 1px solid var(--border-color);
+}
+
+.itemHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.itemFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
+}
+
+.type {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--bg-app);
+  color: var(--text-color-muted);
+}
+
+.meta {
+  font-size: 0.82rem;
+  color: var(--text-color-muted);
+}
+
 .select {
-  padding: 10px 12px;
+  height: 40px;
+  padding: 0 12px;
   border-radius: 8px;
   border: 1px solid var(--border-color);
   background: var(--bg-color-surface);
   color: var(--text-color-main);
+  font-size: 0.875rem;
 }
+
 .note {
   font-size: 0.8rem;
   color: var(--text-color-muted);
@@ -155,4 +232,3 @@
 .switch input:checked + .slider:before {
   transform: translateX(16px);
 }
-

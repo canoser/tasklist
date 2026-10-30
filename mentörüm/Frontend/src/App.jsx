@@ -26,7 +26,6 @@ import CoachTeachersPage from './features/coach/teachers/CoachTeachersPage';
 import CoachCoursesPage from './features/coach/courses/CoachCoursesPage';
 import CoachCourseDetailPage from './features/coach/courses/CoachCourseDetailPage';
 import CoachGroupsPage from './features/coach/groups/CoachGroupsPage';
-import CoachProgramSettingsPage from './features/coach/settings/CoachProgramSettingsPage';
 import WeeklySchedulePage from './features/coach/schedule/WeeklySchedulePage';
 import AdminPanelPage from './features/admin/AdminPanelPage';
 import StudentSchedulePage from './features/student/schedule/StudentSchedulePage';
@@ -145,7 +144,7 @@ function App() {
           <Route path="programs/:programId/courses/:courseId" element={<CoachCourseDetailPage />} />
           <Route path="programs/:programId/groups" element={<CoachGroupsPage />} />
           <Route path="programs/:programId/schedule" element={<WeeklySchedulePage />} />
-          <Route path="programs/:programId/settings" element={<CoachProgramSettingsPage />} />
+          <Route path="programs/:programId/settings" element={<Navigate to="/coach/profile?tab=program" replace />} />
           <Route path="audit-logs" element={<CoachAuditLogsPage />} />
           <Route path="programs/:programId/audit-logs" element={<CoachAuditLogsPage />} />
           <Route path="storage" element={<StoragePage />} />

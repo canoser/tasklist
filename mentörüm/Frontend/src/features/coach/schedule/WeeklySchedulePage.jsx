@@ -1,18 +1,30 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { DndContext, PointerSensor, TouchSensor, KeyboardSensor, useSensor, useSensors, useDraggable, useDroppable } from '@dnd-kit/core';
+import { GripVertical } from 'lucide-react';
 import { useSchedule, useCourses, useGroups, useCreateScheduleSlot, useDeleteScheduleSlot } from '../coachSchoolApi';
-import Card from '../../../components/common/Card/Card';
+import Modal from '../../../components/common/Modal/Modal';
+import Button from '../../../components/common/Button/Button';
 import styles from './WeeklySchedulePage.module.css';
 
 const DAYS = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
 const HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
 
-const DraggableCard = ({ id, label }) => {
+const DraggableCard = ({ id, label, color }) => {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id });
   return (
-    <div ref={setNodeRef} {...listeners} {...attributes} className={styles.dragCard} style={{ opacity: isDragging ? 0.5 : 1 }}>
-      {label}
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      className={styles.dragCard}
+      style={{
+        opacity: isDragging ? 0.5 : 1,
+        borderLeftColor: color || 'var(--color-primary)'
+      }}
+    >
+      <GripVertical size={14} className={styles.gripIcon} />
+      <span className={styles.dragLabel}>{label}</span>
     </div>
   );
 };
@@ -26,7 +38,7 @@ const DroppableCell = ({ id, children }) => {
   );
 };
 
-const WeeklySchedulePage = ({ programId: propProgramId }) => {
+const WeeklySchedulePage = ({ programId: propProgramId, embedded = false }) => {
   const { programId: routeProgramId } = useParams();
   const programId = propProgramId || routeProgramId;
   const { data: slots } = useSchedule(programId);
@@ -37,6 +49,9 @@ const WeeklySchedulePage = ({ programId: propProgramId }) => {
 
   const [formDay, setFormDay] = useState(null);
   const [formHour, setFormHour] = useState(null);
+  const [slotTargetType, setSlotTargetType] = useState('course'); // 'course' | 'group' | 'custom'
+  const [selectedCourseId, setSelectedCourseId] = useState('');
+  const [selectedGroupId, setSelectedGroupId] = useState('');
   const [title, setTitle] = useState('');
   const [conflict, setConflict] = useState('');
   const [dragConflict, setDragConflict] = useState('');
@@ -49,12 +64,35 @@ const WeeklySchedulePage = ({ programId: propProgramId }) => {
 
   const slotAt = (day, hour) => (slots || []).filter((s) => s.dayOfWeek === day && parseInt(s.startTime?.slice(0, 2), 10) === hour);
 
+  const handleOpenAddModal = (day, hour) => {
+    setFormDay(day);
+    setFormHour(hour);
+    setSlotTargetType(courses?.length > 0 ? 'course' : (groups?.length > 0 ? 'group' : 'custom'));
+    setSelectedCourseId(courses?.[0]?.id || '');
+    setSelectedGroupId(groups?.[0]?.id || '');
+    setTitle('');
+    setConflict('');
+    setDragConflict('');
+  };
+
   const handleCreate = async (day, hour, targetType, targetId, slotTitle) => {
     const startTime = `${String(hour).padStart(2, '0')}:00:00`;
     const endTime = `${String(hour + 1).padStart(2, '0')}:00:00`;
-    const data = { dayOfWeek: day, startTime, endTime, title: slotTitle || title || 'Yeni Slot' };
-    if (targetType === 'course') data.courseId = targetId;
-    else if (targetType === 'group') data.groupId = targetId;
+
+    let resolvedTitle = slotTitle || title.trim();
+    if (!resolvedTitle) {
+      if (targetType === 'course') {
+        resolvedTitle = courses?.find((c) => c.id === targetId)?.name || 'Ders';
+      } else if (targetType === 'group') {
+        resolvedTitle = groups?.find((g) => g.id === targetId)?.name || 'Grup Dersi';
+      } else {
+        resolvedTitle = 'Yeni Etüt / Ders';
+      }
+    }
+
+    const data = { dayOfWeek: day, startTime, endTime, title: resolvedTitle };
+    if (targetType === 'course' && targetId) data.courseId = targetId;
+    else if (targetType === 'group' && targetId) data.groupId = targetId;
 
     try {
       await createSlot.mutateAsync({ programId, data });
@@ -85,6 +123,18 @@ const WeeklySchedulePage = ({ programId: propProgramId }) => {
     }
   };
 
+  const handleModalSubmit = (e) => {
+    e.preventDefault();
+    if (formDay === null || formHour === null) return;
+    if (slotTargetType === 'course') {
+      handleCreate(formDay, formHour, 'course', selectedCourseId, title.trim());
+    } else if (slotTargetType === 'group') {
+      handleCreate(formDay, formHour, 'group', selectedGroupId, title.trim());
+    } else {
+      handleCreate(formDay, formHour, null, null, title.trim());
+    }
+  };
+
   const handleDragEnd = (event) => {
     const { active, over } = event;
     if (!over) return;
@@ -99,40 +149,39 @@ const WeeklySchedulePage = ({ programId: propProgramId }) => {
   };
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Haftalık Program</h1>
+    <div className={embedded ? styles.containerEmbedded : styles.container}>
+      {!embedded && <h1 className={styles.title}>Haftalık Program</h1>}
+
+      <div className={styles.helperBanner}>
+        <span>💡 Soldaki <strong>Dersler</strong> veya <strong>Gruplar</strong> kutularını sürükleyip saat dilimine bırakabilir ya da tablodaki <strong>(+)</strong> butonuna tıklayarak ders/grup seçebilirsiniz.</span>
+      </div>
 
       {dragConflict && (
-        <div style={{
-          background: 'rgba(239, 68, 68, 0.1)',
-          border: '1px solid #ef4444',
-          color: '#ef4444',
-          borderRadius: '8px',
-          padding: '10px 14px',
-          marginBottom: '1rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
+        <div className={styles.conflictAlert}>
           <span>{dragConflict}</span>
           <button
+            type="button"
             onClick={() => setDragConflict('')}
-            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: 'bold' }}
+            className={styles.conflictCloseBtn}
           >
             ✕
           </button>
         </div>
       )}
 
-      <div className={styles.layout}>
-        <div className={styles.sidePanel}>
-          <h3>Dersler</h3>
-          {courses?.map((c) => <DraggableCard key={`course-${c.id}`} id={`course-${c.id}`} label={c.name} />)}
-          <h3>Gruplar</h3>
-          {groups?.map((g) => <DraggableCard key={`group-${g.id}`} id={`group-${g.id}`} label={g.name} />)}
-        </div>
+      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        <div className={styles.layout}>
+          <div className={styles.sidePanel}>
+            <h3>📚 Dersler</h3>
+            {courses?.map((c) => (
+              <DraggableCard key={`course-${c.id}`} id={`course-${c.id}`} label={c.name} color={c.color} />
+            ))}
+            <h3>🗂️ Gruplar</h3>
+            {groups?.map((g) => (
+              <DraggableCard key={`group-${g.id}`} id={`group-${g.id}`} label={g.name} color="#10b981" />
+            ))}
+          </div>
 
-        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
           <div className={styles.grid}>
             <div className={styles.gridRow}>
               <div className={styles.hourLabel}></div>
@@ -149,30 +198,112 @@ const WeeklySchedulePage = ({ programId: propProgramId }) => {
                       {cellSlots.map((s) => (
                         <div key={s.id} className={styles.slot}>
                           <span className={styles.slotTitle}>{s.title}</span>
-                          <button className={styles.del} onClick={() => deleteSlot.mutateAsync({ programId, slotId: s.id })}>✕</button>
+                          <button type="button" className={styles.del} onClick={() => deleteSlot.mutateAsync({ programId, slotId: s.id })}>✕</button>
                         </div>
                       ))}
-                      <button className={styles.addBtn} onClick={() => { setFormDay(day); setFormHour(hour); setConflict(''); setDragConflict(''); }}>+</button>
+                      <button
+                        type="button"
+                        className={styles.addBtn}
+                        title="Bu saate ders/etüt ekle"
+                        onClick={() => handleOpenAddModal(day, hour)}
+                      >
+                        +
+                      </button>
                     </DroppableCell>
                   );
                 })}
               </div>
             ))}
           </div>
-        </DndContext>
-      </div>
+        </div>
+      </DndContext>
 
-      {formDay !== null && (
-        <Card className={styles.formCard} padding="md">
-          <div className={styles.formTitle}>Yeni Slot — {DAYS[formDay - 1]} {String(formHour).padStart(2, '0')}:00</div>
-          <input className={styles.input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Başlık" />
-          <div className={styles.formActions}>
-            <button className={styles.btn} onClick={() => handleCreate(formDay, formHour, null, null)}>Ekle</button>
-            <button className={styles.btnOutline} onClick={() => { setFormDay(null); setConflict(''); }}>İptal</button>
+      <Modal
+        isOpen={formDay !== null}
+        onClose={() => { setFormDay(null); setConflict(''); }}
+        title={formDay !== null ? `Program Slotu Ekle — ${DAYS[formDay - 1]} ${String(formHour).padStart(2, '0')}:00` : 'Program Slotu Ekle'}
+        maxWidth="460px"
+      >
+        <form onSubmit={handleModalSubmit} className={styles.modalForm}>
+          <div className={styles.typeTabs}>
+            <button
+              type="button"
+              className={`${styles.typeTabBtn} ${slotTargetType === 'course' ? styles.typeTabBtnActive : ''}`}
+              onClick={() => setSlotTargetType('course')}
+            >
+              📚 Ders Seç
+            </button>
+            <button
+              type="button"
+              className={`${styles.typeTabBtn} ${slotTargetType === 'group' ? styles.typeTabBtnActive : ''}`}
+              onClick={() => setSlotTargetType('group')}
+            >
+              🗂️ Grup Seç
+            </button>
+            <button
+              type="button"
+              className={`${styles.typeTabBtn} ${slotTargetType === 'custom' ? styles.typeTabBtnActive : ''}`}
+              onClick={() => setSlotTargetType('custom')}
+            >
+              📌 Özel Başlık
+            </button>
           </div>
+
+          {slotTargetType === 'course' && (
+            <div className={styles.fieldGroup}>
+              <label className={styles.fieldLabel}>Ders / Branş</label>
+              <select
+                className={styles.select}
+                value={selectedCourseId}
+                onChange={(e) => setSelectedCourseId(e.target.value)}
+              >
+                {courses?.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {slotTargetType === 'group' && (
+            <div className={styles.fieldGroup}>
+              <label className={styles.fieldLabel}>Sınıf / Grup</label>
+              <select
+                className={styles.select}
+                value={selectedGroupId}
+                onChange={(e) => setSelectedGroupId(e.target.value)}
+              >
+                {groups?.map((g) => (
+                  <option key={g.id} value={g.id}>{g.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div className={styles.fieldGroup}>
+            <label className={styles.fieldLabel}>
+              {slotTargetType === 'custom' ? 'Etkinlik / Etüt Başlığı *' : 'Özel Başlık (Boş bırakılırsa ders/grup adı kullanılır)'}
+            </label>
+            <input
+              className={styles.input}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder={slotTargetType === 'custom' ? 'Örn: Bireysel Soru Çözüm Etüdü' : 'Opsiyonel özel başlık...'}
+              required={slotTargetType === 'custom'}
+            />
+          </div>
+
           {conflict && <p className={styles.conflict}>{conflict}</p>}
-        </Card>
-      )}
+
+          <div className={styles.formActions}>
+            <Button type="button" variant="ghost" onClick={() => { setFormDay(null); setConflict(''); }}>
+              İptal
+            </Button>
+            <Button type="submit" variant="primary" isLoading={createSlot.isPending}>
+              Programa Ekle
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

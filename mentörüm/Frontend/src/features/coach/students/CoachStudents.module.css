@@ -441,16 +441,36 @@
 
 .cardFooter {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   gap: var(--spacing-sm);
-  padding: var(--spacing-md);
+  padding: 12px var(--spacing-md);
   border-top: 1px solid var(--border-color);
   background-color: var(--bg-color-surface-elevated);
 }
 
-.cardFooter > * {
-  flex: 1 1 calc(50% - var(--spacing-sm));
-  min-width: 90px;
+.cardActionBtn {
+  flex: 1;
+}
+
+.deleteIconBtn {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  background: transparent;
+  color: var(--color-danger, #ef4444);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-left: auto;
+}
+
+.deleteIconBtn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: var(--color-danger, #ef4444);
 }
 
 .emptyState {
@@ -523,22 +543,6 @@
   }
 }
 
-@media (min-width: 768px) {
-  .filterGrid {
-    grid-template-columns: 2fr 1fr 1fr;
-  }
-  
-  .studentsGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
-  .studentsGrid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
 .filterCard {
   background-color: var(--bg-color-surface);
   border: 1px solid var(--border-color);
@@ -554,6 +558,22 @@
   grid-template-columns: 1fr;
   gap: 12px;
   align-items: center;
+}
+
+@media (min-width: 768px) {
+  .filterGrid {
+    grid-template-columns: minmax(260px, 2fr) repeat(auto-fit, minmax(180px, 1fr));
+  }
+  
+  .studentsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .studentsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .select {
