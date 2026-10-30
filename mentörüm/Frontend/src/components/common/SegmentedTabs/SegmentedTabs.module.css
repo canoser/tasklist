@@ -1,0 +1,147 @@
+.container {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.fullWidth {
+  display: flex;
+  width: 100%;
+}
+
+.tabFullWidth {
+  flex: 1;
+}
+
+/* --- Variant: Segmented (Default Container Box) --- */
+.variant-segmented {
+  background: var(--bg-color-surface, var(--bg-secondary, #f1f5f9));
+  border: 1px solid var(--border-color, rgba(148, 163, 184, 0.22));
+  padding: 4px;
+  border-radius: 12px;
+}
+
+.variant-segmented .tabBtn {
+  border-radius: 9px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-color-muted, var(--text-secondary, #64748b));
+}
+
+.variant-segmented .tabBtn:hover:not(:disabled):not(.active) {
+  color: var(--text-color-main, #0f172a);
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.variant-segmented .tabBtn.active {
+  background: var(--color-primary, #6366f1);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.28);
+}
+
+/* --- Variant: Pills (Standalone Filter / Sub-Pill Chips) --- */
+.variant-pills {
+  background: transparent;
+  padding: 0;
+  gap: 8px;
+}
+
+.variant-pills .tabBtn {
+  border-radius: 999px;
+  border: 1px solid var(--border-color, rgba(148, 163, 184, 0.25));
+  background: var(--bg-color-surface, transparent);
+  color: var(--text-color-muted, var(--text-secondary, #64748b));
+}
+
+.variant-pills .tabBtn:hover:not(:disabled):not(.active) {
+  border-color: var(--color-primary, #6366f1);
+  color: var(--color-primary, #6366f1);
+}
+
+.variant-pills .tabBtn.active {
+  background: var(--color-primary, #6366f1);
+  border-color: var(--color-primary, #6366f1);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.25);
+}
+
+/* --- Variant: Underline (Section Header Tabs) --- */
+.variant-underline {
+  background: transparent;
+  border-bottom: 1px solid var(--border-color, rgba(148, 163, 184, 0.22));
+  padding: 0;
+  gap: 4px;
+  width: 100%;
+}
+
+.variant-underline .tabBtn {
+  border-radius: 8px 8px 0 0;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--text-color-muted, var(--text-secondary, #64748b));
+  margin-bottom: -1px;
+}
+
+.variant-underline .tabBtn:hover:not(:disabled):not(.active) {
+  color: var(--text-color-main, #0f172a);
+}
+
+.variant-underline .tabBtn.active {
+  color: var(--color-primary, #6366f1);
+  border-bottom-color: var(--color-primary, #6366f1);
+  background: var(--color-primary-light, rgba(99, 102, 241, 0.08));
+}
+
+/* --- Base Tab Button & Sizes --- */
+.tabBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.tabBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.size-sm .tabBtn {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+}
+
+.size-md .tabBtn {
+  padding: 8px 16px;
+  font-size: 0.875rem;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(148, 163, 184, 0.2);
+  color: inherit;
+}
+
+.badgeActive {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+

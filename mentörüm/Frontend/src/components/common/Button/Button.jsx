@@ -6,6 +6,7 @@ const Button = ({
   variant = 'primary', 
   size = 'md', 
   fullWidth = false, 
+  iconOnly = false,
   isLoading = false,
   disabled = false,
   type = 'button',
@@ -18,6 +19,7 @@ const Button = ({
     styles[`variant-${variant}`],
     styles[`size-${size}`],
     fullWidth ? styles.fullWidth : '',
+    iconOnly ? styles.iconOnly : '',
     isLoading ? styles.loading : '',
     className,
   ].filter(Boolean).join(' ');

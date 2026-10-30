@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import Button from '../../../components/common/Button/Button';
 import Input from '../../../components/common/Input/Input';
+import Modal from '../../../components/common/Modal/Modal';
 import styles from './AssignHomeworkModal.module.css';
 import { useAssignHomework, useLevels, useSubjects, useUnits, useTopics } from '../coachApi';
 import { usePrograms, useCourses } from '../coachSchoolApi';
@@ -107,14 +108,13 @@ const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent, initialTopic, p
   };
 
   return (
-    <div className={styles.modalOverlay}>
-      <div className={styles.modalContent}>
-        <div className={styles.modalHeader}>
-          <h2>Ödev Ata {selectedStudent ? `- ${selectedStudent.fullName}` : ''}</h2>
-          <button className={styles.closeBtn} onClick={onClose} disabled={assignHomeworkMutation.isPending}>&times;</button>
-        </div>
-        
-        <div className={styles.modalBody}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`Ödev Ata ${selectedStudent ? `- ${selectedStudent.fullName}` : ''}`}
+      maxWidth="540px"
+    >
+      <div className={styles.modalBody}>
           {/* Seviye (4-12, TYT, AYT) → Ders → Konu */}
           <div className={styles.formGroup}>
             <label className={styles.label}>Seviye / Sınav</label>
@@ -265,8 +265,7 @@ const AssignHomeworkModal = ({ isOpen, onClose, selectedStudent, initialTopic, p
             {assignHomeworkMutation.isPending ? 'Atanıyor...' : 'Ödevi Ata'}
           </Button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 };
 

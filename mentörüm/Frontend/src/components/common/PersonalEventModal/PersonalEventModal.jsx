@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Button from '../Button/Button';
 import Input from '../Input/Input';
+import Modal from '../Modal/Modal';
 import { useCreatePersonalEvent } from '../../../hooks/usePersonalEvents';
 import styles from './PersonalEventModal.module.css';
 
@@ -27,8 +28,6 @@ const PersonalEventModal = ({ isOpen, onClose, defaultType = 'COACHING_SESSION' 
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
   const mutation = useCreatePersonalEvent();
-
-  if (!isOpen) return null;
 
   const handleSave = () => {
     if (!title || !start) {
@@ -58,9 +57,8 @@ const PersonalEventModal = ({ isOpen, onClose, defaultType = 'COACHING_SESSION' 
   };
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <h3 className={styles.title}>Yeni Etkinlik Ekle</h3>
+    <Modal isOpen={isOpen} onClose={onClose} title="Yeni Etkinlik Ekle" maxWidth="440px">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <Input label="Başlık" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="örn. Can ile 1-1 Görüşme" />
         <div className={styles.field}>
           <label className={styles.label}>Tür</label>
@@ -87,7 +85,7 @@ const PersonalEventModal = ({ isOpen, onClose, defaultType = 'COACHING_SESSION' 
           </Button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 };
 

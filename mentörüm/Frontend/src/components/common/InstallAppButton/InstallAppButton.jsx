@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Download, X, Smartphone, Share2, PlusSquare } from 'lucide-react';
+import { Download, Share2, PlusSquare } from 'lucide-react';
+import Modal from '../Modal/Modal';
+import Button from '../Button/Button';
 import styles from './InstallAppButton.module.css';
 
 export default function InstallAppButton() {
@@ -74,86 +76,73 @@ export default function InstallAppButton() {
       </button>
 
       {/* Tablet Kurulum Rehberi Modalı (PWA prompt desteklemeyen Safari vb. için) */}
-      {showModal && (
-        <div className={styles.modalOverlay} onClick={() => setShowModal(false)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <div className={styles.modalTitleWrap}>
-                <Smartphone size={22} className={styles.phoneIcon} />
-                <h3>Uygulama Olarak Yükle</h3>
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title="Uygulama Olarak Yükle"
+        maxWidth="440px"
+      >
+        <p className={styles.modalDesc}>
+          Mentörüm'ü tabletinize veya cihazınıza tam ekran uygulama olarak kurarak daha hızlı ve akıcı kullanabilirsiniz.
+        </p>
+
+        <div className={styles.stepsContainer}>
+          {isIOS ? (
+            <>
+              <div className={styles.stepItem}>
+                <div className={styles.stepNum}>1</div>
+                <div className={styles.stepText}>
+                  Safari alt/üst menüsündeki <strong>Paylaş</strong> simgesine (<Share2 size={14} style={{ display: 'inline', verticalAlign: 'middle' }} />) dokunun.
+                </div>
               </div>
-              <button 
-                type="button" 
-                className={styles.closeBtn} 
-                onClick={() => setShowModal(false)}
-                aria-label="Kapat"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <p className={styles.modalDesc}>
-              Mentörüm'ü tabletinize veya cihazınıza tam ekran uygulama olarak kurarak daha hızlı ve akıcı kullanabilirsiniz.
-            </p>
-
-            <div className={styles.stepsContainer}>
-              {isIOS ? (
-                <>
-                  <div className={styles.stepItem}>
-                    <div className={styles.stepNum}>1</div>
-                    <div className={styles.stepText}>
-                      Safari alt/üst menüsündeki <strong>Paylaş</strong> simgesine (<Share2 size={14} style={{ display: 'inline', verticalAlign: 'middle' }} />) dokunun.
-                    </div>
-                  </div>
-                  <div className={styles.stepItem}>
-                    <div className={styles.stepNum}>2</div>
-                    <div className={styles.stepText}>
-                      Açılan menüyü kaydırıp <strong>"Ana Ekrana Ekle"</strong> (<PlusSquare size={14} style={{ display: 'inline', verticalAlign: 'middle' }} />) seçeneğini seçin.
-                    </div>
-                  </div>
-                  <div className={styles.stepItem}>
-                    <div className={styles.stepNum}>3</div>
-                    <div className={styles.stepText}>
-                      Sağ üstteki <strong>"Ekle"</strong> butonuna dokunarak kurulumu tamamlayın.
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className={styles.stepItem}>
-                    <div className={styles.stepNum}>1</div>
-                    <div className={styles.stepText}>
-                      Tarayıcınızın sağ üstündeki <strong>üç nokta menüsüne</strong> (⋮) dokunun.
-                    </div>
-                  </div>
-                  <div className={styles.stepItem}>
-                    <div className={styles.stepNum}>2</div>
-                    <div className={styles.stepText}>
-                      <strong>"Uygulamayı Yükle"</strong> veya <strong>"Ana Ekrana Ekle"</strong> seçeneğini seçin.
-                    </div>
-                  </div>
-                  <div className={styles.stepItem}>
-                    <div className={styles.stepNum}>3</div>
-                    <div className={styles.stepText}>
-                      Onaylayarak tablet ana ekranınızdan doğrudan uygulamaya erişin.
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-
-            <div className={styles.modalFooter}>
-              <button
-                type="button"
-                className={styles.doneBtn}
-                onClick={() => setShowModal(false)}
-              >
-                Anladım
-              </button>
-            </div>
-          </div>
+              <div className={styles.stepItem}>
+                <div className={styles.stepNum}>2</div>
+                <div className={styles.stepText}>
+                  Açılan menüyü kaydırıp <strong>"Ana Ekrana Ekle"</strong> (<PlusSquare size={14} style={{ display: 'inline', verticalAlign: 'middle' }} />) seçeneğini seçin.
+                </div>
+              </div>
+              <div className={styles.stepItem}>
+                <div className={styles.stepNum}>3</div>
+                <div className={styles.stepText}>
+                  Sağ üstteki <strong>"Ekle"</strong> butonuna dokunarak kurulumu tamamlayın.
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className={styles.stepItem}>
+                <div className={styles.stepNum}>1</div>
+                <div className={styles.stepText}>
+                  Tarayıcınızın sağ üstündeki <strong>üç nokta menüsüne</strong> (⋮) dokunun.
+                </div>
+              </div>
+              <div className={styles.stepItem}>
+                <div className={styles.stepNum}>2</div>
+                <div className={styles.stepText}>
+                  <strong>"Uygulamayı Yükle"</strong> veya <strong>"Ana Ekrana Ekle"</strong> seçeneğini seçin.
+                </div>
+              </div>
+              <div className={styles.stepItem}>
+                <div className={styles.stepNum}>3</div>
+                <div className={styles.stepText}>
+                  Onaylayarak tablet ana ekranınızdan doğrudan uygulamaya erişin.
+                </div>
+              </div>
+            </>
+          )}
         </div>
-      )}
+
+        <div className={styles.modalFooter}>
+          <Button
+            variant="primary"
+            size="sm"
+            fullWidth
+            onClick={() => setShowModal(false)}
+          >
+            Anladım
+          </Button>
+        </div>
+      </Modal>
     </>
   );
 }

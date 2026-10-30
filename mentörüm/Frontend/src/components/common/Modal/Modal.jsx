@@ -2,18 +2,19 @@ import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import styles from './Modal.module.css';
 
-const Modal = ({ isOpen, onClose, title, children, maxWidth = '500px' }) => {
+const Modal = ({ isOpen, open, onClose, title, children, maxWidth = '500px' }) => {
+  const effectiveOpen = isOpen ?? open;
   // ESC tuşu ile kapatma
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === 'Escape' && effectiveOpen) {
         onClose();
       }
     };
     document.addEventListener('keydown', handleKeyDown);
     
     // Body scroll'u kilitle
-    if (isOpen) {
+    if (effectiveOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -23,9 +24,9 @@ const Modal = ({ isOpen, onClose, title, children, maxWidth = '500px' }) => {
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'unset';
     };
-  }, [isOpen, onClose]);
+  }, [effectiveOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!effectiveOpen) return null;
 
   return createPortal(
     <div className={styles.overlay} onClick={onClose}>

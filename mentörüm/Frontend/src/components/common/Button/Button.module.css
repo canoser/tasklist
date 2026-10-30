@@ -28,6 +28,12 @@
 }
 
 /* --- Sizes --- */
+.size-xs {
+  padding: 5px 10px;
+  font-size: 0.78rem;
+  border-radius: var(--radius-sm, 6px);
+}
+
 .size-sm {
   padding: 8px 16px;
   font-size: 0.875rem;
@@ -47,6 +53,19 @@
   width: 100%;
 }
 
+.iconOnly {
+  padding: 7px;
+  min-width: 32px;
+  min-height: 32px;
+}
+
+.content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
 /* --- Variants --- */
 .variant-primary {
   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
@@ -61,25 +80,25 @@
 }
 
 .variant-secondary {
-  background-color: rgba(255, 255, 255, 0.08);
-  color: var(--text-color-main, #F8FAFC);
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
+  background-color: var(--bg-color-muted, rgba(148, 163, 184, 0.14));
+  color: var(--text-color-main);
+  border: 1px solid var(--border-color);
 }
 
 .variant-secondary:hover:not(:disabled) {
-  background-color: rgba(255, 255, 255, 0.14);
-  color: var(--text-color-main, #FFFFFF);
+  background-color: var(--border-color, rgba(148, 163, 184, 0.24));
+  color: var(--text-color-main);
 }
 
 .variant-ghost {
-  background-color: rgba(255, 255, 255, 0.04);
-  color: var(--text-color-main, #F8FAFC);
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  background-color: transparent;
+  color: var(--text-color-muted, var(--text-color-main));
+  border: 1px solid transparent;
 }
 
 .variant-ghost:hover:not(:disabled) {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: var(--text-color-main, #FFFFFF);
+  background-color: var(--bg-color-muted, rgba(148, 163, 184, 0.12));
+  color: var(--text-color-main);
 }
 
 .variant-outline {
@@ -92,11 +111,11 @@
 .variant-outline:hover:not(:disabled) {
   border-color: var(--color-primary);
   color: var(--color-primary);
-  background-color: var(--color-primary-light, rgba(255, 255, 255, 0.08));
+  background-color: var(--color-primary-light, rgba(99, 102, 241, 0.08));
 }
 
 .variant-danger {
-  background: linear-gradient(135deg, var(--color-danger), var(--color-danger-hover));
+  background: linear-gradient(135deg, var(--color-danger, #ef4444), var(--color-danger-hover, #dc2626));
   color: #fff;
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
   border: 1px solid transparent;
@@ -104,6 +123,28 @@
 
 .variant-danger:hover:not(:disabled) {
   box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+}
+
+.variant-danger-outline {
+  background-color: transparent;
+  color: var(--color-danger, #ef4444);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.variant-danger-outline:hover:not(:disabled) {
+  background-color: rgba(239, 68, 68, 0.1);
+  border-color: var(--color-danger, #ef4444);
+}
+
+.variant-success {
+  background: linear-gradient(135deg, var(--color-success, #10b981), #059669);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+  border: 1px solid transparent;
+}
+
+.variant-success:hover:not(:disabled) {
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
 }
 
 /* --- Loading Spinner --- */

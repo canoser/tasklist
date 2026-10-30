@@ -2,25 +2,12 @@ import React, { useState, useEffect } from 'react';
 import Modal from '../../../components/common/Modal/Modal';
 import Input from '../../../components/common/Input/Input';
 import Button from '../../../components/common/Button/Button';
+import { TEACHER_BRANCH_OPTIONS } from '../../../constants/domainConstants';
 import { useUpdateTeacher } from '../coachSchoolApi';
 import { UserCheck, BookOpen, AlertCircle, CheckCircle2 } from 'lucide-react';
 import styles from './AddTeacherModal.module.css';
 
-const BRANCH_OPTIONS = [
-  'Matematik',
-  'Geometri',
-  'Fizik',
-  'Kimya',
-  'Biyoloji',
-  'Türkçe',
-  'Türk Dili ve Edebiyatı',
-  'Tarih',
-  'Coğrafya',
-  'Felsefe / Din',
-  'İngilizce / Yabancı Dil',
-  'Rehberlik & Psikolojik Danışmanlık',
-  'Diğer',
-];
+const BRANCH_OPTIONS = TEACHER_BRANCH_OPTIONS;
 
 export default function EditTeacherModal({ open, onClose, programId, teacher }) {
   const [fullName, setFullName] = useState('');
@@ -77,7 +64,7 @@ export default function EditTeacherModal({ open, onClose, programId, teacher }) 
   if (!open || !teacher) return null;
 
   return (
-    <Modal open={open} onClose={onClose} title="Öğretmen Bilgilerini Düzenle">
+    <Modal isOpen={open} onClose={onClose} title="Öğretmen Bilgilerini Düzenle">
       <form onSubmit={handleSubmit} className={styles.form}>
         {errorMsg && (
           <div className={styles.errorBox}>
