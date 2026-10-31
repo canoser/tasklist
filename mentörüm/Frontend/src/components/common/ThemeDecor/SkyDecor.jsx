@@ -116,10 +116,7 @@ export default function SkyDecor() {
 
       {/* ── 2. GÖK CİSMİ: KULLANICININ İSTEDİĞİ YERDE VE BÜYÜKLÜKTE (Dashboard sol-üst) ── */}
       <div
-        className={styles.celestialContainer}
-        style={{
-          opacity: isDark ? 0.32 : 0.24,
-        }}
+        className={`${styles.celestialContainer} ${isDark ? styles.celestialDark : styles.celestialLight}`}
       >
         <svg
           style={{ width: '100%', height: '100%' }}

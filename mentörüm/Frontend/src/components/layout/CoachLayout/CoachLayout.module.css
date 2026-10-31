@@ -588,11 +588,12 @@
   left: 0;
   right: 0;
   height: 64px;
-  background-color: var(--bg-color-surface);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background-color: var(--bg-color-main);
+  background-image: linear-gradient(to bottom, var(--bg-color-surface), var(--bg-color-main));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-top: 1px solid var(--border-color);
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.14);
   justify-content: space-around;
   align-items: center;
   padding: 0 4px;
@@ -755,13 +756,13 @@
 
   .mobileTitle {
     display: block;
-    font-size: 1.15rem;
+    font-size: 1.05rem;
     font-weight: 700;
     color: var(--text-color-main);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 160px;
+    max-width: calc(100vw - 150px);
   }
 
   /* Üst barda kalabalık yapan butonlar çekmeceye taşındığı için mobilde gizlenir */
@@ -807,7 +808,7 @@
   /* Sayfa altı güvenli alan & alt menü */
   .pageContent {
     padding: 14px;
-    padding-bottom: 88px;
+    padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
     /* Alt bar için ergonomik pay */
   }
 

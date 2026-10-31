@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
-import Input from '../../../components/common/Input/Input';
+import Input, { Select } from '../../../components/common/Input/Input';
 import Modal from '../../../components/common/Modal/Modal';
 import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
 import StatusBadge from '../../../components/common/StatusBadge/StatusBadge';
@@ -115,7 +115,7 @@ const CoachStudents = () => {
                 onClick={() => setShowAddForm(!showAddForm)}
               >
                 <UserPlus size={15} />
-                <span>{showAddForm ? '✕ Formu Kapat' : '+ Yeni Öğrenci Ekle'}</span>
+                <span>{showAddForm ? '✕ Formu Kapat' : 'Yeni Öğrenci Ekle'}</span>
               </Button>
             )}
             {activeTab === 'GROUPS' && (
@@ -125,7 +125,7 @@ const CoachStudents = () => {
                 onClick={() => setShowGroupForm(!showGroupForm)}
               >
                 <Plus size={15} />
-                <span>{showGroupForm ? '✕ Formu Kapat' : '+ Yeni Grup Oluştur'}</span>
+                <span>{showGroupForm ? '✕ Formu Kapat' : 'Yeni Grup Oluştur'}</span>
               </Button>
             )}
             {activeTab === 'COURSES' && (
@@ -135,7 +135,7 @@ const CoachStudents = () => {
                 onClick={() => setShowCourseForm(!showCourseForm)}
               >
                 <Plus size={15} />
-                <span>{showCourseForm ? '✕ Formu Kapat' : '+ Yeni Ders Oluştur'}</span>
+                <span>{showCourseForm ? '✕ Formu Kapat' : 'Yeni Ders Oluştur'}</span>
               </Button>
             )}
           </div>
@@ -183,8 +183,7 @@ const CoachStudents = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               {programs && programs.length > 1 && (
-                <select
-                  className={styles.select}
+                <Select
                   value={programFilter}
                   onChange={(e) => setProgramFilter(e.target.value)}
                 >
@@ -192,10 +191,9 @@ const CoachStudents = () => {
                   {programs?.map((p) => (
                     <option key={p.id} value={p.id}>{p.name}</option>
                   ))}
-                </select>
+                </Select>
               )}
-              <select
-                className={styles.select}
+              <Select
                 value={gradeFilter}
                 onChange={(e) => setGradeFilter(e.target.value)}
               >
@@ -205,7 +203,7 @@ const CoachStudents = () => {
                     {g === 'Mezun' ? 'Mezun' : `${g}. Sınıf`}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           </Card>
 

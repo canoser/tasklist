@@ -16,14 +16,22 @@
   transition: all 0.4s ease;
 }
 
+.celestialLight {
+  opacity: 0.22;
+}
+
+.celestialDark {
+  opacity: 0.30;
+}
+
 /* ── MOBIL: Sağ üst gökyüzü boşluğu (Başlıkları ve sekmeleri kapatmaz) ── */
 @media (max-width: 767px) {
   .celestialContainer {
-    right: 12px;
-    top: 56px;
-    width: 120px;
-    height: 120px;
-    opacity: 0.18; /* Su damgası/atmosfer ışığı havası, butonların arkasında kalabalık yapmaz */
+    right: 8px;
+    top: 64px;
+    width: 96px;
+    height: 96px;
+    opacity: 0.12;
   }
 }
 
@@ -34,6 +42,5 @@
     top: 72px;
     width: 170px;
     height: 170px;
-    opacity: 0.32; /* Butonların ve kartların arkasında yumuşak atmosfer ışığı oluşturur */
   }
 }

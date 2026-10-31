@@ -2,7 +2,15 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.container::-webkit-scrollbar {
+  display: none;
 }
 
 .fullWidth {
@@ -105,6 +113,7 @@
   transition: all 0.18s ease;
   white-space: nowrap;
   user-select: none;
+  flex-shrink: 0;
 }
 
 .tabBtn:disabled {
@@ -143,5 +152,28 @@
 .badgeActive {
   background: rgba(255, 255, 255, 0.22);
   color: #ffffff;
+}
+
+@media (max-width: 640px) {
+  .container {
+    gap: 4px;
+  }
+
+  .size-sm .tabBtn {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    gap: 4px;
+  }
+
+  .size-md .tabBtn {
+    padding: 7px 11px;
+    font-size: 0.78rem;
+    gap: 5px;
+  }
+
+  .badge {
+    padding: 1px 5px;
+    font-size: 0.68rem;
+  }
 }
 

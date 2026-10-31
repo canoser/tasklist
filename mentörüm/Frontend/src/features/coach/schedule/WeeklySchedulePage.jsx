@@ -156,7 +156,7 @@ const WeeklySchedulePage = ({ programId: propProgramId, embedded = false }) => {
       {!embedded && <h1 className={styles.title}>Haftalık Program</h1>}
 
       <div className={styles.helperBanner}>
-        <span>💡 Soldaki <strong>Dersler</strong> veya <strong>Gruplar</strong> kutularını sürükleyip saat dilimine bırakabilir ya da tablodaki <strong>(+)</strong> butonuna tıklayarak ders/grup seçebilirsiniz.</span>
+        <span>💡 <strong>Dersler</strong> veya <strong>Gruplar</strong> kutularını sürükleyip saat dilimine bırakabilir ya da tablodaki <strong>(+)</strong> butonuna dokunarak ders/grup seçebilirsiniz.</span>
       </div>
 
       {dragConflict && (
@@ -177,14 +177,22 @@ const WeeklySchedulePage = ({ programId: propProgramId, embedded = false }) => {
       <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
         <div className={styles.layout}>
           <div className={styles.sidePanel}>
-            <h3>📚 Dersler</h3>
-            {courses?.map((c) => (
-              <DraggableCard key={`course-${c.id}`} id={`course-${c.id}`} label={c.name} color={c.color} />
-            ))}
-            <h3>🗂️ Gruplar</h3>
-            {groups?.map((g) => (
-              <DraggableCard key={`group-${g.id}`} id={`group-${g.id}`} label={g.name} color="#10b981" />
-            ))}
+            <div className={styles.sideGroup}>
+              <h3>📚 Dersler</h3>
+              <div className={styles.dragList}>
+                {courses?.map((c) => (
+                  <DraggableCard key={`course-${c.id}`} id={`course-${c.id}`} label={c.name} color={c.color} />
+                ))}
+              </div>
+            </div>
+            <div className={styles.sideGroup}>
+              <h3>🗂️ Gruplar</h3>
+              <div className={styles.dragList}>
+                {groups?.map((g) => (
+                  <DraggableCard key={`group-${g.id}`} id={`group-${g.id}`} label={g.name} color="#10b981" />
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className={styles.grid}>

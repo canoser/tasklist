@@ -39,14 +39,6 @@
   font-size: 0.85rem;
 }
 
-.conflictCloseBtn {
-  background: none;
-  border: none;
-  color: #ef4444;
-  cursor: pointer;
-  font-weight: bold;
-}
-
 .layout {
   display: flex;
   gap: var(--spacing-md);
@@ -60,14 +52,26 @@
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+}
+
+.sideGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .sidePanel h3 {
   font-size: 0.85rem;
   font-weight: 700;
-  margin: 8px 0 4px;
+  margin: 4px 0 2px;
   color: var(--text-color-main);
+}
+
+.dragList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .dragCard {
@@ -105,17 +109,21 @@
 
 .grid {
   flex: 1;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 3px;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   min-width: 0;
+  padding-bottom: 4px;
 }
 
 .gridRow {
   display: grid;
-  grid-template-columns: 56px repeat(7, 1fr);
+  grid-template-columns: 52px repeat(7, minmax(84px, 1fr));
   gap: 3px;
+  min-width: 640px;
 }
 
 .hourLabel {
@@ -201,57 +209,6 @@
   gap: 14px;
 }
 
-.typeTabs {
-  display: flex;
-  gap: 6px;
-  background: var(--bg-app);
-  padding: 4px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-}
-
-.typeTabBtn {
-  flex: 1;
-  padding: 7px 10px;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--text-color-muted);
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.typeTabBtnActive {
-  background: var(--bg-color-surface);
-  color: var(--color-primary);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
-}
-
-.fieldGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.fieldLabel {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--text-color-main);
-}
-
-.select,
-.input {
-  width: 100%;
-  height: 40px;
-  padding: 0 12px;
-  border-radius: var(--radius-btn, 8px);
-  border: 1px solid var(--border-color);
-  background: var(--bg-color-surface);
-  color: var(--text-color-main);
-  font-size: 0.875rem;
-}
-
 .formActions {
   display: flex;
   justify-content: flex-end;
@@ -266,4 +223,36 @@
   padding: 8px 10px;
   background: rgba(239, 68, 68, 0.1);
   border-radius: 6px;
+}
+
+@media (max-width: 1024px) {
+  .layout {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .sidePanel {
+    width: 100%;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .dragList {
+    flex-direction: row;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+
+  .dragList::-webkit-scrollbar {
+    display: none;
+  }
+
+  .dragCard {
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 7px 10px;
+    font-size: 0.78rem;
+  }
 }

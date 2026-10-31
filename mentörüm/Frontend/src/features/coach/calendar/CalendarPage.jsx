@@ -13,7 +13,7 @@ import Button from '../../../components/common/Button/Button';
 import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
 import PersonalEventModal from '../../../components/common/PersonalEventModal/PersonalEventModal';
 import WeeklySchedulePage from '../schedule/WeeklySchedulePage';
-import { Calendar as CalendarIcon, Clock, SlidersHorizontal, ChevronDown, ChevronUp, RotateCcw } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, SlidersHorizontal, ChevronDown, ChevronUp, RotateCcw, Plus } from 'lucide-react';
 import { useCalendarEvents, useStudents } from '../coachApi';
 import { usePrograms, useCourses, useTeachers } from '../coachSchoolApi';
 import styles from './CalendarPage.module.css';
@@ -171,7 +171,10 @@ const CalendarPage = () => {
         />
 
         {activeTab === 'CALENDAR' && (
-          <Button variant="primary" size="sm" onClick={() => setIsEventModalOpen(true)}>+ Yeni Etkinlik</Button>
+          <Button variant="primary" size="sm" onClick={() => setIsEventModalOpen(true)}>
+            <Plus size={15} />
+            <span>Yeni Etkinlik</span>
+          </Button>
         )}
       </div>
 
