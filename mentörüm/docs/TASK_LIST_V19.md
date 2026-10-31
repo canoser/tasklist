@@ -228,3 +228,46 @@
      - `CoachStudentDetail.jsx` (`Görüşme & Notlar → Öğretmen Görüşleri` sekmesi) ve `CoachCourseDetailPage.jsx` içine, koçun tıpkı öğretmen portalındaki gibi ders seçip **Kısa Özet (Öğrenci & Veli Görür)**, **Detaylı Pedagojik Not** ve **Görünürlük** girerek ders değerlendirme notu (`teacher_notes`) kaydedebileceği formu ekle.
 - **Kabul:** Koç kendisini dersin öğretmeni olarak atayabilir; öğrenci detay ekranında öğrencinin aldığı tüm dersler ve öğretmenleri görünür/yönetilir; koç, öğretmenin girebildiği ders bazlı değerlendirme ve tamamlama notlarını (`teacher_notes`) doğrudan girebilir.
 
+---
+
+### Faz 5 — Mobil & PC UX/UI Yerleşim, Taşma ve Görsel Hiyerarşi İyileştirmesi (`U19`–`U23`)
+
+#### [x] U19 — `SegmentedTabs` Tek Satır & Responsive Sekme Barı Mimarisi
+- **Dosyalar:** `SegmentedTabs.module.css`
+- **Yap:**
+  1. `SegmentedTabs.module.css` içindeki `flex-wrap: wrap` kuralını kaldırarak sekmelerin asimetrik iki katlı kutuya bölünmesini (alt satıra tek sekme düşmesi) engelle; `flex-wrap: nowrap; overflow-x: auto; max-width: 100%; scrollbar-width: none;` (`::-webkit-scrollbar { display: none; }`) ile tek satır akıcı sekme barına dönüştür.
+  2. Mobil (`@media (max-width: 640px)`) kırılımında sekme içi boşluk (`padding: 7px 10px`) ve yazı boyutunu (`font-size: 0.78rem`) optimize ederek 2 ve 3 sekmeli barların (`Akademik Takvim | Haftalık Ders Programı`, `Acil & Gecikenler | Onay Bekleyenler | Öğretmen Notları`, `Bireysel Öğrenciler | Gruplar | Dersler & Branşlar`) taşmadan tek satıra oturmasını sağla.
+- **Kabul:** Hiçbir sayfada `SegmentedTabs` alt satıra "yetim sekme" düşürmez; tüm sekmeler tek satıra hizalıdır.
+
+#### [x] U20 — `Dashboard` KPI Grid Sağdan Taşma (`minmax(0, 1fr)`) & Radar Rozet Hizalaması
+- **Dosyalar:** `CoachDashboard.module.css`
+- **Yap:**
+  1. `.kpiGrid` içindeki sütun tanımını `minmax(0, 1fr)` olarak güncelle ve `.kpiCard` içine `min-width: 0; overflow: hidden;` ekle.
+  2. `.kpiSubtext` içindeki `white-space: nowrap` kısıtını dar ekranlarda (`@media (max-width: 640px)`) `white-space: normal; flex-wrap: wrap; gap: 4px;` yaparak sol kartın sağ sütunu ekran dışına itmesini önle.
+  3. `.countPill` (`10 Öğrenci`) sınıfına `white-space: nowrap; flex-shrink: 0;` ekleyerek başlık yanında iki satıra kırılmasını engelle.
+- **Kabul:** Mobil ve PC'de 4 KPI kartı ekran sınırları içinde simetrik durur; hiçbir kart sağdan kesilmez.
+
+#### [x] U21 — `Haftalık Ders Programı` (`WeeklySchedulePage`) & `Akademik Takvim` (`CalendarPage`) Mobil/PC UX İyileştirmesi ve Ölü CSS Temizliği
+- **Dosyalar:** `WeeklySchedulePage.jsx`, `WeeklySchedulePage.module.css`, `CalendarPage.jsx`, `CalendarPage.module.css`
+- **Yap:**
+  1. `WeeklySchedulePage.module.css` içine `@media (max-width: 1024px)` kırılımı ekle: `.layout` dikey (`flex-direction: column`) düzene geçsin, `.sidePanel` tam genişlikte (`width: 100%`) ve `.dragList` yatay kaydırılabilir kompakt şerit (`flex-direction: row; overflow-x: auto;`) olsun.
+  2. `.grid` içinde yatay kaydırma (`overflow-x: auto; -webkit-overflow-scrolling: touch;`) ve `.gridRow` için `min-width: 640px` tanımlayarak 7 günlük tablo hücrelerinin `12px` genişliğinde `+ + + +` şeritlerine ezilmesini tamamen önle.
+  3. `CalendarPage.module.css` içinde artık kullanılmayan ölü `.segmentedTabs`, `.segmentedBtn`, `.addBtn`, `.resetFiltersBtn` CSS bloklarını temizle; mobilde `.legend` scrollbar'ını gizle (`scrollbar-width: none`), `.rbc-toolbar` kontrollerini kompaktlaştır ve `.rbc-header` (`Cu...` kesilmesi) iç boşluğunu/yazı boyutunu (`padding: 6px 2px; font-size: 0.72rem`) optimize et.
+- **Kabul:** Haftalık ders programı ve akademik takvim hem mobilde hem PC'de ezilmeden, kesilmeden ve yatay akıcı şekilde kullanılır.
+
+#### [x] U22 — `CoachLayout` Çift Başlık Sadeleştirmesi, `SkyDecor` (`.celestialContainer`) Dekoru ve `BottomNav` Opaklık/Boşluk Ayarı
+- **Dosyalar:** `SkyDecor.jsx`, `SkyDecor.module.css`, `CoachLayout.module.css`, `CalendarPage.module.css`, `CoachStudents.module.css`
+- **Yap:**
+  1. `SkyDecor.jsx` içinde CSS medya sorgusunu ezen satır içi `style={{ opacity }}` tanımını kaldırıp `SkyDecor.module.css` içindeki `.celestialContainer` (`.celestialLight` / `.celestialDark`) sınıflarına taşı; mobilde (`@media (max-width: 767px)`) güneş/ay dekorunu `96px` boyuta ve `opacity: 0.12` değerine çekerek metinlerin üstünü sarartmasını önle.
+  2. `.bottomNav` arka planını yarı şeffaf sızıntıyı önleyecek şekilde güçlendir (`backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);`) ve `.pageContent` alt boşluğunu (`padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px))`) artırarak en alttaki kart butonlarının `BottomNav` arkasında kalmasını önle.
+  3. Mobilde (`@media (max-width: 640px)` / `768px`) `CoachLayout` Topbar'da sayfa başlığı zaten yazdığı için `CalendarPage` ve `CoachStudents` içindeki mükerrer dev `<h1>` başlığını gizleyerek ekranın ilk %45'ini doğrudan içerik ve aksiyon butonlarına kazandır.
+- **Kabul:** Mobilde üst üste iki kez aynı sayfa başlığı görünmez, güneş dekoru yazıları kapatmaz ve sayfa sonundaki kart butonları `BottomNav` üstünde net görünür.
+
+#### [x] U23 — `CoachStudents` Kart Hizalaması (`align-items: flex-start`), Ortak `<Select>` ve Çift `+` İkonlarının Temizlenmesi
+- **Dosyalar:** `CoachStudents.jsx`, `CoachStudents.module.css`, `CalendarPage.jsx`
+- **Yap:**
+  1. `CoachStudents.module.css` içinde `.cardHeader` hizalamasını `align-items: flex-start` olarak düzelt (avatarın kartın altına kaymasını engelle); `CoachStudents.jsx` filtrelerindeki `<select>` etiketlerini ortak `<Select>` bileşenine geçir ve kullanılmayan ölü CSS kurallarını (`.headerButtons`, `.segmentedTabs`, `.formModeTabs`, `.statusBadge`, `.cardBody`, `.deleteIconBtn`, `.select`) temizle.
+  2. `<UserPlus />` veya `<Plus />` ikonu içeren `<Button>` bileşenlerindeki mükerrer `+` metin öneklerini (`+ Yeni Öğrenci Ekle` → `Yeni Öğrenci Ekle`, `+ Yeni Grup Oluştur` → `Yeni Grup Oluştur`, `+ Yeni Ders Oluştur` → `Yeni Ders Oluştur`, `+ Yeni Etkinlik` → `Yeni Etkinlik`) temizle (`AGENTS.md` §A8).
+- **Kabul:** Öğrenci kartlarında avatar her zaman sol üstte hizalıdır; hiçbir butonda yan yana iki adet `+ +` işareti görünmez.
+
+
