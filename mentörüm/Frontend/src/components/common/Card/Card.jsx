@@ -1,12 +1,28 @@
 import React from 'react';
 import styles from './Card.module.css';
 
-const Card = ({ children, className = '', padding = 'md', interactive = false, onClick }) => {
+const Card = ({
+  children,
+  title,
+  action,
+  className = '',
+  padding = 'md',
+  interactive = false,
+  onClick,
+  style,
+}) => {
   return (
-    <div 
-      className={`${styles.card} ${styles[`padding-${padding}`]} ${interactive ? styles.interactive : ''} ${className}`}
+    <div
+      className={`${styles.card} ${styles[`padding-${padding}`] || styles['padding-md']} ${interactive ? styles.interactive : ''} ${className}`}
       onClick={onClick}
+      style={style}
     >
+      {(title || action) && (
+        <div className={styles.header}>
+          {title && <div className={styles.title}>{title}</div>}
+          {action && <div className={styles.action}>{action}</div>}
+        </div>
+      )}
       {children}
     </div>
   );

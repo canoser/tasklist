@@ -51,28 +51,21 @@ export default function InfoTab({
   const removeCourseStudent = useRemoveCourseStudent();
 
   const enrolledCourseIds = new Set(studentCourses.map((c) => c.id));
-  const availableCourses = allCourses.filter((c) => !enrolledCourseIds.has(c.id));
+  const isOtherStudentAutoCourse = (c) =>
+    c.type === 'OZEL_DERS' &&
+    !c.teacherId &&
+    (c.name === 'Bireysel Koçluk' || c.name?.endsWith('— Bireysel Koçluk'));
+  const availableCourses = allCourses.filter(
+    (c) => !enrolledCourseIds.has(c.id) && !isOtherStudentAutoCourse(c)
+  );
 
-  const handleEnrollExistingCourse = async () => {
-    if (!selectedCourseId || !programId) return;
-    await addCourseStudent.mutateAsync({
-      programId,
-      courseId: selectedCourseId,
-      studentId,
-    });
-    setSelectedCourseId('');
-  };
-
-  const handleCreateAndEnrollCourse = async (e) => {
-    e.preventDefault();
-    if (!newCourseName.trim() || !programId) return;
-
+  const createAndEnrollCourse = async ({ name, type, teacherId }) => {
     const created = await createCourse.mutateAsync({
       programId,
       data: {
-        name: newCourseName.trim(),
-        type: newCourseType,
-        ...(newCourseTeacherId ? { teacherId: newCourseTeacherId } : {}),
+        name,
+        type,
+        ...(teacherId ? { teacherId } : {}),
         teacherCanViewProfile: true,
         teacherCanViewHomework: true,
         teacherCanManageHomework: true,
@@ -91,6 +84,46 @@ export default function InfoTab({
         studentId,
       });
     }
+  };
+
+  const handleEnrollExistingCourse = async () => {
+    if (!selectedCourseId || !programId) return;
+
+    if (selectedCourseId.startsWith('teacher:')) {
+      const teacherId = selectedCourseId.slice('teacher:'.length);
+      const teacher = teachers.find((t) => String(t.id) === teacherId);
+      const courseName = teacher?.branch
+        ? `${teacher.branch} Özel Ders (${student.fullName})`
+        : `${teacher?.fullName || 'Öğretmen'} — Özel Ders (${student.fullName})`;
+
+      await createAndEnrollCourse({
+        name: courseName,
+        type: 'OZEL_DERS',
+        teacherId,
+      });
+    } else {
+      const courseId = selectedCourseId.startsWith('course:')
+        ? selectedCourseId.slice('course:'.length)
+        : selectedCourseId;
+      await addCourseStudent.mutateAsync({
+        programId,
+        courseId,
+        studentId,
+      });
+    }
+
+    setSelectedCourseId('');
+  };
+
+  const handleCreateAndEnrollCourse = async (e) => {
+    e.preventDefault();
+    if (!newCourseName.trim() || !programId) return;
+
+    await createAndEnrollCourse({
+      name: newCourseName.trim(),
+      type: newCourseType,
+      teacherId: newCourseTeacherId,
+    });
 
     setNewCourseName('');
     setNewCourseType('OZEL_DERS');
@@ -277,7 +310,7 @@ export default function InfoTab({
             </p>
           )}
 
-          {availableCourses.length > 0 && (
+          {(availableCourses.length > 0 || teachers.length > 0) && (
             <div
               style={{
                 display: 'flex',
@@ -292,18 +325,32 @@ export default function InfoTab({
                 value={selectedCourseId}
                 onChange={(e) => setSelectedCourseId(e.target.value)}
               >
-                <option value="">Ders Seçin...</option>
-                {availableCourses.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} ({c.teacherName ? `Eğitmen: ${c.teacherName}` : 'Koç Dersi'})
-                  </option>
-                ))}
+                <option value="">Ders veya Öğretmen Seçin...</option>
+                {availableCourses.length > 0 && (
+                  <optgroup label="Mevcut Dersler">
+                    {availableCourses.map((c) => (
+                      <option key={c.id} value={`course:${c.id}`}>
+                        {c.name} ({c.teacherName ? `Eğitmen: ${c.teacherName}` : 'Koç Dersi'})
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
+                {teachers.length > 0 && (
+                  <optgroup label="Öğretmenler (Özel Ders Bağla)">
+                    {teachers.map((t) => (
+                      <option key={t.id} value={`teacher:${t.id}`}>
+                        {t.fullName}
+                        {t.branch ? ` (${t.branch})` : ''} — Özel Ders Bağla
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
               </Select>
               <Button
                 variant="secondary"
                 size="md"
-                disabled={!selectedCourseId || addCourseStudent.isPending}
-                isLoading={addCourseStudent.isPending}
+                disabled={!selectedCourseId || addCourseStudent.isPending || createCourse.isPending}
+                isLoading={addCourseStudent.isPending || createCourse.isPending}
                 onClick={handleEnrollExistingCourse}
               >
                 Derse Ekle

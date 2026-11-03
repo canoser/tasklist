@@ -24,6 +24,37 @@
   padding: var(--spacing-xl);
 }
 
+.padding-xl {
+  padding: var(--spacing-xl, 24px);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-color-main);
+  line-height: 1.35;
+}
+
+.action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .interactive {
   cursor: pointer;
 }
