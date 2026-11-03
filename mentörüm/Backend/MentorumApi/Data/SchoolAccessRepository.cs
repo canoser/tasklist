@@ -159,7 +159,7 @@ namespace MentorumApi.Data
         {
             using var conn = _connectionFactory.CreateConnection();
             return await conn.QueryAsync<StudentCourseItemDto>(@"
-                SELECT DISTINCT ON (CASE WHEN c.type = 'OZEL_DERS' AND c.teacher_id IS NULL THEN 'AUTO_OZEL_DERS' ELSE c.id::text END)
+                SELECT DISTINCT ON (c.id)
                     c.id AS Id, 
                     c.name AS Name, 
                     c.type AS Type,
@@ -173,7 +173,7 @@ namespace MentorumApi.Data
                 LEFT JOIN subjects s ON s.id = c.subject_id
                 WHERE c.is_active = 1
                    AND c.id IN (SELECT course_id FROM vw_active_course_students WHERE student_id = @StudentId)
-                ORDER BY (CASE WHEN c.type = 'OZEL_DERS' AND c.teacher_id IS NULL THEN 'AUTO_OZEL_DERS' ELSE c.id::text END), c.name",
+                ORDER BY c.id, c.name",
                 new { StudentId = studentId });
         }
 
