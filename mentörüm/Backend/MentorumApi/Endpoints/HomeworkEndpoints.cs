@@ -107,16 +107,23 @@ namespace MentorumApi.Endpoints
                 var userId = user.GetUserId();
                 if (userId == null) return Results.Unauthorized();
 
-                var programId = await repo.GetAssignmentProgramIdForStudentAsync(assignmentId, userId.Value);
-                if (programId == null) return Results.BadRequest(new { error = "Ödev bulunamadı." });
+                var info = await repo.GetAssignmentExtensionInfoForStudentAsync(assignmentId, userId.Value);
+                if (info == null) return Results.BadRequest(new { error = "Ödev bulunamadı." });
 
                 if (await repo.HasPendingExtensionAsync(assignmentId))
                 {
                     return Results.BadRequest(new { error = "Bu ödev için zaten değerlendirme bekleyen bir ek süre talebiniz bulunmaktadır." });
                 }
 
-                var payload = System.Text.Json.JsonSerializer.Serialize(new { homeworkId = assignmentId, reason = req.Reason, requestedDueDate = req.RequestedDueDate });
-                var id = await approvalRepo.CreateAsync(programId.Value, "HOMEWORK_EXTENSION", assignmentId, payload, userId.Value);
+                var payload = System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    homeworkId = assignmentId,
+                    studentName = info.Value.StudentName,
+                    homeworkTitle = info.Value.HomeworkTitle,
+                    reason = req.Reason,
+                    requestedDueDate = req.RequestedDueDate
+                });
+                var id = await approvalRepo.CreateAsync(info.Value.ProgramId, "HOMEWORK_EXTENSION", assignmentId, payload, userId.Value);
                 return Results.Ok(new { id, message = "Ek süre talebi koçunuza iletildi." });
             });
 

@@ -51,19 +51,39 @@ export default function ApprovalsPage() {
   const renderPayloadDetails = (item) => {
     const payload = parseApprovalPayload(item.payload);
 
-    const studentLine = payload?.studentName ? (
+    const studentName = payload?.studentName || payload?.StudentName;
+    const parentName = payload?.parentName || payload?.ParentName;
+    const studentLine = studentName ? (
       <div style={{ marginBottom: 4 }}>
-        <strong>Öğrenci:</strong> {payload.studentName}
+        <strong>Öğrenci:</strong> {studentName}
+        {parentName ? ` (Veli: ${parentName})` : ''}
       </div>
     ) : null;
 
     if (item.entityType === 'PAYMENT_CLAIM') {
+      const amount = payload?.amount ?? payload?.Amount;
+      const currency = payload?.currency ?? payload?.Currency ?? 'TRY';
+      const method = payload?.method ?? payload?.Method ?? 'Banka Havalesi';
+      const notes = payload?.notes ?? payload?.Notes;
+      const receiptUrl = payload?.receiptUrl ?? payload?.ReceiptUrl;
       return (
         <div>
           {studentLine}
-          <strong>Tutar:</strong> {payload?.amount || '-'} {payload?.currency || 'TRY'} | 
-          <strong> Yöntem:</strong> {payload?.method || 'Banka Havalesi'}
-          {payload?.notes && <div><strong>Not:</strong> {payload.notes}</div>}
+          <strong>Tutar:</strong> {amount ?? '-'} {currency} |{' '}
+          <strong>Yöntem:</strong> {method}
+          {notes && <div><strong>Not:</strong> {notes}</div>}
+          {receiptUrl && (
+            <div style={{ marginTop: 4 }}>
+              <a
+                href={receiptUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'var(--color-primary)', fontWeight: 600, fontSize: '0.82rem' }}
+              >
+                📎 Dekont / Belgeyi Görüntüle ↗
+              </a>
+            </div>
+          )}
         </div>
       );
     }

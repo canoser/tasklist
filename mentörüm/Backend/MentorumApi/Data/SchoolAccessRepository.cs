@@ -29,7 +29,8 @@ namespace MentorumApi.Data
                        (COALESCE(teacher_can_add_notes, 0) = 1) AS CanAddNotes,
                        (COALESCE(teacher_can_view_schedule, 0) = 1) AS CanViewSchedule,
                        (COALESCE(teacher_can_manage_schedule, 0) = 1) AS CanManageSchedule,
-                       (COALESCE(teacher_can_process_homework, 0) = 1) AS CanProcessHomework
+                       (COALESCE(teacher_can_process_homework, 0) = 1) AS CanProcessHomework,
+                       (COALESCE(teacher_can_share_files, 1) = 1) AS CanShareFiles
                 FROM courses
                 WHERE id = @CourseId AND teacher_id = @TeacherId AND is_active = 1",
                 new { CourseId = courseId, TeacherId = teacherId });
@@ -102,7 +103,8 @@ namespace MentorumApi.Data
                        (COALESCE(teacher_can_add_notes, 0) = 1) AS CanAddNotes,
                        (COALESCE(teacher_can_view_schedule, 0) = 1) AS CanViewSchedule,
                        (COALESCE(teacher_can_manage_schedule, 0) = 1) AS CanManageSchedule,
-                       (COALESCE(teacher_can_process_homework, 0) = 1) AS CanProcessHomework
+                       (COALESCE(teacher_can_process_homework, 0) = 1) AS CanProcessHomework,
+                       (COALESCE(teacher_can_share_files, 1) = 1) AS CanShareFiles
                 FROM courses
                 JOIN coaching_programs cp ON cp.id = courses.program_id
                 WHERE courses.teacher_id = @TeacherId AND courses.is_active = 1
@@ -125,26 +127,68 @@ namespace MentorumApi.Data
                 new { CourseId = courseId });
         }
 
-        public async Task<IEnumerable<dynamic>> GetTeacherCourseHomeworkAsync(Guid courseId)
+        public async Task<IEnumerable<TeacherCourseHomeworkItemDto>> GetTeacherCourseHomeworkAsync(Guid courseId)
         {
             // Not: Koçun AssignHomeworkAsync ile attığı course_id=NULL ödevler bu filtreyle öğretmene görünmez (kabul edilen davranış).
             using var conn = _connectionFactory.CreateConnection();
-            return await conn.QueryAsync(@"
-                SELECT h.id, h.student_id as ""studentId"", u.full_name as ""studentName"", h.snapshot_title as title, h.due_date as ""dueDate"", h.status as status, h.feedback as feedback, COALESCE(h.version, 1) as version
+            var list = (await conn.QueryAsync<TeacherCourseHomeworkItemDto>(@"
+                SELECT h.id AS Id,
+                       h.student_id AS StudentId,
+                       u.full_name AS StudentName,
+                       h.snapshot_title AS Title,
+                       h.due_date AS DueDate,
+                       h.status AS Status,
+                       h.feedback AS Feedback,
+                       h.student_note AS StudentNote,
+                       h.completion_percentage AS CompletionPercentage,
+                       COALESCE(h.version, 1) AS Version
                 FROM homework_assignments h
                 JOIN users u ON u.id = h.student_id
                 WHERE h.program_id = (SELECT program_id FROM courses WHERE id = @CourseId)
                   AND h.course_id = @CourseId
                   AND h.student_id IN (SELECT student_id FROM vw_active_course_students WHERE course_id = @CourseId)
                 ORDER BY h.due_date DESC",
-                new { CourseId = courseId });
+                new { CourseId = courseId })).ToList();
+
+            if (list.Count > 0)
+            {
+                var ids = list.Select(x => x.Id).ToArray();
+                var uploads = await conn.QueryAsync<(Guid HomeworkId, Guid Id, string OriginalName, string ContentType, long SizeBytes)>(@"
+                    SELECT homework_id AS HomeworkId, id AS Id, original_name AS OriginalName, content_type AS ContentType, size_bytes AS SizeBytes
+                    FROM uploads
+                    WHERE homework_id = ANY(@Ids) AND status = 'UPLOADED'
+                    ORDER BY created_at DESC", new { Ids = ids });
+
+                var byHw = uploads.GroupBy(u => u.HomeworkId).ToDictionary(
+                    g => g.Key,
+                    g => g.Select(u => new HomeworkAttachmentDto
+                    {
+                        Id = u.Id,
+                        OriginalName = u.OriginalName,
+                        ContentType = u.ContentType,
+                        SizeBytes = u.SizeBytes
+                    }).ToList());
+
+                foreach (var item in list)
+                {
+                    if (byHw.TryGetValue(item.Id, out var att))
+                        item.Attachments = att;
+                }
+            }
+
+            return list;
         }
 
-        public async Task<IEnumerable<dynamic>> GetTeacherCourseExamsAsync(Guid courseId)
+        public async Task<IEnumerable<TeacherCourseExamItemDto>> GetTeacherCourseExamsAsync(Guid courseId)
         {
             using var conn = _connectionFactory.CreateConnection();
-            return await conn.QueryAsync(@"
-                SELECT e.id, e.student_id as ""studentId"", u.full_name as ""studentName"", COALESCE(e.exam_name, e.exam_type) as name, e.exam_date as ""examDate"", e.total_net as ""totalNet""
+            return await conn.QueryAsync<TeacherCourseExamItemDto>(@"
+                SELECT e.id AS Id,
+                       e.student_id AS StudentId,
+                       u.full_name AS StudentName,
+                       COALESCE(e.exam_name, e.exam_type, 'Sınav') AS Name,
+                       e.exam_date AS ExamDate,
+                       e.total_net AS TotalNet
                 FROM exam_results e
                 JOIN users u ON u.id = e.student_id
                 WHERE e.program_id = (SELECT program_id FROM courses WHERE id = @CourseId)
@@ -409,7 +453,7 @@ namespace MentorumApi.Data
                            c.name AS CourseName,
                            tn.teacher_id AS TeacherId,
                            u.full_name AS TeacherName,
-                           tn.summary AS Summary,
+                           COALESCE(NULLIF(tn.summary, ''), tn.note) AS Summary,
                            tn.created_at AS CreatedAt
                     FROM teacher_notes tn
                     LEFT JOIN courses c ON c.id = tn.course_id

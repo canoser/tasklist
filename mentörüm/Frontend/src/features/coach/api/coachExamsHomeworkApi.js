@@ -62,9 +62,13 @@ export const useAssignHomework = () => {
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: queryKeys.coach.calendarAll() });
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.coach.calendarAll() });
       queryClient.invalidateQueries({ queryKey: queryKeys.coach.students() });
+      if (variables?.studentId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.coach.studentHomework(variables.studentId) });
+        queryClient.invalidateQueries({ queryKey: queryKeys.coach.student(variables.studentId) });
+      }
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.coach.calendarAll() });

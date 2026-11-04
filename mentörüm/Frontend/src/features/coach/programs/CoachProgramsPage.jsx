@@ -17,6 +17,7 @@ const CoachProgramsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
+  const [error, setError] = useState('');
 
   const studentsByProgram = useMemo(() => {
     const map = {};
@@ -31,10 +32,15 @@ const CoachProgramsPage = () => {
   const handleCreate = async (e) => {
     e.preventDefault();
     if (!name.trim()) return;
-    await createProgram.mutateAsync({ name: name.trim(), category: category || null });
-    setName('');
-    setCategory('');
-    setIsModalOpen(false);
+    setError('');
+    try {
+      await createProgram.mutateAsync({ name: name.trim(), category: category || null });
+      setName('');
+      setCategory('');
+      setIsModalOpen(false);
+    } catch (err) {
+      setError(err?.response?.data?.error || 'Program oluşturulurken bir hata oluştu.');
+    }
   };
 
   return (
@@ -99,8 +105,13 @@ const CoachProgramsPage = () => {
         })}
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Yeni Program Oluştur">
+      <Modal isOpen={isModalOpen} onClose={() => { setIsModalOpen(false); setError(''); }} title="Yeni Program Oluştur">
         <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {error && (
+            <div style={{ padding: '10px 12px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.12)', color: 'var(--color-danger, #ef4444)', fontSize: '0.85rem', fontWeight: 500 }}>
+              {error}
+            </div>
+          )}
           <Input 
             label="Yeni Program Adı *" 
             value={name} 

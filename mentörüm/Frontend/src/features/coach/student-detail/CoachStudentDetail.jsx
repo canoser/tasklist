@@ -185,7 +185,7 @@ const CoachStudentDetail = () => {
           <div>
             <h1 className={styles.title}>{student.fullName}</h1>
             <p className={styles.subtitle}>
-              {student.grade ? `${student.grade}. Sınıf` : ''} • {student.track || student.area}
+              {student.grade === 13 ? 'Mezun' : student.grade ? `${student.grade}. Sınıf` : ''} • {student.track || student.area}
             </p>
           </div>
         </div>

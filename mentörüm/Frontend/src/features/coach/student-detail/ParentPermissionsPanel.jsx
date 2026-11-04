@@ -18,13 +18,14 @@ export default function ParentPermissionsPanel({ studentId, parentId }) {
   }
 
   const getFlag = (key, fallback) => {
-    if (!permissions) return 0;
-    return (permissions[key] ?? permissions[fallback]) === 1 ? 1 : 0;
+    if (!permissions) return false;
+    const val = permissions[key] ?? permissions[fallback];
+    return val === true || val === 1;
   };
 
   const handleToggle = (key, fallback) => {
     const currentVal = getFlag(key, fallback);
-    const nextVal = currentVal === 1 ? 0 : 1;
+    const nextVal = !currentVal;
 
     const payload = {
       canViewExams: key === 'canViewExams' ? nextVal : getFlag('canViewExams', 'can_view_exams'),
@@ -51,7 +52,7 @@ export default function ParentPermissionsPanel({ studentId, parentId }) {
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
         {PERMISSION_CONFIG.map(({ key, fallback, label }) => {
-          const isEnabled = getFlag(key, fallback) === 1;
+          const isEnabled = getFlag(key, fallback);
           return (
             <label 
               key={key} 

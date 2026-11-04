@@ -12,9 +12,10 @@ import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
 import PersonalEventModal from '../../../components/common/PersonalEventModal/PersonalEventModal';
-import { useStudentCalendar, useStudentSessions } from '../studentApi';
+import { useStudentCalendar, useStudentSessions, useStudentTimeBudget } from '../studentApi';
 import { usePersonalEvents, useCheckinPersonalEvent } from '../../../hooks/usePersonalEvents';
 import StudentSchedulePage from '../schedule/StudentSchedulePage';
+import WeeklyTimeBudgetCard from '../../coach/student-detail/WeeklyTimeBudgetCard';
 import { Calendar as CalendarIcon, CalendarDays } from 'lucide-react';
 import styles from './StudentCalendarPage.module.css';
 
@@ -35,9 +36,10 @@ const StudentCalendarPage = () => {
 
   const { data: events, isLoading: isCalendarLoading } = useStudentCalendar(
     format(range.start, 'yyyy-MM-dd'),
-    format(range.end, 'yyyy-MM-dd')
+    format(range.end, "yyyy-MM-dd'T'23:59:59")
   );
   const { data: sessions = [] } = useStudentSessions();
+  const { data: timeBudget } = useStudentTimeBudget();
   const { data: personalEvents = [] } = usePersonalEvents();
   const checkin = useCheckinPersonalEvent();
 
@@ -50,12 +52,15 @@ const StudentCalendarPage = () => {
     color: ev.color,
   }));
 
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
   const sessionEvents = sessions
     .filter(s => s.sessionDate)
     .map(s => {
       const start = new Date(s.sessionDate);
       const end = new Date(start.getTime() + 45 * 60 * 1000); // 45 dk seans
-      const isPast = start < new Date();
+      const isPast = start < todayStart;
       return {
         id: s.id,
         title: `${s.title || 'Koçluk Görüşmesi'}${isPast ? ' (Tamamlandı)' : ''}`,
@@ -146,6 +151,8 @@ const StudentCalendarPage = () => {
           </Card>
 
           <PersonalEventModal isOpen={isEventModalOpen} onClose={() => setIsEventModalOpen(false)} defaultType="STUDENT_EVENT" />
+
+          {timeBudget && <WeeklyTimeBudgetCard budgetData={timeBudget} />}
 
           {/* V10 T07: Aktivite Check-in */}
           <Card className={styles.card}>

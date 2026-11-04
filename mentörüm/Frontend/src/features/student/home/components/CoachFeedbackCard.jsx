@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import Card from '../../../../components/common/Card/Card';
+import Button from '../../../../components/common/Button/Button';
 import SegmentedTabs from '../../../../components/common/SegmentedTabs/SegmentedTabs';
 import { MessageSquare, AlertCircle, FileText, Download, HelpCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { useStudentTeacherNotes, useStudentQuestions, useStudentUploads } from '../../studentApi';
+import { useOpenUpload } from '../../../storage/storageApi';
 
 const CoachFeedbackCard = ({ homeworks = [] }) => {
   const [activeTab, setActiveTab] = useState('notes'); // 'notes' | 'questions' | 'files'
@@ -12,9 +14,12 @@ const CoachFeedbackCard = ({ homeworks = [] }) => {
   const { data: teacherNotes = [] } = useStudentTeacherNotes();
   const { data: questions = [] } = useStudentQuestions();
   const { data: uploads = [] } = useStudentUploads();
+  const { openUpload, isPending: isOpeningUpload } = useOpenUpload();
 
-  // Düzeltme istenen ödevler
-  const revisionHomeworks = homeworks.filter(h => h.teacherStatus === 'REVISE_REQUESTED' || h.teacherStatus === 'CORRECTION_REQUESTED');
+  // Öğretmen geri bildirimi / düzeltme istenen ödevler
+  const revisionHomeworks = homeworks.filter(
+    (h) => h.feedback || h.teacherStatus === 'REVISE_REQUESTED' || h.teacherStatus === 'CORRECTION_REQUESTED'
+  );
 
   // Koç tarafından yanıtlanmış sorular
   const answeredQuestions = questions.filter(q => q.coachReply || q.status === 'RESOLVED');
@@ -40,7 +45,7 @@ const CoachFeedbackCard = ({ homeworks = [] }) => {
             </div>
             {revisionHomeworks.map(hw => (
               <div key={hw.id} style={{ fontSize: '0.8rem', color: 'var(--text-color-main)', marginTop: '4px' }}>
-                • <strong>{hw.snapshotTitle}</strong>: {hw.teacherReviewNote || 'Öğretmeniniz ödevde revizyon talep etti.'}
+                • <strong>{hw.snapshotTitle}</strong>: {hw.feedback || hw.teacherReviewNote || 'Öğretmeniniz ödevde revizyon talep etti.'}
               </div>
             ))}
           </div>
@@ -78,7 +83,7 @@ const CoachFeedbackCard = ({ homeworks = [] }) => {
                       </span>
                     </div>
                     <p style={{ margin: 0, color: 'var(--text-color-main)', lineHeight: 1.4 }}>
-                      {tn.note || tn.content}
+                      {tn.summary || tn.note || tn.content}
                     </p>
                   </div>
                 ))}
@@ -128,14 +133,18 @@ const CoachFeedbackCard = ({ homeworks = [] }) => {
                   <div key={file.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', borderRadius: '6px', background: 'var(--bg-app)', border: '1px solid var(--border-color)', fontSize: '0.8rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <FileText size={14} style={{ color: 'var(--color-primary)' }} />
-                      <span style={{ fontWeight: 500 }}>{file.fileName || file.originalFileName || 'Dosya'}</span>
+                      <span style={{ fontWeight: 500 }}>{file.originalName || file.fileName || file.originalFileName || 'Dosya'}</span>
                     </div>
-                    {file.url && (
-                      <a href={file.url} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: 'var(--color-primary)', textDecoration: 'none', fontSize: '0.75rem' }}>
-                        <Download size={13} />
-                        <span>İndir</span>
-                      </a>
-                    )}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="xs"
+                      onClick={() => openUpload(file.id)}
+                      disabled={isOpeningUpload}
+                    >
+                      <Download size={13} />
+                      <span>İndir</span>
+                    </Button>
                   </div>
                 ))}
               </div>

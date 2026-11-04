@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../../features/auth/authStore';
-import { useParentChildren } from '../../../features/parent/parentApi';
+import { useActiveParentChild } from '../../../features/parent/parentApi';
 import NotificationDropdown from '../../common/NotificationDropdown/NotificationDropdown';
 import ParentEmptyState from '../../common/ParentEmptyState/ParentEmptyState';
 import ThemeSelector from '../../common/ThemeSelector/ThemeSelector';
@@ -15,8 +15,7 @@ const ParentLayout = () => {
   const displayName = viewAs?.name || user?.fullName || 'Veli';
   const displayInitial = displayName.charAt(0);
 
-  const { data: children = [] } = useParentChildren();
-  const activeChild = children[0];
+  const { student: activeChild } = useActiveParentChild();
 
   const canViewHomework = activeChild ? activeChild.canViewHomework === 1 : true;
   const canViewCalendar = activeChild ? activeChild.canViewCalendar === 1 : true;

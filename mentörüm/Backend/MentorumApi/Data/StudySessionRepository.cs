@@ -8,11 +8,23 @@ namespace MentorumApi.Data
     {
         public StudySessionRepository(DbConnectionFactory connectionFactory) : base(connectionFactory) { }
 
+        private sealed class StudentProgramTrackRow
+        {
+            public Guid ProgramId { get; set; }
+            public string? Track { get; set; }
+        }
+
+        private sealed class SubjectIdNameRow
+        {
+            public Guid Id { get; set; }
+            public string Name { get; set; } = string.Empty;
+        }
+
         public async Task<Guid> CreateAsync(Guid studentId, CreateStudySessionRequest req)
         {
             using var conn = _connectionFactory.CreateConnection();
-            var studentInfo = await conn.QuerySingleOrDefaultAsync<dynamic>(
-                "SELECT program_id, track FROM students WHERE id = @StudentId",
+            var studentInfo = await conn.QuerySingleOrDefaultAsync<StudentProgramTrackRow>(
+                "SELECT program_id AS ProgramId, track AS Track FROM students WHERE id = @StudentId",
                 new { StudentId = studentId });
 
             if (studentInfo == null) throw new UnauthorizedAccessException("Öğrenci bulunamadı.");
@@ -26,13 +38,13 @@ namespace MentorumApi.Data
             }
             else if (req.CurriculumTopicId.HasValue)
             {
-                var subjectInfo = await conn.QuerySingleOrDefaultAsync<dynamic>(
-                    "SELECT s.id, s.name FROM curriculum_topics ct JOIN subjects s ON s.id = ct.subject_id WHERE ct.id = @TopicId",
+                var subjectInfo = await conn.QuerySingleOrDefaultAsync<SubjectIdNameRow>(
+                    "SELECT s.id AS Id, s.name AS Name FROM curriculum_topics ct JOIN subjects s ON s.id = ct.subject_id WHERE ct.id = @TopicId",
                     new { TopicId = req.CurriculumTopicId });
                 if (subjectInfo != null)
                 {
-                    resolvedSubjectId = (Guid)subjectInfo.id;
-                    subjectName = (string)subjectInfo.name;
+                    resolvedSubjectId = subjectInfo.Id;
+                    subjectName = subjectInfo.Name;
                 }
             }
 
@@ -51,7 +63,7 @@ namespace MentorumApi.Data
             var parameters = new
             {
                 Id = id,
-                ProgramId = (Guid)studentInfo.program_id,
+                ProgramId = studentInfo.ProgramId,
                 StudentId = studentId,
                 SubjectId = resolvedSubjectId,
                 req.CurriculumTopicId,
@@ -161,37 +173,15 @@ namespace MentorumApi.Data
             }
             sql += " ORDER BY COALESCE(ss.started_at, ss.created_at) DESC";
 
-            var rows = await conn.QueryAsync<dynamic>(sql, new { StudentId = studentId, From = from, To = to });
+            var rows = (await conn.QueryAsync<StudySessionDto>(sql, new { StudentId = studentId, From = from, To = to })).ToList();
 
-            return rows.Select(r =>
+            foreach (var r in rows)
             {
-                int correct = (int)r.correct;
-                int wrong = (int)r.wrong;
-                int blank = (int)r.blank;
-                int qCount = (int)r.question_count;
+                r.Net = NetCalculator.ComputeNet(r.Correct, r.Wrong, r.Blank, studentTrack);
+                r.SuccessRate = NetCalculator.ComputeSuccessRate(r.Correct, r.QuestionCount);
+            }
 
-                return new StudySessionDto
-                {
-                    Id = (Guid)r.id,
-                    ProgramId = (Guid)r.program_id,
-                    StudentId = (Guid)r.student_id,
-                    SubjectId = (Guid?)r.subject_id,
-                    CurriculumTopicId = (Guid?)r.curriculum_topic_id,
-                    SubjectName = (string?)r.subject_name,
-                    TopicName = (string?)r.topic_name,
-                    Minutes = (int)r.minutes,
-                    QuestionCount = qCount,
-                    Correct = correct,
-                    Wrong = wrong,
-                    Blank = blank,
-                    Net = NetCalculator.ComputeNet(correct, wrong, blank, studentTrack),
-                    SuccessRate = NetCalculator.ComputeSuccessRate(correct, qCount),
-                    SourceType = (string)r.source_type,
-                    StartedAt = (DateTime?)r.started_at,
-                    EndedAt = (DateTime?)r.ended_at,
-                    CreatedAt = (DateTime)r.created_at
-                };
-            });
+            return rows;
         }
     }
 }

@@ -142,6 +142,8 @@ namespace MentorumApi.Data
                     h.completed_at as CompletedAt,
                     h.completion_percentage as CompletionPercentage,
                     h.student_note as StudentNote,
+                    h.feedback as Feedback,
+                    h.completed_by as CompletedBy,
                     CASE 
                         WHEN h.status = 'PENDING' AND h.due_date < CURRENT_DATE THEN 'OVERDUE'
                         ELSE h.status 
@@ -245,6 +247,17 @@ namespace MentorumApi.Data
                 tx.Rollback();
                 throw;
             }
+        }
+
+        public async Task<(Guid ProgramId, string StudentName, string HomeworkTitle)?> GetAssignmentExtensionInfoForStudentAsync(Guid assignmentId, Guid studentId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            return await conn.QuerySingleOrDefaultAsync<(Guid ProgramId, string StudentName, string HomeworkTitle)?>(@"
+                SELECT h.program_id, COALESCE(u.full_name, '') AS student_name, COALESCE(h.snapshot_title, '') AS homework_title
+                FROM homework_assignments h
+                LEFT JOIN users u ON u.id = h.student_id
+                WHERE h.id = @Id AND h.student_id = @StudentId",
+                new { Id = assignmentId, StudentId = studentId });
         }
 
         public async Task<Guid?> GetAssignmentProgramIdForStudentAsync(Guid assignmentId, Guid studentId)

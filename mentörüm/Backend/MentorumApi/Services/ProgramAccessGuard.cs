@@ -73,6 +73,18 @@ namespace MentorumApi.Services
             return found != null;
         }
 
+        /// <summary>Öğretmenin verilen ödevin dersine atanıp atanmadığını döner.</summary>
+        public async Task<bool> IsTeacherOfHomeworkAsync(Guid teacherId, Guid homeworkId)
+        {
+            using var conn = _dbFactory.CreateConnection();
+            var found = await conn.ExecuteScalarAsync<int?>(@"
+                SELECT 1 FROM homework_assignments h
+                JOIN courses c ON c.id = h.course_id
+                WHERE h.id = @HomeworkId AND c.teacher_id = @TeacherId AND c.is_active = 1 AND c.assignment_status = 'ACTIVE'",
+                new { HomeworkId = homeworkId, TeacherId = teacherId });
+            return found != null;
+        }
+
         /// <summary>Koçun kursun programına yetkili olup olmadığını doğrular.</summary>
         public async Task<bool> IsCoachOfCourseAsync(Guid coachId, Guid courseId)
         {
@@ -123,12 +135,8 @@ namespace MentorumApi.Services
         public async Task<bool> IsStudentInCourseAsync(Guid studentId, Guid courseId)
         {
             using var conn = _dbFactory.CreateConnection();
-            var found = await conn.ExecuteScalarAsync<int?>(@"
-                SELECT 1 FROM vw_active_course_students WHERE course_id = @CourseId AND student_id = @StudentId",
-
-
-
-
+            var found = await conn.ExecuteScalarAsync<int?>(
+                "SELECT 1 FROM vw_active_course_students WHERE course_id = @CourseId AND student_id = @StudentId",
                 new { CourseId = courseId, StudentId = studentId });
             return found != null;
         }

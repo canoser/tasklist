@@ -141,7 +141,7 @@ export default function InfoTab({
           </div>
           <div className={styles.infoRow}>
             <span className={styles.infoLabel}>Sınıf / Seviye:</span>
-            <span className={styles.infoValue}>{student.grade ? `${student.grade}. Sınıf` : '-'}</span>
+            <span className={styles.infoValue}>{student.grade === 13 ? 'Mezun' : student.grade ? `${student.grade}. Sınıf` : '-'}</span>
           </div>
           <div className={styles.infoRow}>
             <span className={styles.infoLabel}>Hedef / Alan:</span>
@@ -157,10 +157,16 @@ export default function InfoTab({
               <span className={styles.infoValue}>{student.targetUniversity}</span>
             </div>
           )}
-          {student.targetMajor && (
+          {(student.targetDepartment || student.targetMajor) && (
             <div className={styles.infoRow}>
               <span className={styles.infoLabel}>Hedef Bölüm:</span>
-              <span className={styles.infoValue}>{student.targetMajor}</span>
+              <span className={styles.infoValue}>{student.targetDepartment || student.targetMajor}</span>
+            </div>
+          )}
+          {student.targetScore != null && (
+            <div className={styles.infoRow}>
+              <span className={styles.infoLabel}>Hedef Net:</span>
+              <span className={styles.infoValue}>{student.targetScore}</span>
             </div>
           )}
         </Card>

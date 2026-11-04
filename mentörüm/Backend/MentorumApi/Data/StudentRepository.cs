@@ -480,7 +480,7 @@ namespace MentorumApi.Data
         {
             if (string.IsNullOrWhiteSpace(targetExam)) return null;
             var t = targetExam.Trim().ToUpperInvariant();
-            return t is "SAY" or "EA" or "SOZ" or "ORTAOKUL" ? t : null;
+            return t is "SAY" or "EA" or "SOZ" or "DIL" or "ORTAOKUL" ? t : null;
         }
     }
 }

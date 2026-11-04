@@ -71,6 +71,8 @@ namespace MentorumApi.DTOs
         public string? SubjectName { get; set; }
         public string? TopicName { get; set; }
         public string? StudentNote { get; set; }
+        public string? Feedback { get; set; }
+        public string? CompletedBy { get; set; }
         public string? CourseType { get; set; }
         public string? CourseName { get; set; }
         public string? AssignedVia { get; set; }

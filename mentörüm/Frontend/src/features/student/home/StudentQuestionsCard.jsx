@@ -147,48 +147,65 @@ export default function StudentQuestionsCard() {
           key={q.id}
           style={{
             display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
+            flexDirection: 'column',
+            gap: '6px',
             padding: '8px 0',
             borderBottom: '1px solid var(--border-color)',
-            opacity: q.status === 'RESOLVED' ? 0.5 : 1
+            opacity: q.status === 'RESOLVED' ? 0.8 : 1
           }}
         >
-          <HelpCircle size={15} style={{ color: 'var(--text-secondary)', flexShrink: 0 }} />
-          <span style={{
-            flex: 1,
-            fontSize: '0.85rem',
-            textDecoration: q.status === 'RESOLVED' ? 'line-through' : 'none',
-            wordBreak: 'break-word'
-          }}>
-            {q.topicText}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <HelpCircle size={15} style={{ color: 'var(--text-secondary)', flexShrink: 0 }} />
+            <span style={{
+              flex: 1,
+              fontSize: '0.85rem',
+              textDecoration: q.status === 'RESOLVED' ? 'line-through' : 'none',
+              wordBreak: 'break-word'
+            }}>
+              {q.topicText}
+            </span>
 
-          {/* Soru Fotoğrafı Varsa Göster Butonu */}
-          {q.uploadId && (
-            <Button
-              type="button"
-              variant={viewingUploadId === q.uploadId ? 'primary' : 'outline'}
-              size="xs"
-              onClick={() => setViewingUploadId(viewingUploadId === q.uploadId ? null : q.uploadId)}
-            >
-              <Camera size={13} />
-              <span>{viewingUploadId === q.uploadId ? 'Gizle' : 'Fotoğraf'}</span>
-            </Button>
-          )}
+            {/* Soru Fotoğrafı Varsa Göster Butonu */}
+            {q.uploadId && (
+              <Button
+                type="button"
+                variant={viewingUploadId === q.uploadId ? 'primary' : 'outline'}
+                size="xs"
+                onClick={() => setViewingUploadId(viewingUploadId === q.uploadId ? null : q.uploadId)}
+              >
+                <Camera size={13} />
+                <span>{viewingUploadId === q.uploadId ? 'Gizle' : 'Fotoğraf'}</span>
+              </Button>
+            )}
 
-          {q.status === 'OPEN' && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="xs"
-              iconOnly
-              onClick={() => resolveQuestion.mutateAsync(q.id)}
-              title="Çözüldü işaretle"
-              style={{ color: 'var(--color-success, #10b981)' }}
-            >
-              <Check size={16} />
-            </Button>
+            {q.status === 'OPEN' && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="xs"
+                iconOnly
+                onClick={() => resolveQuestion.mutateAsync(q.id)}
+                title="Çözüldü işaretle"
+                style={{ color: 'var(--color-success, #10b981)' }}
+              >
+                <Check size={16} />
+              </Button>
+            )}
+          </div>
+
+          {q.coachReply && (
+            <div style={{
+              marginLeft: '23px',
+              padding: '6px 8px',
+              borderRadius: '6px',
+              background: 'rgba(16, 185, 129, 0.08)',
+              borderLeft: '3px solid #10b981',
+              fontSize: '0.78rem',
+              color: 'var(--text-primary)'
+            }}>
+              <strong style={{ color: '#065f46' }}>Koçun Cevabı: </strong>
+              <span>{q.coachReply}</span>
+            </div>
           )}
         </div>
       ))}

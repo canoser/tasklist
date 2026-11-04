@@ -286,7 +286,67 @@ namespace MentorumApi.Data
             }
             else
             {
-                sqlBuilder.Append(" AND 1=0 "); // Veli görmüyor
+                sqlBuilder.Append(" AND 1=0 "); // Veli kişisel blokları görmüyor
+            }
+
+            // 4.2 Koçluk Görüşmeleri (coaching_sessions -> COACHING_SESSION)
+            sqlBuilder.Append(" UNION ALL ");
+            sqlBuilder.Append(@"
+                SELECT
+                    cs.id AS Id,
+                    COALESCE(cs.title, 'Koçluk Görüşmesi') AS Title,
+                    cs.session_date AS Start,
+                    (cs.session_date + interval '45 minutes') AS End,
+                    'COACHING_SESSION' AS Type,
+                    '#10B981' AS Color,
+                    cs.student_id AS StudentId,
+                    u.full_name AS StudentName
+                FROM coaching_sessions cs
+                JOIN users u ON cs.student_id = u.id
+                WHERE cs.session_date IS NOT NULL
+                  AND cs.session_date >= @From AND cs.session_date <= @To
+            ");
+
+            if (!string.IsNullOrWhiteSpace(eventType) && eventType != "COACHING_SESSION")
+            {
+                sqlBuilder.Append(" AND 1=0 ");
+            }
+
+            if (role == "Coach")
+            {
+                if (courseId.HasValue || teacherId.HasValue)
+                {
+                    sqlBuilder.Append(" AND 1=0 ");
+                }
+                else
+                {
+                    sqlBuilder.Append(" AND (cs.coach_id = @UserId OR cs.student_id IN (SELECT id FROM students WHERE program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @UserId)))");
+                    if (studentId.HasValue)
+                    {
+                        sqlBuilder.Append(" AND cs.student_id = @StudentId");
+                    }
+                }
+            }
+            else if (role == "Student")
+            {
+                sqlBuilder.Append(" AND cs.student_id = @UserId");
+            }
+            else if (role == "Parent")
+            {
+                sqlBuilder.Append(@"
+                    AND cs.student_id = @StudentId
+                    AND EXISTS (
+                        SELECT 1 FROM student_parents sp
+                        WHERE sp.student_id = @StudentId
+                          AND sp.parent_id = @UserId
+                          AND sp.is_accepted = 1
+                          AND sp.can_view_calendar = 1
+                    )
+                ");
+            }
+            else
+            {
+                sqlBuilder.Append(" AND 1=0 ");
             }
 
             // 4.5 Okul Şablonu (SCHOOL_BLOCK) — V10 T08
@@ -333,6 +393,19 @@ namespace MentorumApi.Data
             else if (role == "Student")
             {
                 sqlBuilder.Append(" AND ss.student_id = @UserId");
+            }
+            else if (role == "Parent")
+            {
+                sqlBuilder.Append(@"
+                    AND ss.student_id = @StudentId
+                    AND EXISTS (
+                        SELECT 1 FROM student_parents sp
+                        WHERE sp.student_id = @StudentId
+                          AND sp.parent_id = @UserId
+                          AND sp.is_accepted = 1
+                          AND sp.can_view_calendar = 1
+                    )
+                ");
             }
             else
             {

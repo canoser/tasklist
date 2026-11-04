@@ -60,7 +60,6 @@ namespace MentorumApi.Data
 
                 if (activeAdminCount >= (maxPrograms ?? 3))
                 {
-                    tx.Rollback();
                     throw new InvalidOperationException("PROGRAM_LIMIT_EXCEEDED");
                 }
 

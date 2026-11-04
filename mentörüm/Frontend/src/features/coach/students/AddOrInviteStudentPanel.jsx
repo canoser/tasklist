@@ -115,7 +115,7 @@ const AddOrInviteStudentPanel = ({ showAddForm, onCloseAddForm, programs }) => {
   };
 
   const handleCopyLink = (code) => {
-    const link = `https://mentorum.dersmatris.com/invite/${code}`;
+    const link = `${window.location.origin}/invite/${code}`;
     navigator.clipboard?.writeText(link);
     setCopiedCode(code);
     setTimeout(() => setCopiedCode(null), 2500);

@@ -190,9 +190,12 @@ export default function StoragePage() {
                                 }}
                             >
                                 <option value="">Ders Seçin *</option>
-                                {teacherCourses.map((c) => (
-                                    <option key={c.id} value={c.id}>{c.name}</option>
-                                ))}
+                                {teacherCourses.map((c) => {
+                                    const cid = c.courseId || c.id;
+                                    return (
+                                        <option key={cid} value={cid}>{c.name}</option>
+                                    );
+                                })}
                             </select>
 
                             {courseId && (

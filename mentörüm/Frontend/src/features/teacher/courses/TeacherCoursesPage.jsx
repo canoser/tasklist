@@ -18,6 +18,7 @@ import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTab
 import StatusBadge from '../../../components/common/StatusBadge/StatusBadge';
 import CurriculumTopicFields from '../../../components/common/CurriculumTopicFields/CurriculumTopicFields';
 import { useOpenUpload } from '../../storage/storageApi';
+import HomeworkAttachmentList from '../../../components/common/HomeworkAttachmentList';
 import TeacherStudentNotesModal from './TeacherStudentNotesModal';
 import styles from './TeacherCoursesPage.module.css';
 
@@ -67,13 +68,13 @@ const TeacherCoursesPage = () => {
   const [exDate, setExDate] = useState('');
   const [exNet, setExNet] = useState('');
 
-  const submitReview = async (h) => {
+  const submitReview = async (h, nextStatus = 'DONE') => {
     try {
       await reviewHomework.mutateAsync({
         courseId: selected,
         assignmentId: h.id,
         data: {
-          status: 'DONE',
+          status: nextStatus,
           feedback: reviewFeedback.trim(),
           expectedVersion: h.version ?? 1,
         },
@@ -162,7 +163,7 @@ const TeacherCoursesPage = () => {
           data: {
             note: completeCoachNote.trim() || completeSummary.trim(),
             summary: completeSummary.trim() || null,
-            visibility: completeCoachNote.trim() ? 'COACH_ONLY' : 'STUDENT_VISIBLE',
+            visibility: completeSummary.trim() ? 'STUDENT_VISIBLE' : 'COACH_ONLY',
           },
         });
       }
@@ -213,16 +214,18 @@ const TeacherCoursesPage = () => {
             <Button size="sm" variant="outline" onClick={() => setSelected(null)}>
               ← Geri
             </Button>
-            <Button
-              size="sm"
-              variant="primary"
-              onClick={() => {
-                setShowCompleteModal(true);
-                setCompleteSuccessMsg('');
-              }}
-            >
-              ✓ Dersi Tamamla
-            </Button>
+            {course?.canAddNotes && (
+              <Button
+                size="sm"
+                variant="primary"
+                onClick={() => {
+                  setShowCompleteModal(true);
+                  setCompleteSuccessMsg('');
+                }}
+              >
+                ✓ Dersi Tamamla
+              </Button>
+            )}
           </div>
 
           <h2 className={styles.subtitle}>{course?.name}</h2>
@@ -254,16 +257,18 @@ const TeacherCoursesPage = () => {
                     {s.email && <span className={styles.meta} style={{ display: 'block' }}>{s.email}</span>}
                     {s.grade != null && <span className={styles.meta}>Sınıf: {s.grade}</span>}
                   </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActiveNotesStudent(s);
-                    }}
-                  >
-                    Ders Notları
-                  </Button>
+                  {(course?.canViewNotes || course?.canAddNotes) && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveNotesStudent(s);
+                      }}
+                    >
+                      Ders Notları
+                    </Button>
+                  )}
                 </Card>
               ))}
               {students?.length === 0 && <p className={styles.empty}>Öğrenci yok.</p>}
@@ -285,8 +290,15 @@ const TeacherCoursesPage = () => {
                   <strong>{h.title}</strong>
                   <span className={styles.meta}>
                     {h.studentName} · {fmt(h.dueDate)} · {h.status}
+                    {h.completionPercentage != null ? ` (%${h.completionPercentage})` : ''}
                   </span>
+                  {h.studentNote && (
+                    <span className={styles.meta} style={{ display: 'block', marginTop: 4 }}>
+                      📝 Öğrenci Notu: {h.studentNote}
+                    </span>
+                  )}
                   {h.feedback && <span className={styles.meta}>Geri Bildirim: {h.feedback}</span>}
+                  <HomeworkAttachmentList attachments={h.attachments} />
                   {course?.canProcessHomework &&
                     h.status !== 'DONE' &&
                     (reviewTarget === h.id ? (
@@ -295,11 +307,19 @@ const TeacherCoursesPage = () => {
                           label="Geri Bildirim"
                           value={reviewFeedback}
                           onChange={(e) => setReviewFeedback(e.target.value)}
-                          placeholder="Onay notu (opsiyonel)"
+                          placeholder="Onay veya düzeltme notu"
                         />
-                        <div style={{ display: 'flex', gap: 8 }}>
-                          <Button size="sm" onClick={() => submitReview(h)} isLoading={reviewHomework.isPending}>
+                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                          <Button size="sm" onClick={() => submitReview(h, 'DONE')} isLoading={reviewHomework.isPending}>
                             Onayla (Tamamlandı)
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => submitReview(h, 'PENDING')}
+                            isLoading={reviewHomework.isPending}
+                          >
+                            Not Bırak / Düzeltme İste
                           </Button>
                           <Button
                             size="sm"
@@ -319,7 +339,7 @@ const TeacherCoursesPage = () => {
                         variant="outline"
                         onClick={() => {
                           setReviewTarget(h.id);
-                          setReviewFeedback('');
+                          setReviewFeedback(h.feedback || '');
                         }}
                       >
                         Onayla / Geri Bildir

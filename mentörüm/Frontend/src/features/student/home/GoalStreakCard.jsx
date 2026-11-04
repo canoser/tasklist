@@ -1,7 +1,7 @@
 import React from 'react';
 import { Target, Flame, CalendarClock } from 'lucide-react';
 import Card from '../../../components/common/Card/Card';
-import { useStudentGoal, useStudentStreak } from '../studentApi';
+import { useStudentGoal, useStudentStreak, useStudentCoachingTools } from '../studentApi';
 
 const getNextExamDate = () => {
   const now = new Date();
@@ -14,13 +14,24 @@ const EXAM_DATE = getNextExamDate();
 export default function GoalStreakCard({ variant = 'default' }) {
   const { data: goal } = useStudentGoal();
   const { data: streak = { currentStreak: 0, totalStudyDays: 0 } } = useStudentStreak();
+  const { data: coachingTools } = useStudentCoachingTools();
 
   const uni = goal?.targetUniversity;
   const dept = goal?.targetDepartment;
   const score = goal?.targetScore;
+  const monthlyMilestone = coachingTools?.monthlyMilestone;
+  const weeklyTargetMinutes = coachingTools?.weeklyTargetMinutes;
+  const weeklyTargetQuestions = coachingTools?.weeklyTargetQuestions;
 
   const daysLeft = Math.max(0, Math.ceil((EXAM_DATE - new Date()) / (1000 * 60 * 60 * 24)));
-  const targetSummary = [uni, dept, score ? `${score} Net` : null].filter(Boolean).join(' · ') || (score ? `${score} Net Hedef` : 'Hedef Belirlenmedi');
+  const okrParts = [
+    monthlyMilestone ? `Bu Ay: ${monthlyMilestone}` : null,
+    weeklyTargetMinutes ? `Haftalık: ${weeklyTargetMinutes} dk` : null,
+    weeklyTargetQuestions ? `${weeklyTargetQuestions} Soru/hf` : null,
+  ].filter(Boolean);
+  const targetSummary =
+    [uni, dept, score ? `${score} Net` : null, ...okrParts].filter(Boolean).join(' · ') ||
+    (score ? `${score} Net Hedef` : 'Hedef Belirlenmedi');
 
   // 1. Kompakt Şerit Görünümü (Tek Satır Strip)
   if (variant === 'strip') {

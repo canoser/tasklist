@@ -136,29 +136,21 @@ namespace MentorumApi.Data
                 GROUP BY ss.subject_id, s.name, ss.curriculum_topic_id, ct.topic_name
                 ORDER BY TotalMinutes DESC";
 
-            var rows = await conn.QueryAsync<dynamic>(sql, new { StudentId = studentId });
+            var rows = await conn.QueryAsync<SubjectStatRow>(sql, new { StudentId = studentId });
 
-            return rows.Select(r =>
+            return rows.Select(r => new StudentSubjectStatDto
             {
-                int correct = (int)r.totalcorrect;
-                int wrong = (int)r.totalwrong;
-                int blank = (int)r.totalblank;
-                int qCount = (int)r.totalquestions;
-
-                return new StudentSubjectStatDto
-                {
-                    SubjectId = (Guid?)r.subjectid,
-                    SubjectName = (string?)r.subjectname ?? "Genel",
-                    CurriculumTopicId = (Guid?)r.curriculumtopicid,
-                    TopicName = (string?)r.topicname,
-                    TotalMinutes = (int)r.totalminutes,
-                    TotalQuestions = qCount,
-                    TotalCorrect = correct,
-                    TotalWrong = wrong,
-                    TotalBlank = blank,
-                    TotalNet = NetCalculator.ComputeNet(correct, wrong, blank, track),
-                    SuccessRate = NetCalculator.ComputeSuccessRate(correct, qCount)
-                };
+                SubjectId = r.SubjectId,
+                SubjectName = r.SubjectName ?? "Genel",
+                CurriculumTopicId = r.CurriculumTopicId,
+                TopicName = r.TopicName,
+                TotalMinutes = r.TotalMinutes,
+                TotalQuestions = r.TotalQuestions,
+                TotalCorrect = r.TotalCorrect,
+                TotalWrong = r.TotalWrong,
+                TotalBlank = r.TotalBlank,
+                TotalNet = NetCalculator.ComputeNet(r.TotalCorrect, r.TotalWrong, r.TotalBlank, track),
+                SuccessRate = NetCalculator.ComputeSuccessRate(r.TotalCorrect, r.TotalQuestions)
             });
         }
 
@@ -172,7 +164,7 @@ namespace MentorumApi.Data
                   AND (started_at >= date_trunc('week', CURRENT_DATE) OR (started_at IS NULL AND created_at >= date_trunc('week', CURRENT_DATE)))",
                 new { StudentId = studentId }) ?? 0;
 
-            var personalRows = await conn.QueryAsync<dynamic>(@"
+            var personalRows = await conn.QueryAsync<PersonalCategoryRow>(@"
                 SELECT 
                     COALESCE(category, 'OTHER') AS Category,
                     COALESCE(SUM(EXTRACT(EPOCH FROM (COALESCE(end_at, start_at + interval '1 hour') - start_at)) / 60), 0)::int AS TotalMinutes
@@ -203,8 +195,8 @@ namespace MentorumApi.Data
 
             foreach (var r in personalRows)
             {
-                string cat = (string)r.category;
-                int mins = (int)r.totalminutes;
+                string cat = r.Category;
+                int mins = r.TotalMinutes;
                 totalPersonal += mins;
                 categoriesMap[cat] = categoriesMap.GetValueOrDefault(cat, 0) + mins;
             }
@@ -245,6 +237,25 @@ namespace MentorumApi.Data
             }
 
             return result;
+        }
+
+        private sealed class SubjectStatRow
+        {
+            public Guid? SubjectId { get; set; }
+            public string? SubjectName { get; set; }
+            public Guid? CurriculumTopicId { get; set; }
+            public string? TopicName { get; set; }
+            public int TotalMinutes { get; set; }
+            public int TotalQuestions { get; set; }
+            public int TotalCorrect { get; set; }
+            public int TotalWrong { get; set; }
+            public int TotalBlank { get; set; }
+        }
+
+        private sealed class PersonalCategoryRow
+        {
+            public string Category { get; set; } = "OTHER";
+            public int TotalMinutes { get; set; }
         }
     }
 }

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { useParentChildren, useParentChildHomework } from '../parentApi';
+import React from 'react';
+import { useActiveParentChild, useParentChildHomework } from '../parentApi';
 import Card from '../../../components/common/Card/Card';
 import StatusBadge from '../../../components/common/StatusBadge/StatusBadge';
+import ChildSelector from '../../../components/common/ChildSelector/ChildSelector';
 import { formatDate } from '../../../utils/dateUtils';
 import { PriorityBadge, AssignedViaBadge } from '../../../components/common/HomeworkStatusBadges';
 import HomeworkAttachmentList from '../../../components/common/HomeworkAttachmentList';
@@ -9,9 +10,7 @@ import { AlertCircle, CheckCircle2, Lock } from 'lucide-react';
 import styles from './ParentHomework.module.css';
 
 const ParentHomework = () => {
-  const { data: children, isLoading: isChildrenLoading } = useParentChildren();
-  const [selectedChildId, setSelectedChildId] = useState(null);
-  const student = children?.find((c) => c.studentId === selectedChildId) || children?.[0];
+  const { children, isChildrenLoading, student, setSelectedChildId } = useActiveParentChild();
   
   const canViewHomework = student?.canViewHomework === 1;
   const { data: homeworks, isLoading: isHwLoading } = useParentChildHomework(canViewHomework ? student?.studentId : null);
@@ -50,17 +49,7 @@ const ParentHomework = () => {
       <header className={styles.header}>
         <h1 className={styles.title}>Ödev Takibi</h1>
         <p className={styles.subtitle}>{student.fullName} adlı öğrencinin tüm ödevleri</p>
-        {children.length > 1 && (
-          <select
-            value={student.studentId}
-            onChange={(e) => setSelectedChildId(e.target.value)}
-            style={{ marginTop: 8, padding: '6px 10px', borderRadius: 8, border: '1px solid #e2e8f0' }}
-          >
-            {children.map((c) => (
-              <option key={c.studentId} value={c.studentId}>{c.fullName}</option>
-            ))}
-          </select>
-        )}
+        <ChildSelector children={children} selectedId={student.studentId} onSelect={setSelectedChildId} />
       </header>
 
       <section className={styles.section}>
@@ -98,26 +87,28 @@ const ParentHomework = () => {
                 
                 <p className={styles.hwDesc}>{hw.snapshotDesc}</p>
 
-                {/* Öğretmen İnceleme Durumu & Notu */}
-                {hw.teacherStatus && (
+                {/* Öğretmen / Koç İnceleme Durumu & Notu */}
+                {hw.feedback && (
                   <div style={{
                     padding: '8px 10px',
                     borderRadius: '6px',
                     fontSize: '0.8rem',
                     marginBottom: '8px',
-                    backgroundColor: hw.teacherStatus === 'REVISE_REQUESTED' ? 'rgba(239, 68, 68, 0.08)' : 'rgba(16, 185, 129, 0.08)',
-                    border: `1px solid ${hw.teacherStatus === 'REVISE_REQUESTED' ? 'rgba(239, 68, 68, 0.25)' : 'rgba(16, 185, 129, 0.25)'}`,
-                    color: hw.teacherStatus === 'REVISE_REQUESTED' ? '#b91c1c' : '#065f46'
+                    backgroundColor: hw.status === 'PENDING' || hw.status === 'OVERDUE' ? 'rgba(239, 68, 68, 0.08)' : 'rgba(16, 185, 129, 0.08)',
+                    border: `1px solid ${hw.status === 'PENDING' || hw.status === 'OVERDUE' ? 'rgba(239, 68, 68, 0.25)' : 'rgba(16, 185, 129, 0.25)'}`,
+                    color: hw.status === 'PENDING' || hw.status === 'OVERDUE' ? '#b91c1c' : '#065f46'
                   }}>
                     <div style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      {hw.teacherStatus === 'REVISE_REQUESTED' ? <AlertCircle size={14} /> : <CheckCircle2 size={14} />}
-                      <span>{hw.teacherStatus === 'REVISE_REQUESTED' ? 'Öğretmen İncelemesi: Düzeltme İstendi' : 'Öğretmen İncelemesi: Onaylandı'}</span>
+                      {hw.status === 'PENDING' || hw.status === 'OVERDUE' ? <AlertCircle size={14} /> : <CheckCircle2 size={14} />}
+                      <span>
+                        {hw.completedBy === 'Teacher'
+                          ? 'Öğretmen İncelemesi'
+                          : 'Öğretmen / Koç Geri Bildirimi'}
+                      </span>
                     </div>
-                    {hw.teacherReviewNote && (
-                      <div style={{ marginTop: '4px', fontSize: '0.78rem', color: 'var(--text-color-main)' }}>
-                        {hw.teacherReviewNote}
-                      </div>
-                    )}
+                    <div style={{ marginTop: '4px', fontSize: '0.78rem', color: 'var(--text-color-main)' }}>
+                      {hw.feedback}
+                    </div>
                   </div>
                 )}
 
@@ -165,6 +156,25 @@ const ParentHomework = () => {
                   </div>
                   <StatusBadge status="DONE" label="Tamamlandı" />
                 </div>
+                {hw.feedback && (
+                  <div style={{
+                    padding: '8px 10px',
+                    borderRadius: '6px',
+                    fontSize: '0.8rem',
+                    marginBottom: '8px',
+                    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+                    border: '1px solid rgba(16, 185, 129, 0.25)',
+                    color: '#065f46'
+                  }}>
+                    <div style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <CheckCircle2 size={14} />
+                      <span>{hw.completedBy === 'Teacher' ? 'Öğretmen İncelemesi: Onaylandı' : 'Öğretmen / Koç Geri Bildirimi'}</span>
+                    </div>
+                    <div style={{ marginTop: '4px', fontSize: '0.78rem', color: 'var(--text-color-main)' }}>
+                      {hw.feedback}
+                    </div>
+                  </div>
+                )}
                 <div className={styles.dueDate}>
                   Teslim: {formatDate(hw.completedAt, 'dd MMM yyyy')}
                 </div>

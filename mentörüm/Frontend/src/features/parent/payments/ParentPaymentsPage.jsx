@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
 import StatusBadge from '../../../components/common/StatusBadge/StatusBadge';
+import ChildSelector from '../../../components/common/ChildSelector/ChildSelector';
 import { formatCurrencyTRY } from '../../../constants/domainConstants';
-import { useParentChildren, useParentChildPayments, useCreatePaymentClaim } from '../parentApi';
+import { useActiveParentChild, useParentChildPayments, useCreatePaymentClaim } from '../parentApi';
 
 export default function ParentPaymentsPage() {
-  const { data: children = [], isLoading: isChildrenLoading } = useParentChildren();
-  const activeStudentId = children[0]?.studentId;
-  const studentName = children[0]?.fullName || 'Öğrenci';
+  const { children, isChildrenLoading, student, setSelectedChildId } = useActiveParentChild();
+  const activeStudentId = student?.studentId;
+  const studentName = student?.fullName || 'Öğrenci';
 
   const { data: payments = [], isLoading: isPaymentsLoading } = useParentChildPayments(activeStudentId);
   const claimMutation = useCreatePaymentClaim();
@@ -57,6 +58,7 @@ export default function ParentPaymentsPage() {
         <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
           {studentName} için belirlenen ödeme planı ve tahsilat dökümü (Canlı güncellenir).
         </p>
+        <ChildSelector children={children} selectedId={activeStudentId} onSelect={setSelectedChildId} />
       </div>
 
       {claimSuccess && (

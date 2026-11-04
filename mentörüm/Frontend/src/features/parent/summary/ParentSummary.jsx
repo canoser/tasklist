@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useParentChildren, useParentChildHomework, useParentStudyStats, useParentTeacherNotes } from '../parentApi';
+import { useActiveParentChild, useParentChildHomework, useParentStudyStats, useParentTeacherNotes } from '../parentApi';
 import Card from '../../../components/common/Card/Card';
 import ChildSelector from '../../../components/common/ChildSelector/ChildSelector';
 import { formatDate } from '../../../utils/dateUtils';
@@ -9,10 +9,7 @@ import styles from './ParentSummary.module.css';
 
 const ParentSummary = () => {
   const navigate = useNavigate();
-  const { data: children, isLoading: isChildrenLoading } = useParentChildren();
-  const [selectedChildId, setSelectedChildId] = useState(null);
-
-  const student = children?.find((c) => c.studentId === selectedChildId) || children?.[0];
+  const { children, isChildrenLoading, student, setSelectedChildId } = useActiveParentChild();
   
   const canViewHomework = student?.canViewHomework === 1;
   const canViewExams = student?.canViewExams === 1;

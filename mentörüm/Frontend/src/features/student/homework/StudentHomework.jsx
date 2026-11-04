@@ -24,6 +24,8 @@ const HomeworkCard = ({ hw, onComplete, onRequestExtension }) => {
   const [showNoteDetails, setShowNoteDetails] = useState(Boolean(hw.studentNote));
   const [showExtension, setShowExtension] = useState(false);
   const [reason, setReason] = useState('');
+  const [requestedDueDate, setRequestedDueDate] = useState('');
+  const [extensionSent, setExtensionSent] = useState(false);
   const [attachments, setAttachments] = useState([]);
   const fileInputRef = useRef(null);
 
@@ -73,23 +75,27 @@ const HomeworkCard = ({ hw, onComplete, onRequestExtension }) => {
       <p className={styles.hwDesc}>{hw.snapshotDesc}</p>
 
       {/* Öğretmen İnceleme Durumu & Notu */}
-      {hw.teacherStatus && (
+      {(hw.feedback || hw.teacherStatus || hw.completedBy === 'Teacher') && (
         <div style={{
           padding: '8px 12px',
           borderRadius: '8px',
           fontSize: '0.8rem',
           marginBottom: '10px',
-          backgroundColor: hw.teacherStatus === 'REVISE_REQUESTED' ? 'rgba(239, 68, 68, 0.08)' : 'rgba(16, 185, 129, 0.08)',
-          border: `1px solid ${hw.teacherStatus === 'REVISE_REQUESTED' ? 'rgba(239, 68, 68, 0.25)' : 'rgba(16, 185, 129, 0.25)'}`,
-          color: hw.teacherStatus === 'REVISE_REQUESTED' ? '#b91c1c' : '#065f46'
+          backgroundColor: hw.status !== 'DONE' && hw.feedback ? 'rgba(239, 68, 68, 0.08)' : 'rgba(16, 185, 129, 0.08)',
+          border: `1px solid ${hw.status !== 'DONE' && hw.feedback ? 'rgba(239, 68, 68, 0.25)' : 'rgba(16, 185, 129, 0.25)'}`,
+          color: hw.status !== 'DONE' && hw.feedback ? '#b91c1c' : '#065f46'
         }}>
           <div style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
-            {hw.teacherStatus === 'REVISE_REQUESTED' ? <AlertCircle size={14} /> : <CheckCircle2 size={14} />}
-            <span>{hw.teacherStatus === 'REVISE_REQUESTED' ? 'Öğretmen İncelemesi: Düzeltme İstendi' : 'Öğretmen İncelemesi: Onaylandı'}</span>
+            {hw.status !== 'DONE' && hw.feedback ? <AlertCircle size={14} /> : <CheckCircle2 size={14} />}
+            <span>
+              {hw.status !== 'DONE' && hw.feedback
+                ? 'Öğretmen İncelemesi: Düzeltme / Not'
+                : 'Öğretmen İncelemesi: Onaylandı'}
+            </span>
           </div>
-          {hw.teacherReviewNote && (
+          {(hw.feedback || hw.teacherReviewNote) && (
             <div style={{ marginTop: '4px', fontSize: '0.78rem', color: 'var(--text-color-main)' }}>
-              {hw.teacherReviewNote}
+              {hw.feedback || hw.teacherReviewNote}
             </div>
           )}
         </div>
@@ -232,16 +238,47 @@ const HomeworkCard = ({ hw, onComplete, onRequestExtension }) => {
             placeholder="Ek süre mazeretin..."
             style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-app)', color: 'var(--text-primary)', resize: 'vertical' }}
           />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <label style={{ fontSize: '0.78rem', color: 'var(--text-color-muted)' }}>Talep Edilen Yeni Tarih:</label>
+            <input
+              type="date"
+              value={requestedDueDate}
+              onChange={(e) => setRequestedDueDate(e.target.value)}
+              style={{ padding: '5px 8px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-app)', color: 'var(--text-primary)', fontSize: '0.8rem' }}
+            />
+          </div>
           <div style={{ display: 'flex', gap: '8px' }}>
             <Button size="sm" variant="ghost" onClick={() => setShowExtension(false)}>Vazgeç</Button>
-            <Button size="sm" onClick={() => { onRequestExtension({ homeworkId: hw.id, reason }); setShowExtension(false); setReason(''); }}>Talebi Gönder</Button>
+            <Button
+              size="sm"
+              onClick={async () => {
+                try {
+                  await onRequestExtension({
+                    homeworkId: hw.id,
+                    reason,
+                    requestedDueDate: requestedDueDate || undefined,
+                  });
+                  setShowExtension(false);
+                  setReason('');
+                  setRequestedDueDate('');
+                  setExtensionSent(true);
+                } catch (err) {
+                  alert(err?.message || 'Ek süre talebi gönderilemedi.');
+                }
+              }}
+            >
+              Talebi Gönder
+            </Button>
           </div>
         </div>
       ) : (
-        <div style={{ marginTop: '10px' }}>
+        <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Button type="button" variant="ghost" size="xs" onClick={() => setShowExtension(true)} style={{ color: 'var(--color-primary)', padding: '2px 6px' }}>
             <Clock size={14} /> Ek Süre İste
           </Button>
+          {extensionSent && (
+            <span style={{ fontSize: '0.78rem', color: '#10b981', fontWeight: 500 }}>✓ Talebin koçuna iletildi</span>
+          )}
         </div>
       )}
     </Card>
@@ -281,7 +318,17 @@ const StudentHomework = () => {
         ) : (
           <div className={styles.list}>
             {pendingHomeworks.map(hw => (
-              <HomeworkCard key={hw.id} hw={hw} onComplete={completeHomework} onRequestExtension={(payload) => requestExtension.mutate({ homeworkId: payload.homeworkId, data: { reason: payload.reason } })} />
+              <HomeworkCard
+                key={hw.id}
+                hw={hw}
+                onComplete={completeHomework}
+                onRequestExtension={(payload) =>
+                  requestExtension.mutateAsync({
+                    homeworkId: payload.homeworkId,
+                    data: { reason: payload.reason, requestedDueDate: payload.requestedDueDate },
+                  })
+                }
+              />
             ))}
           </div>
         )}

@@ -173,7 +173,7 @@ export const useSchedule = (programId) => useQuery({
 export const useCreateScheduleSlot = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ programId, data: { dayOfWeek, startTime, endTime, title, courseId, groupId } }) =>
+    mutationFn: ({ programId, data: { dayOfWeek, startTime, endTime, title, courseId, groupId, studentId, recurrence, specificDate } }) =>
       apiClient.post(`/programs/${programId}/schedule`, {
         dayOfWeek,
         startTime,
@@ -181,6 +181,9 @@ export const useCreateScheduleSlot = () => {
         title,
         courseId,
         groupId,
+        studentId,
+        recurrence,
+        specificDate,
       }),
     onSuccess: (_, v) => qc.invalidateQueries({ queryKey: ['coach', 'program', v.programId, 'schedule'] }),
   });

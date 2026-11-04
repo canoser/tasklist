@@ -12,6 +12,7 @@ export const queryKeys = {
     studentAll: () => ['coach', 'student'],
     student: (id) => ['coach', 'student', id],
     studentNotes: (id) => ['coach', 'student', id, 'notes'],
+    studentPersonalNotes: (id) => ['coach', 'student', id, 'student-notes'],
     studentHomework: (id) => ['coach', 'student', id, 'homework'],
     studentCurriculum: (id) => ['coach', 'student', id, 'curriculum'],
     studentEvents: (id) => ['coach', 'student', id, 'events'],

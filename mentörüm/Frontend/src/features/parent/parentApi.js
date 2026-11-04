@@ -1,5 +1,11 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { create } from 'zustand';
 import { apiClient } from '../../api/apiClient';
+
+export const useParentChildStore = create((set) => ({
+  selectedChildId: null,
+  setSelectedChildId: (id) => set({ selectedChildId: id }),
+}));
 
 export const useParentChildren = () => {
   return useQuery({
@@ -9,6 +15,19 @@ export const useParentChildren = () => {
       return response || [];
     },
   });
+};
+
+export const useActiveParentChild = () => {
+  const { data: children = [], isLoading } = useParentChildren();
+  const { selectedChildId, setSelectedChildId } = useParentChildStore();
+  const activeChild = children.find((c) => c.studentId === selectedChildId) || children[0] || null;
+  return {
+    children,
+    isChildrenLoading: isLoading,
+    student: activeChild,
+    selectedChildId: activeChild?.studentId || null,
+    setSelectedChildId,
+  };
 };
 
 export const useParentChildHomework = (studentId) => {
@@ -59,8 +78,13 @@ export const useParentChildPayments = (studentId) => {
 
 export const useCreatePaymentClaim = () => {
   return useMutation({
-    mutationFn: async ({ studentId, data }) => {
-      return await apiClient.post(`/parents/children/${studentId}/payment-claims`, data);
+    mutationFn: async ({ studentId, data: { itemId, amount, receiptUrl, notes } }) => {
+      return await apiClient.post(`/parents/children/${studentId}/payment-claims`, {
+        itemId,
+        amount,
+        receiptUrl,
+        notes,
+      });
     },
   });
 };

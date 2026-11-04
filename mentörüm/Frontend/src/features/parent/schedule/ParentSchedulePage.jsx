@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '../../../api/apiClient';
-import { useParentChildren } from '../parentApi';
+import { useActiveParentChild } from '../parentApi';
 import ChildSelector from '../../../components/common/ChildSelector/ChildSelector';
 import Card from '../../../components/common/Card/Card';
 import { WEEKDAYS_ONE_INDEXED } from '../../../constants/domainConstants';
@@ -10,9 +10,10 @@ import styles from './ParentSchedulePage.module.css';
 const fmt = (t) => (t ? t.slice(0, 5) : '');
 
 const ParentSchedulePage = ({ studentId: propStudentId, embedded = false }) => {
-  const { data: children = [] } = useParentChildren();
-  const [selectedChildId, setSelectedChildId] = useState(null);
-  const student = children.find((c) => c.studentId === (propStudentId || selectedChildId)) || children[0];
+  const { children, student: activeStudent, setSelectedChildId } = useActiveParentChild();
+  const student = propStudentId
+    ? children.find((c) => c.studentId === propStudentId) || activeStudent
+    : activeStudent;
 
   const { data: slots, isLoading } = useQuery({
     queryKey: ['parent', 'schedule', student?.studentId],

@@ -10,27 +10,16 @@ namespace MentorumApi.Data
         public async Task<ParentPermissionsDto?> GetParentPermissionsAsync(Guid studentId, Guid parentId)
         {
             using var conn = _connectionFactory.CreateConnection();
-            var row = await conn.QuerySingleOrDefaultAsync<dynamic>(@"
+            return await conn.QuerySingleOrDefaultAsync<ParentPermissionsDto>(@"
                 SELECT 
-                    COALESCE(can_view_exams, 0) AS can_view_exams,
-                    COALESCE(can_view_homework, 0) AS can_view_homework,
-                    COALESCE(can_view_calendar, 0) AS can_view_calendar,
-                    COALESCE(can_view_study_stats, 0) AS can_view_study_stats,
-                    COALESCE(can_view_payments, 0) AS can_view_payments
+                    (COALESCE(can_view_exams, 0) = 1) AS CanViewExams,
+                    (COALESCE(can_view_homework, 0) = 1) AS CanViewHomework,
+                    (COALESCE(can_view_calendar, 0) = 1) AS CanViewCalendar,
+                    (COALESCE(can_view_study_stats, 0) = 1) AS CanViewStudyStats,
+                    (COALESCE(can_view_payments, 0) = 1) AS CanViewPayments
                 FROM student_parents
                 WHERE student_id = @StudentId AND parent_id = @ParentId",
                 new { StudentId = studentId, ParentId = parentId });
-
-            if (row == null) return null;
-
-            return new ParentPermissionsDto
-            {
-                CanViewExams = ((int)row.can_view_exams) == 1,
-                CanViewHomework = ((int)row.can_view_homework) == 1,
-                CanViewCalendar = ((int)row.can_view_calendar) == 1,
-                CanViewStudyStats = ((int)row.can_view_study_stats) == 1,
-                CanViewPayments = ((int)row.can_view_payments) == 1
-            };
         }
 
         public async Task<bool> UpdateParentPermissionsAsync(Guid studentId, Guid parentId, UpdateParentPermissionsRequest flags)
@@ -59,20 +48,20 @@ namespace MentorumApi.Data
             return rows > 0;
         }
 
-        public async Task<IEnumerable<dynamic>> GetMyChildrenAsync(Guid parentId)
+        public async Task<IEnumerable<ParentChildSummaryDto>> GetMyChildrenAsync(Guid parentId)
         {
             using var conn = _connectionFactory.CreateConnection();
-            return await conn.QueryAsync<dynamic>(@"
+            return await conn.QueryAsync<ParentChildSummaryDto>(@"
                 SELECT 
-                    s.id as ""studentId"", 
-                    u.full_name as ""fullName"", 
-                    s.grade as grade, 
-                    s.track as area,
-                    COALESCE(sp.can_view_exams, 0) as ""canViewExams"",
-                    COALESCE(sp.can_view_homework, 0) as ""canViewHomework"",
-                    COALESCE(sp.can_view_calendar, 0) as ""canViewCalendar"",
-                    COALESCE(sp.can_view_study_stats, 0) as ""canViewStudyStats"",
-                    COALESCE(sp.can_view_payments, 0) as ""canViewPayments""
+                    s.id AS StudentId, 
+                    u.full_name AS FullName, 
+                    s.grade AS Grade, 
+                    s.track AS Area,
+                    COALESCE(sp.can_view_exams, 0) AS CanViewExams,
+                    COALESCE(sp.can_view_homework, 0) AS CanViewHomework,
+                    COALESCE(sp.can_view_calendar, 0) AS CanViewCalendar,
+                    COALESCE(sp.can_view_study_stats, 0) AS CanViewStudyStats,
+                    COALESCE(sp.can_view_payments, 0) AS CanViewPayments
                 FROM student_parents sp
                 JOIN students s ON sp.student_id = s.id
                 JOIN users u ON s.id = u.id
@@ -80,22 +69,22 @@ namespace MentorumApi.Data
                 new { ParentId = parentId });
         }
 
-        public async Task<dynamic?> GetPermissionsForParentAsync(Guid parentId, Guid studentId)
+        public async Task<ParentChildFlagsDto?> GetPermissionsForParentAsync(Guid parentId, Guid studentId)
         {
             using var conn = _connectionFactory.CreateConnection();
-            return await conn.QuerySingleOrDefaultAsync<dynamic>(@"
+            return await conn.QuerySingleOrDefaultAsync<ParentChildFlagsDto>(@"
                 SELECT 
-                    COALESCE(can_view_exams, 0) as ""canViewExams"",
-                    COALESCE(can_view_homework, 0) as ""canViewHomework"",
-                    COALESCE(can_view_calendar, 0) as ""canViewCalendar"",
-                    COALESCE(can_view_study_stats, 0) as ""canViewStudyStats"",
-                    COALESCE(can_view_payments, 0) as ""canViewPayments""
+                    COALESCE(can_view_exams, 0) AS CanViewExams,
+                    COALESCE(can_view_homework, 0) AS CanViewHomework,
+                    COALESCE(can_view_calendar, 0) AS CanViewCalendar,
+                    COALESCE(can_view_study_stats, 0) AS CanViewStudyStats,
+                    COALESCE(can_view_payments, 0) AS CanViewPayments
                 FROM student_parents
                 WHERE parent_id = @ParentId AND student_id = @StudentId AND is_accepted = 1",
                 new { ParentId = parentId, StudentId = studentId });
         }
 
-        public async Task<(dynamic? Student, IEnumerable<dynamic> OtherParents)?> GetChildDetailWithMaskedParentsAsync(Guid parentId, Guid studentId)
+        public async Task<(ParentChildDetailDto? Student, IEnumerable<MaskedOtherParentDto> OtherParents)?> GetChildDetailWithMaskedParentsAsync(Guid parentId, Guid studentId)
         {
             using var conn = _connectionFactory.CreateConnection();
             var relation = await conn.ExecuteScalarAsync<int?>(
@@ -104,18 +93,18 @@ namespace MentorumApi.Data
 
             if (relation == null) return null;
 
-            var student = await conn.QuerySingleOrDefaultAsync<dynamic>(@"
-                SELECT s.id as id, u.full_name as ""fullName"", s.grade as grade, s.track as area, s.target_university as ""targetUniversity""
+            var student = await conn.QuerySingleOrDefaultAsync<ParentChildDetailDto>(@"
+                SELECT s.id AS Id, u.full_name AS FullName, s.grade AS Grade, s.track AS Area, s.target_university AS TargetUniversity
                 FROM students s
                 JOIN users u ON s.id = u.id
                 WHERE s.id = @StudentId",
                 new { StudentId = studentId });
 
-            var otherParents = await conn.QueryAsync<dynamic>(@"
+            var otherParents = await conn.QueryAsync<MaskedOtherParentDto>(@"
                 SELECT 
-                    u.full_name as ""fullName"",
-                    'GİZLİ' as Email,
-                    'GİZLİ' as Phone
+                    u.full_name AS FullName,
+                    'GİZLİ' AS Email,
+                    'GİZLİ' AS Phone
                 FROM student_parents sp
                 JOIN users u ON sp.parent_id = u.id
                 WHERE sp.student_id = @StudentId AND sp.parent_id != @ParentId AND sp.is_accepted = 1",
@@ -155,16 +144,60 @@ namespace MentorumApi.Data
 
             if (canView == null) return null;
 
-            var stats = await conn.QuerySingleOrDefaultAsync<dynamic>(@"
+            var stats = await conn.QuerySingleOrDefaultAsync<WeeklyStudyStatsRow>(@"
                 SELECT 
-                    COALESCE(SUM(minutes), 0)::int AS total_minutes,
-                    COALESCE(SUM(question_count), 0)::int AS total_questions
+                    COALESCE(SUM(minutes), 0)::int AS TotalMinutes,
+                    COALESCE(SUM(question_count), 0)::int AS TotalQuestions
                 FROM study_sessions
                 WHERE student_id = @StudentId
                   AND (started_at >= date_trunc('week', CURRENT_DATE) OR (started_at IS NULL AND created_at >= date_trunc('week', CURRENT_DATE)))",
                 new { StudentId = studentId });
 
-            return ((int)(stats?.total_minutes ?? 0), (int)(stats?.total_questions ?? 0));
+            return (stats?.TotalMinutes ?? 0, stats?.TotalQuestions ?? 0);
+        }
+
+        public sealed class ParentChildFlagsDto
+        {
+            public int CanViewExams { get; set; }
+            public int CanViewHomework { get; set; }
+            public int CanViewCalendar { get; set; }
+            public int CanViewStudyStats { get; set; }
+            public int CanViewPayments { get; set; }
+        }
+
+        public sealed class ParentChildSummaryDto
+        {
+            public Guid StudentId { get; set; }
+            public string FullName { get; set; } = string.Empty;
+            public int? Grade { get; set; }
+            public string? Area { get; set; }
+            public int CanViewExams { get; set; }
+            public int CanViewHomework { get; set; }
+            public int CanViewCalendar { get; set; }
+            public int CanViewStudyStats { get; set; }
+            public int CanViewPayments { get; set; }
+        }
+
+        public sealed class ParentChildDetailDto
+        {
+            public Guid Id { get; set; }
+            public string FullName { get; set; } = string.Empty;
+            public int? Grade { get; set; }
+            public string? Area { get; set; }
+            public string? TargetUniversity { get; set; }
+        }
+
+        public sealed class MaskedOtherParentDto
+        {
+            public string FullName { get; set; } = string.Empty;
+            public string Email { get; set; } = "GİZLİ";
+            public string Phone { get; set; } = "GİZLİ";
+        }
+
+        private sealed class WeeklyStudyStatsRow
+        {
+            public int TotalMinutes { get; set; }
+            public int TotalQuestions { get; set; }
         }
     }
 }

@@ -40,19 +40,31 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response Interceptor: Hata yönetimi ve 401 Refresh
-let isRefreshing = false;
-let failedQueue = [];
+// Response Interceptor: Hata yönetimi ve 401 Refresh (Single-Flight)
+let refreshPromise = null;
 
-const processQueue = (error, token = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
-  });
-  failedQueue = [];
+export const refreshAccessToken = () => {
+  if (!refreshPromise) {
+    refreshPromise = axios
+      .post(`${API_URL}/auth/refresh`, {}, { withCredentials: true })
+      .then((refreshResponse) => {
+        const data = refreshResponse.data?.data || refreshResponse.data;
+        const newAccessToken = data?.accessToken;
+        if (data?.user && newAccessToken) {
+          useAuthStore.getState().setAuth(data.user, newAccessToken);
+        } else if (newAccessToken) {
+          useAuthStore.getState().setAccessToken(newAccessToken);
+        }
+        if (newAccessToken) {
+          apiClient.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
+        }
+        return data;
+      })
+      .finally(() => {
+        refreshPromise = null;
+      });
+  }
+  return refreshPromise;
 };
 
 apiClient.interceptors.response.use(
@@ -68,53 +80,25 @@ apiClient.interceptors.response.use(
       error.userMessage = 'İstek zaman aşımına uğradı. Lütfen bağlantınızı kontrol edin.';
     }
 
-    // 401 Unauthorized ve istek henüz tekrar denenmemişse
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      if (isRefreshing) {
-        // Eğer zaten refresh yapılıyorsa, kuyruğa ekle
-        return new Promise(function (resolve, reject) {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((token) => {
-            originalRequest.headers['Authorization'] = 'Bearer ' + token;
-            return apiClient(originalRequest);
-          })
-          .catch((err) => {
-            return Promise.reject(err);
-          });
-      }
+    const requestUrl = originalRequest?.url || '';
+    const isAuthEndpoint =
+      requestUrl.includes('/auth/refresh') ||
+      requestUrl.includes('/auth/login') ||
+      requestUrl.includes('/auth/register');
 
+    // 401 Unauthorized ve istek henüz tekrar denenmemişse (ve auth endpoint değilse)
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry && !isAuthEndpoint) {
       originalRequest._retry = true;
-      isRefreshing = true;
 
       try {
-        // Refresh token endpointine istek atılır (Cookie otomatik gider)
-        const refreshResponse = await axios.post(
-          `${API_URL}/auth/refresh`,
-          {},
-          { withCredentials: true }
-        );
-
-        const newAccessToken = refreshResponse.data?.data?.accessToken || refreshResponse.data?.accessToken;
-        
-        // Yeni token'ı store'a kaydet
-        useAuthStore.getState().setAccessToken(newAccessToken);
-        
-        // Axios instance default header'ını güncelle
-        apiClient.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
-        
-        // Asıl isteğin header'ını güncelle
+        const data = await refreshAccessToken();
+        const newAccessToken = data?.accessToken;
         originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
-        
-        processQueue(null, newAccessToken);
         return apiClient(originalRequest);
       } catch (err) {
-        processQueue(err, null);
         // Refresh başarısız olduysa çıkış yap
         useAuthStore.getState().clearAuth();
         return Promise.reject(err);
-      } finally {
-        isRefreshing = false;
       }
     }
 

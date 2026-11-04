@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Card from '../../../../components/common/Card/Card';
 import Button from '../../../../components/common/Button/Button';
+import LocalImageViewer from '../../../../components/common/LocalImageViewer/LocalImageViewer';
 import { Smile, Frown, Meh, AlertCircle, MessageSquare, Send } from 'lucide-react';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -98,6 +99,12 @@ const StudentPulsePanel = ({ checkins = [], questions = [], onReplyQuestion }) =
                   <p style={{ margin: '6px 0', fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-color-main)' }}>
                     {q.topicText}
                   </p>
+
+                  {q.uploadId && (
+                    <div style={{ marginTop: '6px', maxWidth: '280px', borderRadius: '6px', overflow: 'hidden' }}>
+                      <LocalImageViewer uploadId={q.uploadId} originalName={q.topicText || 'Soru Görseli'} />
+                    </div>
+                  )}
 
                   {/* Koç Cevabı Varsa */}
                   {q.coachReply && (

@@ -21,7 +21,7 @@ const ParentAccessPanel = ({ student, onInviteSuccess }) => {
     sendInviteMutation.mutate({
       email: inviteEmail.trim(),
       role: 'Parent',
-      studentId: student?.id,
+      relatedId: student?.id,
       sendEmail: sendEmailDirectly
     }, {
       onSuccess: (data) => {
@@ -31,10 +31,11 @@ const ParentAccessPanel = ({ student, onInviteSuccess }) => {
     });
   };
 
-  const handleCopyLink = (token) => {
-    const inviteUrl = `${window.location.origin}/register?token=${token}`;
+  const handleCopyLink = (code) => {
+    if (!code) return;
+    const inviteUrl = `${window.location.origin}/invite/${code}`;
     navigator.clipboard.writeText(inviteUrl);
-    setCopiedToken(token);
+    setCopiedToken(code);
     setTimeout(() => setCopiedToken(null), 2500);
   };
 
@@ -128,9 +129,9 @@ const ParentAccessPanel = ({ student, onInviteSuccess }) => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleCopyLink(invite.token)}
+                  onClick={() => handleCopyLink(invite.code)}
                 >
-                  {copiedToken === invite.token ? (
+                  {copiedToken === invite.code ? (
                     <>
                       <Check size={14} style={{ marginRight: '4px', color: '#10b981' }} />
                       Kopyalandı

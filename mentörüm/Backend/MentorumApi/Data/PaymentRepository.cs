@@ -197,8 +197,15 @@ namespace MentorumApi.Data
             using var tx = conn.BeginTransaction();
             try
             {
-                var item = await conn.QuerySingleOrDefaultAsync<dynamic>(@"
-                    SELECT pi.id, pi.plan_id, pi.due_date, pi.base_amount, pi.paid_amount, pi.status, pi.currency, pp.program_id
+                var item = await conn.QuerySingleOrDefaultAsync<PaymentCollectItemRow>(@"
+                    SELECT pi.id AS Id,
+                           pi.plan_id AS PlanId,
+                           pi.due_date AS DueDate,
+                           pi.base_amount AS BaseAmount,
+                           pi.paid_amount AS PaidAmount,
+                           pi.status AS Status,
+                           pi.currency AS Currency,
+                           pp.program_id AS ProgramId
                     FROM payment_items pi
                     JOIN payment_plans pp ON pp.id = pi.plan_id
                     JOIN program_coaches pc ON pc.program_id = pp.program_id
@@ -208,8 +215,8 @@ namespace MentorumApi.Data
 
                 if (item == null) throw new UnauthorizedAccessException("Ödeme kalemi bulunamadı veya yetkiniz yok.");
 
-                decimal currentPaid = (decimal)item.paid_amount;
-                decimal baseAmount = (decimal)item.base_amount;
+                decimal currentPaid = item.PaidAmount;
+                decimal baseAmount = item.BaseAmount;
                 decimal newPaid = currentPaid + req.Amount;
 
                 // 1. payments kaydı
@@ -229,29 +236,36 @@ namespace MentorumApi.Data
                 }
                 else
                 {
-                    // Kısmi ödeme (PARTIAL)
+                    // Kısmi ödeme (PARTIAL): sıradaki PENDING kalem varsa kalan bakiyeyi devret ve mevcut kalemin base_amount'unu düşür (çift sayımı önle)
                     decimal remaining = baseAmount - newPaid;
 
-                    await conn.ExecuteAsync(@"
-                        UPDATE payment_items 
-                        SET paid_amount = @NewPaid, status = 'PARTIAL' 
-                        WHERE id = @ItemId",
-                        new { NewPaid = newPaid, ItemId = itemId }, tx);
-
-                    // Sıradaki PENDING kaleme bakiye devri
                     var nextPending = await conn.QuerySingleOrDefaultAsync<Guid?>(@"
                         SELECT id FROM payment_items 
                         WHERE plan_id = @PlanId AND status = 'PENDING' AND id <> @ItemId
                         ORDER BY due_date ASC LIMIT 1",
-                        new { PlanId = (Guid)item.plan_id }, tx);
+                        new { PlanId = item.PlanId, ItemId = itemId }, tx);
 
                     if (nextPending.HasValue)
                     {
                         await conn.ExecuteAsync(@"
                             UPDATE payment_items 
+                            SET base_amount = @NewPaid, paid_amount = @NewPaid, status = 'PAID', paid_at = NOW()
+                            WHERE id = @ItemId",
+                            new { NewPaid = newPaid, ItemId = itemId }, tx);
+
+                        await conn.ExecuteAsync(@"
+                            UPDATE payment_items 
                             SET base_amount = base_amount + @Remaining, rolled_from_item_id = @ItemId
                             WHERE id = @NextId",
                             new { Remaining = remaining, ItemId = itemId, NextId = nextPending.Value }, tx);
+                    }
+                    else
+                    {
+                        await conn.ExecuteAsync(@"
+                            UPDATE payment_items 
+                            SET paid_amount = @NewPaid, status = 'PARTIAL' 
+                            WHERE id = @ItemId",
+                            new { NewPaid = newPaid, ItemId = itemId }, tx);
                     }
                 }
 
@@ -309,12 +323,19 @@ namespace MentorumApi.Data
 
                 if (canView == null) throw new UnauthorizedAccessException("Bu öğrenci için ödeme bildirimi yapma yetkiniz yok.");
 
-                var plan = await conn.QuerySingleOrDefaultAsync<dynamic>(@"
-                    SELECT pp.program_id, pi.base_amount, pi.paid_amount 
+                var plan = await conn.QuerySingleOrDefaultAsync<PaymentClaimPlanRow>(@"
+                    SELECT pp.program_id AS ProgramId,
+                           pi.base_amount AS BaseAmount,
+                           pi.paid_amount AS PaidAmount,
+                           COALESCE(pi.currency, pp.currency, 'TRY') AS Currency,
+                           su.full_name AS StudentName,
+                           pu.full_name AS ParentName
                     FROM payment_items pi 
                     JOIN payment_plans pp ON pp.id = pi.plan_id 
+                    JOIN users su ON su.id = pp.student_id
+                    LEFT JOIN users pu ON pu.id = @ParentId
                     WHERE pi.id = @ItemId AND pp.student_id = @StudentId",
-                    new { req.ItemId, StudentId = studentId }, tx);
+                    new { req.ItemId, StudentId = studentId, ParentId = parentId }, tx);
 
                 if (plan == null) throw new InvalidOperationException("Ödeme kalemi bulunamadı.");
 
@@ -322,11 +343,15 @@ namespace MentorumApi.Data
                 {
                     ItemId = req.ItemId,
                     StudentId = studentId,
+                    StudentName = plan.StudentName,
                     ParentId = parentId,
-                    Amount = req.Amount ?? ((decimal)plan.base_amount - (decimal)plan.paid_amount),
+                    ParentName = plan.ParentName,
+                    Amount = req.Amount ?? (plan.BaseAmount - plan.PaidAmount),
+                    Currency = plan.Currency,
+                    Method = "Banka Havalesi",
                     Notes = req.Notes,
                     ReceiptUrl = req.ReceiptUrl
-                });
+                }, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 
                 var approvalId = Guid.NewGuid();
                 var sql = @"
@@ -339,7 +364,7 @@ namespace MentorumApi.Data
                 var id = await conn.ExecuteScalarAsync<Guid>(sql, new
                 {
                     Id = approvalId,
-                    ProgramId = (Guid)plan.program_id,
+                    ProgramId = plan.ProgramId,
                     EntityId = req.ItemId,
                     Payload = claimPayload,
                     CreatedBy = parentId
@@ -353,6 +378,28 @@ namespace MentorumApi.Data
                 tx.Rollback();
                 throw;
             }
+        }
+
+        private sealed class PaymentCollectItemRow
+        {
+            public Guid Id { get; set; }
+            public Guid PlanId { get; set; }
+            public DateTime DueDate { get; set; }
+            public decimal BaseAmount { get; set; }
+            public decimal PaidAmount { get; set; }
+            public string Status { get; set; } = "PENDING";
+            public string Currency { get; set; } = "TRY";
+            public Guid ProgramId { get; set; }
+        }
+
+        private sealed class PaymentClaimPlanRow
+        {
+            public Guid ProgramId { get; set; }
+            public decimal BaseAmount { get; set; }
+            public decimal PaidAmount { get; set; }
+            public string Currency { get; set; } = "TRY";
+            public string StudentName { get; set; } = string.Empty;
+            public string? ParentName { get; set; }
         }
     }
 }

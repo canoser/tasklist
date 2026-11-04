@@ -42,10 +42,14 @@ const GrowSessionsPanel = ({ sessions = [], onAddSession }) => {
     if (!formData.title.trim()) return;
 
     if (onAddSession) {
+      const normalizedDate =
+        formData.sessionDate && formData.sessionDate.length === 10
+          ? `${formData.sessionDate}T23:59:00`
+          : formData.sessionDate;
       onAddSession({
         id: `grow_${Date.now()}`,
         title: formData.title.trim(),
-        sessionDate: formData.sessionDate,
+        sessionDate: normalizedDate,
         growData: {
           goal: formData.goal,
           reality: formData.reality,

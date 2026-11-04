@@ -28,6 +28,7 @@ const PERMS = [
   ['teacherCanAddNotes', 'Not Ekle'],
   ['teacherCanViewSchedule', 'Programı Gör'],
   ['teacherCanManageSchedule', 'Program Yönet'],
+  ['teacherCanShareFiles', 'Dosya Paylaşımı'],
 ];
 
 const CoachCourseDetailPage = () => {
@@ -40,6 +41,7 @@ const CoachCourseDetailPage = () => {
   const [groupId, setGroupId] = useState('');
   const [resTitle, setResTitle] = useState('');
   const [resType, setResType] = useState('BOOK');
+  const [resRef, setResRef] = useState('');
   const [teacherId, setTeacherId] = useState('');
 
   const { data: courses } = useCourses(programId);
@@ -64,7 +66,7 @@ const CoachCourseDetailPage = () => {
   const [permValues, setPermValues] = useState({});
 
   const handleAddResource = async () => {
-    if (!resTitle.trim() && !selectedFile) return;
+    if (!resTitle.trim() && !selectedFile && !resRef.trim()) return;
     let uploadId = null;
     try {
       if (selectedFile) {
@@ -80,11 +82,13 @@ const CoachCourseDetailPage = () => {
         courseId,
         data: {
           title: resTitle.trim() || selectedFile?.name || 'Kaynak Belgesi',
-          type: resType || (selectedFile ? 'DOCUMENT' : 'BOOK'),
+          type: resType || (selectedFile ? 'DOCUMENT' : resRef.trim() ? 'VIDEO' : 'BOOK'),
+          resourceRef: resRef.trim() || undefined,
           uploadId: uploadId || undefined,
         },
       });
       setResTitle('');
+      setResRef('');
       setSelectedFile(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
     } catch (err) {
@@ -188,7 +192,8 @@ const CoachCourseDetailPage = () => {
           <Card className={styles.card} padding="md">
             <div className={styles.formRow} style={{ alignItems: 'flex-end', flexWrap: 'wrap', gap: '8px' }}>
               <Input label="Kaynak Başlığı" value={resTitle} onChange={(e) => setResTitle(e.target.value)} placeholder="Örn: Kitap Bölümü / Ders Notu" />
-              <Input label="Tür" value={resType} onChange={(e) => setResType(e.target.value)} placeholder="BOOK / PDF" />
+              <Input label="Tür" value={resType} onChange={(e) => setResType(e.target.value)} placeholder="BOOK / PDF / VIDEO" />
+              <Input label="Video / Kaynak Linki (Opsiyonel)" value={resRef} onChange={(e) => setResRef(e.target.value)} placeholder="https://..." />
               <input
                 ref={fileInputRef}
                 type="file"

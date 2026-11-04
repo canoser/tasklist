@@ -113,7 +113,7 @@ namespace MentorumApi.Tests
         public async Task GetTeacherCourseHomework_OnlyReturnsOwnCourseHomework()
         {
             var list = await _repo.GetTeacherCourseHomeworkAsync(CourseA);
-            var titles = list.Select(h => (string)h.title).ToList();
+            var titles = list.Select(h => h.Title).ToList();
             Assert.Contains("Matematik Ödevi", titles);
             Assert.DoesNotContain("Coğrafya Ödevi", titles);
         }
@@ -122,7 +122,7 @@ namespace MentorumApi.Tests
         public async Task GetTeacherCourseExams_OnlyReturnsOwnCourseExams()
         {
             var list = await _repo.GetTeacherCourseExamsAsync(CourseA);
-            var names = list.Select(e => (string)e.name).ToList();
+            var names = list.Select(e => e.Name).ToList();
             Assert.Contains("Matematik Sınavı", names);
             Assert.DoesNotContain("Coğrafya Sınavı", names);
         }

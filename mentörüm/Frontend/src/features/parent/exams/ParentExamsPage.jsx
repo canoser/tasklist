@@ -1,14 +1,12 @@
-import React, { useState } from 'react';
-import { useParentChildren, useParentChildExams } from '../parentApi';
+import React from 'react';
+import { useActiveParentChild, useParentChildExams } from '../parentApi';
 import ChildSelector from '../../../components/common/ChildSelector/ChildSelector';
 import Card from '../../../components/common/Card/Card';
 import { formatDate } from '../../../utils/dateUtils';
 import styles from './ParentExamsPage.module.css';
 
 const ParentExamsPage = () => {
-  const { data: children, isLoading: isChildrenLoading } = useParentChildren();
-  const [selectedChildId, setSelectedChildId] = useState(null);
-  const student = children?.find((c) => c.studentId === selectedChildId) || children?.[0];
+  const { children, isChildrenLoading, student, setSelectedChildId } = useActiveParentChild();
   const { data: exams, isLoading } = useParentChildExams(student?.studentId);
 
   if (isChildrenLoading) return <div className={styles.pageContainer}>Yükleniyor...</div>;

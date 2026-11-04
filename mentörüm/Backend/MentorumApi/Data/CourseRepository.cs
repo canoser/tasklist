@@ -23,6 +23,7 @@ namespace MentorumApi.Data
                    (COALESCE(c.teacher_can_add_notes, 0) = 1) AS TeacherCanAddNotes,
                    (COALESCE(c.teacher_can_view_schedule, 0) = 1) AS TeacherCanViewSchedule,
                    (COALESCE(c.teacher_can_manage_schedule, 0) = 1) AS TeacherCanManageSchedule,
+                   (COALESCE(c.teacher_can_share_files, 1) = 1) AS TeacherCanShareFiles,
                    (SELECT COUNT(1) FROM vw_active_course_students v WHERE v.course_id = c.id) AS StudentCount";
 
         private async Task<bool> IsMemberAsync(Guid programId, Guid coachId)
@@ -137,6 +138,7 @@ namespace MentorumApi.Data
                     teacher_can_add_notes = COALESCE(@AddNotes, teacher_can_add_notes),
                     teacher_can_view_schedule = COALESCE(@ViewSchedule, teacher_can_view_schedule),
                     teacher_can_manage_schedule = COALESCE(@ManageSchedule, teacher_can_manage_schedule),
+                    teacher_can_share_files = COALESCE(@ShareFiles, teacher_can_share_files),
                     updated_at = NOW()
                 WHERE id = @CourseId AND program_id = @ProgramId AND is_active = 1",
                 new {
@@ -152,7 +154,8 @@ namespace MentorumApi.Data
                     ViewNotes = req.TeacherCanViewNotes.HasValue ? (req.TeacherCanViewNotes.Value ? 1 : 0) : (int?)null,
                     AddNotes = req.TeacherCanAddNotes.HasValue ? (req.TeacherCanAddNotes.Value ? 1 : 0) : (int?)null,
                     ViewSchedule = req.TeacherCanViewSchedule.HasValue ? (req.TeacherCanViewSchedule.Value ? 1 : 0) : (int?)null,
-                    ManageSchedule = req.TeacherCanManageSchedule.HasValue ? (req.TeacherCanManageSchedule.Value ? 1 : 0) : (int?)null
+                    ManageSchedule = req.TeacherCanManageSchedule.HasValue ? (req.TeacherCanManageSchedule.Value ? 1 : 0) : (int?)null,
+                    ShareFiles = req.TeacherCanShareFiles.HasValue ? (req.TeacherCanShareFiles.Value ? 1 : 0) : (int?)null
                 });
             return rows > 0;
         }

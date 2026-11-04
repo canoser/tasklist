@@ -13,10 +13,11 @@ const CATEGORY_COLORS = {
   other: '#94a3b8'  // gri
 };
 
-export default function WeeklyTimeBudgetCard({ studentId }) {
-  const { data: budget, isLoading } = useCoachStudentTimeBudget(studentId);
+export default function WeeklyTimeBudgetCard({ studentId, budgetData }) {
+  const { data: coachBudget, isLoading } = useCoachStudentTimeBudget(studentId);
+  const budget = budgetData || coachBudget;
 
-  if (isLoading) {
+  if (!budgetData && isLoading) {
     return <Card padding="lg"><div>Zaman bütçesi yükleniyor...</div></Card>;
   }
 

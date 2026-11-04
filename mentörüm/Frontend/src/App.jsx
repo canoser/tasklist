@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './features/auth/authStore';
-import { apiClient } from './api/apiClient';
+import { refreshAccessToken } from './api/apiClient';
 
 import LoginPage from './features/auth/LoginPage';
 import ResetPasswordPage from './features/auth/ResetPasswordPage';
@@ -79,10 +79,11 @@ function App() {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        // App ilk açıldığında cookie'den refresh token ile oturum açmayı dene (yalnızca bir kez)
-        const response = await apiClient.post('/auth/refresh', {});
-        const data = response.data || response; // API yanıt formatına göre
-        setAuth(data.user, data.accessToken);
+        // App ilk açıldığında cookie'den refresh token ile oturum açmayı dene (single-flight)
+        const data = await refreshAccessToken();
+        if (data?.user && data?.accessToken) {
+          setAuth(data.user, data.accessToken);
+        }
       } catch {
         // Oturum yok veya süresi dolmuş
         clearAuth();

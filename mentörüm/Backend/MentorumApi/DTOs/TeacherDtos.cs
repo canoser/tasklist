@@ -215,4 +215,29 @@ namespace MentorumApi.DTOs
         public string? TeacherName { get; set; }
         public string? SubjectName { get; set; }
     }
+
+    public class TeacherCourseHomeworkItemDto
+    {
+        public Guid Id { get; set; }
+        public Guid StudentId { get; set; }
+        public string StudentName { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public DateTime DueDate { get; set; }
+        public string Status { get; set; } = "PENDING";
+        public string? Feedback { get; set; }
+        public string? StudentNote { get; set; }
+        public int? CompletionPercentage { get; set; }
+        public int Version { get; set; } = 1;
+        public List<HomeworkAttachmentDto> Attachments { get; set; } = new();
+    }
+
+    public class TeacherCourseExamItemDto
+    {
+        public Guid Id { get; set; }
+        public Guid StudentId { get; set; }
+        public string StudentName { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public DateTime? ExamDate { get; set; }
+        public float? TotalNet { get; set; }
+    }
 }

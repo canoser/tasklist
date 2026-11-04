@@ -105,10 +105,15 @@ namespace MentorumApi.Endpoints
                 var allowed = role switch
                 {
                     "Coach" => await guard.IsCoachInProgramAsync(userId.Value, upload.ProgramId),
-                    "Teacher" => upload.CourseId.HasValue
-                        && await guard.IsTeacherOfCourseAsync(userId.Value, upload.CourseId.Value)
-                        && await guard.CanTeacherShareFilesAsync(userId.Value, upload.CourseId.Value),
-                    "Student" => upload.SenderUserId == userId.Value || upload.RecipientUserId == userId.Value,
+                    "Teacher" => upload.SenderUserId == userId.Value
+                        || upload.RecipientUserId == userId.Value
+                        || (upload.CourseId.HasValue
+                            && await guard.IsTeacherOfCourseAsync(userId.Value, upload.CourseId.Value)
+                            && await guard.CanTeacherShareFilesAsync(userId.Value, upload.CourseId.Value))
+                        || (upload.HomeworkId.HasValue && await guard.IsTeacherOfHomeworkAsync(userId.Value, upload.HomeworkId.Value)),
+                    "Student" => upload.SenderUserId == userId.Value
+                        || upload.RecipientUserId == userId.Value
+                        || (upload.CourseId.HasValue && await guard.IsStudentInCourseAsync(userId.Value, upload.CourseId.Value)),
                     "Parent" => upload.SenderUserId == userId.Value
                         || upload.RecipientUserId == userId.Value
                         || await guard.IsParentOfStudentAsync(userId.Value, upload.RecipientUserId)
@@ -258,18 +263,35 @@ namespace MentorumApi.Endpoints
             else if (role == "Coach")
             {
                 if (!await guard.IsCoachInProgramAsync(senderId, programId.Value)) return null;
-                if (!req.RecipientUserId.HasValue) return null;
-                recipient = req.RecipientUserId.Value;
-                if (!await guard.IsStudentInProgramAsync(recipient, programId.Value)) return null;
+                if (req.RecipientUserId.HasValue)
+                {
+                    recipient = req.RecipientUserId.Value;
+                    if (!await guard.IsStudentInProgramAsync(recipient, programId.Value)) return null;
+                }
+                else if (courseId.HasValue)
+                {
+                    if (!await guard.IsCoachOfCourseAsync(senderId, courseId.Value)) return null;
+                    recipient = senderId;
+                }
+                else
+                {
+                    return null;
+                }
             }
             else if (role == "Teacher")
             {
                 if (!courseId.HasValue) return null;
                 if (!await guard.IsTeacherOfCourseAsync(senderId, courseId.Value)) return null;
                 if (!await guard.CanTeacherShareFilesAsync(senderId, courseId.Value)) return null;
-                if (!req.RecipientUserId.HasValue) return null;
-                recipient = req.RecipientUserId.Value;
-                if (!await guard.IsStudentInProgramAsync(recipient, programId.Value)) return null;
+                if (req.RecipientUserId.HasValue)
+                {
+                    recipient = req.RecipientUserId.Value;
+                    if (!await guard.IsStudentInProgramAsync(recipient, programId.Value)) return null;
+                }
+                else
+                {
+                    recipient = senderId;
+                }
             }
             else
             {

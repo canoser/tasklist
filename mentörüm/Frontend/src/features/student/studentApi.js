@@ -300,8 +300,8 @@ export const useDeleteSchoolSchedule = () => {
 // V10: Ödev Ek Süre Talebi
 export const useRequestExtension = () => {
   return useMutation({
-    mutationFn: ({ homeworkId, data: { reason } }) =>
-      apiClient.post(`/homework/${homeworkId}/request-extension`, { reason }),
+    mutationFn: ({ homeworkId, data: { reason, requestedDueDate } }) =>
+      apiClient.post(`/homework/${homeworkId}/request-extension`, { reason, requestedDueDate }),
   });
 };
 

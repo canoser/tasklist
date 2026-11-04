@@ -15,6 +15,7 @@ import StudentQuestionsCard from './StudentQuestionsCard';
 import TodayAgendaCard from './components/TodayAgendaCard';
 import CoachFeedbackCard from './components/CoachFeedbackCard';
 import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
+import { useUIStore } from '../../../store/uiStore';
 import styles from './StudentHome.module.css';
 
 const StudentHome = () => {
@@ -23,6 +24,7 @@ const StudentHome = () => {
   const { data: exams } = useStudentExams();
   const { data: curriculum } = useStudentCurriculum();
   const { data: sessions } = useStudentSessions();
+  const studentHomeLayout = useUIStore((s) => s.studentHomeLayout);
   
   const [activeTabbedSection, setActiveTabbedSection] = useState('notes'); // 'notes' | 'questions'
 
@@ -37,8 +39,11 @@ const StudentHome = () => {
   const completedTopics = curriculum?.filter(t => t.isCompleted)?.length || 0;
   const totalTopics = curriculum?.length || 0;
 
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
   const upcomingSession = (sessions || [])
-    .filter((s) => s.sessionDate && new Date(s.sessionDate) >= new Date())
+    .filter((s) => s.sessionDate && new Date(s.sessionDate) >= todayStart)
     .sort((a, b) => new Date(a.sessionDate) - new Date(b.sessionDate))[0];
 
   // Sekmeli Notlarım & Takıldığım Sorular
@@ -128,20 +133,36 @@ const StudentHome = () => {
       {/* 2. Responsive Dashboard Izgarası */}
       <div className={styles.dashboardGrid}>
         <div className={styles.mainCol}>
-          {/* F9: Bugün Ne Yapacağım? (Bugünkü dersler, öncelikli ödevler, koç görüşmesi, mikro rutinler) */}
-          <TodayAgendaCard 
-            upcomingSession={upcomingSession} 
-            homeworks={homeworks || []} 
-            onNavigateToHomework={() => navigate('/student/homework')} 
-          />
+          {studentHomeLayout === 'compact' ? (
+            <>
+              <StudyTimerCard compact={false} />
+              <TodayAgendaCard 
+                upcomingSession={upcomingSession} 
+                homeworks={homeworks || []} 
+                onNavigateToHomework={() => navigate('/student/homework')} 
+              />
+              <CoachFeedbackCard homeworks={homeworks || []} />
+            </>
+          ) : (
+            <>
+              {/* F9: Bugün Ne Yapacağım? (Bugünkü dersler, öncelikli ödevler, koç görüşmesi, mikro rutinler) */}
+              <TodayAgendaCard 
+                upcomingSession={upcomingSession} 
+                homeworks={homeworks || []} 
+                onNavigateToHomework={() => navigate('/student/homework')} 
+              />
 
-          {/* F9: Koç & Öğretmen Geri Bildirimleri & Dosyalar */}
-          <CoachFeedbackCard homeworks={homeworks || []} />
+              {/* F9: Koç & Öğretmen Geri Bildirimleri & Dosyalar */}
+              <CoachFeedbackCard homeworks={homeworks || []} />
+            </>
+          )}
         </div>
 
         <div className={styles.sideCol}>
-          {/* Çalışma Sayacı & Odaklanma */}
-          <StudyTimerCard compact={true} />
+          {studentHomeLayout !== 'compact' && (
+            /* Çalışma Sayacı & Odaklanma */
+            <StudyTimerCard compact={true} />
+          )}
 
           {/* Günlük Duygu Durumu Check-in */}
           <MoodCheckinCard compact={true} />

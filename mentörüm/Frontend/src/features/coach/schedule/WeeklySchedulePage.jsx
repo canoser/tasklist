@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { DndContext, PointerSensor, TouchSensor, KeyboardSensor, useSensor, useSensors, useDraggable, useDroppable } from '@dnd-kit/core';
 import { GripVertical } from 'lucide-react';
 import { useSchedule, useCourses, useGroups, useCreateScheduleSlot, useDeleteScheduleSlot } from '../coachSchoolApi';
+import { useStudents } from '../coachApi';
 import { WEEKDAYS_ZERO_INDEXED } from '../../../constants/domainConstants';
 import Modal from '../../../components/common/Modal/Modal';
 import Button from '../../../components/common/Button/Button';
@@ -47,6 +48,8 @@ const WeeklySchedulePage = ({ programId: propProgramId, embedded = false }) => {
   const { data: slots } = useSchedule(programId);
   const { data: courses } = useCourses(programId);
   const { data: groups } = useGroups(programId);
+  const { data: allStudents = [] } = useStudents();
+  const students = allStudents.filter((s) => !programId || s.programId === programId);
   const createSlot = useCreateScheduleSlot();
   const deleteSlot = useDeleteScheduleSlot();
 
@@ -55,6 +58,7 @@ const WeeklySchedulePage = ({ programId: propProgramId, embedded = false }) => {
   const [slotTargetType, setSlotTargetType] = useState('course'); // 'course' | 'group' | 'custom'
   const [selectedCourseId, setSelectedCourseId] = useState('');
   const [selectedGroupId, setSelectedGroupId] = useState('');
+  const [selectedStudentId, setSelectedStudentId] = useState('');
   const [title, setTitle] = useState('');
   const [conflict, setConflict] = useState('');
   const [dragConflict, setDragConflict] = useState('');
@@ -73,6 +77,7 @@ const WeeklySchedulePage = ({ programId: propProgramId, embedded = false }) => {
     setSlotTargetType(courses?.length > 0 ? 'course' : (groups?.length > 0 ? 'group' : 'custom'));
     setSelectedCourseId(courses?.[0]?.id || '');
     setSelectedGroupId(groups?.[0]?.id || '');
+    setSelectedStudentId(students?.[0]?.id || '');
     setTitle('');
     setConflict('');
     setDragConflict('');
@@ -96,6 +101,7 @@ const WeeklySchedulePage = ({ programId: propProgramId, embedded = false }) => {
     const data = { dayOfWeek: day, startTime, endTime, title: resolvedTitle };
     if (targetType === 'course' && targetId) data.courseId = targetId;
     else if (targetType === 'group' && targetId) data.groupId = targetId;
+    else if ((targetType === 'student' || targetType === 'custom') && targetId) data.studentId = targetId;
 
     try {
       await createSlot.mutateAsync({ programId, data });
@@ -109,12 +115,18 @@ const WeeklySchedulePage = ({ programId: propProgramId, embedded = false }) => {
       if (err?.response?.status === 409 || err?.response?.data?.code === 'SCHEDULE_CONFLICT') {
         const details = err.response?.data?.conflictDetails;
         if (details && Array.isArray(details) && details.length > 0) {
-          const detailMsg = details.map((c) => `${c.reason || 'Çakışma'}${c.existingSlotTitle ? ` (${c.existingSlotTitle})` : ''}`).join('; ');
+          const detailMsg = details
+            .map((c) => {
+              const who = c.conflictingName || c.reason || 'Çakışma';
+              const slotName = c.title || c.existingSlotTitle;
+              return `${who}${slotName ? ` (${slotName})` : ''}`;
+            })
+            .join('; ');
           msg = `Bu saatte çakışma var: ${detailMsg}`;
         } else {
           msg = err.response?.data?.error || 'Bu saatte öğretmen veya öğrenci için program çakışması var.';
         }
-      } else if (err.response?.data?.error) {
+      } else if (err?.response?.data?.error) {
         msg = err.response.data.error;
       }
 
@@ -134,7 +146,7 @@ const WeeklySchedulePage = ({ programId: propProgramId, embedded = false }) => {
     } else if (slotTargetType === 'group') {
       handleCreate(formDay, formHour, 'group', selectedGroupId, title.trim());
     } else {
-      handleCreate(formDay, formHour, null, null, title.trim());
+      handleCreate(formDay, formHour, 'student', selectedStudentId, title.trim());
     }
   };
 
@@ -269,6 +281,18 @@ const WeeklySchedulePage = ({ programId: propProgramId, embedded = false }) => {
             >
               {groups?.map((g) => (
                 <option key={g.id} value={g.id}>{g.name}</option>
+              ))}
+            </Select>
+          )}
+
+          {slotTargetType === 'custom' && (
+            <Select
+              label="Öğrenci Seç (Bireysel Etüt / Özel Başlık)"
+              value={selectedStudentId}
+              onChange={(e) => setSelectedStudentId(e.target.value)}
+            >
+              {students?.map((s) => (
+                <option key={s.id} value={s.id}>{s.fullName}</option>
               ))}
             </Select>
           )}

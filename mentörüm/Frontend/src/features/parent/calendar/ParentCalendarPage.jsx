@@ -9,7 +9,7 @@ import tr from 'date-fns/locale/tr';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import Card from '../../../components/common/Card/Card';
 import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
-import { useParentChildren, useParentChildCalendar } from '../parentApi';
+import { useActiveParentChild, useParentChildCalendar } from '../parentApi';
 import ChildSelector from '../../../components/common/ChildSelector/ChildSelector';
 import ParentSchedulePage from '../schedule/ParentSchedulePage';
 import styles from './ParentCalendarPage.module.css';
@@ -18,19 +18,16 @@ const locales = { tr };
 const localizer = dateFnsLocalizer({ format, parse, startOfWeek, getDay, locales });
 
 const ParentCalendarPage = () => {
-  const { data: children, isLoading: isChildrenLoading } = useParentChildren();
-  const [selectedChildId, setSelectedChildId] = useState(null);
+  const { children, isChildrenLoading, student, setSelectedChildId } = useActiveParentChild();
   const [activeTab, setActiveTab] = useState('calendar'); // 'calendar' | 'schedule'
   const [view, setView] = useState(Views.MONTH);
   const [date, setDate] = useState(new Date());
   const [range, setRange] = useState({ start: startOfMonth(new Date()), end: endOfMonth(new Date()) });
 
-  const student = children?.find((c) => c.studentId === selectedChildId) || children?.[0];
-
   const { data: events, isLoading } = useParentChildCalendar(
     student?.studentId,
     format(range.start, 'yyyy-MM-dd'),
-    format(range.end, 'yyyy-MM-dd')
+    format(range.end, "yyyy-MM-dd'T'23:59:59")
   );
 
   if (isChildrenLoading) return <div className={styles.pageContainer}>Yükleniyor...</div>;

@@ -114,3 +114,15 @@ export const useStudentCheckinsForCoach = (studentId, enabled = true) => {
   });
 };
 
+export const useCoachStudentPersonalNotes = (studentId, enabled = true) => {
+  return useQuery({
+    queryKey: queryKeys.coach.studentPersonalNotes(studentId),
+    queryFn: async () => {
+      if (!studentId) return [];
+      return (await apiClient.get(`/students/${studentId}/student-notes`)) || [];
+    },
+    enabled: !!studentId && enabled,
+  });
+};
+
+

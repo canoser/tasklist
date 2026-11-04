@@ -63,8 +63,14 @@ namespace MentorumApi.Data
             using var tx = conn.BeginTransaction();
             try
             {
-                var item = await conn.QuerySingleOrDefaultAsync<dynamic>(@"
-                    SELECT a.id, a.program_id, a.entity_type, a.entity_id, a.created_by, a.status, a.payload::text as payload
+                var item = await conn.QuerySingleOrDefaultAsync<ApprovalItemLockRow>(@"
+                    SELECT a.id AS Id,
+                           a.program_id AS ProgramId,
+                           a.entity_type AS EntityType,
+                           a.entity_id AS EntityId,
+                           a.created_by AS CreatedBy,
+                           a.status AS Status,
+                           a.payload::text AS Payload
                     FROM approval_items a
                     JOIN program_coaches pc ON pc.program_id = a.program_id
                     WHERE a.id = @Id AND pc.coach_id = @CoachId
@@ -74,33 +80,37 @@ namespace MentorumApi.Data
                 if (item == null)
                     throw new UnauthorizedAccessException("Onay öğesi bulunamadı veya bu koça ait değil.");
 
-                if ((string)item.status != "PENDING")
+                if (item.Status != "PENDING")
                     throw new InvalidOperationException("Bu talep zaten sonuçlandırılmış.");
 
                 // T29: Eğer PAYMENT_CLAIM ise ödeme tablosunu güncelle
-                if ((string)item.entity_type == "PAYMENT_CLAIM")
+                if (item.EntityType == "PAYMENT_CLAIM")
                 {
                     try
                     {
-                        using var doc = System.Text.Json.JsonDocument.Parse((string)item.payload);
+                        using var doc = System.Text.Json.JsonDocument.Parse(item.Payload);
                         var root = doc.RootElement;
-                        Guid targetItemId = (Guid)item.entity_id;
+                        Guid targetItemId = item.EntityId;
                         decimal claimAmount = 0m;
-                        if (root.TryGetProperty("Amount", out var amtProp) && amtProp.ValueKind == System.Text.Json.JsonValueKind.Number)
+                        if ((root.TryGetProperty("amount", out var amtProp) || root.TryGetProperty("Amount", out amtProp))
+                            && amtProp.ValueKind == System.Text.Json.JsonValueKind.Number)
                         {
                             claimAmount = amtProp.GetDecimal();
                         }
-                        string? receiptUrl = root.TryGetProperty("ReceiptUrl", out var rUrlProp) ? rUrlProp.GetString() : null;
+                        string? receiptUrl = (root.TryGetProperty("receiptUrl", out var rUrlProp) || root.TryGetProperty("ReceiptUrl", out rUrlProp))
+                            && rUrlProp.ValueKind == System.Text.Json.JsonValueKind.String
+                            ? rUrlProp.GetString()
+                            : null;
 
-                        var pItem = await conn.QuerySingleOrDefaultAsync<dynamic>(@"
-                            SELECT id, plan_id, base_amount, paid_amount 
+                        var pItem = await conn.QuerySingleOrDefaultAsync<ApprovalPaymentItemRow>(@"
+                            SELECT id AS Id, plan_id AS PlanId, base_amount AS BaseAmount, paid_amount AS PaidAmount 
                             FROM payment_items WHERE id = @ItemId FOR UPDATE",
                             new { ItemId = targetItemId }, tx);
 
                         if (pItem != null)
                         {
-                            decimal curPaid = (decimal)pItem.paid_amount;
-                            decimal baseAmt = (decimal)pItem.base_amount;
+                            decimal curPaid = pItem.PaidAmount;
+                            decimal baseAmt = pItem.BaseAmount;
                             decimal addAmt = claimAmount > 0 ? claimAmount : (baseAmt - curPaid);
                             decimal newPaid = curPaid + addAmt;
 
@@ -117,9 +127,33 @@ namespace MentorumApi.Data
                             }
                             else
                             {
-                                await conn.ExecuteAsync(@"
-                                    UPDATE payment_items SET paid_amount = @NewPaid, status = 'PARTIAL' WHERE id = @ItemId",
-                                    new { NewPaid = newPaid, ItemId = targetItemId }, tx);
+                                decimal remaining = baseAmt - newPaid;
+                                var nextPending = await conn.QuerySingleOrDefaultAsync<Guid?>(@"
+                                    SELECT id FROM payment_items 
+                                    WHERE plan_id = @PlanId AND status = 'PENDING' AND id <> @ItemId
+                                    ORDER BY due_date ASC LIMIT 1",
+                                    new { PlanId = pItem.PlanId, ItemId = targetItemId }, tx);
+
+                                if (nextPending.HasValue)
+                                {
+                                    await conn.ExecuteAsync(@"
+                                        UPDATE payment_items
+                                        SET base_amount = @NewPaid, paid_amount = @NewPaid, status = 'PAID', paid_at = NOW()
+                                        WHERE id = @ItemId",
+                                        new { NewPaid = newPaid, ItemId = targetItemId }, tx);
+
+                                    await conn.ExecuteAsync(@"
+                                        UPDATE payment_items
+                                        SET base_amount = base_amount + @Remaining, rolled_from_item_id = @ItemId
+                                        WHERE id = @NextId",
+                                        new { Remaining = remaining, ItemId = targetItemId, NextId = nextPending.Value }, tx);
+                                }
+                                else
+                                {
+                                    await conn.ExecuteAsync(@"
+                                        UPDATE payment_items SET paid_amount = @NewPaid, status = 'PARTIAL' WHERE id = @ItemId",
+                                        new { NewPaid = newPaid, ItemId = targetItemId }, tx);
+                                }
                             }
                         }
                     }
@@ -130,13 +164,13 @@ namespace MentorumApi.Data
                 }
 
                 // V10 T04: HOMEWORK_EXTENSION onayı → ödev teslim tarihini uzat
-                if ((string)item.entity_type == "HOMEWORK_EXTENSION")
+                if (item.EntityType == "HOMEWORK_EXTENSION")
                 {
                     try
                     {
-                        using var doc = System.Text.Json.JsonDocument.Parse((string)item.payload);
+                        using var doc = System.Text.Json.JsonDocument.Parse(item.Payload);
                         var root = doc.RootElement;
-                        Guid assignmentId = (Guid)item.entity_id;
+                        Guid assignmentId = item.EntityId;
                         DateTime? requestedDueDate = null;
                         if (root.TryGetProperty("requestedDueDate", out var dueProp) && dueProp.ValueKind == System.Text.Json.JsonValueKind.String)
                         {
@@ -179,8 +213,8 @@ namespace MentorumApi.Data
 
                 await conn.ExecuteAsync(@"
                     INSERT INTO notifications (id, user_id, type, title, body, payload, created_at)
-                    VALUES (gen_random_uuid(), @CreatedBy, 'COACH_APPROVAL_ACCEPTED', 'Talebiniz Onaylandı', 'Koçunuz talebinizi onayladı.', @Payload, NOW())",
-                    new { CreatedBy = (Guid)item.created_by, Payload = (string)item.payload }, tx);
+                    VALUES (gen_random_uuid(), @CreatedBy, 'COACH_APPROVED', 'Talebiniz Onaylandı', 'Koçunuz talebinizi onayladı.', @Payload, NOW())",
+                    new { CreatedBy = item.CreatedBy, Payload = item.Payload }, tx);
 
                 tx.Commit();
                 return true;
@@ -199,8 +233,14 @@ namespace MentorumApi.Data
             using var tx = conn.BeginTransaction();
             try
             {
-                var item = await conn.QuerySingleOrDefaultAsync<dynamic>(@"
-                    SELECT a.id, a.program_id, a.created_by, a.status, a.payload::text as payload
+                var item = await conn.QuerySingleOrDefaultAsync<ApprovalItemLockRow>(@"
+                    SELECT a.id AS Id,
+                           a.program_id AS ProgramId,
+                           a.entity_type AS EntityType,
+                           a.entity_id AS EntityId,
+                           a.created_by AS CreatedBy,
+                           a.status AS Status,
+                           a.payload::text AS Payload
                     FROM approval_items a
                     JOIN program_coaches pc ON pc.program_id = a.program_id
                     WHERE a.id = @Id AND pc.coach_id = @CoachId
@@ -210,7 +250,7 @@ namespace MentorumApi.Data
                 if (item == null)
                     throw new UnauthorizedAccessException("Onay öğesi bulunamadı veya bu koça ait değil.");
 
-                if ((string)item.status != "PENDING")
+                if (item.Status != "PENDING")
                     throw new InvalidOperationException("Bu talep zaten sonuçlandırılmış.");
 
                 await conn.ExecuteAsync(@"
@@ -222,8 +262,8 @@ namespace MentorumApi.Data
                 var bodyText = string.IsNullOrWhiteSpace(reason) ? "Koçunuz talebinizi reddetti." : $"Koçunuz talebinizi reddetti: {reason}";
                 await conn.ExecuteAsync(@"
                     INSERT INTO notifications (id, user_id, type, title, body, payload, created_at)
-                    VALUES (gen_random_uuid(), @CreatedBy, 'COACH_APPROVAL_REJECTED', 'Talebiniz Reddedildi', @Body, @Payload, NOW())",
-                    new { CreatedBy = (Guid)item.created_by, Body = bodyText, Payload = (string)item.payload }, tx);
+                    VALUES (gen_random_uuid(), @CreatedBy, 'COACH_REJECTED', 'Talebiniz Reddedildi', @Body, @Payload, NOW())",
+                    new { CreatedBy = item.CreatedBy, Body = bodyText, Payload = item.Payload }, tx);
 
                 tx.Commit();
                 return true;
@@ -233,6 +273,25 @@ namespace MentorumApi.Data
                 tx.Rollback();
                 throw;
             }
+        }
+
+        private sealed class ApprovalItemLockRow
+        {
+            public Guid Id { get; set; }
+            public Guid ProgramId { get; set; }
+            public string EntityType { get; set; } = string.Empty;
+            public Guid EntityId { get; set; }
+            public Guid CreatedBy { get; set; }
+            public string Status { get; set; } = "PENDING";
+            public string Payload { get; set; } = "{}";
+        }
+
+        private sealed class ApprovalPaymentItemRow
+        {
+            public Guid Id { get; set; }
+            public Guid PlanId { get; set; }
+            public decimal BaseAmount { get; set; }
+            public decimal PaidAmount { get; set; }
         }
     }
 }

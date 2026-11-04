@@ -4,11 +4,12 @@ import Input, { Select, Textarea } from '../../../components/common/Input/Input'
 import Modal from '../../../components/common/Modal/Modal';
 import CurriculumTopicFields from '../../../components/common/CurriculumTopicFields/CurriculumTopicFields';
 import styles from './AssignHomeworkModal.module.css';
-import { useAssignHomework } from '../coachApi';
+import { useAssignHomework, useStudents } from '../coachApi';
 import { usePrograms, useCourses } from '../coachSchoolApi';
 
 const AssignHomeworkModal = ({ isOpen, open, onClose, selectedStudent, initialTopic, programId }) => {
   const effectiveOpen = isOpen ?? open;
+  const [studentId, setStudentId] = useState(selectedStudent?.id || '');
   const [level, setLevel] = useState('');
   const [subject, setSubject] = useState('');
   const [topic, setTopic] = useState('');
@@ -21,12 +22,16 @@ const AssignHomeworkModal = ({ isOpen, open, onClose, selectedStudent, initialTo
   const [priority, setPriority] = useState('NORMAL');
 
   const assignHomeworkMutation = useAssignHomework();
+  const { data: students = [] } = useStudents();
   const { data: programs = [] } = usePrograms();
-  const effectiveProgramId = programId || selectedStudent?.programId || programs[0]?.id;
+  const targetStudent = selectedStudent || students.find((s) => s.id === studentId) || null;
+  const effectiveProgramId = programId || targetStudent?.programId || programs[0]?.id;
   const { data: courses = [] } = useCourses(effectiveProgramId);
 
   useEffect(() => {
     if (!effectiveOpen) return;
+
+    setStudentId(selectedStudent?.id || '');
 
     if (initialTopic) {
       if (initialTopic.grade) setLevel(String(initialTopic.grade));
@@ -47,6 +52,11 @@ const AssignHomeworkModal = ({ isOpen, open, onClose, selectedStudent, initialTo
 
   const handleAssign = (e) => {
     if (e) e.preventDefault();
+    const effectiveStudentId = selectedStudent?.id || studentId;
+    if (!effectiveStudentId) {
+      alert('Lütfen öğrenci seçiniz.');
+      return;
+    }
     if (!title || !dueDate) {
       alert('Lütfen başlık ve tarih giriniz.');
       return;
@@ -59,7 +69,7 @@ const AssignHomeworkModal = ({ isOpen, open, onClose, selectedStudent, initialTo
 
     assignHomeworkMutation.mutate(
       {
-        studentId: selectedStudent?.id,
+        studentId: effectiveStudentId,
         subjectId: subject || null,
         curriculumTopicId: topic && topic !== '__other__' ? topic : null,
         freeTopic: topic === '__other__' ? freeTopic.trim() : null,
@@ -71,6 +81,7 @@ const AssignHomeworkModal = ({ isOpen, open, onClose, selectedStudent, initialTo
       },
       {
         onSuccess: () => {
+          setStudentId(selectedStudent?.id || '');
           setLevel('');
           setSubject('');
           setTopic('');
@@ -94,10 +105,34 @@ const AssignHomeworkModal = ({ isOpen, open, onClose, selectedStudent, initialTo
     <Modal
       isOpen={effectiveOpen}
       onClose={onClose}
-      title={`Ödev Ata${selectedStudent ? ` — ${selectedStudent.fullName}` : ''}`}
+      title={`Ödev Ata${targetStudent ? ` — ${targetStudent.fullName}` : ''}`}
       maxWidth="500px"
     >
       <form onSubmit={handleAssign} className={styles.form}>
+        {!selectedStudent && (
+          <Select
+            label="Öğrenci *"
+            value={studentId}
+            onChange={(e) => {
+              const nextId = e.target.value;
+              setStudentId(nextId);
+              const found = students.find((s) => s.id === nextId);
+              if (found?.grade && !level) {
+                setLevel(String(found.grade));
+              }
+            }}
+            disabled={assignHomeworkMutation.isPending}
+            required
+          >
+            <option value="">Öğrenci Seçin...</option>
+            {students.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.fullName}
+              </option>
+            ))}
+          </Select>
+        )}
+
         <CurriculumTopicFields
           level={level}
           setLevel={setLevel}

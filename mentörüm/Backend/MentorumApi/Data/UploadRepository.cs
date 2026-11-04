@@ -91,7 +91,8 @@ namespace MentorumApi.Data
                        object_key AS ObjectKey, content_type AS ContentType, size_bytes AS SizeBytes,
                        original_name AS OriginalName, status AS Status
                 FROM uploads
-                WHERE sender_user_id = @UserId OR recipient_user_id = @UserId
+                WHERE (sender_user_id = @UserId OR recipient_user_id = @UserId)
+                  AND status = 'UPLOADED'
                 ORDER BY created_at DESC",
                 new { UserId = userId });
         }

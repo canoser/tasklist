@@ -103,10 +103,10 @@ namespace MentorumApi.Data
                         WHERE c.teacher_id = @TeacherId
                           AND s.is_active = 1
                           AND s.day_of_week = @DayOfWeek
-                          AND (@ExcludeSlotId IS NULL OR s.id != @ExcludeSlotId)
+                          AND (@ExcludeSlotId::uuid IS NULL OR s.id != @ExcludeSlotId::uuid)
                           AND (s.start_time < @EndTime AND s.end_time > @StartTime)
-                          AND (@ValidFrom IS NULL OR s.valid_to IS NULL OR s.valid_to >= @ValidFrom)
-                          AND (@ValidTo IS NULL OR s.valid_from IS NULL OR s.valid_from <= @ValidTo)",
+                          AND (@ValidFrom::date IS NULL OR s.valid_to IS NULL OR s.valid_to >= @ValidFrom::date)
+                          AND (@ValidTo::date IS NULL OR s.valid_from IS NULL OR s.valid_from <= @ValidTo::date)",
                         new
                         {
                             TeacherId = teacherInfo.Value.TeacherId,
@@ -159,10 +159,10 @@ namespace MentorumApi.Data
                     JOIN users u ON u.id = st.sid
                     WHERE s.is_active = 1
                       AND s.day_of_week = @DayOfWeek
-                      AND (@ExcludeSlotId IS NULL OR s.id != @ExcludeSlotId)
+                      AND (@ExcludeSlotId::uuid IS NULL OR s.id != @ExcludeSlotId::uuid)
                       AND (s.start_time < @EndTime AND s.end_time > @StartTime)
-                      AND (@ValidFrom IS NULL OR s.valid_to IS NULL OR s.valid_to >= @ValidFrom)
-                      AND (@ValidTo IS NULL OR s.valid_from IS NULL OR s.valid_from <= @ValidTo)",
+                      AND (@ValidFrom::date IS NULL OR s.valid_to IS NULL OR s.valid_to >= @ValidFrom::date)
+                      AND (@ValidTo::date IS NULL OR s.valid_from IS NULL OR s.valid_from <= @ValidTo::date)",
                     new
                     {
                         TargetStudents = targetStudentArr,
@@ -175,6 +175,24 @@ namespace MentorumApi.Data
                     });
 
                 conflicts.AddRange(overlappingStudentSlots);
+
+                var overlappingSchoolSlots = await conn.QueryAsync<ScheduleConflictItem>(@"
+                    SELECT ss.id AS SlotId, COALESCE(ss.label, 'Okul') AS Title, 'SCHOOL' AS ConflictType,
+                           u.full_name AS ConflictingName, ss.start_time AS StartTime, ss.end_time AS EndTime
+                    FROM school_schedules ss
+                    JOIN users u ON u.id = ss.student_id
+                    WHERE ss.student_id = ANY(@TargetStudents)
+                      AND ss.day_of_week = @DayOfWeek
+                      AND (ss.start_time < @EndTime AND ss.end_time > @StartTime)",
+                    new
+                    {
+                        TargetStudents = targetStudentArr,
+                        DayOfWeek = dayOfWeek,
+                        StartTime = startTime,
+                        EndTime = endTime
+                    });
+
+                conflicts.AddRange(overlappingSchoolSlots);
             }
 
             return conflicts;
@@ -200,10 +218,10 @@ namespace MentorumApi.Data
             using var conn = _connectionFactory.CreateConnection();
             var rows = await conn.ExecuteAsync(@"
                 INSERT INTO schedule_slots (id, program_id, course_id, group_id, student_id, day_of_week, start_time, end_time, title, type, valid_from, valid_to, color)
-                SELECT @Id, @ProgramId, @CourseId, @GroupId, @StudentId, @DayOfWeek, @StartTime, @EndTime, @Title, @Type, @ValidFrom, @ValidTo, @Color
-                WHERE (@CourseId IS NULL OR EXISTS (SELECT 1 FROM courses c WHERE c.id = @CourseId AND c.program_id = @ProgramId))
-                  AND (@GroupId IS NULL OR EXISTS (SELECT 1 FROM student_groups g WHERE g.id = @GroupId AND g.program_id = @ProgramId))
-                  AND (@StudentId IS NULL OR EXISTS (SELECT 1 FROM students s WHERE s.id = @StudentId AND s.program_id = @ProgramId))",
+                SELECT @Id::uuid, @ProgramId::uuid, @CourseId::uuid, @GroupId::uuid, @StudentId::uuid, @DayOfWeek::int, @StartTime::time, @EndTime::time, @Title::text, @Type::text, @ValidFrom::date, @ValidTo::date, @Color::text
+                WHERE (@CourseId::uuid IS NULL OR EXISTS (SELECT 1 FROM courses c WHERE c.id = @CourseId::uuid AND c.program_id = @ProgramId::uuid))
+                  AND (@GroupId::uuid IS NULL OR EXISTS (SELECT 1 FROM student_groups g WHERE g.id = @GroupId::uuid AND g.program_id = @ProgramId::uuid))
+                  AND (@StudentId::uuid IS NULL OR EXISTS (SELECT 1 FROM students s WHERE s.id = @StudentId::uuid AND s.program_id = @ProgramId::uuid))",
                 new {
                     Id = id, ProgramId = programId, req.CourseId, req.GroupId, req.StudentId,
                     req.DayOfWeek, req.StartTime, req.EndTime, req.Title, req.Type, req.ValidFrom, req.ValidTo, req.Color
