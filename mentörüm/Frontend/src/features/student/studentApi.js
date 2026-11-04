@@ -75,10 +75,33 @@ export const useStudentExams = () => useQuery({
   queryFn: async () => (await apiClient.get('/student/exams')) || [],
 });
 
-export const useStudentCurriculum = () => useQuery({
-  queryKey: ['student', 'curriculum'],
-  queryFn: async () => (await apiClient.get('/student/curriculum')) || [],
+export const useStudentCurriculum = (grade = null) => useQuery({
+  queryKey: ['student', 'curriculum', grade ?? 'active'],
+  queryFn: async () => {
+    const qs = grade !== null && grade !== undefined && grade !== '' ? `?grade=${encodeURIComponent(grade)}` : '';
+    return (await apiClient.get(`/student/curriculum${qs}`)) || [];
+  },
 });
+
+export const useMyGradeReport = (grade = null) => useQuery({
+  queryKey: ['student', 'grade-report', grade ?? 'active'],
+  queryFn: async () => {
+    const qs = grade !== null && grade !== undefined && grade !== '' ? `?grade=${encodeURIComponent(grade)}` : '';
+    return (await apiClient.get(`/student/grade-report${qs}`)) || null;
+  },
+});
+
+export const useUpsertMySubjectTargets = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ grade, targets }) =>
+      apiClient.put('/student/subject-targets', { grade, targets }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['student', 'grade-report'] });
+      qc.invalidateQueries({ queryKey: ['reports', 'grade-report'] });
+    },
+  });
+};
 
 export const useStudentGoal = () => useQuery({
   queryKey: ['student', 'goal'],

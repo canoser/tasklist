@@ -139,6 +139,7 @@ namespace MentorumApi.Endpoints
             group.MapGet("/{id:guid}/curriculum/progress", async (
                 Guid id,
                 [FromQuery] Guid studentId,
+                [FromQuery] int? grade,
                 [FromServices] ProgramRepository programRepo,
                 [FromServices] CurriculumRepository curriculumRepo,
                 [FromServices] ProgramAccessGuard guard,
@@ -150,7 +151,7 @@ namespace MentorumApi.Endpoints
                 if (p == null) return Results.NotFound(new { error = "Program bulunamadı." });
                 if (!await guard.IsStudentInProgramAsync(studentId, id))
                     return Results.Forbid();
-                var progress = await curriculumRepo.GetStudentCurriculumAsync(studentId);
+                var progress = await curriculumRepo.GetStudentCurriculumAsync(studentId, grade);
                 return Results.Ok(progress);
             });
 

@@ -604,8 +604,8 @@ namespace MentorumApi.Data
             var id = Guid.NewGuid();
             var rType = req.ResourceType is "BOOK" or "VIDEO" or "OTHER" ? req.ResourceType : "BOOK";
             await conn.ExecuteAsync(@"
-                INSERT INTO student_resources (id, student_id, program_id, subject_id, resource_type, title, url_or_author, total_units, completed_units, created_by)
-                VALUES (@Id, @StudentId, @ProgramId, @SubjectId, @ResourceType, @Title, @UrlOrAuthor, @TotalUnits, @CompletedUnits, @CreatedBy)",
+                INSERT INTO student_resources (id, student_id, program_id, subject_id, resource_type, title, url_or_author, total_units, completed_units, created_by, grade)
+                VALUES (@Id, @StudentId, @ProgramId, @SubjectId, @ResourceType, @Title, @UrlOrAuthor, @TotalUnits, @CompletedUnits, @CreatedBy, (SELECT grade FROM students WHERE id = @StudentId))",
                 new { Id = id, StudentId = studentId, ProgramId = programId, req.SubjectId, ResourceType = rType, Title = req.Title.Trim(), req.UrlOrAuthor, TotalUnits = Math.Max(0, req.TotalUnits), CompletedUnits = Math.Max(0, req.CompletedUnits), CreatedBy = createdBy == "Coach" ? "Coach" : "Student" });
             return id;
         }

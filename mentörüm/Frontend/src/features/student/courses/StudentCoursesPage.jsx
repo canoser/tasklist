@@ -49,7 +49,8 @@ const StudentCoursesPage = () => {
   const { openUpload } = useOpenUpload();
 
   // Müfredat & Konu Takibi
-  const { data: curriculum = [], isLoading: curriculumLoading } = useStudentCurriculum();
+  const [curriculumGrade, setCurriculumGrade] = useState(null);
+  const { data: curriculum = [], isLoading: curriculumLoading } = useStudentCurriculum(curriculumGrade);
   const toggleTopicStatus = useToggleStudentTopicStatus();
   const [subjectFilter, setSubjectFilter] = useState('ALL');
 
@@ -315,6 +316,30 @@ const StudentCoursesPage = () => {
           ════════════════════════════════════════════════════════════ */}
       {activeTab === 'curriculum' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-color-muted)' }}>
+              Görüntülenen Sınıf Müfredatı:
+            </span>
+            <select
+              value={curriculumGrade ?? ''}
+              onChange={(e) => {
+                setCurriculumGrade(e.target.value ? Number(e.target.value) : null);
+                setSubjectFilter('ALL');
+              }}
+              data-testid="student-curriculum-grade-select"
+              style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border-color)', fontSize: '0.85rem' }}
+            >
+              <option value="">
+                Aktif Sınıfım ({profile?.grade === 13 ? 'Mezun' : `${profile?.grade || 12}. Sınıf`})
+              </option>
+              {[6, 7, 8, 9, 10, 11, 12, 13].map((g) => (
+                <option key={g} value={g}>
+                  {g === 13 ? 'Mezun (YKS)' : `${g}. Sınıf Müfredatı`}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* İlerleme Özeti Kartı */}
           <div className={styles.curriculumStats}>
             <div className={styles.statsRow}>

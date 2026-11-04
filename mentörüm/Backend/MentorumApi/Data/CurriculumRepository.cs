@@ -78,11 +78,15 @@ namespace MentorumApi.Data
 
         // Öğrencinin sınıfına göre müfredat + tamamlanma durumu (Aşama 1 & V15 B6).
         // Tamamlanma ve ödev durumu ödevlerden; LastNet ve AvgSuccessRate exam_scores tablosundan hesaplanır.
-        public async Task<IEnumerable<StudentCurriculumTopicDto>> GetStudentCurriculumAsync(Guid studentId)
+        public async Task<IEnumerable<StudentCurriculumTopicDto>> GetStudentCurriculumAsync(Guid studentId, int? gradeOverride = null)
         {
             using var connection = _connectionFactory.CreateConnection();
-            var grade = await connection.ExecuteScalarAsync<int?>("SELECT grade FROM students WHERE id = @StudentId", new { StudentId = studentId });
-            var gradeText = grade?.ToString();
+            int? grade = gradeOverride;
+            if (!grade.HasValue)
+            {
+                grade = await connection.ExecuteScalarAsync<int?>("SELECT grade FROM students WHERE id = @StudentId", new { StudentId = studentId });
+            }
+            var gradeText = (grade.HasValue && grade.Value > 0) ? grade.Value.ToString() : null;
 
             return await connection.QueryAsync<StudentCurriculumTopicDto>(@"
                 SELECT ct.id AS Id,

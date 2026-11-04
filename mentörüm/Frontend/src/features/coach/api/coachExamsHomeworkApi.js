@@ -119,12 +119,13 @@ export const useCoachStudentHomework = (studentId, enabled = true) => {
   });
 };
 
-export const useCoachStudentCurriculum = (studentId, enabled = true) => {
+export const useCoachStudentCurriculum = (studentId, enabled = true, grade = null) => {
   return useQuery({
-    queryKey: queryKeys.coach.studentCurriculum(studentId),
+    queryKey: [...queryKeys.coach.studentCurriculum(studentId), grade ?? 'active'],
     queryFn: async () => {
       if (!studentId) return [];
-      return (await apiClient.get(`/students/${studentId}/curriculum`)) || [];
+      const qs = grade !== null && grade !== undefined && grade !== '' ? `?grade=${encodeURIComponent(grade)}` : '';
+      return (await apiClient.get(`/students/${studentId}/curriculum${qs}`)) || [];
     },
     enabled: !!studentId && enabled,
   });

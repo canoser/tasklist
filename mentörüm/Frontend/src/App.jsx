@@ -38,6 +38,7 @@ import TeacherSchedulePage from './features/teacher/schedule/TeacherSchedulePage
 import TeacherProfilePage from './features/teacher/profile/TeacherProfilePage';
 import StudentProfilePage from './features/student/profile/StudentProfilePage';
 import StudentThemePage from './features/student/theme/StudentThemePage';
+import StudentReportsPage from './features/student/reports/StudentReportsPage';
 import CoachTeacherDetailPage from './features/coach/teachers/CoachTeacherDetailPage';
 import CoachProfilePage from './features/coach/profile/CoachProfilePage';
 import ApprovalsPage from './features/coach/approvals/ApprovalsPage';
@@ -166,6 +167,7 @@ function App() {
           <Route path="calendar" element={<StudentCalendarPage />} />
           <Route path="schedule" element={<StudentSchedulePage />} />
           <Route path="courses" element={<StudentCoursesPage />} />
+          <Route path="reports" element={<StudentReportsPage />} />
           <Route path="profile" element={<StudentProfilePage />} />
           <Route path="theme" element={<StudentThemePage />} />
           <Route path="storage" element={<StoragePage />} />

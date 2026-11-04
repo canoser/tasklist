@@ -42,6 +42,7 @@ import ExamsTab from './components/ExamsTab';
 import TopicsTab from './components/TopicsTab';
 import HomeworkTab from './components/HomeworkTab';
 import NotesTab from './components/NotesTab';
+import GradeReportDashboard from '../../../components/common/GradeReportDashboard/GradeReportDashboard';
 import { ArrowLeft, FileDown, Edit3, PlusCircle, Clock, BookOpen, MessageSquare, Users, Trash2 } from 'lucide-react';
 
 const GROUP_TABS = [
@@ -62,6 +63,7 @@ const GROUP_TABS = [
     icon: BookOpen,
     label: 'Akademik Takip',
     pills: [
+      { id: 'gradeReport', label: '📊 Sınıf Karnesi & Analiz' },
       { id: 'homework', label: 'Ödevler' },
       { id: 'exams', label: 'Sınavlar & Netler' },
       { id: 'topics', label: 'Konu Takibi' },
@@ -100,6 +102,7 @@ const CoachStudentDetail = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('info');
+  const [curriculumGrade, setCurriculumGrade] = useState(null);
   const [isHomeworkModalOpen, setIsHomeworkModalOpen] = useState(false);
   const [selectedTopicForHw, setSelectedTopicForHw] = useState(null);
 
@@ -113,7 +116,7 @@ const CoachStudentDetail = () => {
 
   const { data: notesList, isLoading: isNotesLoading } = useCoachStudentNotes(id, activeTab === 'notes');
   const { data: studentHomeworks } = useCoachStudentHomework(id, activeTab === 'info' || activeTab === 'homework');
-  const { data: curriculum } = useCoachStudentCurriculum(id, activeTab === 'topics');
+  const { data: curriculum } = useCoachStudentCurriculum(id, activeTab === 'topics', curriculumGrade);
   const { data: studentEvents } = useCoachStudentEvents(id, activeTab === 'events');
   const { data: sessions } = useCoachStudentSessions(id, activeTab === 'grow');
   const { data: studentCourses = [] } = useCoachStudentCourses(id, activeTab === 'info' || activeTab === 'teacherNotes');
@@ -366,6 +369,7 @@ const CoachStudentDetail = () => {
             )}
           </Card>
         )}
+        {activeTab === 'gradeReport' && <GradeReportDashboard studentId={id} />}
         {activeTab === 'exams' && <ExamsTab studentId={id} student={student} />}
         {activeTab === 'homework' && (
           <HomeworkTab
@@ -384,6 +388,8 @@ const CoachStudentDetail = () => {
             studentId={id}
             student={student}
             curriculum={curriculum}
+            selectedGrade={curriculumGrade}
+            onSelectGrade={setCurriculumGrade}
             onAssignTopicHomework={(topic) => {
               setSelectedTopicForHw(topic);
               setIsHomeworkModalOpen(true);

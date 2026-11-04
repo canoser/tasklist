@@ -8,6 +8,7 @@ import {
   Calendar, 
   BookOpen, 
   CheckSquare, 
+  BarChart3,
   Palette, 
   User, 
   FolderOpen,
@@ -24,6 +25,7 @@ const StudentLayout = () => {
 
   const sidebarTabs = [
     { path: '/student/home', label: 'Ana Sayfa', icon: Home },
+    { path: '/student/reports', label: 'Raporum & Gelişimim', icon: BarChart3 },
     { path: '/student/calendar', label: 'Takvim & Program', icon: Calendar },
     { path: '/student/courses', label: 'Derslerim', icon: BookOpen },
     { path: '/student/homework', label: 'Ödevler', icon: CheckSquare },
@@ -34,7 +36,7 @@ const StudentLayout = () => {
 
   const bottomNavTabs = [
     { path: '/student/home', label: 'Ana Sayfa', icon: Home },
-    { path: '/student/calendar', label: 'Takvim', icon: Calendar },
+    { path: '/student/reports', label: 'Raporum', icon: BarChart3 },
     { path: '/student/courses', label: 'Derslerim', icon: BookOpen },
     { path: '/student/homework', label: 'Ödevler', icon: CheckSquare },
     { path: '/student/profile', label: 'Profil', icon: User },

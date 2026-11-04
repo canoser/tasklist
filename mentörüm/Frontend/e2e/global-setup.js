@@ -23,6 +23,7 @@ export default async function globalSetup() {
     await client.query(`
       DELETE FROM coach_student_requests;
       DELETE FROM approval_items;
+      DELETE FROM student_subject_targets;
       DELETE FROM student_topic_progress;
       DELETE FROM student_resources;
       DELETE FROM exam_scores;
@@ -35,10 +36,12 @@ export default async function globalSetup() {
       DELETE FROM users WHERE email LIKE '%@e2e.local';
     `);
 
-    // 2. Ensure deterministic curriculum subject & topics exist for V20-UI-09 & V20-UI-21
+    // 2. Ensure deterministic curriculum subject & topics exist for V20 & V21
     const subjId = '11111111-2222-3333-4444-555555555555';
     const topic1Id = 'aaaaaaaa-bbbb-cccc-dddd-000000000001';
     const topic2Id = 'aaaaaaaa-bbbb-cccc-dddd-000000000002';
+    const topic9Id = 'aaaaaaaa-bbbb-cccc-dddd-000000000009';
+    const topic10Id = 'aaaaaaaa-bbbb-cccc-dddd-000000000010';
 
     await client.query(
       `INSERT INTO subjects (id, name, short_code, default_color, is_system_subject)
@@ -50,10 +53,12 @@ export default async function globalSetup() {
     await client.query(
       `INSERT INTO curriculum_topics (id, subject_id, grade, curriculum_type, unit_number, unit_name, topic_number, topic_name, sort_order, is_active)
        VALUES
-         ($1, $3, '12', 'NEW', 1, 'Fonksiyonlar', '1.1', 'Fonksiyon Kavramı ve Özellikleri', 1, 1),
-         ($2, $3, '12', 'NEW', 1, 'Fonksiyonlar', '1.2', 'Bileşke ve Ters Fonksiyon', 2, 1)
+         ($1, $5, '12', 'NEW', 1, 'Fonksiyonlar', '1.1', 'Fonksiyon Kavramı ve Özellikleri', 1, 1),
+         ($2, $5, '12', 'NEW', 1, 'Fonksiyonlar', '1.2', 'Bileşke ve Ters Fonksiyon', 2, 1),
+         ($3, $5, '9', 'NEW', 1, 'Mantık ve Kümeler', '1.1', '9. Sınıf Kümeler Temel Kavramlar', 1, 1),
+         ($4, $5, '10', 'NEW', 1, 'Sayma ve Olasılık', '1.1', '10. Sınıf Permütasyon ve Kombinasyon', 1, 1)
        ON CONFLICT (id) DO NOTHING`,
-      [topic1Id, topic2Id, subjId]
+      [topic1Id, topic2Id, topic9Id, topic10Id, subjId]
     );
 
     // 3. Register Admin, Coach 1, Coach 2 via real API

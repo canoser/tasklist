@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../../api/apiClient';
 import { queryKeys } from '../../../api/queryKeys';
 
@@ -74,6 +74,40 @@ export const useCoachStudentTimeBudget = (studentId, enabled = true) => {
       return await apiClient.get(`/students/${studentId}/time-budget`);
     },
     enabled: !!studentId && enabled,
+  });
+};
+
+export const useStudentGradeReport = (studentId, grade = null, enabled = true) => {
+  return useQuery({
+    queryKey: ['reports', 'grade-report', studentId, grade ?? 'active'],
+    queryFn: async () => {
+      if (!studentId) return null;
+      const qs = grade !== null && grade !== undefined && grade !== '' ? `?grade=${encodeURIComponent(grade)}` : '';
+      return (await apiClient.get(`/reports/students/${studentId}/grade-report${qs}`)) || null;
+    },
+    enabled: !!studentId && enabled,
+  });
+};
+
+export const useUpsertSubjectTargets = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ studentId, grade, targets }) =>
+      apiClient.put(`/reports/students/${studentId}/subject-targets`, { grade, targets }),
+    onSuccess: (_, variables) => {
+      qc.invalidateQueries({ queryKey: ['reports', 'grade-report', variables?.studentId] });
+      qc.invalidateQueries({ queryKey: ['student', 'grade-report'] });
+    },
+  });
+};
+
+export const useCohortByGrade = (grade = null) => {
+  return useQuery({
+    queryKey: ['reports', 'cohort-by-grade', grade ?? 'all'],
+    queryFn: async () => {
+      const qs = grade !== null && grade !== undefined && grade !== '' ? `?grade=${encodeURIComponent(grade)}` : '';
+      return (await apiClient.get(`/reports/cohort-by-grade${qs}`)) || [];
+    },
   });
 };
 

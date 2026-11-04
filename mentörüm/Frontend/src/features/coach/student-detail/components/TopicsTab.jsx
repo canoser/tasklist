@@ -12,7 +12,14 @@ import {
 import { CheckCircle2, Square, Trash2, ExternalLink } from 'lucide-react';
 import styles from '../CoachStudentDetail.module.css';
 
-export default function TopicsTab({ studentId, student, curriculum = [], onAssignTopicHomework }) {
+export default function TopicsTab({
+  studentId,
+  student,
+  curriculum = [],
+  selectedGrade = null,
+  onSelectGrade = null,
+  onAssignTopicHomework,
+}) {
   const [topicSubjectFilter, setTopicSubjectFilter] = useState('ALL');
   const [topicStatusFilter, setTopicStatusFilter] = useState('ALL');
   const [resTitle, setResTitle] = useState('');
@@ -128,6 +135,27 @@ export default function TopicsTab({ studentId, student, curriculum = [], onAssig
         )}
 
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 16, alignItems: 'center' }}>
+          {onSelectGrade && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-color-muted)' }}>Sınıf Müfredatı:</span>
+              <select
+                value={selectedGrade ?? ''}
+                onChange={(e) => onSelectGrade(e.target.value ? Number(e.target.value) : null)}
+                data-testid="topics-grade-filter"
+                style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border-color)', fontSize: '0.85rem' }}
+              >
+                <option value="">
+                  Aktif Sınıf ({student?.grade === 13 ? 'Mezun' : `${student?.grade || 12}. Sınıf`})
+                </option>
+                {[6, 7, 8, 9, 10, 11, 12, 13].map((g) => (
+                  <option key={g} value={g}>
+                    {g === 13 ? 'Mezun (YKS)' : `${g}. Sınıf Müfredatı`}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-color-muted)' }}>Ders:</span>
             <select

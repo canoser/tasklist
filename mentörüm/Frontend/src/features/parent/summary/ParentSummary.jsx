@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useActiveParentChild, useParentChildHomework, useParentStudyStats, useParentTeacherNotes } from '../parentApi';
 import Card from '../../../components/common/Card/Card';
 import ChildSelector from '../../../components/common/ChildSelector/ChildSelector';
+import GradeReportDashboard from '../../../components/common/GradeReportDashboard/GradeReportDashboard';
 import { formatDate } from '../../../utils/dateUtils';
 import { BookOpen, Target, Clock, HelpCircle, MessageSquare } from 'lucide-react';
 import styles from './ParentSummary.module.css';
@@ -107,6 +108,13 @@ const ParentSummary = () => {
         <Card padding="md" style={{ background: 'var(--bg-app)', border: '1px solid var(--border-color)', color: 'var(--text-color-muted)', fontSize: '0.85rem' }}>
           🔒 Sınav sonuçları görünümü koç tarafından kısıtlanmıştır.
         </Card>
+      )}
+
+      {/* Sınıf Bazlı Eğitim Koçluğu Karnesi & Arşivi */}
+      {student?.studentId && (
+        <section className={styles.section}>
+          <GradeReportDashboard studentId={student.studentId} />
+        </section>
       )}
 
       {/* Öğretmen Görüşleri & Değerlendirmeleri */}

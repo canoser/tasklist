@@ -142,9 +142,12 @@ namespace MentorumApi.Data
                     }
                 }
 
+                var penaltyMode = await conn.ExecuteScalarAsync<string?>(
+                    "SELECT value FROM system_settings WHERE key = 'net_penalty_mode'", transaction: tx) ?? NetCalculator.PenaltyModeOfficial;
+
                 var sql = @"
-                    INSERT INTO exam_results (id, student_id, program_id, created_by, exam_date, exam_type, exam_name, total_net, notes, error_reasons, created_at)
-                    VALUES (@Id, @StudentId, @ProgramId, @CreatedBy, @ExamDate, @ExamType, @ExamName, @TotalNet, @Notes, @ErrorReasons, @Now)";
+                    INSERT INTO exam_results (id, student_id, program_id, created_by, exam_date, exam_type, exam_name, total_net, notes, error_reasons, grade, created_at)
+                    VALUES (@Id, @StudentId, @ProgramId, @CreatedBy, @ExamDate, @ExamType, @ExamName, @TotalNet, @Notes, @ErrorReasons, @Grade, @Now)";
 
                 var scoreSql = @"
                     INSERT INTO exam_scores (
@@ -164,8 +167,10 @@ namespace MentorumApi.Data
                     var examId = isFirst ? firstExamId : Guid.NewGuid();
                     isFirst = false;
 
-                    var studentTrack = await conn.QuerySingleOrDefaultAsync<string?>(
-                        "SELECT track FROM students WHERE id = @StudentId", new { StudentId = sId }, tx);
+                    var studentMeta = await conn.QuerySingleOrDefaultAsync<StudentTrackGradeRow>(
+                        "SELECT track AS Track, grade AS Grade FROM students WHERE id = @StudentId", new { StudentId = sId }, tx);
+                    var studentTrack = studentMeta?.Track;
+                    var studentGrade = studentMeta?.Grade;
 
                     decimal sumNet = 0m;
                     bool hasComputedNet = false;
@@ -176,7 +181,7 @@ namespace MentorumApi.Data
                         decimal? computedNet = null;
                         if (ps.QuestionCount.HasValue || ps.Correct.HasValue || ps.Wrong.HasValue || ps.Blank.HasValue)
                         {
-                            computedNet = NetCalculator.ComputeNet(ps.Correct ?? 0, ps.Wrong ?? 0, ps.Blank ?? 0, studentTrack, req.ExamType);
+                            computedNet = NetCalculator.ComputeNet(ps.Correct ?? 0, ps.Wrong ?? 0, ps.Blank ?? 0, studentTrack, req.ExamType, studentGrade, penaltyMode);
                             sumNet += computedNet.Value;
                             hasComputedNet = true;
                         }
@@ -202,6 +207,7 @@ namespace MentorumApi.Data
                         TotalNet = finalTotalNet,
                         req.Notes,
                         req.ErrorReasons,
+                        Grade = studentGrade,
                         Now = DateTime.UtcNow
                     }, tx);
 
@@ -268,6 +274,12 @@ namespace MentorumApi.Data
             public Guid SubjectId { get; set; }
             public string SubjectCode { get; set; } = "";
             public string SubjectName { get; set; } = "";
+        }
+
+        private sealed class StudentTrackGradeRow
+        {
+            public string? Track { get; set; }
+            public int? Grade { get; set; }
         }
 
         public async Task<bool> DeleteExamResultAsync(Guid actorId, Guid examId, bool isCoach)

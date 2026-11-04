@@ -81,11 +81,12 @@ namespace MentorumApi.Data
                     await conn.ExecuteAsync(@"
                         INSERT INTO homework_assignments (
                             id, subject_id, curriculum_topic_id, snapshot_title, snapshot_desc, snapshot_source,
-                            student_id, program_id, course_id, created_by, due_date, status, assigned_via, priority, created_at, updated_at
+                            student_id, program_id, course_id, created_by, due_date, status, assigned_via, priority, grade, created_at, updated_at
                         )
                         VALUES (
                             @Id, @SubjectId, @CurriculumTopicId, @Title, @Description, @Source,
-                            @StudentId, @ProgramId, @CourseId, @CreatedBy, @DueDate, 'PENDING', @AssignedVia, @Priority, @Now, @Now
+                            @StudentId, @ProgramId, @CourseId, @CreatedBy, @DueDate, 'PENDING', @AssignedVia, @Priority,
+                            (SELECT grade FROM students WHERE id = @StudentId), @Now, @Now
                         )", new {
                         Id = assignId,
                         req.SubjectId,
@@ -353,11 +354,12 @@ namespace MentorumApi.Data
             await conn.ExecuteAsync(@"
                 INSERT INTO homework_assignments (
                     id, subject_id, snapshot_title, snapshot_desc, snapshot_source,
-                    student_id, program_id, created_by, due_date, status, assigned_via, priority, created_at, updated_at
+                    student_id, program_id, created_by, due_date, status, assigned_via, priority, grade, created_at, updated_at
                 )
                 VALUES (
                     @Id, @SubjectId, @Title, @Description, @Source,
-                    @StudentId, @ProgramId, @StudentId, @DueDate, 'PENDING', 'INDIVIDUAL', @Priority, NOW(), NOW()
+                    @StudentId, @ProgramId, @StudentId, @DueDate, 'PENDING', 'INDIVIDUAL', @Priority,
+                    (SELECT grade FROM students WHERE id = @StudentId), NOW(), NOW()
                 )",
                 new
                 {

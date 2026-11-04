@@ -249,8 +249,8 @@ namespace MentorumApi.Data
                 {
                     var id = Guid.NewGuid();
                     await conn.ExecuteAsync(@"
-                        INSERT INTO homework_assignments (id, subject_id, curriculum_topic_id, snapshot_title, snapshot_desc, snapshot_source, student_id, program_id, course_id, created_by, due_date, status, version, created_at, updated_at)
-                        VALUES (@Id, @SubjectId, @CurriculumTopicId, @Title, @Description, @Source, @StudentId, @ProgramId, @CourseId, @CreatedBy, @DueDate, 'PENDING', 1, @Now, @Now)",
+                        INSERT INTO homework_assignments (id, subject_id, curriculum_topic_id, snapshot_title, snapshot_desc, snapshot_source, student_id, program_id, course_id, created_by, due_date, status, version, grade, created_at, updated_at)
+                        VALUES (@Id, @SubjectId, @CurriculumTopicId, @Title, @Description, @Source, @StudentId, @ProgramId, @CourseId, @CreatedBy, @DueDate, 'PENDING', 1, (SELECT grade FROM students WHERE id = @StudentId), @Now, @Now)",
                         new
                         {
                             Id = id,
@@ -287,8 +287,8 @@ namespace MentorumApi.Data
             using var conn = _connectionFactory.CreateConnection();
             var id = Guid.NewGuid();
             await conn.ExecuteAsync(@"
-                INSERT INTO exam_results (id, student_id, program_id, course_id, created_by, exam_date, exam_type, exam_name, total_net, created_at)
-                VALUES (@Id, @StudentId, @ProgramId, @CourseId, @CreatedBy, @ExamDate, @ExamType, @ExamName, @TotalNet, @Now)",
+                INSERT INTO exam_results (id, student_id, program_id, course_id, created_by, exam_date, exam_type, exam_name, total_net, grade, created_at)
+                VALUES (@Id, @StudentId, @ProgramId, @CourseId, @CreatedBy, @ExamDate, @ExamType, @ExamName, @TotalNet, (SELECT grade FROM students WHERE id = @StudentId), @Now)",
                 new
                 {
                     Id = id,

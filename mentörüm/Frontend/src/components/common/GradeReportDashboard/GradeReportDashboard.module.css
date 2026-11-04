@@ -1,0 +1,235 @@
+.dashboardWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.profileBanner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.profileHeaderLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.badgeRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.systemTitle {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-color, #0f172a);
+}
+
+.systemSubtitle {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--text-color-muted, #64748b);
+}
+
+.gradeTabsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color, #e2e8f0);
+}
+
+.insightsList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 10px;
+}
+
+.insightCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--surface-color, #ffffff);
+}
+
+.insightTitle {
+  font-size: 0.86rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+  color: var(--text-color, #0f172a);
+}
+
+.insightMsg {
+  font-size: 0.8rem;
+  color: var(--text-color-muted, #64748b);
+  line-height: 1.35;
+}
+
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.kpiCard {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kpiLabel {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-color-muted, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.kpiValueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.kpiValue {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--text-color, #0f172a);
+}
+
+.kpiUnit {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-color-muted, #64748b);
+}
+
+.kpiSubtext {
+  font-size: 0.78rem;
+  color: var(--text-color-muted, #64748b);
+}
+
+.twoColGrid {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .twoColGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 12px 0;
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: var(--text-color, #0f172a);
+}
+
+.metricRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.metricHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.84rem;
+}
+
+.progressTrack {
+  width: 100%;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--border-color, #e2e8f0);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.25s ease;
+}
+
+.dualBarTrack {
+  display: flex;
+  width: 100%;
+  height: 14px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--border-color, #e2e8f0);
+}
+
+.svgChartBox {
+  width: 100%;
+  overflow-x: auto;
+  padding: 6px 0;
+}
+
+.tableWrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.masteryTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+.masteryTable th {
+  text-align: left;
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  color: var(--text-color-muted, #64748b);
+  font-weight: 600;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+}
+
+.masteryTable td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  vertical-align: middle;
+}
+
+.targetGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.targetRow {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 8px;
+}
+

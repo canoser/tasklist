@@ -27,11 +27,11 @@ namespace MentorumApi.Endpoints
                 return Results.Ok(await repo.GetStudentExamsAsync(studentId.Value));
             });
 
-            self.MapGet("/curriculum", async ([FromServices] CurriculumRepository repo, ClaimsPrincipal user) =>
+            self.MapGet("/curriculum", async ([FromQuery] int? grade, [FromServices] CurriculumRepository repo, ClaimsPrincipal user) =>
             {
                 var studentId = user.GetUserId();
                 if (studentId == null) return Results.Unauthorized();
-                return Results.Ok(await repo.GetStudentCurriculumAsync(studentId.Value));
+                return Results.Ok(await repo.GetStudentCurriculumAsync(studentId.Value, grade));
             });
 
             self.MapGet("/goal", async ([FromServices] StudentRepository repo, ClaimsPrincipal user) =>
@@ -488,6 +488,34 @@ namespace MentorumApi.Endpoints
 
                 var updatedJson = await repo.ToggleStudentHabitAsync(studentId.Value, req);
                 return Results.Ok(new { message = "Alışkanlık durumu güncellendi.", habitsData = updatedJson });
+            });
+
+            // --- V21: Öğrenci Kendi Sınıf Karnesi ve Geçmiş Sınıf Arşivi ---
+            self.MapGet("/grade-report", async ([FromQuery] int? grade, [FromServices] ReportsRepository repo, ClaimsPrincipal user) =>
+            {
+                var studentId = user.GetUserId();
+                if (studentId == null) return Results.Unauthorized();
+
+                var (canView, canEditTargets) = await repo.CheckStudentReportAccessAsync(studentId.Value, "Student", studentId.Value);
+                if (!canView) return Results.Forbid();
+
+                var report = await repo.GetStudentGradeReportAsync(studentId.Value, grade, canEditTargets);
+                if (report == null) return Results.NotFound(new { error = "Öğrenci profili bulunamadı." });
+
+                return Results.Ok(report);
+            });
+
+            self.MapPut("/subject-targets", async ([FromBody] UpsertSubjectTargetsRequest req, [FromServices] ReportsRepository repo, ClaimsPrincipal user) =>
+            {
+                var studentId = user.GetUserId();
+                if (studentId == null) return Results.Unauthorized();
+
+                var (_, canEditTargets) = await repo.CheckStudentReportAccessAsync(studentId.Value, "Student", studentId.Value);
+                if (!canEditTargets)
+                    return Results.Json(new { error = "Hedef net düzenleme yetkiniz koçunuz tarafından kısıtlanmış." }, statusCode: 403);
+
+                await repo.UpsertSubjectTargetsAsync(studentId.Value, req.Grade, req.Targets ?? new(), "Student");
+                return Results.Ok(new { message = "Ders bazlı hedef netler kaydedildi." });
             });
         }
     }

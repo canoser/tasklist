@@ -53,11 +53,11 @@ namespace MentorumApi.Data
                 INSERT INTO study_sessions (
                     id, program_id, student_id, subject_id, curriculum_topic_id,
                     minutes, question_count, correct, wrong, blank, source_type,
-                    started_at, ended_at, created_at
+                    started_at, ended_at, grade, created_at
                 ) VALUES (
                     @Id, @ProgramId, @StudentId, @SubjectId, @CurriculumTopicId,
                     @Minutes, @QuestionCount, @Correct, @Wrong, @Blank, @SourceType,
-                    @StartedAt, @EndedAt, NOW()
+                    @StartedAt, @EndedAt, (SELECT grade FROM students WHERE id = @StudentId), NOW()
                 )";
 
             var parameters = new

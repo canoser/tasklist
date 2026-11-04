@@ -1,18 +1,42 @@
 import React, { useState } from 'react';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
+import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
+import StatusBadge from '../../../components/common/StatusBadge/StatusBadge';
+import GradeReportDashboard from '../../../components/common/GradeReportDashboard/GradeReportDashboard';
 import styles from './CoachReports.module.css';
-import { useReportsOverview, useStudents, useStudentReport, useReportsDetail, downloadStudentReportPdf } from '../coachApi';
+import {
+  useReportsOverview,
+  useStudents,
+  useStudentReport,
+  useReportsDetail,
+  useCohortByGrade,
+  downloadStudentReportPdf,
+} from '../coachApi';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
-import { BarChart3, CheckCircle2, AlertCircle, Sparkles, FileDown, BookOpen, TrendingUp, Percent } from 'lucide-react';
+import { BarChart3, CheckCircle2, AlertCircle, Sparkles, FileDown, BookOpen, TrendingUp, Percent, Users } from 'lucide-react';
+
+const GRADE_FILTER_TABS = [
+  { id: 'ALL', label: 'Tüm Sınıflar' },
+  { id: '6', label: '6. Sınıf' },
+  { id: '7', label: '7. Sınıf' },
+  { id: '8', label: '8. Sınıf (LGS)' },
+  { id: '9', label: '9. Sınıf' },
+  { id: '10', label: '10. Sınıf' },
+  { id: '11', label: '11. Sınıf' },
+  { id: '12', label: '12. Sınıf (YKS)' },
+  { id: '13', label: 'Mezun' },
+];
 
 const CoachReports = () => {
   const { data: report, isLoading, isError } = useReportsOverview();
   const { data: students } = useStudents();
   const [selectedStudentId, setSelectedStudentId] = useState('');
+  const [cohortGradeFilter, setCohortGradeFilter] = useState('ALL');
   const { data: studentReport } = useStudentReport(selectedStudentId || null);
   const { data: detail } = useReportsDetail();
+  const { data: cohorts = [] } = useCohortByGrade(cohortGradeFilter === 'ALL' ? null : Number(cohortGradeFilter));
   const [isPdfDownloading, setIsPdfDownloading] = useState(false);
 
   const handleDownloadPdf = async () => {
@@ -67,10 +91,13 @@ const CoachReports = () => {
             value={selectedStudentId}
             onChange={(e) => setSelectedStudentId(e.target.value)}
             className={styles.studentSelect}
+            data-testid="coach-reports-student-select"
           >
-            <option value="">Tüm Öğrenciler</option>
+            <option value="">Tüm Öğrenciler (Sınıf Kohort Görünümü)</option>
             {students?.map((s) => (
-              <option key={s.id} value={s.id}>{s.fullName}</option>
+              <option key={s.id} value={s.id}>
+                {s.fullName} {s.grade ? `(${s.grade === 13 ? 'Mezun' : `${s.grade}. Sınıf`})` : ''}
+              </option>
             ))}
           </select>
 
@@ -86,7 +113,9 @@ const CoachReports = () => {
         </div>
       </header>
 
-      {!hasStudents ? (
+      {selectedStudentId ? (
+        <GradeReportDashboard studentId={selectedStudentId} />
+      ) : !hasStudents ? (
         <Card className={styles.emptyCard}>
           <div style={{ textAlign: 'center', padding: '32px' }}>
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
@@ -98,6 +127,71 @@ const CoachReports = () => {
         </Card>
       ) : (
         <>
+          <Card style={{ marginBottom: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 12 }}>
+              <h3 className={styles.cardTitle} style={{ margin: 0 }}>
+                <Users size={16} />
+                <span>6–12. Sınıf Bazlı Eğitim Koçluğu Kohort Sistemleri</span>
+              </h3>
+              <SegmentedTabs
+                tabs={GRADE_FILTER_TABS}
+                activeTab={cohortGradeFilter}
+                onChange={setCohortGradeFilter}
+                size="sm"
+              />
+            </div>
+
+            {cohorts.length === 0 ? (
+              <p style={{ color: 'var(--text-color-muted)', fontSize: '0.85rem', margin: 0 }}>
+                Seçili sınıf düzeyinde aktif öğrenci bulunmuyor.
+              </p>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12 }}>
+                {cohorts.map((c) => (
+                  <div
+                    key={c.grade}
+                    data-testid={`cohort-card-grade-${c.grade}`}
+                    style={{
+                      padding: 14,
+                      borderRadius: 10,
+                      border: '1px solid var(--border-color)',
+                      background: 'var(--bg-app, #f8fafc)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 8,
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+                      <strong style={{ fontSize: '0.92rem' }}>{c.systemTitle}</strong>
+                      <StatusBadge status="ACTIVE" label={`${c.studentCount} Öğrenci`} />
+                    </div>
+                    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', fontSize: '0.8rem', color: 'var(--text-color-muted)' }}>
+                      <span>Ödev: <strong>%{c.avgHomeworkCompletionRate}</strong></span>
+                      <span>Son Net Ort: <strong>{c.avgLatestExamNet}</strong></span>
+                      <span>Haftalık: <strong>{c.avgWeeklyStudyMinutes} dk</strong></span>
+                      {c.atRiskStudentCount > 0 && (
+                        <StatusBadge status="OVERDUE" label={`${c.atRiskStudentCount} Riskli`} />
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
+                      {(c.students || []).map((st) => (
+                        <Button
+                          key={st.studentId}
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedStudentId(st.studentId)}
+                          data-testid={`cohort-open-student-${st.studentId}`}
+                        >
+                          <span>{st.studentName}</span>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+
           <div className={styles.grid}>
             <Card>
               <div className={styles.cardHeader}>

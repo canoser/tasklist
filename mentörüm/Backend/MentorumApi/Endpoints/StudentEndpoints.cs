@@ -57,6 +57,7 @@ namespace MentorumApi.Endpoints
 
             group.MapGet("/{id:guid}/curriculum", async (
                 Guid id,
+                [FromQuery] int? grade,
                 [FromServices] ProgramAccessGuard guard,
                 [FromServices] CurriculumRepository curriculumRepo,
                 ClaimsPrincipal user) =>
@@ -67,7 +68,7 @@ namespace MentorumApi.Endpoints
                 if (await guard.GetOwnedStudentProgramAsync(coachId.Value, id) == null)
                     return Results.NotFound(new { error = "Öğrenci bulunamadı veya erişim yetkiniz yok." });
 
-                var topics = await curriculumRepo.GetStudentCurriculumAsync(id);
+                var topics = await curriculumRepo.GetStudentCurriculumAsync(id, grade);
                 return Results.Ok(topics);
             });
 
@@ -148,6 +149,7 @@ namespace MentorumApi.Endpoints
                 if (student == null) return Results.NotFound(new { error = "Öğrenci bulunamadı veya erişim yetkiniz yok." });
 
                 var report = await reportsRepo.GetStudentReportAsync(coachId.Value, id);
+                var gradeReport = await reportsRepo.GetStudentGradeReportAsync(id, null, false);
                 var exams = await repo.GetStudentExamsAsync(id);
 
                 var maskedName = MaskFullName(student.FullName);
@@ -161,7 +163,9 @@ namespace MentorumApi.Endpoints
                         page.Margin(2, Unit.Centimetre);
                         page.Content().Column(col =>
                         {
-                            col.Item().Text("Veli Bilgilendirme Özeti").FontSize(18).Bold();
+                            col.Item().Text(gradeReport?.Profile?.SystemTitle ?? "Veli Bilgilendirme Özeti").FontSize(16).Bold();
+                            if (!string.IsNullOrEmpty(gradeReport?.Profile?.WrongPenaltyRule))
+                                col.Item().Text($"Net Hesaplama Kuralı: {gradeReport.Profile.WrongPenaltyRule}").FontSize(10);
                             col.Item().Text($"Öğrenci: {maskedName}");
                             col.Item().Text($"Sınıf: {(student.Grade?.ToString() ?? "-")} · Alan: {student.Track ?? "-"}");
                             if (!string.IsNullOrEmpty(student.TargetUniversity))
@@ -172,6 +176,21 @@ namespace MentorumApi.Endpoints
                             col.Item().Text($"Tamamlanan: {report?.TotalCompleted ?? 0}");
                             col.Item().Text($"Gecikmiş: {report?.TotalOverdue ?? 0}");
                             col.Item().Text($"Başarı Oranı: %{(int)Math.Round(report?.SuccessRate ?? 0)}");
+                            if (gradeReport?.Wellbeing != null)
+                            {
+                                col.Item().Text("").FontSize(8);
+                                col.Item().Text("İyi Oluş & Motivasyon (Son 14 Gün)").Bold();
+                                col.Item().Text($"Check-in Sayısı: {gradeReport.Wellbeing.RecentCheckinCount} · Pozitif Duygu: %{gradeReport.Wellbeing.PositiveMoodRate} · GROW Seansı: {gradeReport.Wellbeing.CompletedGrowSessionsCount}");
+                            }
+                            if (gradeReport?.SubjectMastery?.Count > 0)
+                            {
+                                col.Item().Text("").FontSize(8);
+                                col.Item().Text("Ders Bazlı Müfredat ve Başarı Özeti").Bold();
+                                foreach (var sm in gradeReport.SubjectMastery.Take(8))
+                                {
+                                    col.Item().Text($"{sm.SubjectName}: Konu %{sm.TopicCompletionPercent} ({sm.CompletedTopics}/{sm.TotalTopics}) · Son Net: {sm.LastExamNet}{(sm.TargetNet.HasValue ? $" · Hedef: {sm.TargetNet.Value}" : "")}");
+                                }
+                            }
                             col.Item().Text("").FontSize(8);
                             col.Item().Text("Son Sınav Sonuçları").Bold();
                             foreach (var e in exams.Take(5))
