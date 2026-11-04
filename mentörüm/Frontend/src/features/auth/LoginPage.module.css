@@ -65,11 +65,11 @@
 /* Giriş Kartı */
 .loginCard {
   width: 100%;
-  background: rgba(255, 255, 255, 0.85) !important; /* overriden card bg for extra glass */
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.5) !important;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1) !important;
+  background: var(--bg-color-surface) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--shadow-lg) !important;
 }
 
 .formTitle {

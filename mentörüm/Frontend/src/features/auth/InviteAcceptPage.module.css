@@ -31,9 +31,10 @@
 }
 
 .inviteCard {
-  background: rgba(255, 255, 255, 0.9) !important;
+  background: var(--bg-color-surface) !important;
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color) !important;
 }
 
 .header {
