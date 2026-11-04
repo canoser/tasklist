@@ -3,7 +3,13 @@ import Card from '../../../../components/common/Card/Card';
 import Button from '../../../../components/common/Button/Button';
 import Input from '../../../../components/common/Input/Input';
 import SegmentedTabs from '../../../../components/common/SegmentedTabs/SegmentedTabs';
-import { useAddExamResult, useSubjects, useTopics } from '../../coachApi';
+import {
+  useAddExamResult,
+  useSubjects,
+  useTopics,
+  useUpdateStudentPermissions,
+  useDeleteCoachStudentExam,
+} from '../../coachApi';
 import { Trash2, Plus } from 'lucide-react';
 import styles from '../CoachStudentDetail.module.css';
 
@@ -151,6 +157,20 @@ export default function ExamsTab({ studentId, student }) {
   const defaultLevel = student?.grade ? String(student.grade) : student?.track === 'ORTAOKUL' ? '8' : '12';
   const { data: subjects = [] } = useSubjects(defaultLevel);
   const addExamMutation = useAddExamResult();
+  const updatePermsMutation = useUpdateStudentPermissions(studentId);
+  const deleteExamMutation = useDeleteCoachStudentExam(studentId);
+
+  const handleToggleExamPerm = () => {
+    if (!student) return;
+    updatePermsMutation.mutate({
+      canCompleteTopics: !!student.canCompleteTopics,
+      canEditGoals: !!student.canEditGoals,
+      canCompleteHomework: !!student.canCompleteHomework,
+      canAddExamResults: !student.canAddExamResults,
+      canManageResources: !!student.canManageResources,
+      canSelfAssignWork: !!student.canSelfAssignWork,
+    });
+  };
 
   const addDetailedRow = () => {
     setDetailedRows((prev) => [
@@ -286,10 +306,66 @@ export default function ExamsTab({ studentId, student }) {
 
   return (
     <Card title="Sınavlar & Net Takibi" className={styles.notesCard}>
+      {student && (
+        <div
+          style={{
+            display: 'flex',
+            gap: 16,
+            flexWrap: 'wrap',
+            padding: '10px 12px',
+            marginBottom: 14,
+            borderRadius: 8,
+            background: 'var(--bg-app)',
+            border: '1px solid var(--border-color)',
+            alignItems: 'center',
+          }}
+        >
+          <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-primary)' }}>🛡️ Hızlı Yetki:</span>
+          <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.82rem', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={!!student.canAddExamResults}
+              disabled={updatePermsMutation.isPending}
+              onChange={handleToggleExamPerm}
+            />
+            <span>Öğrenci kendi deneme / sınav netini girebilsin</span>
+          </label>
+        </div>
+      )}
+
       <div className={styles.grid}>
         {student.examResults?.length > 0 ? (
           student.examResults.map((exam) => (
             <Card key={exam.id} title={`${exam.examName || exam.examType}`}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                <div>
+                  {exam.createdByStudent && (
+                    <span
+                      style={{
+                        fontSize: '0.7rem',
+                        padding: '2px 7px',
+                        borderRadius: 999,
+                        background: 'rgba(59,130,246,0.12)',
+                        color: '#2563eb',
+                        fontWeight: 600,
+                      }}
+                    >
+                      👤 Öğrenci Girdi
+                    </span>
+                  )}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="xs"
+                  iconOnly
+                  title="Sınav Sonucunu Sil"
+                  style={{ color: '#ef4444' }}
+                  disabled={deleteExamMutation.isPending}
+                  onClick={() => deleteExamMutation.mutate({ examId: exam.id })}
+                >
+                  <Trash2 size={14} />
+                </Button>
+              </div>
               <div className={styles.infoRow}>
                 <span className={styles.infoLabel}>Tür:</span>
                 <span className={styles.infoValue}>{exam.examType || 'Deneme'}</span>

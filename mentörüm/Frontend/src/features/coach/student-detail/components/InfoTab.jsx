@@ -12,7 +12,13 @@ import {
   useAddCourseStudent,
   useRemoveCourseStudent,
 } from '../../coachSchoolApi';
-import { useMoveToGroup, useMoveToIndividual, useCoachStudentCourses } from '../../coachApi';
+import {
+  useMoveToGroup,
+  useMoveToIndividual,
+  useCoachStudentCourses,
+  useUpdateStudentPermissions,
+  useUnlinkStudent,
+} from '../../coachApi';
 import { useAuthStore } from '../../../auth/authStore';
 import OkrGoalTreeCard from './OkrGoalTreeCard';
 import HabitTrackerCard from './HabitTrackerCard';
@@ -49,6 +55,30 @@ export default function InfoTab({
   const createCourse = useCreateCourse();
   const addCourseStudent = useAddCourseStudent();
   const removeCourseStudent = useRemoveCourseStudent();
+  const updatePerms = useUpdateStudentPermissions(studentId);
+  const unlinkStudent = useUnlinkStudent();
+
+  const perms = student?.permissions || {
+    canCompleteTopics: true,
+    canCompleteHomework: true,
+    canEditGoals: true,
+    canAddExamResults: false,
+    canManageResources: false,
+    canSelfAssignWork: false,
+  };
+
+  const handleTogglePerm = (key) => {
+    const next = {
+      canCompleteTopics: Boolean(perms.canCompleteTopics),
+      canCompleteHomework: Boolean(perms.canCompleteHomework),
+      canEditGoals: Boolean(perms.canEditGoals),
+      canAddExamResults: Boolean(perms.canAddExamResults),
+      canManageResources: Boolean(perms.canManageResources),
+      canSelfAssignWork: Boolean(perms.canSelfAssignWork),
+      [key]: !perms[key],
+    };
+    updatePerms.mutate(next);
+  };
 
   const enrolledCourseIds = new Set(studentCourses.map((c) => c.id));
   const isOtherStudentAutoCourse = (c) =>
@@ -242,8 +272,70 @@ export default function InfoTab({
           <div className={styles.groupStatsNote} style={{ marginTop: 14 }}>
             Güncel Bireysel Ödevler: {student.individualHomeworkCount ?? 0} • Geçmiş Grup Ödevleri: {student.groupHomeworkCount ?? 0}
           </div>
+
+          <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--border-color)' }}>
+            <Button
+              variant="outline"
+              size="xs"
+              isLoading={unlinkStudent.isPending}
+              onClick={async () => {
+                if (!window.confirm(`${student.fullName} adlı öğrenciyi koçluk programınızdan ayırıp bağımsız öğrenci moduna geçirmek istediğinize emin misiniz? Öğrencinin hesabı ve geçmiş verileri silinmez.`)) return;
+                await unlinkStudent.mutateAsync({ studentId });
+                window.location.href = '/coach/students';
+              }}
+            >
+              🌱 Koçluktan Ayır (Bağımsız Moda Geçir)
+            </Button>
+          </div>
         </Card>
       </div>
+
+      {/* V20: 6'lı Öğrenci Yetkileri (Özerklik Ayarları) Kartı */}
+      <Card title="🛡️ Öğrenci Yetkileri (Özerklik Ayarları)">
+        <p style={{ margin: '0 0 12px', fontSize: '0.84rem', color: 'var(--text-color-secondary)' }}>
+          Öğrencinin kendi hesabından hangi işlemleri doğrudan yapabileceğini buradan yönetebilirsiniz. Öğrenci hangi girişi yaparsa yapsın tüm kayıtları siz görebilir ve değiştirebilirsiniz.
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 }}>
+          {[
+            { key: 'canCompleteTopics', label: 'Konu Tamamlama İşaretleme', desc: 'Müfredat konularını bitti olarak işaretleyebilir' },
+            { key: 'canCompleteHomework', label: 'Ödev Tamamlama (Doğrudan)', desc: 'Kapalıysa tamamlama bildirimi onayınıza düşer' },
+            { key: 'canEditGoals', label: 'Hedef Belirleme & Güncelleme', desc: 'Üniversite, bölüm ve net hedefini güncelleyebilir' },
+            { key: 'canAddExamResults', label: 'Kendi Netlerini / Denemelerini Girme', desc: 'Deneme ve sınav sonuçlarını kendisi ekleyebilir' },
+            { key: 'canManageResources', label: 'Kaynak & Video Ders Ekleme', desc: 'Kendi soru bankası ve video derslerini ekleyebilir' },
+            { key: 'canSelfAssignWork', label: 'Kendine Çalışma / Ödev Ekleme', desc: 'Kendi çalışma planına bireysel görev ekleyebilir' },
+          ].map((item) => (
+            <label
+              key={item.key}
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 10,
+                padding: '10px 12px',
+                borderRadius: 10,
+                border: '1px solid var(--border-color)',
+                background: perms[item.key] ? 'var(--color-primary-light)' : 'var(--bg-color-surface)',
+                cursor: 'pointer',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={Boolean(perms[item.key])}
+                disabled={updatePerms.isPending}
+                onChange={() => handleTogglePerm(item.key)}
+                style={{ marginTop: 3 }}
+              />
+              <div>
+                <div style={{ fontSize: '0.86rem', fontWeight: 700, color: 'var(--text-color-primary)' }}>
+                  {item.label}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-color-secondary)', marginTop: 2 }}>
+                  {item.desc}
+                </div>
+              </div>
+            </label>
+          ))}
+        </div>
+      </Card>
 
       {/* U18: Öğrencinin Aldığı Dersler & Öğretmenler Kartı */}
       <Card

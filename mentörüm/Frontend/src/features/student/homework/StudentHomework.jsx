@@ -1,9 +1,17 @@
 import React, { useRef, useState } from 'react';
-import { Clock, Paperclip, X, MessageSquare, ChevronUp, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { useStudentHomework, useCompleteHomework, useRequestExtension } from '../studentApi';
+import { Clock, Paperclip, X, MessageSquare, ChevronUp, AlertCircle, CheckCircle2, Plus } from 'lucide-react';
+import {
+  useStudentHomework,
+  useCompleteHomework,
+  useRequestExtension,
+  useStudentProfile,
+  useCreateStudentSelfHomework,
+} from '../studentApi';
 import { useUploadFile } from '../../storage/storageApi';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
+import Input from '../../../components/common/Input/Input';
+import Modal from '../../../components/common/Modal/Modal';
 import StatusBadge from '../../../components/common/StatusBadge/StatusBadge';
 import { formatDate } from '../../../utils/dateUtils';
 import { PriorityBadge, AssignedViaBadge } from '../../../components/common/HomeworkStatusBadges';
@@ -18,7 +26,7 @@ const formatDueDate = (dateStr) => {
   return formatDate(dateStr, hasTime ? 'dd MMM yyyy, HH:mm' : 'dd MMM yyyy');
 };
 
-const HomeworkCard = ({ hw, onComplete, onRequestExtension }) => {
+const HomeworkCard = ({ hw, canCompleteDirect, onComplete, onRequestExtension }) => {
   const [percentage, setPercentage] = useState(hw.completionPercentage || 0);
   const [note, setNote] = useState(hw.studentNote || '');
   const [showNoteDetails, setShowNoteDetails] = useState(Boolean(hw.studentNote));
@@ -66,6 +74,16 @@ const HomeworkCard = ({ hw, onComplete, onRequestExtension }) => {
             )}
             <PriorityBadge priority={hw.priority} />
             <AssignedViaBadge assignedVia={hw.assignedVia} />
+            {hw.createdByStudent && (
+              <span className={styles.subjectBadge} style={{ background: 'var(--color-primary-light)', color: 'var(--color-primary)' }}>
+                👤 Kendi Çalışmam
+              </span>
+            )}
+            {hw.pendingApproval && (
+              <span className={styles.subjectBadge} style={{ background: 'rgba(245, 158, 11, 0.14)', color: '#d97706' }}>
+                ⏳ Koç Onayı Bekliyor
+              </span>
+            )}
           </div>
           <h3 className={styles.hwTitle}>{hw.snapshotTitle}</h3>
         </div>
@@ -215,7 +233,7 @@ const HomeworkCard = ({ hw, onComplete, onRequestExtension }) => {
 
           <Button 
             size="sm" 
-            disabled={uploadFile.isPending}
+            disabled={uploadFile.isPending || hw.pendingApproval}
             onClick={() => onComplete({
               homeworkId: hw.id,
               percentage,
@@ -224,7 +242,13 @@ const HomeworkCard = ({ hw, onComplete, onRequestExtension }) => {
               expectedVersion: hw.version ?? 1, // F2: Eşzamanlılık versiyon kontrolü
             })}
           >
-            {percentage === 100 ? 'Tamamla' : 'İlerlemeyi Kaydet'}
+            {hw.pendingApproval
+              ? '⏳ Onay Bekleniyor'
+              : percentage === 100
+                ? canCompleteDirect
+                  ? 'Tamamla'
+                  : 'Tamamlama Onaya Gönder'
+                : 'İlerlemeyi Kaydet'}
           </Button>
         </div>
       </div>
@@ -287,8 +311,39 @@ const HomeworkCard = ({ hw, onComplete, onRequestExtension }) => {
 
 const StudentHomework = () => {
   const { data: homeworks, isLoading, error } = useStudentHomework();
+  const { data: profile } = useStudentProfile();
   const { mutate: completeHomework } = useCompleteHomework();
   const requestExtension = useRequestExtension();
+  const createSelfHw = useCreateStudentSelfHomework();
+
+  const hasCoach = Boolean(profile?.hasCoach);
+  const perms = profile?.permissions || {};
+  const canSelfAssignWork = !hasCoach || perms.canSelfAssignWork === true;
+  const canCompleteDirect = !hasCoach || perms.canCompleteHomework !== false;
+
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [selfTitle, setSelfTitle] = useState('');
+  const [selfDesc, setSelfDesc] = useState('');
+  const [selfSource, setSelfSource] = useState('');
+  const [selfDueDate, setSelfDueDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [selfPriority, setSelfPriority] = useState('NORMAL');
+
+  const handleAddSelfHomework = async (e) => {
+    e.preventDefault();
+    if (!selfTitle.trim()) return;
+    await createSelfHw.mutateAsync({
+      subjectId: null,
+      title: selfTitle.trim(),
+      description: selfDesc.trim() || null,
+      source: selfSource.trim() || null,
+      dueDate: selfDueDate,
+      priority: selfPriority,
+    });
+    setSelfTitle('');
+    setSelfDesc('');
+    setSelfSource('');
+    setShowAddModal(false);
+  };
 
   if (isLoading) {
     return <div className={styles.loading}>Ödevleriniz yükleniyor...</div>;
@@ -303,9 +358,16 @@ const StudentHomework = () => {
 
   return (
     <div className={styles.pageContainer}>
-      <header className={styles.header}>
-        <h1 className={styles.title}>Ödevlerim</h1>
-        <p className={styles.subtitle}>Sana verilen görevleri buradan takip edebilirsin.</p>
+      <header className={styles.header} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
+        <div>
+          <h1 className={styles.title}>Ödevlerim</h1>
+          <p className={styles.subtitle}>Sana verilen görevleri ve kendi çalışma hedeflerini buradan takip edebilirsin.</p>
+        </div>
+        {canSelfAssignWork && (
+          <Button size="sm" onClick={() => setShowAddModal(true)}>
+            <Plus size={14} /> + Kendime Çalışma / Ödev Ekle
+          </Button>
+        )}
       </header>
 
       <section className={styles.section}>
@@ -321,6 +383,7 @@ const StudentHomework = () => {
               <HomeworkCard
                 key={hw.id}
                 hw={hw}
+                canCompleteDirect={canCompleteDirect}
                 onComplete={completeHomework}
                 onRequestExtension={(payload) =>
                   requestExtension.mutateAsync({
@@ -362,6 +425,64 @@ const StudentHomework = () => {
           </div>
         )}
       </section>
+
+      <Modal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        title="Kendime Çalışma / Ödev Ekle"
+        maxWidth="420px"
+      >
+        <form onSubmit={handleAddSelfHomework} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <Input
+            label="Çalışma / Ödev Başlığı *"
+            placeholder="Örn: Paragraf 40 Soru Çözümü"
+            value={selfTitle}
+            onChange={(e) => setSelfTitle(e.target.value)}
+            required
+          />
+          <Input
+            label="Kaynak / Konu (İsteğe Bağlı)"
+            placeholder="Örn: Bilgi Sarmal Türkçe"
+            value={selfSource}
+            onChange={(e) => setSelfSource(e.target.value)}
+          />
+          <Input
+            label="Açıklama / Hedef (İsteğe Bağlı)"
+            placeholder="Örn: Süre tutarak 45 dakikada tamamla"
+            value={selfDesc}
+            onChange={(e) => setSelfDesc(e.target.value)}
+          />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <Input
+              label="Hedef Tarih *"
+              type="date"
+              value={selfDueDate}
+              onChange={(e) => setSelfDueDate(e.target.value)}
+              required
+            />
+            <div>
+              <label style={{ display: 'block', fontSize: '0.82rem', marginBottom: 4, fontWeight: 600 }}>Öncelik</label>
+              <select
+                value={selfPriority}
+                onChange={(e) => setSelfPriority(e.target.value)}
+                style={{ width: '100%', padding: '9px 12px', borderRadius: 10, border: '1px solid var(--border-color)', background: 'var(--bg-color-surface)', color: 'var(--text-color-primary)' }}
+              >
+                <option value="HIGH">Yüksek</option>
+                <option value="NORMAL">Normal</option>
+                <option value="LOW">Düşük</option>
+              </select>
+            </div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 6 }}>
+            <Button type="button" variant="ghost" size="sm" onClick={() => setShowAddModal(false)}>
+              İptal
+            </Button>
+            <Button type="submit" variant="primary" size="sm" isLoading={createSelfHw.isPending}>
+              Ekle
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

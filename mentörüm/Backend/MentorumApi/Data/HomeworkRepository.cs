@@ -154,6 +154,8 @@ namespace MentorumApi.Data
                     c.name as CourseName,
                     h.assigned_via as AssignedVia,
                     COALESCE(h.priority, 'NORMAL') as Priority,
+                    (h.created_by = h.student_id) as CreatedByStudent,
+                    EXISTS(SELECT 1 FROM approval_items ai WHERE ai.entity_type = 'HOMEWORK_DONE' AND ai.entity_id = h.id AND ai.status = 'PENDING') as PendingApproval,
                     COALESCE(h.version, 1) as Version
                 FROM homework_assignments h
                 LEFT JOIN subjects s ON s.id = h.subject_id
@@ -211,10 +213,66 @@ namespace MentorumApi.Data
                 if (req.ExpectedVersion.HasValue && currentVersion.Value != req.ExpectedVersion.Value)
                     return "CONCURRENCY_CONFLICT";
 
+                if (role != "Coach")
+                {
+                    var studentCheck = await conn.QuerySingleOrDefaultAsync<(Guid ProgramId, string StudentName, string HomeworkTitle, bool HasCoach, bool CanCompleteHomework)>(@"
+                        SELECT s.program_id AS ProgramId, COALESCE(u.full_name, '') AS StudentName, COALESCE(h.snapshot_title, '') AS HomeworkTitle,
+                               EXISTS(SELECT 1 FROM program_coaches pc WHERE pc.program_id = s.program_id) AS HasCoach,
+                               (s.can_complete_homework = 1) AS CanCompleteHomework
+                        FROM homework_assignments h
+                        JOIN students s ON s.id = h.student_id
+                        LEFT JOIN users u ON u.id = s.id
+                        WHERE h.id = @Id AND h.student_id = @UserId",
+                        new { Id = assignmentId, UserId = userId }, tx);
+
+                    if (studentCheck.HasCoach && !studentCheck.CanCompleteHomework && percentage == 100)
+                    {
+                        await conn.ExecuteAsync(@"
+                            UPDATE homework_assignments
+                            SET student_note = CASE WHEN @Note IS NULL THEN student_note ELSE @Note END,
+                                updated_at = NOW()
+                            WHERE id = @Id AND student_id = @UserId",
+                            new { Id = assignmentId, UserId = userId, Note = req.Note }, tx);
+
+                        if (req.AttachmentIds != null && req.AttachmentIds.Count > 0)
+                        {
+                            await conn.ExecuteAsync(@"
+                                UPDATE uploads
+                                SET homework_id = @HomeworkId, updated_at = NOW()
+                                WHERE id = ANY(@UploadIds) AND sender_user_id = @UserId AND status = 'UPLOADED'",
+                                new { HomeworkId = assignmentId, UploadIds = req.AttachmentIds.ToArray(), UserId = userId }, tx);
+                        }
+
+                        var payload = System.Text.Json.JsonSerializer.Serialize(new
+                        {
+                            homeworkId = assignmentId,
+                            studentName = studentCheck.StudentName,
+                            homeworkTitle = studentCheck.HomeworkTitle,
+                            note = req.Note
+                        });
+
+                        await conn.ExecuteAsync(@"
+                            INSERT INTO approval_items (id, program_id, entity_type, entity_id, payload, status, created_by, created_at)
+                            VALUES (@Id, @ProgramId, 'HOMEWORK_DONE', @EntityId, @Payload::jsonb, 'PENDING', @CreatedBy, NOW())
+                            ON CONFLICT (entity_type, entity_id) DO UPDATE SET
+                                status = 'PENDING',
+                                payload = EXCLUDED.payload,
+                                created_at = NOW(),
+                                resolved_at = NULL,
+                                resolved_by = NULL,
+                                rejection_reason = NULL",
+                            new { Id = Guid.NewGuid(), ProgramId = studentCheck.ProgramId, EntityId = assignmentId, Payload = payload, CreatedBy = userId }, tx);
+
+                        tx.Commit();
+                        return "PENDING_APPROVAL";
+                    }
+                }
+
                 await conn.ExecuteAsync(
                     $@"UPDATE homework_assignments
                        SET status = @Status,
                            completed_at = @Now,
+                           completed_by = @CompletedBy,
                            completion_percentage = @Pct,
                            student_note = CASE WHEN @Note IS NULL THEN student_note ELSE @Note END,
                            version = COALESCE(version, 1) + 1,
@@ -224,6 +282,7 @@ namespace MentorumApi.Data
                     {
                         Now = percentage == 100 ? DateTime.UtcNow : (DateTime?)null,
                         Status = status,
+                        CompletedBy = percentage == 100 ? (role == "Coach" ? "Coach" : "Student") : (string?)null,
                         Pct = percentage,
                         Id = assignmentId,
                         UserId = userId,
@@ -284,6 +343,35 @@ namespace MentorumApi.Data
                 "SELECT 1 FROM student_parents WHERE parent_id = @ParentId AND student_id = @StudentId AND is_accepted = 1 AND COALESCE(can_view_homework, 0) = 1",
                 new { ParentId = parentId, StudentId = studentId });
             return relation != null;
+        }
+
+        public async Task<Guid> CreateStudentSelfHomeworkAsync(Guid studentId, Guid programId, CreateStudentSelfHomeworkRequest req)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            var assignId = Guid.NewGuid();
+            var priority = req.Priority is "HIGH" or "LOW" ? req.Priority : "NORMAL";
+            await conn.ExecuteAsync(@"
+                INSERT INTO homework_assignments (
+                    id, subject_id, snapshot_title, snapshot_desc, snapshot_source,
+                    student_id, program_id, created_by, due_date, status, assigned_via, priority, created_at, updated_at
+                )
+                VALUES (
+                    @Id, @SubjectId, @Title, @Description, @Source,
+                    @StudentId, @ProgramId, @StudentId, @DueDate, 'PENDING', 'INDIVIDUAL', @Priority, NOW(), NOW()
+                )",
+                new
+                {
+                    Id = assignId,
+                    req.SubjectId,
+                    Title = req.Title.Trim(),
+                    req.Description,
+                    req.Source,
+                    StudentId = studentId,
+                    ProgramId = programId,
+                    req.DueDate,
+                    Priority = priority
+                });
+            return assignId;
         }
     }
 }

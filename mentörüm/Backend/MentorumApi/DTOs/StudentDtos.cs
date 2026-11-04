@@ -36,6 +36,7 @@ namespace MentorumApi.DTOs
         public string? MonthlyMilestone { get; set; }
         public int? WeeklyTargetMinutes { get; set; }
         public int? WeeklyTargetQuestions { get; set; }
+        public StudentPermissionsDto Permissions { get; set; } = new();
         public List<CoachStudentParentDto> Parents { get; set; } = new();
         public List<PendingParentInviteDto> PendingParentInvites { get; set; } = new();
         public List<StudentExamDto> ExamResults { get; set; } = new();
@@ -85,6 +86,11 @@ namespace MentorumApi.DTOs
         public string? TargetDepartment { get; set; }
         public float? TargetScore { get; set; }
         public DateTime? CoachingStartDate { get; set; }
+        public bool HasCoach { get; set; }
+        public Guid? CoachId { get; set; }
+        public string? CoachName { get; set; }
+        public string? CoachEmail { get; set; }
+        public StudentPermissionsDto Permissions { get; set; } = new();
         public List<StudentParentInfoDto> Parents { get; set; } = new();
     }
 
@@ -103,6 +109,8 @@ namespace MentorumApi.DTOs
         public string? ExamName { get; set; }
         public float? TotalNet { get; set; }
         public string? ErrorReasons { get; set; }
+        public Guid? CreatedBy { get; set; }
+        public bool CreatedByStudent { get; set; }
         public List<ExamScoreDto> Scores { get; set; } = new();
     }
 
@@ -132,6 +140,7 @@ namespace MentorumApi.DTOs
         public string? TopicNumber { get; set; }
         public string? TopicName { get; set; }
         public bool IsCompleted { get; set; }
+        public bool CompletedByStudent { get; set; }
         public string HomeworkStatus { get; set; } = "UNASSIGNED";
         public int AssignedCount { get; set; }
         public int CompletedCount { get; set; }
@@ -205,5 +214,112 @@ namespace MentorumApi.DTOs
         public string? MonthlyMilestone { get; set; }
         public int? WeeklyTargetMinutes { get; set; }
         public int? WeeklyTargetQuestions { get; set; }
+    }
+
+    public class StudentPermissionsDto
+    {
+        public bool CanCompleteTopics { get; set; } = true;
+        public bool CanCompleteHomework { get; set; } = true;
+        public bool CanEditGoals { get; set; } = true;
+        public bool CanAddExamResults { get; set; } = false;
+        public bool CanManageResources { get; set; } = false;
+        public bool CanSelfAssignWork { get; set; } = false;
+    }
+
+    public class UpdateStudentPermissionsRequest
+    {
+        public bool CanCompleteTopics { get; set; }
+        public bool CanCompleteHomework { get; set; }
+        public bool CanEditGoals { get; set; }
+        public bool CanAddExamResults { get; set; }
+        public bool CanManageResources { get; set; }
+        public bool CanSelfAssignWork { get; set; }
+    }
+
+    public class ConnectionSearchCandidateDto
+    {
+        public Guid Id { get; set; }
+        public string FullName { get; set; } = "";
+        public string? Email { get; set; }
+        public string? Phone { get; set; }
+        public string? Specialty { get; set; }
+        public int? Grade { get; set; }
+        public string? Track { get; set; }
+        public bool HasPendingRequest { get; set; }
+    }
+
+    public class ConnectionRequestDto
+    {
+        public Guid Id { get; set; }
+        public Guid CoachId { get; set; }
+        public string CoachName { get; set; } = "";
+        public string? CoachEmail { get; set; }
+        public Guid StudentId { get; set; }
+        public string StudentName { get; set; } = "";
+        public string? StudentEmail { get; set; }
+        public string InitiatedBy { get; set; } = ""; // "Coach" | "Student"
+        public string Status { get; set; } = "PENDING";
+        public string? Note { get; set; }
+        public DateTime CreatedAt { get; set; }
+    }
+
+    public class CreateConnectionRequestDto
+    {
+        public Guid TargetUserId { get; set; }
+        public string? Note { get; set; }
+    }
+
+    public class RespondConnectionRequestDto
+    {
+        public bool Accept { get; set; }
+    }
+
+    public class ToggleTopicStatusRequest
+    {
+        public bool IsCompleted { get; set; }
+    }
+
+    public class StudentResourceDto
+    {
+        public Guid Id { get; set; }
+        public Guid StudentId { get; set; }
+        public Guid ProgramId { get; set; }
+        public Guid? SubjectId { get; set; }
+        public string? SubjectName { get; set; }
+        public string ResourceType { get; set; } = "BOOK"; // "BOOK" | "VIDEO" | "OTHER"
+        public string Title { get; set; } = "";
+        public string? UrlOrAuthor { get; set; }
+        public int TotalUnits { get; set; }
+        public int CompletedUnits { get; set; }
+        public string CreatedBy { get; set; } = "Student";
+        public DateTime CreatedAt { get; set; }
+    }
+
+    public class CreateStudentResourceRequest
+    {
+        public Guid? SubjectId { get; set; }
+        public string ResourceType { get; set; } = "BOOK";
+        public string Title { get; set; } = "";
+        public string? UrlOrAuthor { get; set; }
+        public int TotalUnits { get; set; }
+        public int CompletedUnits { get; set; }
+    }
+
+    public class UpdateStudentResourceRequest
+    {
+        public string? Title { get; set; }
+        public string? UrlOrAuthor { get; set; }
+        public int? TotalUnits { get; set; }
+        public int? CompletedUnits { get; set; }
+    }
+
+    public class CreateStudentSelfHomeworkRequest
+    {
+        public Guid? SubjectId { get; set; }
+        public string Title { get; set; } = "";
+        public string? Description { get; set; }
+        public string? Source { get; set; }
+        public DateTime DueDate { get; set; }
+        public string? Priority { get; set; }
     }
 }

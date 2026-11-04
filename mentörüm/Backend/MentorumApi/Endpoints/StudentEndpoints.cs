@@ -421,6 +421,176 @@ namespace MentorumApi.Endpoints
                 await repo.UpsertCoachingToolsAsync(id, coachId.Value, req);
                 return Results.Ok(new { message = "Koçluk araçları başarıyla güncellendi." });
             });
+
+            // --- V20: Bağımsız öğrenci arama, bağlantı istekleri, 6'lı yetki matrisi, konu ve kaynak yönetimi ---
+            group.MapGet("/search-independent", async (
+                [FromQuery] string? q,
+                [FromServices] StudentRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = user.GetUserId();
+                if (coachId == null) return Results.Unauthorized();
+                var isAdmin = user.HasClaim("is_admin", "true") || user.IsInRole("Admin");
+                return Results.Ok(await repo.SearchIndependentStudentsAsync(coachId.Value, q ?? "", isAdmin));
+            });
+
+            group.MapGet("/connection-requests", async (
+                [FromServices] StudentRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = user.GetUserId();
+                if (coachId == null) return Results.Unauthorized();
+                return Results.Ok(await repo.GetConnectionRequestsAsync(coachId.Value, isCoach: true));
+            });
+
+            group.MapPost("/connection-requests", async (
+                [FromBody] CreateConnectionRequestDto req,
+                [FromServices] StudentRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = user.GetUserId();
+                if (coachId == null) return Results.Unauthorized();
+                var res = await repo.CreateConnectionRequestAsync(coachId.Value, req.TargetUserId, "Coach", req.Note);
+                return res switch
+                {
+                    "ALREADY_HAS_COACH" => Results.BadRequest(new { error = "Bu öğrenci zaten bir koç ile çalışıyor." }),
+                    "ALREADY_PENDING" => Results.Conflict(new { error = "Bu öğrenci için zaten bekleyen bir istek var." }),
+                    _ => Results.Ok(new { message = "Bağlantı isteği öğrenciye gönderildi." })
+                };
+            });
+
+            group.MapPost("/connection-requests/{requestId:guid}/respond", async (
+                Guid requestId,
+                [FromBody] RespondConnectionRequestDto req,
+                [FromServices] StudentRepository repo,
+                [FromServices] ProgramRepository programRepo,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = user.GetUserId();
+                if (coachId == null) return Results.Unauthorized();
+                var res = await repo.RespondConnectionRequestAsync(requestId, coachId.Value, actorIsCoach: true, req.Accept, programRepo);
+                return res switch
+                {
+                    "NOT_FOUND" => Results.NotFound(new { error = "İstek bulunamadı veya sonuçlandırılmış." }),
+                    "FORBIDDEN" => Results.Forbid(),
+                    "REJECTED" => Results.Ok(new { status = "REJECTED", message = "İstek reddedildi." }),
+                    _ => Results.Ok(new { status = "ACCEPTED", message = "Öğrenci çalışma alanınıza bağlandı." })
+                };
+            });
+
+            group.MapPost("/{id:guid}/unlink", async (
+                Guid id,
+                [FromServices] StudentRepository repo,
+                [FromServices] ProgramRepository programRepo,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = user.GetUserId();
+                if (coachId == null) return Results.Unauthorized();
+                var ok = await repo.UnlinkCoachStudentAsync(id, coachId.Value, programRepo);
+                return ok
+                    ? Results.Ok(new { message = "Öğrenci koçluk programından ayrıldı ve bağımsız moda geçirildi." })
+                    : Results.NotFound(new { error = "Öğrenci bulunamadı veya yetkiniz yok." });
+            });
+
+            group.MapPut("/{id:guid}/permissions", async (
+                Guid id,
+                [FromBody] UpdateStudentPermissionsRequest req,
+                [FromServices] StudentRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = user.GetUserId();
+                if (coachId == null) return Results.Unauthorized();
+                var ok = await repo.UpdateStudentPermissionsAsync(coachId.Value, id, req);
+                return ok
+                    ? Results.Ok(new { message = "Öğrenci yetkileri güncellendi." })
+                    : Results.NotFound(new { error = "Öğrenci bulunamadı veya yetkiniz yok." });
+            });
+
+            group.MapPut("/{id:guid}/curriculum/{topicId:guid}/status", async (
+                Guid id,
+                Guid topicId,
+                [FromBody] ToggleTopicStatusRequest req,
+                [FromServices] ProgramAccessGuard guard,
+                [FromServices] CurriculumRepository curriculumRepo,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = user.GetUserId();
+                if (coachId == null) return Results.Unauthorized();
+                await guard.EnsureCoachOwnsStudentAsync(coachId.Value, id);
+                var ok = await curriculumRepo.UpsertTopicProgressAsync(id, topicId, req.IsCompleted, "Coach");
+                return ok ? Results.Ok(new { message = "Konu durumu güncellendi." }) : Results.NotFound(new { error = "Konu bulunamadı." });
+            });
+
+            group.MapGet("/{id:guid}/resources", async (
+                Guid id,
+                [FromServices] ProgramAccessGuard guard,
+                [FromServices] StudentRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = user.GetUserId();
+                if (coachId == null) return Results.Unauthorized();
+                await guard.EnsureCoachOwnsStudentAsync(coachId.Value, id);
+                return Results.Ok(await repo.GetStudentResourcesAsync(id));
+            });
+
+            group.MapPost("/{id:guid}/resources", async (
+                Guid id,
+                [FromBody] CreateStudentResourceRequest req,
+                [FromServices] ProgramAccessGuard guard,
+                [FromServices] StudentRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = user.GetUserId();
+                if (coachId == null) return Results.Unauthorized();
+                if (string.IsNullOrWhiteSpace(req.Title)) return Results.BadRequest(new { error = "Kaynak adı zorunludur." });
+                var programId = await guard.GetOwnedStudentProgramAsync(coachId.Value, id);
+                if (programId == null) return Results.Forbid();
+                var resourceId = await repo.CreateStudentResourceAsync(id, programId.Value, req, "Coach");
+                return Results.Ok(new { id = resourceId, message = "Kaynak eklendi." });
+            });
+
+            group.MapPatch("/{id:guid}/resources/{resourceId:guid}", async (
+                Guid id,
+                Guid resourceId,
+                [FromBody] UpdateStudentResourceRequest req,
+                [FromServices] ProgramAccessGuard guard,
+                [FromServices] StudentRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = user.GetUserId();
+                if (coachId == null) return Results.Unauthorized();
+                await guard.EnsureCoachOwnsStudentAsync(coachId.Value, id);
+                var ok = await repo.UpdateStudentResourceAsync(id, resourceId, req);
+                return ok ? Results.Ok(new { message = "Kaynak güncellendi." }) : Results.NotFound(new { error = "Kaynak bulunamadı." });
+            });
+
+            group.MapDelete("/{id:guid}/resources/{resourceId:guid}", async (
+                Guid id,
+                Guid resourceId,
+                [FromServices] ProgramAccessGuard guard,
+                [FromServices] StudentRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = user.GetUserId();
+                if (coachId == null) return Results.Unauthorized();
+                await guard.EnsureCoachOwnsStudentAsync(coachId.Value, id);
+                var ok = await repo.DeleteStudentResourceAsync(id, resourceId);
+                return ok ? Results.Ok(new { message = "Kaynak silindi." }) : Results.NotFound(new { error = "Kaynak bulunamadı." });
+            });
+
+            group.MapDelete("/{id:guid}/exams/{examId:guid}", async (
+                Guid id,
+                Guid examId,
+                [FromServices] ProgramAccessGuard guard,
+                [FromServices] ExamRepository examRepo,
+                ClaimsPrincipal user) =>
+            {
+                var coachId = user.GetUserId();
+                if (coachId == null) return Results.Unauthorized();
+                await guard.EnsureCoachOwnsStudentAsync(coachId.Value, id);
+                var ok = await examRepo.DeleteExamResultAsync(coachId.Value, examId, isCoach: true);
+                return ok ? Results.Ok(new { message = "Sınav sonucu silindi." }) : Results.NotFound(new { error = "Sınav bulunamadı." });
+            });
         }
 
         private static string MaskFullName(string fullName)

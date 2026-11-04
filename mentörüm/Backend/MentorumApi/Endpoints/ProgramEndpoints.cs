@@ -170,8 +170,8 @@ namespace MentorumApi.Endpoints
             {
                 var adminId = user.GetUserId();
                 if (adminId == null) return Results.Unauthorized();
-                var role = req.Role == "Student" || req.Role == "Parent" || req.Role == "Coach" ? req.Role : "Coach";
-                var ok = await repo.ApproveUserAsync(userId, role, req.MaxStudents, req.MaxTeachers, req.StorageQuotaMb, adminId.Value);
+                var role = req.Role == "Student" ? "Student" : "Coach";
+                var ok = await repo.ApproveUserAsync(userId, role, req.MaxStudents, req.MaxTeachers, req.StorageQuotaMb, req.AssignCoachId, adminId.Value);
                 return ok ? Results.Ok(new { message = "Kullanıcı onaylandı." }) : Results.NotFound(new { error = "Kullanıcı bulunamadı." });
             });
 
@@ -189,17 +189,35 @@ namespace MentorumApi.Endpoints
                 if (adminId == null) return Results.Unauthorized();
                 if (string.IsNullOrEmpty(req.Email) || string.IsNullOrEmpty(req.FullName))
                     return Results.BadRequest(new { error = "Eksik bilgi" });
-                var role = req.Role == "Student" || req.Role == "Parent" ? req.Role : "Coach";
+                var role = req.Role == "Student" ? "Student" : "Coach";
                 var password = GenerateRandomPassword();
                 var passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
                 var email = req.Email.ToLowerInvariant();
-                var r = await repo.AddUserByAdminAsync(email, req.FullName, passwordHash, role);
+                var r = await repo.AddUserByAdminAsync(email, req.FullName, passwordHash, role, req.AssignCoachId);
                 if (r != "OK")
                     return Results.Conflict(new { error = "Bu e-posta zaten kullanımda." });
 
                 await emailService.SendWelcomeEmailAsync(email, role, password);
 
                 return Results.Ok(new { message = "Kullanıcı eklendi.", email, password });
+            });
+
+            admin.MapGet("/settings", async ([FromServices] ProgramRepository repo) =>
+            {
+                var registrationMode = await repo.GetRegistrationModeAsync();
+                return Results.Ok(new { registrationMode });
+            });
+
+            admin.MapPut("/settings", async (
+                [FromBody] UpdateAdminSettingsRequest req,
+                [FromServices] ProgramRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var adminId = user.GetUserId();
+                if (adminId == null) return Results.Unauthorized();
+                var mode = req.RegistrationMode == "SELF_SERVICE" ? "SELF_SERVICE" : "ADMIN_APPROVAL";
+                await repo.SetRegistrationModeAsync(mode, adminId.Value);
+                return Results.Ok(new { message = "Sistem ayarları güncellendi.", registrationMode = mode });
             });
 
             // Süper yönetici herhangi bir kullanıcının şifresini değiştirir (eski oturumlar kapatılır).
@@ -263,10 +281,11 @@ namespace MentorumApi.Endpoints
 
     public class ApproveUserRequest
     {
-        public string? Role { get; set; }   // Student / Parent / Coach
+        public string? Role { get; set; }   // Student / Coach
         public int? MaxStudents { get; set; }
         public int? MaxTeachers { get; set; }
         public int? StorageQuotaMb { get; set; }
+        public Guid? AssignCoachId { get; set; }
     }
 
     public class AddUserRequest
@@ -274,6 +293,12 @@ namespace MentorumApi.Endpoints
         public string? Email { get; set; }
         public string? FullName { get; set; }
         public string? Role { get; set; }
+        public Guid? AssignCoachId { get; set; }
+    }
+
+    public class UpdateAdminSettingsRequest
+    {
+        public string? RegistrationMode { get; set; }
     }
 
     public class AdminChangePasswordRequest

@@ -205,6 +205,21 @@ namespace MentorumApi.Data
                     }
                 }
 
+                // V20: HOMEWORK_DONE onayı → ödevi DONE olarak işaretle
+                if (item.EntityType == "HOMEWORK_DONE")
+                {
+                    await conn.ExecuteAsync(@"
+                        UPDATE homework_assignments
+                        SET status = 'DONE',
+                            completion_percentage = 100,
+                            completed_at = NOW(),
+                            completed_by = 'Student',
+                            version = COALESCE(version, 1) + 1,
+                            updated_at = NOW()
+                        WHERE id = @AssignmentId",
+                        new { AssignmentId = item.EntityId }, tx);
+                }
+
                 await conn.ExecuteAsync(@"
                     UPDATE approval_items
                     SET status = 'APPROVED', resolved_at = NOW(), resolved_by = @CoachId

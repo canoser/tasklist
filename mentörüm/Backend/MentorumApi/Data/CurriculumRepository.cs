@@ -94,7 +94,11 @@ namespace MentorumApi.Data
                        ct.unit_name AS UnitName,
                        ct.topic_number AS TopicNumber,
                        ct.topic_name AS TopicName,
-                       COALESCE(hw.is_completed, false) AS IsCompleted,
+                       CASE
+                           WHEN stp.is_completed IS NOT NULL THEN (stp.is_completed = 1)
+                           ELSE COALESCE(hw.is_completed, false)
+                       END AS IsCompleted,
+                       COALESCE(stp.is_completed = 1 AND stp.updated_by = 'Student', false) AS CompletedByStudent,
                        COALESCE(hw.homework_status, 'UNASSIGNED') AS HomeworkStatus,
                        COALESCE(hw.assigned_count, 0) AS AssignedCount,
                        COALESCE(hw.completed_count, 0) AS CompletedCount,
@@ -102,6 +106,8 @@ namespace MentorumApi.Data
                        es.avg_success_rate AS AvgSuccessRate
                 FROM curriculum_topics ct
                 JOIN subjects s ON s.id = ct.subject_id
+                LEFT JOIN student_topic_progress stp
+                       ON stp.student_id = @StudentId AND stp.curriculum_topic_id = ct.id
                 LEFT JOIN LATERAL (
                     SELECT
                         COUNT(1) AS assigned_count,
@@ -144,6 +150,32 @@ namespace MentorumApi.Data
                 WHERE ct.is_active = 1 AND (@GradeText IS NULL OR ct.grade = @GradeText)
                 ORDER BY s.name, ct.sort_order",
                 new { StudentId = studentId, GradeText = gradeText });
+        }
+
+        public async Task<bool> UpsertTopicProgressAsync(Guid studentId, Guid curriculumTopicId, bool isCompleted, string updatedBy)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            var topicExists = await conn.ExecuteScalarAsync<int>(
+                "SELECT COUNT(1) FROM curriculum_topics WHERE id = @TopicId AND is_active = 1",
+                new { TopicId = curriculumTopicId });
+            if (topicExists == 0) return false;
+
+            var actor = updatedBy == "Coach" ? "Coach" : "Student";
+            await conn.ExecuteAsync(@"
+                INSERT INTO student_topic_progress (student_id, curriculum_topic_id, is_completed, updated_by, updated_at)
+                VALUES (@StudentId, @TopicId, @IsCompleted, @UpdatedBy, NOW())
+                ON CONFLICT (student_id, curriculum_topic_id) DO UPDATE SET
+                    is_completed = EXCLUDED.is_completed,
+                    updated_by = EXCLUDED.updated_by,
+                    updated_at = NOW()",
+                new
+                {
+                    StudentId = studentId,
+                    TopicId = curriculumTopicId,
+                    IsCompleted = isCompleted ? 1 : 0,
+                    UpdatedBy = actor
+                });
+            return true;
         }
 
         /// <summary>Müfredatı AI ile doldurulacak JSON şablonu olarak dışa aktarır.</summary>

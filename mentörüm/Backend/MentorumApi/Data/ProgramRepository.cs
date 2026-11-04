@@ -95,26 +95,7 @@ namespace MentorumApi.Data
             using var tx = conn.BeginTransaction();
             try
             {
-                var existing = await conn.QuerySingleOrDefaultAsync<Guid?>(
-                    @"SELECT pc.program_id FROM program_coaches pc
-                      JOIN coaching_programs cp ON cp.id = pc.program_id
-                      WHERE pc.coach_id = @CoachId AND pc.role = 'YONETICI' AND cp.is_active = 1
-                      ORDER BY cp.created_at LIMIT 1",
-                    new { CoachId = coachId }, tx);
-                if (existing.HasValue) { tx.Commit(); return existing.Value; }
-
-                var fullName = await conn.QuerySingleOrDefaultAsync<string>(
-                    "SELECT full_name FROM users WHERE id = @CoachId", new { CoachId = coachId }, tx);
-                var name = string.IsNullOrWhiteSpace(fullName) ? "Çalışma Alanı" : $"{fullName.Trim()} Çalışma Alanı";
-
-                var programId = Guid.NewGuid();
-                await conn.ExecuteAsync(
-                    "INSERT INTO coaching_programs (id, name, created_by) VALUES (@Id, @Name, @CreatedBy)",
-                    new { Id = programId, Name = name, CreatedBy = coachId }, tx);
-                await conn.ExecuteAsync(
-                    "INSERT INTO program_coaches (id, program_id, coach_id, role, added_by) VALUES (@Id, @ProgramId, @CoachId, 'YONETICI', @CoachId)",
-                    new { Id = Guid.NewGuid(), ProgramId = programId, CoachId = coachId }, tx);
-
+                var programId = await EnsureDefaultWorkspaceInTxAsync(conn, tx, coachId);
                 tx.Commit();
                 return programId;
             }
@@ -123,6 +104,31 @@ namespace MentorumApi.Data
                 tx.Rollback();
                 throw;
             }
+        }
+
+        public async Task<Guid> EnsureDefaultWorkspaceInTxAsync(IDbConnection conn, IDbTransaction tx, Guid coachId)
+        {
+            var existing = await conn.QuerySingleOrDefaultAsync<Guid?>(
+                @"SELECT pc.program_id FROM program_coaches pc
+                  JOIN coaching_programs cp ON cp.id = pc.program_id
+                  WHERE pc.coach_id = @CoachId AND pc.role = 'YONETICI' AND cp.is_active = 1
+                  ORDER BY cp.created_at LIMIT 1",
+                new { CoachId = coachId }, tx);
+            if (existing.HasValue) return existing.Value;
+
+            var fullName = await conn.QuerySingleOrDefaultAsync<string>(
+                "SELECT full_name FROM users WHERE id = @CoachId", new { CoachId = coachId }, tx);
+            var name = string.IsNullOrWhiteSpace(fullName) ? "Çalışma Alanı" : $"{fullName.Trim()} Çalışma Alanı";
+
+            var programId = Guid.NewGuid();
+            await conn.ExecuteAsync(
+                "INSERT INTO coaching_programs (id, name, created_by) VALUES (@Id, @Name, @CreatedBy)",
+                new { Id = programId, Name = name, CreatedBy = coachId }, tx);
+            await conn.ExecuteAsync(
+                "INSERT INTO program_coaches (id, program_id, coach_id, role, added_by) VALUES (@Id, @ProgramId, @CoachId, 'YONETICI', @CoachId)",
+                new { Id = Guid.NewGuid(), ProgramId = programId, CoachId = coachId }, tx);
+
+            return programId;
         }
 
         public async Task<bool> UpdateProgramAsync(Guid programId, Guid coachId, UpdateProgramRequest req)
@@ -301,7 +307,7 @@ namespace MentorumApi.Data
                 ORDER BY u.created_at");
         }
 
-        public async Task<bool> ApproveUserAsync(Guid userId, string role, int? maxStudents, int? maxTeachers, int? storageQuotaMb, Guid adminId)
+        public async Task<bool> ApproveUserAsync(Guid userId, string role, int? maxStudents, int? maxTeachers, int? storageQuotaMb, Guid? assignCoachId, Guid adminId)
         {
             using var conn = _connectionFactory.CreateConnection();
             conn.Open();
@@ -323,10 +329,36 @@ namespace MentorumApi.Data
                             storage_quota_mb = COALESCE(@StorageQuotaMb, coaches.storage_quota_mb),
                             approved_by = @AdminId, approved_at = NOW()",
                         new { Id = userId, MaxStudents = maxStudents, MaxTeachers = maxTeachers, StorageQuotaMb = storageQuotaMb, AdminId = adminId }, tx);
+
+                    await EnsureDefaultWorkspaceInTxAsync(conn, tx, userId);
                 }
                 else if (role == "Student")
                 {
-                    await EnsureStudentPersonalProgramAsync(conn, tx, userId);
+                    if (assignCoachId.HasValue)
+                    {
+                        var coachProgramId = await EnsureDefaultWorkspaceInTxAsync(conn, tx, assignCoachId.Value);
+                        await conn.ExecuteAsync(@"
+                            INSERT INTO students (
+                                id, program_id, is_active,
+                                can_complete_topics, can_complete_homework, can_edit_goals,
+                                can_add_exam_results, can_manage_resources, can_self_assign_work
+                            )
+                            VALUES (@Id, @ProgramId, 1, 1, 1, 1, 0, 0, 0)
+                            ON CONFLICT (id) DO UPDATE SET
+                                program_id = @ProgramId,
+                                is_active = 1,
+                                can_complete_topics = 1,
+                                can_complete_homework = 1,
+                                can_edit_goals = 1,
+                                can_add_exam_results = 0,
+                                can_manage_resources = 0,
+                                can_self_assign_work = 0",
+                            new { Id = userId, ProgramId = coachProgramId }, tx);
+                    }
+                    else
+                    {
+                        await EnsureStudentPersonalProgramAsync(conn, tx, userId);
+                    }
                 }
 
                 tx.Commit();
@@ -344,7 +376,7 @@ namespace MentorumApi.Data
             return rows > 0;
         }
 
-        public async Task<string> AddUserByAdminAsync(string email, string fullName, string passwordHash, string role)
+        public async Task<string> AddUserByAdminAsync(string email, string fullName, string passwordHash, string role, Guid? assignCoachId = null)
         {
             email = email.ToLowerInvariant();
             using var conn = _connectionFactory.CreateConnection();
@@ -362,9 +394,29 @@ namespace MentorumApi.Data
                     new { Id = userId, Email = email, Hash = passwordHash, Role = role, FullName = fullName }, tx);
 
                 if (role == "Coach")
+                {
                     await conn.ExecuteAsync("INSERT INTO coaches (id, plan_type, approval_status) VALUES (@Id, 'free', 'APPROVED')", new { Id = userId }, tx);
+                    await EnsureDefaultWorkspaceInTxAsync(conn, tx, userId);
+                }
                 else if (role == "Student")
-                    await EnsureStudentPersonalProgramAsync(conn, tx, userId);
+                {
+                    if (assignCoachId.HasValue)
+                    {
+                        var coachProgramId = await EnsureDefaultWorkspaceInTxAsync(conn, tx, assignCoachId.Value);
+                        await conn.ExecuteAsync(@"
+                            INSERT INTO students (
+                                id, program_id, is_active,
+                                can_complete_topics, can_complete_homework, can_edit_goals,
+                                can_add_exam_results, can_manage_resources, can_self_assign_work
+                            )
+                            VALUES (@Id, @ProgramId, 1, 1, 1, 1, 0, 0, 0)",
+                            new { Id = userId, ProgramId = coachProgramId }, tx);
+                    }
+                    else
+                    {
+                        await EnsureStudentPersonalProgramAsync(conn, tx, userId);
+                    }
+                }
 
                 tx.Commit();
                 return "OK";
@@ -429,29 +481,70 @@ namespace MentorumApi.Data
             }
         }
 
-        private async Task EnsureStudentPersonalProgramAsync(IDbConnection conn, IDbTransaction tx, Guid userId)
+        public async Task<Guid> EnsureStudentPersonalProgramAsync(IDbConnection conn, IDbTransaction tx, Guid userId)
         {
             var existingProgramId = await conn.QuerySingleOrDefaultAsync<Guid?>(
                 "SELECT program_id FROM students WHERE id = @Id", new { Id = userId }, tx);
 
             if (existingProgramId == null)
             {
-                var personalProgramId = Guid.NewGuid();
-                await conn.ExecuteAsync(@"
-                    INSERT INTO coaching_programs (id, name, description, color, created_by, is_active)
-                    VALUES (@Id, 'Bireysel Çalışma Programım', 'INDIVIDUAL_STUDENT: Koçsuz bağımsız öğrenci çalışma alanı', '#10B981', @UserId, 1)",
-                    new { Id = personalProgramId, UserId = userId }, tx);
+                var personalProgramId = await CreateOrGetPersonalWorkspaceInTxAsync(conn, tx, userId);
 
                 await conn.ExecuteAsync(@"
-                    INSERT INTO students (id, program_id, is_active)
-                    VALUES (@Id, @ProgramId, 1)
+                    INSERT INTO students (
+                        id, program_id, is_active,
+                        can_complete_topics, can_complete_homework, can_edit_goals,
+                        can_add_exam_results, can_manage_resources, can_self_assign_work
+                    )
+                    VALUES (@Id, @ProgramId, 1, 1, 1, 1, 1, 1, 1)
                     ON CONFLICT (id) DO UPDATE SET is_active = 1",
                     new { Id = userId, ProgramId = personalProgramId }, tx);
+                return personalProgramId;
             }
             else
             {
                 await conn.ExecuteAsync("UPDATE students SET is_active = 1 WHERE id = @Id", new { Id = userId }, tx);
+                return existingProgramId.Value;
             }
+        }
+
+        public async Task<Guid> CreateOrGetPersonalWorkspaceInTxAsync(IDbConnection conn, IDbTransaction tx, Guid userId)
+        {
+            var existingPersonal = await conn.QuerySingleOrDefaultAsync<Guid?>(@"
+                SELECT cp.id
+                FROM coaching_programs cp
+                WHERE cp.created_by = @UserId
+                  AND NOT EXISTS (SELECT 1 FROM program_coaches pc WHERE pc.program_id = cp.id)
+                ORDER BY cp.created_at LIMIT 1",
+                new { UserId = userId }, tx);
+
+            if (existingPersonal.HasValue)
+                return existingPersonal.Value;
+
+            var personalProgramId = Guid.NewGuid();
+            await conn.ExecuteAsync(@"
+                INSERT INTO coaching_programs (id, name, description, color, created_by, is_active)
+                VALUES (@Id, 'Bireysel Çalışma Programım', 'INDIVIDUAL_STUDENT: Koçsuz bağımsız öğrenci çalışma alanı', '#10B981', @UserId, 1)",
+                new { Id = personalProgramId, UserId = userId }, tx);
+            return personalProgramId;
+        }
+
+        public async Task<string> GetRegistrationModeAsync()
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            var mode = await conn.QuerySingleOrDefaultAsync<string?>(
+                "SELECT value FROM system_settings WHERE key = 'registration_mode'");
+            return string.IsNullOrWhiteSpace(mode) ? "ADMIN_APPROVAL" : mode;
+        }
+
+        public async Task SetRegistrationModeAsync(string mode, Guid adminId)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            await conn.ExecuteAsync(@"
+                INSERT INTO system_settings (key, value, updated_at, updated_by)
+                VALUES ('registration_mode', @Mode, NOW(), @AdminId)
+                ON CONFLICT (key) DO UPDATE SET value = @Mode, updated_at = NOW(), updated_by = @AdminId",
+                new { Mode = mode, AdminId = adminId });
         }
     }
 }

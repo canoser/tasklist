@@ -3,11 +3,62 @@ import Card from '../../../../components/common/Card/Card';
 import ParetoFocusBanner from './ParetoFocusBanner';
 import { PriorityBadge, AssignedViaBadge, HomeworkStatusBadge } from '../../../../components/common/HomeworkStatusBadges';
 import HomeworkAttachmentList from '../../../../components/common/HomeworkAttachmentList';
+import { useUpdateStudentPermissions } from '../../coachApi';
 import styles from '../CoachStudentDetail.module.css';
 
-export default function HomeworkTab({ exams = [], studentHomeworks = [], onAssignFocusHomework }) {
+export default function HomeworkTab({ studentId, student, exams = [], studentHomeworks = [], onAssignFocusHomework }) {
+  const updatePermsMutation = useUpdateStudentPermissions(studentId);
+
+  const handleTogglePerm = (key) => {
+    if (!student) return;
+    updatePermsMutation.mutate({
+      canCompleteTopics: !!student.canCompleteTopics,
+      canEditGoals: !!student.canEditGoals,
+      canCompleteHomework: key === 'canCompleteHomework' ? !student.canCompleteHomework : !!student.canCompleteHomework,
+      canAddExamResults: !!student.canAddExamResults,
+      canManageResources: !!student.canManageResources,
+      canSelfAssignWork: key === 'canSelfAssignWork' ? !student.canSelfAssignWork : !!student.canSelfAssignWork,
+    });
+  };
+
   return (
     <Card title="Ödev Geçmişi" className={styles.notesCard}>
+      {student && (
+        <div
+          style={{
+            display: 'flex',
+            gap: 16,
+            flexWrap: 'wrap',
+            padding: '10px 12px',
+            marginBottom: 14,
+            borderRadius: 8,
+            background: 'var(--bg-app)',
+            border: '1px solid var(--border-color)',
+            alignItems: 'center',
+          }}
+        >
+          <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-primary)' }}>🛡️ Hızlı Yetki:</span>
+          <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.82rem', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={!!student.canCompleteHomework}
+              disabled={updatePermsMutation.isPending}
+              onChange={() => handleTogglePerm('canCompleteHomework')}
+            />
+            <span>Öğrenci ödevleri doğrudan tamamlayabilsin (Kapalıysa Onaya Düşer)</span>
+          </label>
+          <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.82rem', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={!!student.canSelfAssignWork}
+              disabled={updatePermsMutation.isPending}
+              onChange={() => handleTogglePerm('canSelfAssignWork')}
+            />
+            <span>Öğrenci kendine çalışma / ödev ekleyebilsin</span>
+          </label>
+        </div>
+      )}
+
       <ParetoFocusBanner exams={exams} onAssignFocusHomework={onAssignFocusHomework} />
 
       {studentHomeworks && studentHomeworks.length > 0 ? (
@@ -16,7 +67,7 @@ export default function HomeworkTab({ exams = [], studentHomeworks = [], onAssig
             key={hw.id}
             style={{
               padding: '10px 0',
-              borderBottom: '1px solid #f1f5f9',
+              borderBottom: '1px solid var(--border-color)',
               display: 'flex',
               flexDirection: 'column',
               gap: 6,
@@ -39,6 +90,34 @@ export default function HomeworkTab({ exams = [], studentHomeworks = [], onAssig
                 )}
                 <PriorityBadge priority={hw.priority} />
                 <AssignedViaBadge assignedVia={hw.assignedVia} />
+                {hw.createdByStudent && (
+                  <span
+                    style={{
+                      fontSize: '0.7rem',
+                      padding: '2px 7px',
+                      borderRadius: 999,
+                      background: 'rgba(59,130,246,0.12)',
+                      color: '#2563eb',
+                      fontWeight: 600,
+                    }}
+                  >
+                    👤 Öğrenci Ekledi
+                  </span>
+                )}
+                {hw.pendingApproval && (
+                  <span
+                    style={{
+                      fontSize: '0.7rem',
+                      padding: '2px 7px',
+                      borderRadius: 999,
+                      background: 'rgba(245,158,11,0.14)',
+                      color: '#d97706',
+                      fontWeight: 600,
+                    }}
+                  >
+                    ⏳ Tamamlama Onayı Bekliyor
+                  </span>
+                )}
               </div>
               <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-color-muted)' }}>

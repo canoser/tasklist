@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
-import { usePendingApprovals, useAdminUsers, useApproveUser, useRejectUser, useAddUser, useChangeUserPassword, useRateLimits, useUpdateRateLimit } from '../coach/coachSchoolApi';
+import {
+  usePendingApprovals,
+  useAdminUsers,
+  useApproveUser,
+  useRejectUser,
+  useAddUser,
+  useChangeUserPassword,
+  useRateLimits,
+  useUpdateRateLimit,
+  useAdminSettings,
+} from '../coach/coachSchoolApi';
 import Button from '../../components/common/Button/Button';
 import Input from '../../components/common/Input/Input';
 import Card from '../../components/common/Card/Card';
@@ -26,6 +36,8 @@ const AdminPanelPage = () => {
 
   const { data: pending, isLoading: isPendingLoading } = usePendingApprovals();
   const { data: allUsers, isLoading: isAllUsersLoading } = useAdminUsers(roleFilter, searchTerm);
+  const { data: coachList } = useAdminUsers('Coach', '');
+  const { data: adminSettings } = useAdminSettings();
   
   const approve = useApproveUser();
   const reject = useRejectUser();
@@ -39,6 +51,8 @@ const AdminPanelPage = () => {
   const updateRateLimit = useUpdateRateLimit();
   const [rlValues, setRlValues] = useState({});
   const [rlMsg, setRlMsg] = useState('');
+
+  const activeCoaches = (coachList || []).filter((c) => c.approvalStatus === 'APPROVED');
 
   const handleChangePassword = async (userId) => {
     if (pwValue.trim().length < 6) {
@@ -57,9 +71,11 @@ const AdminPanelPage = () => {
   };
 
   const [roles, setRoles] = useState({});
+  const [assignedCoaches, setAssignedCoaches] = useState({});
   const [newFullName, setNewFullName] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [newRole, setNewRole] = useState('Coach');
+  const [newAssignCoachId, setNewAssignCoachId] = useState('');
   const [created, setCreated] = useState(null);
   const [addError, setAddError] = useState('');
   const [curriculumBusy, setCurriculumBusy] = useState(false);
@@ -71,15 +87,22 @@ const AdminPanelPage = () => {
   const [maxTeachersInput, setMaxTeachersInput] = useState('');
   const [storageQuotaInput, setStorageQuotaInput] = useState('');
 
+  const getEffectiveRole = (u) => {
+    const picked = roles[u.id] || u.role;
+    return picked === 'Coach' ? 'Coach' : 'Student';
+  };
+
   const handleApprove = (userId, defaultRole) => {
-    const role = roles[userId] || defaultRole;
+    const picked = roles[userId] || defaultRole;
+    const role = picked === 'Coach' ? 'Coach' : 'Student';
     if (role === 'Coach') {
       setQuotaModalUser({ userId, role });
       setMaxStudentsInput('');
       setMaxTeachersInput('');
       setStorageQuotaInput('');
     } else {
-      approve.mutateAsync({ userId, role });
+      const assignCoachId = assignedCoaches[userId] || null;
+      approve.mutateAsync({ userId, role, assignCoachId });
     }
   };
 
@@ -101,9 +124,16 @@ const AdminPanelPage = () => {
     setCreated(null);
     if (!newEmail || !newFullName) { setAddError('Ad Soyad ve e-posta zorunludur.'); return; }
     try {
-      const res = await addUser.mutateAsync({ email: newEmail, fullName: newFullName, role: newRole });
+      const res = await addUser.mutateAsync({
+        email: newEmail,
+        fullName: newFullName,
+        role: newRole,
+        assignCoachId: newRole === 'Student' && newAssignCoachId ? newAssignCoachId : null,
+      });
       setCreated(res);
-      setNewEmail(''); setNewFullName('');
+      setNewEmail('');
+      setNewFullName('');
+      setNewAssignCoachId('');
     } catch (err) {
       setAddError(err?.response?.data?.error || 'Kullanıcı eklenemedi.');
     }
@@ -187,10 +217,29 @@ const AdminPanelPage = () => {
                 <select value={newRole} onChange={(e) => setNewRole(e.target.value)} className={styles.select}>
                   <option value="Coach">Koç</option>
                   <option value="Student">Öğrenci</option>
-                  <option value="Parent">Veli</option>
                 </select>
               </div>
+              {newRole === 'Student' && (
+                <div>
+                  <label className={styles.selectLabel}>Koç Ataması (İsteğe Bağlı)</label>
+                  <select
+                    value={newAssignCoachId}
+                    onChange={(e) => setNewAssignCoachId(e.target.value)}
+                    className={styles.select}
+                  >
+                    <option value="">🌱 Bağımsız Öğrenci (Koçsuz Başlasın)</option>
+                    {activeCoaches.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        👨‍🏫 {c.fullName} ({c.email})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
+            <p style={{ margin: '8px 0 0', fontSize: 12, color: 'var(--text-color-muted)' }}>
+              💡 Öğretmen ve Veli hesapları koçlar tarafından uygulama içinden eklenir.
+            </p>
             <Button size="sm" onClick={handleAddUser} style={{ marginTop: '12px' }}>Kullanıcıyı Kaydet</Button>
             {addError && <p className={styles.error}>{addError}</p>}
             {created && (
@@ -210,40 +259,60 @@ const AdminPanelPage = () => {
                 <p>Şu anda onay bekleyen kullanıcı bulunmuyor.</p>
               </div>
             )}
-            {pending?.map((u) => (
-              <Card key={u.id} className={styles.item} padding="md">
-                <div className={styles.itemHeader}>
-                  <div>
-                    <strong className={styles.userName}>{u.fullName}</strong>
-                    <div className={styles.email}>{u.email}</div>
+            {pending?.map((u) => {
+              const effectiveRole = getEffectiveRole(u);
+              return (
+                <Card key={u.id} className={styles.item} padding="md">
+                  <div className={styles.itemHeader}>
+                    <div>
+                      <strong className={styles.userName}>{u.fullName}</strong>
+                      <div className={styles.email}>{u.email}</div>
+                    </div>
+                    <span className={styles.badgePending}>Onay Bekliyor</span>
                   </div>
-                  <span className={styles.badgePending}>Onay Bekliyor</span>
-                </div>
-                <div className={styles.roleRow}>
-                  <span className={styles.roleSelectLabel}>Onaylanacak Rol:</span>
-                  {['Student', 'Parent', 'Coach'].map((r) => (
-                    <label key={r} className={styles.roleRadio}>
-                      <input
-                        type="radio"
-                        name={`role-${u.id}`}
-                        value={r}
-                        checked={(roles[u.id] || u.role) === r}
-                        onChange={() => setRoles({ ...roles, [u.id]: r })}
-                      />
-                      {ROLE_LABEL[r]}
-                    </label>
-                  ))}
-                </div>
-                <div className={styles.actions}>
-                  <Button size="sm" onClick={() => handleApprove(u.id, u.role)} isLoading={approve.isPending}>
-                    ✓ Onayla
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => reject.mutateAsync({ userId: u.id })} isLoading={reject.isPending}>
-                    ✕ Reddet
-                  </Button>
-                </div>
-              </Card>
-            ))}
+                  <div className={styles.roleRow}>
+                    <span className={styles.roleSelectLabel}>Onaylanacak Rol:</span>
+                    {['Student', 'Coach'].map((r) => (
+                      <label key={r} className={styles.roleRadio}>
+                        <input
+                          type="radio"
+                          name={`role-${u.id}`}
+                          value={r}
+                          checked={effectiveRole === r}
+                          onChange={() => setRoles({ ...roles, [u.id]: r })}
+                        />
+                        {ROLE_LABEL[r]}
+                      </label>
+                    ))}
+                  </div>
+                  {effectiveRole === 'Student' && (
+                    <div style={{ marginBottom: 14, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <label className={styles.selectLabel}>Öğrenci Çalışma Modu / Koç Ataması:</label>
+                      <select
+                        value={assignedCoaches[u.id] || ''}
+                        onChange={(e) => setAssignedCoaches({ ...assignedCoaches, [u.id]: e.target.value })}
+                        className={styles.select}
+                      >
+                        <option value="">🌱 Bağımsız Öğrenci (Koçsuz kendi başına kullansın)</option>
+                        {activeCoaches.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            👨‍🏫 Koça Ata: {c.fullName} ({c.email})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  <div className={styles.actions}>
+                    <Button size="sm" onClick={() => handleApprove(u.id, u.role)} isLoading={approve.isPending}>
+                      ✓ Onayla
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => reject.mutateAsync({ userId: u.id })} isLoading={reject.isPending}>
+                      ✕ Reddet
+                    </Button>
+                  </div>
+                </Card>
+              );
+            })}
           </div>
         </div>
       )}
@@ -389,6 +458,49 @@ const AdminPanelPage = () => {
       {/* SEKME 4: GÜVENLİK & KOTA */}
       {activeTab === 'security' && (
         <div className={styles.section}>
+          <Card padding="md" style={{ marginBottom: 16 }}>
+            <h3 className={styles.cardSectionTitle}>🔐 Üyelik ve Kayıt Modu</h3>
+            <p style={{ color: 'var(--text-color-secondary)', marginBottom: 12, fontSize: 14 }}>
+              Sisteme yeni üye olan kullanıcıların onay sürecini belirler.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 10, border: '1px solid var(--color-primary)', background: 'var(--color-primary-light)' }}>
+                <input
+                  type="radio"
+                  name="registrationMode"
+                  checked={(adminSettings?.registrationMode || 'ADMIN_APPROVAL') === 'ADMIN_APPROVAL'}
+                  readOnly
+                  style={{ marginTop: 4 }}
+                />
+                <div>
+                  <strong style={{ fontSize: 14, color: 'var(--text-color-primary)' }}>
+                    Yönetici Onaylı Kayıt (Aktif)
+                  </strong>
+                  <div style={{ fontSize: 12, color: 'var(--text-color-secondary)', marginTop: 2 }}>
+                    Yeni kayıt olan tüm kullanıcılar yönetici onayına düşer. Yönetici onaylarken Koç veya Öğrenci (Bağımsız ya da Koça Atanmış) olarak belirler.
+                  </div>
+                </div>
+              </label>
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 10, border: '1px solid var(--border-color)', opacity: 0.65, cursor: 'not-allowed' }}>
+                <input
+                  type="radio"
+                  name="registrationMode"
+                  disabled
+                  checked={false}
+                  style={{ marginTop: 4 }}
+                />
+                <div>
+                  <strong style={{ fontSize: 14, color: 'var(--text-color-primary)' }}>
+                    Otomatik / Self-Servis Kayıt (Yakında — Profesyonel Sürüm)
+                  </strong>
+                  <div style={{ fontSize: 12, color: 'var(--text-color-secondary)', marginTop: 2 }}>
+                    Kullanıcılar üye olurken doğrudan Koç veya Bağımsız Öğrenci rolünü seçerek yönetici onayı beklemeden başlayabilir.
+                  </div>
+                </div>
+              </label>
+            </div>
+          </Card>
+
           <Card padding="md">
             <h3 className={styles.cardSectionTitle}>🛡️ Güvenlik & Kota Denetimi</h3>
             <p style={{ color: '#555', marginBottom: 12 }}>

@@ -78,7 +78,8 @@ namespace MentorumApi.Endpoints
                 {
                     "NOT_FOUND" => Results.BadRequest(new { error = "Ödev bulunamadı veya yetkiniz yok." }),
                     "CONCURRENCY_CONFLICT" => Results.Conflict(new { error = "Bu ödev başka bir oturum tarafından güncellendi.", code = "CONCURRENCY_CONFLICT" }),
-                    _ => Results.Ok(new { message = "Ödev ilerlemesi kaydedildi." })
+                    "PENDING_APPROVAL" => Results.Ok(new { pendingApproval = true, message = "Ödev tamamlama bildiriminiz koçunuzun onayına gönderildi." }),
+                    _ => Results.Ok(new { pendingApproval = false, message = "Ödev ilerlemesi kaydedildi." })
                 };
             })
             .AddEndpointFilter<MentorumApi.Filters.IdempotencyFilter>();

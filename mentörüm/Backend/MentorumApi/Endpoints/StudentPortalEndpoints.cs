@@ -46,8 +46,216 @@ namespace MentorumApi.Endpoints
             {
                 var studentId = user.GetUserId();
                 if (studentId == null) return Results.Unauthorized();
+                var state = await repo.GetStudentAutonomyStateAsync(studentId.Value);
+                if (state == null) return Results.Unauthorized();
+                if (state.Value.HasCoach && !state.Value.Permissions.CanEditGoals)
+                    return Results.Json(new { error = "Hedef güncelleme yetkiniz koçunuz tarafından kapatılmıştır." }, statusCode: 403);
+
                 await repo.UpdateStudentGoalAsync(studentId.Value, req);
                 return Results.Ok(new { message = "Hedef güncellendi." });
+            });
+
+            self.MapPut("/curriculum/{topicId:guid}/status", async (
+                Guid topicId,
+                [FromBody] ToggleTopicStatusRequest req,
+                [FromServices] StudentRepository studentRepo,
+                [FromServices] CurriculumRepository curriculumRepo,
+                ClaimsPrincipal user) =>
+            {
+                var studentId = user.GetUserId();
+                if (studentId == null) return Results.Unauthorized();
+                var state = await studentRepo.GetStudentAutonomyStateAsync(studentId.Value);
+                if (state == null) return Results.Unauthorized();
+                if (state.Value.HasCoach && !state.Value.Permissions.CanCompleteTopics)
+                    return Results.Json(new { error = "Konu tamamlama işaretleme yetkiniz koçunuz tarafından kapatılmıştır." }, statusCode: 403);
+
+                var ok = await curriculumRepo.UpsertTopicProgressAsync(studentId.Value, topicId, req.IsCompleted, "Student");
+                return ok ? Results.Ok(new { message = "Konu durumu güncellendi." }) : Results.NotFound(new { error = "Konu bulunamadı." });
+            });
+
+            self.MapPost("/exams", async (
+                [FromBody] CreateExamResultRequest req,
+                [FromServices] StudentRepository studentRepo,
+                [FromServices] ExamRepository examRepo,
+                ClaimsPrincipal user) =>
+            {
+                var studentId = user.GetUserId();
+                if (studentId == null) return Results.Unauthorized();
+                var state = await studentRepo.GetStudentAutonomyStateAsync(studentId.Value);
+                if (state == null) return Results.Unauthorized();
+                if (state.Value.HasCoach && !state.Value.Permissions.CanAddExamResults)
+                    return Results.Json(new { error = "Sınav/deneme sonucu ekleme yetkiniz koçunuz tarafından kapatılmıştır." }, statusCode: 403);
+
+                try
+                {
+                    var examId = await examRepo.CreateExamResultAsync(studentId.Value, req, isStudentSelfEntry: true);
+                    return Results.Ok(new { examId, message = "Deneme sonucu kaydedildi." });
+                }
+                catch (ArgumentException ex)
+                {
+                    return Results.BadRequest(new { error = ex.Message });
+                }
+            });
+
+            self.MapDelete("/exams/{examId:guid}", async (
+                Guid examId,
+                [FromServices] StudentRepository studentRepo,
+                [FromServices] ExamRepository examRepo,
+                ClaimsPrincipal user) =>
+            {
+                var studentId = user.GetUserId();
+                if (studentId == null) return Results.Unauthorized();
+                var state = await studentRepo.GetStudentAutonomyStateAsync(studentId.Value);
+                if (state == null) return Results.Unauthorized();
+                if (state.Value.HasCoach && !state.Value.Permissions.CanAddExamResults)
+                    return Results.Json(new { error = "Sınav silme yetkiniz koçunuz tarafından kapatılmıştır." }, statusCode: 403);
+
+                var ok = await examRepo.DeleteExamResultAsync(studentId.Value, examId, isCoach: false);
+                return ok ? Results.Ok(new { message = "Sınav sonucu silindi." }) : Results.NotFound(new { error = "Sınav bulunamadı." });
+            });
+
+            self.MapPost("/homework", async (
+                [FromBody] CreateStudentSelfHomeworkRequest req,
+                [FromServices] StudentRepository studentRepo,
+                [FromServices] HomeworkRepository homeworkRepo,
+                ClaimsPrincipal user) =>
+            {
+                var studentId = user.GetUserId();
+                if (studentId == null) return Results.Unauthorized();
+                if (string.IsNullOrWhiteSpace(req.Title))
+                    return Results.BadRequest(new { error = "Çalışma/ödev başlığı zorunludur." });
+
+                var state = await studentRepo.GetStudentAutonomyStateAsync(studentId.Value);
+                if (state == null) return Results.Unauthorized();
+                if (state.Value.HasCoach && !state.Value.Permissions.CanSelfAssignWork)
+                    return Results.Json(new { error = "Kendi kendine ödev/çalışma ekleme yetkiniz koçunuz tarafından kapatılmıştır." }, statusCode: 403);
+
+                var id = await homeworkRepo.CreateStudentSelfHomeworkAsync(studentId.Value, state.Value.ProgramId, req);
+                return Results.Ok(new { id, message = "Çalışma/ödev eklendi." });
+            });
+
+            self.MapGet("/resources", async ([FromServices] StudentRepository repo, ClaimsPrincipal user) =>
+            {
+                var studentId = user.GetUserId();
+                if (studentId == null) return Results.Unauthorized();
+                return Results.Ok(await repo.GetStudentResourcesAsync(studentId.Value));
+            });
+
+            self.MapPost("/resources", async (
+                [FromBody] CreateStudentResourceRequest req,
+                [FromServices] StudentRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var studentId = user.GetUserId();
+                if (studentId == null) return Results.Unauthorized();
+                if (string.IsNullOrWhiteSpace(req.Title))
+                    return Results.BadRequest(new { error = "Kaynak adı zorunludur." });
+
+                var state = await repo.GetStudentAutonomyStateAsync(studentId.Value);
+                if (state == null) return Results.Unauthorized();
+                if (state.Value.HasCoach && !state.Value.Permissions.CanManageResources)
+                    return Results.Json(new { error = "Kaynak/video ekleme yetkiniz koçunuz tarafından kapatılmıştır." }, statusCode: 403);
+
+                var id = await repo.CreateStudentResourceAsync(studentId.Value, state.Value.ProgramId, req, "Student");
+                return Results.Ok(new { id, message = "Kaynak eklendi." });
+            });
+
+            self.MapPatch("/resources/{resourceId:guid}", async (
+                Guid resourceId,
+                [FromBody] UpdateStudentResourceRequest req,
+                [FromServices] StudentRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var studentId = user.GetUserId();
+                if (studentId == null) return Results.Unauthorized();
+                var state = await repo.GetStudentAutonomyStateAsync(studentId.Value);
+                if (state == null) return Results.Unauthorized();
+                if (state.Value.HasCoach && !state.Value.Permissions.CanManageResources)
+                    return Results.Json(new { error = "Kaynak düzenleme yetkiniz koçunuz tarafından kapatılmıştır." }, statusCode: 403);
+
+                var ok = await repo.UpdateStudentResourceAsync(studentId.Value, resourceId, req);
+                return ok ? Results.Ok(new { message = "Kaynak güncellendi." }) : Results.NotFound(new { error = "Kaynak bulunamadı." });
+            });
+
+            self.MapDelete("/resources/{resourceId:guid}", async (
+                Guid resourceId,
+                [FromServices] StudentRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var studentId = user.GetUserId();
+                if (studentId == null) return Results.Unauthorized();
+                var state = await repo.GetStudentAutonomyStateAsync(studentId.Value);
+                if (state == null) return Results.Unauthorized();
+                if (state.Value.HasCoach && !state.Value.Permissions.CanManageResources)
+                    return Results.Json(new { error = "Kaynak silme yetkiniz koçunuz tarafından kapatılmıştır." }, statusCode: 403);
+
+                var ok = await repo.DeleteStudentResourceAsync(studentId.Value, resourceId);
+                return ok ? Results.Ok(new { message = "Kaynak silindi." }) : Results.NotFound(new { error = "Kaynak bulunamadı." });
+            });
+
+            self.MapGet("/search-coaches", async (
+                [FromQuery] string? q,
+                [FromServices] StudentRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var studentId = user.GetUserId();
+                if (studentId == null) return Results.Unauthorized();
+                return Results.Ok(await repo.SearchCoachesForStudentAsync(studentId.Value, q ?? ""));
+            });
+
+            self.MapGet("/connection-requests", async (
+                [FromServices] StudentRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var studentId = user.GetUserId();
+                if (studentId == null) return Results.Unauthorized();
+                return Results.Ok(await repo.GetConnectionRequestsAsync(studentId.Value, isCoach: false));
+            });
+
+            self.MapPost("/connection-requests", async (
+                [FromBody] CreateConnectionRequestDto req,
+                [FromServices] StudentRepository repo,
+                ClaimsPrincipal user) =>
+            {
+                var studentId = user.GetUserId();
+                if (studentId == null) return Results.Unauthorized();
+                var res = await repo.CreateConnectionRequestAsync(req.TargetUserId, studentId.Value, "Student", req.Note);
+                return res switch
+                {
+                    "ALREADY_HAS_COACH" => Results.BadRequest(new { error = "Zaten aktif bir koçunuz bulunuyor." }),
+                    "ALREADY_PENDING" => Results.Conflict(new { error = "Bu koç için zaten bekleyen bir isteğiniz var." }),
+                    _ => Results.Ok(new { message = "Bağlantı isteği koça gönderildi." })
+                };
+            });
+
+            self.MapPost("/connection-requests/{requestId:guid}/respond", async (
+                Guid requestId,
+                [FromBody] RespondConnectionRequestDto req,
+                [FromServices] StudentRepository repo,
+                [FromServices] ProgramRepository programRepo,
+                ClaimsPrincipal user) =>
+            {
+                var studentId = user.GetUserId();
+                if (studentId == null) return Results.Unauthorized();
+                var res = await repo.RespondConnectionRequestAsync(requestId, studentId.Value, actorIsCoach: false, req.Accept, programRepo);
+                return res switch
+                {
+                    "NOT_FOUND" => Results.NotFound(new { error = "İstek bulunamadı veya sonuçlandırılmış." }),
+                    "FORBIDDEN" => Results.Forbid(),
+                    "REJECTED" => Results.Ok(new { status = "REJECTED", message = "İstek reddedildi." }),
+                    _ => Results.Ok(new { status = "ACCEPTED", message = "Koç ile bağlantınız kuruldu." })
+                };
+            });
+
+            self.MapPost("/unlink-coach", async (
+                [FromServices] StudentRepository repo,
+                [FromServices] ProgramRepository programRepo,
+                ClaimsPrincipal user) =>
+            {
+                var studentId = user.GetUserId();
+                if (studentId == null) return Results.Unauthorized();
+                var ok = await repo.UnlinkCoachStudentAsync(studentId.Value, null, programRepo);
+                return ok ? Results.Ok(new { message = "Koç bağlantısı sonlandırıldı; bağımsız öğrenci moduna geçildi." }) : Results.BadRequest(new { error = "İşlem tamamlanamadı." });
             });
 
             // M-157: öğrenci kendi görüşmelerini görür + hazırlık notu girer

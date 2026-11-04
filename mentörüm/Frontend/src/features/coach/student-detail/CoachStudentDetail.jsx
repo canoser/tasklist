@@ -369,6 +369,8 @@ const CoachStudentDetail = () => {
         {activeTab === 'exams' && <ExamsTab studentId={id} student={student} />}
         {activeTab === 'homework' && (
           <HomeworkTab
+            studentId={id}
+            student={student}
             exams={student?.examResults || []}
             studentHomeworks={studentHomeworks}
             onAssignFocusHomework={(subj) => {
@@ -379,6 +381,8 @@ const CoachStudentDetail = () => {
         )}
         {activeTab === 'topics' && (
           <TopicsTab
+            studentId={id}
+            student={student}
             curriculum={curriculum}
             onAssignTopicHomework={(topic) => {
               setSelectedTopicForHw(topic);

@@ -8,8 +8,11 @@ namespace MentorumApi.Data
     {
         public ExamRepository(DbConnectionFactory connectionFactory) : base(connectionFactory) { }
 
-        public async Task<Guid> CreateExamResultAsync(Guid coachId, CreateExamResultRequest req)
+        public async Task<Guid> CreateExamResultAsync(Guid coachId, CreateExamResultRequest req, bool isStudentSelfEntry = false)
         {
+            if (isStudentSelfEntry)
+                req.StudentId = coachId;
+
             if (!req.StudentId.HasValue && !req.GroupId.HasValue)
                 throw new ArgumentException("Öğrenci veya Grup seçilmelidir.");
 
@@ -23,7 +26,17 @@ namespace MentorumApi.Data
                 var targetStudentIds = new List<Guid>();
                 Guid programId;
 
-                if (req.GroupId.HasValue)
+                if (isStudentSelfEntry)
+                {
+                    var studentProg = await conn.QuerySingleOrDefaultAsync<Guid?>(
+                        "SELECT program_id FROM students WHERE id = @StudentId AND is_active = 1",
+                        new { StudentId = coachId }, tx);
+                    if (studentProg == null)
+                        throw new UnauthorizedAccessException("Öğrenci kaydı bulunamadı.");
+                    programId = studentProg.Value;
+                    targetStudentIds.Add(coachId);
+                }
+                else if (req.GroupId.HasValue)
                 {
                     var groupProg = await conn.QuerySingleOrDefaultAsync<Guid?>(
                         @"SELECT g.program_id 
@@ -255,6 +268,15 @@ namespace MentorumApi.Data
             public Guid SubjectId { get; set; }
             public string SubjectCode { get; set; } = "";
             public string SubjectName { get; set; } = "";
+        }
+
+        public async Task<bool> DeleteExamResultAsync(Guid actorId, Guid examId, bool isCoach)
+        {
+            using var conn = _connectionFactory.CreateConnection();
+            var sql = isCoach
+                ? "DELETE FROM exam_results WHERE id = @ExamId AND program_id IN (SELECT program_id FROM program_coaches WHERE coach_id = @ActorId)"
+                : "DELETE FROM exam_results WHERE id = @ExamId AND student_id = @ActorId";
+            return await conn.ExecuteAsync(sql, new { ExamId = examId, ActorId = actorId }) > 0;
         }
     }
 }

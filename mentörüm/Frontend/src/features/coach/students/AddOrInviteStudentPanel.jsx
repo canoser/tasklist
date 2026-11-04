@@ -5,17 +5,31 @@ import Input, { Select } from '../../../components/common/Input/Input';
 import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
 import StatusBadge from '../../../components/common/StatusBadge/StatusBadge';
 import { STUDENT_GRADES, STUDENT_TRACKS } from '../../../constants/domainConstants';
-import { CheckCircle2, Mail, Zap, ChevronDown, Copy, Check } from 'lucide-react';
-import { useSendInvite, usePendingInvites, useCreateStudent } from '../coachApi';
+import { CheckCircle2, Mail, Zap, ChevronDown, Copy, Check, Search, UserPlus } from 'lucide-react';
+import {
+  useSendInvite,
+  usePendingInvites,
+  useCreateStudent,
+  useSearchIndependentStudents,
+  useCoachConnectionRequests,
+  useSendCoachConnectionRequest,
+  useRespondCoachConnectionRequest,
+} from '../coachApi';
 import styles from './CoachStudents.module.css';
 
 const AddOrInviteStudentPanel = ({ showAddForm, onCloseAddForm, programs }) => {
   const { data: pendingInvites } = usePendingInvites();
+  const { data: connectionRequests = [] } = useCoachConnectionRequests();
   const sendInvite = useSendInvite();
   const createStudent = useCreateStudent();
+  const sendConnReq = useSendCoachConnectionRequest();
+  const respondConnReq = useRespondCoachConnectionRequest();
 
-  const [formMode, setFormMode] = useState('DIRECT'); // 'DIRECT' | 'INVITE'
+  const [formMode, setFormMode] = useState('DIRECT'); // 'DIRECT' | 'INVITE' | 'SEARCH_INDEPENDENT'
   const [isPendingOpen, setIsPendingOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchMsg, setSearchMsg] = useState('');
+  const { data: searchResults = [], isFetching: isSearching } = useSearchIndependentStudents(searchQuery);
 
   // Doğrudan Ekleme Form State
   const [directFirstName, setDirectFirstName] = useState('');
@@ -132,14 +146,86 @@ const AddOrInviteStudentPanel = ({ showAddForm, onCloseAddForm, programs }) => {
               setDirectError('');
               setDirectSuccessData(null);
               setInviteMsg('');
+              setSearchMsg('');
             }}
             tabs={[
               { id: 'DIRECT', label: '⚡ Doğrudan Ekle (Hızlı Kayıt)', icon: <Zap size={14} /> },
               { id: 'INVITE', label: '✉️ E-posta ile Davet Gönder', icon: <Mail size={14} /> },
+              { id: 'SEARCH_INDEPENDENT', label: '🔍 Bağımsız Öğrenci Ara', icon: <Search size={14} /> },
             ]}
           />
 
-          {formMode === 'DIRECT' ? (
+          {formMode === 'SEARCH_INDEPENDENT' ? (
+            <div className={styles.directForm}>
+              <Input
+                label="Bağımsız Öğrenci Ara (Ad Soyad, E-posta veya Telefon)"
+                placeholder="En az 2 karakter yazın (Örn: Ayşe, ayse@mail.com, 05...)"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setSearchMsg('');
+                }}
+              />
+              <p className={styles.directHint}>
+                <Search size={14} />
+                <span>Yalnızca koçu olmayan bağımsız öğrenciler listelenir. İstek gönderdiğiniz öğrenci kabul ettiğinde koçluk ilişkiniz başlar.</span>
+              </p>
+              {searchMsg && <div className={styles.inviteSuccessInline}><span>{searchMsg}</span></div>}
+              {isSearching && <p style={{ fontSize: '0.85rem', color: 'var(--text-color-muted)' }}>Aranıyor...</p>}
+              {!isSearching && searchQuery.trim().length >= 2 && searchResults.length === 0 && (
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-color-muted)' }}>Eşleşen bağımsız öğrenci bulunamadı.</p>
+              )}
+              {searchResults.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+                  {searchResults.map((cand) => (
+                    <div
+                      key={cand.id}
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        padding: '10px 12px',
+                        borderRadius: 10,
+                        border: '1px solid var(--border-color)',
+                        background: 'var(--bg-color-surface)',
+                      }}
+                    >
+                      <div>
+                        <strong style={{ fontSize: '0.9rem' }}>{cand.fullName}</strong>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-color-muted)' }}>
+                          {cand.email || 'E-posta yok'}
+                          {cand.phone ? ` · ${cand.phone}` : ''}
+                          {cand.grade ? ` · ${cand.grade}. Sınıf` : ''}
+                          {cand.track ? ` · ${cand.track}` : ''}
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant={cand.hasPendingRequest ? 'outline' : 'primary'}
+                        disabled={cand.hasPendingRequest || sendConnReq.isPending}
+                        onClick={async () => {
+                          try {
+                            await sendConnReq.mutateAsync({ targetUserId: cand.id, note: null });
+                            setSearchMsg(`${cand.fullName} adlı öğrenciye bağlantı isteği gönderildi.`);
+                          } catch (err) {
+                            setSearchMsg(err?.response?.data?.error || 'İstek gönderilemedi.');
+                          }
+                        }}
+                      >
+                        <UserPlus size={14} />
+                        <span>{cand.hasPendingRequest ? 'İstek Bekliyor' : 'İstek Gönder'}</span>
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className={styles.formActions}>
+                <Button variant="ghost" type="button" onClick={onCloseAddForm}>
+                  Kapat
+                </Button>
+              </div>
+            </div>
+          ) : formMode === 'DIRECT' ? (
             directSuccessData ? (
               <div className={styles.successPanel}>
                 <div className={styles.successIconRow}>
@@ -299,6 +385,68 @@ const AddOrInviteStudentPanel = ({ showAddForm, onCloseAddForm, programs }) => {
               </div>
             </form>
           )}
+        </Card>
+      )}
+
+      {connectionRequests && connectionRequests.length > 0 && (
+        <Card className={styles.pendingCard} style={{ marginBottom: 14 }}>
+          <div style={{ padding: '12px 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+              <UserPlus size={16} color="var(--color-primary)" />
+              <strong style={{ fontSize: '0.92rem' }}>
+                Bağlantı İstekleri ({connectionRequests.length})
+              </strong>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {connectionRequests.map((req) => (
+                <div
+                  key={req.id}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: 10,
+                    flexWrap: 'wrap',
+                    padding: '10px 12px',
+                    borderRadius: 10,
+                    border: '1px solid var(--border-color)',
+                  }}
+                >
+                  <div>
+                    <strong style={{ fontSize: '0.9rem' }}>{req.studentName}</strong>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-color-muted)' }}>
+                      {req.studentEmail || ''} ·{' '}
+                      {req.initiatedBy === 'Student'
+                        ? 'Öğrenci sizinle çalışmak için istek gönderdi'
+                        : 'Gönderdiğiniz istek öğrenci onayını bekliyor'}
+                    </div>
+                  </div>
+                  {req.initiatedBy === 'Student' ? (
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <Button
+                        size="sm"
+                        variant="primary"
+                        isLoading={respondConnReq.isPending}
+                        onClick={() => respondConnReq.mutateAsync({ requestId: req.id, accept: true })}
+                      >
+                        ✓ Kabul Et
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        isLoading={respondConnReq.isPending}
+                        onClick={() => respondConnReq.mutateAsync({ requestId: req.id, accept: false })}
+                      >
+                        ✕ Reddet
+                      </Button>
+                    </div>
+                  ) : (
+                    <StatusBadge status="PENDING" label="Öğrenci Onayı Bekleniyor" />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         </Card>
       )}
 

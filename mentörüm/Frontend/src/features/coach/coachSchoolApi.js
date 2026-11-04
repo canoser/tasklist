@@ -262,7 +262,14 @@ export const useAdminUsers = (role, search) => useQuery({
 export const useApproveUser = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ userId, role, maxStudents, maxTeachers, storageQuotaMb }) => apiClient.post(`/admin/users/${userId}/approve`, { role, maxStudents, maxTeachers, storageQuotaMb }),
+    mutationFn: ({ userId, role, maxStudents, maxTeachers, storageQuotaMb, assignCoachId }) =>
+      apiClient.post(`/admin/users/${userId}/approve`, {
+        role,
+        maxStudents,
+        maxTeachers,
+        storageQuotaMb,
+        assignCoachId: assignCoachId || null,
+      }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', 'pending-approvals'] });
       qc.invalidateQueries({ queryKey: ['admin', 'users'] });
@@ -284,9 +291,25 @@ export const useRejectUser = () => {
 export const useAddUser = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ email, fullName, role }) => apiClient.post('/admin/users', { email, fullName, role }),
+    mutationFn: ({ email, fullName, role, assignCoachId }) =>
+      apiClient.post('/admin/users', { email, fullName, role, assignCoachId: assignCoachId || null }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', 'users'] });
+    },
+  });
+};
+
+export const useAdminSettings = () => useQuery({
+  queryKey: ['admin', 'settings'],
+  queryFn: async () => (await apiClient.get('/admin/settings')) || { registrationMode: 'ADMIN_APPROVAL' },
+});
+
+export const useUpdateAdminSettings = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ registrationMode }) => apiClient.put('/admin/settings', { registrationMode }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'settings'] });
     },
   });
 };

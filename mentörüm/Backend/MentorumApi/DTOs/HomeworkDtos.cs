@@ -77,6 +77,8 @@ namespace MentorumApi.DTOs
         public string? CourseName { get; set; }
         public string? AssignedVia { get; set; }
         public string? Priority { get; set; }
+        public bool CreatedByStudent { get; set; }
+        public bool PendingApproval { get; set; }
         public List<HomeworkAttachmentDto> Attachments { get; set; } = new();
         public int Version { get; set; } = 1;
     }

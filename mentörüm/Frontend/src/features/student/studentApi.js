@@ -358,3 +358,160 @@ export const useUpdateResourceProgress = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['student'] }),
   });
 };
+
+// --- V20: Bağımsız Öğrenci Modu, 6 Yetenek, Çift Yönlü Koç Bağlantı İstekleri ---
+export const useToggleStudentTopicStatus = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ topicId, isCompleted }) =>
+      apiClient.put(`/student/curriculum/${topicId}/status`, { isCompleted }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['student', 'curriculum'] });
+    },
+  });
+};
+
+export const useCreateStudentExam = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ examDate, examType, examName, totalNet, notes, errorReasons, scores }) =>
+      apiClient.post('/student/exams', {
+        examDate,
+        examType,
+        examName,
+        totalNet,
+        notes,
+        errorReasons,
+        scores,
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['student', 'exams'] });
+      qc.invalidateQueries({ queryKey: ['student', 'curriculum'] });
+    },
+  });
+};
+
+export const useDeleteStudentExam = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ examId }) => apiClient.delete(`/student/exams/${examId}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['student', 'exams'] });
+      qc.invalidateQueries({ queryKey: ['student', 'curriculum'] });
+    },
+  });
+};
+
+export const useCreateStudentSelfHomework = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ subjectId, title, description, source, dueDate, priority }) =>
+      apiClient.post('/student/homework', {
+        subjectId,
+        title,
+        description,
+        source,
+        dueDate,
+        priority,
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['student', 'homework'] });
+    },
+  });
+};
+
+export const useStudentResources = () =>
+  useQuery({
+    queryKey: ['student', 'resources'],
+    queryFn: async () => (await apiClient.get('/student/resources')) || [],
+  });
+
+export const useCreateStudentResource = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ subjectId, resourceType, title, urlOrAuthor, totalUnits, completedUnits }) =>
+      apiClient.post('/student/resources', {
+        subjectId,
+        resourceType,
+        title,
+        urlOrAuthor,
+        totalUnits,
+        completedUnits,
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['student', 'resources'] }),
+  });
+};
+
+export const useUpdateStudentResource = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ resourceId, title, urlOrAuthor, totalUnits, completedUnits }) =>
+      apiClient.patch(`/student/resources/${resourceId}`, {
+        title,
+        urlOrAuthor,
+        totalUnits,
+        completedUnits,
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['student', 'resources'] }),
+  });
+};
+
+export const useDeleteStudentResource = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ resourceId }) => apiClient.delete(`/student/resources/${resourceId}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['student', 'resources'] }),
+  });
+};
+
+export const useSearchCoachesForStudent = (q) =>
+  useQuery({
+    queryKey: ['student', 'search-coaches', q],
+    queryFn: async () => {
+      if (!q || q.trim().length < 2) return [];
+      return (await apiClient.get(`/student/search-coaches?q=${encodeURIComponent(q.trim())}`)) || [];
+    },
+    enabled: Boolean(q && q.trim().length >= 2),
+  });
+
+export const useStudentConnectionRequests = () =>
+  useQuery({
+    queryKey: ['student', 'connection-requests'],
+    queryFn: async () => (await apiClient.get('/student/connection-requests')) || [],
+  });
+
+export const useSendStudentConnectionRequest = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ targetUserId, note }) =>
+      apiClient.post('/student/connection-requests', { targetUserId, note }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['student', 'connection-requests'] });
+      qc.invalidateQueries({ queryKey: ['student', 'search-coaches'] });
+    },
+  });
+};
+
+export const useRespondStudentConnectionRequest = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ requestId, accept }) =>
+      apiClient.post(`/student/connection-requests/${requestId}/respond`, { accept }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['student', 'connection-requests'] });
+      qc.invalidateQueries({ queryKey: ['student', 'profile'] });
+    },
+  });
+};
+
+export const useUnlinkCoach = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => apiClient.post('/student/unlink-coach', {}),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['student', 'profile'] });
+      qc.invalidateQueries({ queryKey: ['student', 'connection-requests'] });
+    },
+  });
+};
+

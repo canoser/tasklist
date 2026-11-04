@@ -1,7 +1,20 @@
 import React, { useState } from 'react';
-import { useStudentCourses, useStudentCourseResources, useUpdateResourceProgress, useStudentCurriculum } from '../studentApi';
+import {
+  useStudentCourses,
+  useStudentCourseResources,
+  useUpdateResourceProgress,
+  useStudentCurriculum,
+  useStudentProfile,
+  useToggleStudentTopicStatus,
+  useStudentResources,
+  useCreateStudentResource,
+  useUpdateStudentResource,
+  useDeleteStudentResource,
+} from '../studentApi';
 import Card from '../../../components/common/Card/Card';
 import Button from '../../../components/common/Button/Button';
+import Input from '../../../components/common/Input/Input';
+import Modal from '../../../components/common/Modal/Modal';
 import SegmentedTabs from '../../../components/common/SegmentedTabs/SegmentedTabs';
 import StatusBadge from '../../../components/common/StatusBadge/StatusBadge';
 import { 
@@ -13,13 +26,20 @@ import {
   ArrowLeft, 
   ExternalLink, 
   ChevronRight, 
-  Target 
+  Target,
+  Plus,
+  Trash2,
 } from 'lucide-react';
 import { useOpenUpload } from '../../storage/storageApi';
 import styles from './StudentCoursesPage.module.css';
 
 const StudentCoursesPage = () => {
-  const [activeTab, setActiveTab] = useState('courses'); // 'courses' | 'curriculum'
+  const [activeTab, setActiveTab] = useState('courses'); // 'courses' | 'curriculum' | 'myResources'
+  const { data: profile } = useStudentProfile();
+  const hasCoach = Boolean(profile?.hasCoach);
+  const perms = profile?.permissions || {};
+  const canCompleteTopics = !hasCoach || perms.canCompleteTopics !== false;
+  const canManageResources = !hasCoach || perms.canManageResources === true;
   
   // Dersler ve Kaynaklar
   const { data: courses, isLoading: coursesLoading } = useStudentCourses();
@@ -28,9 +48,38 @@ const StudentCoursesPage = () => {
   const updateProgress = useUpdateResourceProgress();
   const { openUpload } = useOpenUpload();
 
-  // Müfredat & Konu Takibi (Profil'den taşındı)
+  // Müfredat & Konu Takibi
   const { data: curriculum = [], isLoading: curriculumLoading } = useStudentCurriculum();
+  const toggleTopicStatus = useToggleStudentTopicStatus();
   const [subjectFilter, setSubjectFilter] = useState('ALL');
+
+  // Bireysel Kaynaklarım & Video Derslerim
+  const { data: myResources = [] } = useStudentResources();
+  const createResource = useCreateStudentResource();
+  const updateResource = useUpdateStudentResource();
+  const deleteResource = useDeleteStudentResource();
+  const [showResModal, setShowResModal] = useState(false);
+  const [resType, setResType] = useState('BOOK');
+  const [resTitle, setResTitle] = useState('');
+  const [resUrlOrAuthor, setResUrlOrAuthor] = useState('');
+  const [resTotalUnits, setResTotalUnits] = useState('');
+
+  const handleAddResource = async (e) => {
+    e.preventDefault();
+    if (!resTitle.trim()) return;
+    await createResource.mutateAsync({
+      subjectId: null,
+      resourceType: resType,
+      title: resTitle.trim(),
+      urlOrAuthor: resUrlOrAuthor.trim() || null,
+      totalUnits: resTotalUnits ? parseInt(resTotalUnits, 10) : 0,
+      completedUnits: 0,
+    });
+    setResTitle('');
+    setResUrlOrAuthor('');
+    setResTotalUnits('');
+    setShowResModal(false);
+  };
 
   // Konu takibi istatistikleri
   const totalTopics = curriculum?.length || 0;
@@ -90,13 +139,18 @@ const StudentCoursesPage = () => {
         tabs={[
           {
             id: 'courses',
-            label: 'Derslerim, Kaynaklar & Video Dersler',
+            label: 'Derslerim & Ders Materyalleri',
             icon: <BookOpen size={16} />,
           },
           {
             id: 'curriculum',
             label: `Müfredat & Konu Takibi (${completedTopics}/${totalTopics})`,
             icon: <Target size={16} />,
+          },
+          {
+            id: 'myResources',
+            label: `Kaynaklarım & Video Derslerim (${myResources.length})`,
+            icon: <Video size={16} />,
           },
         ]}
       />
@@ -325,16 +379,179 @@ const StudentCoursesPage = () => {
                     </div>
                   </div>
 
-                  <StatusBadge
-                    status={t.isCompleted ? 'DONE' : 'PENDING'}
-                    label={t.isCompleted ? 'Tamamlandı' : 'Devam Ediyor'}
-                  />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <StatusBadge
+                      status={t.isCompleted ? 'DONE' : 'PENDING'}
+                      label={t.isCompleted ? 'Tamamlandı' : 'Devam Ediyor'}
+                    />
+                    {canCompleteTopics && (
+                      <Button
+                        size="xs"
+                        variant={t.isCompleted ? 'outline' : 'primary'}
+                        isLoading={toggleTopicStatus.isPending}
+                        onClick={() => toggleTopicStatus.mutateAsync({ topicId: t.id, isCompleted: !t.isCompleted })}
+                      >
+                        {t.isCompleted ? 'Geri Al' : '✓ Tamamla'}
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </div>
       )}
+
+      {/* ════════════════════════════════════════════════════════════
+          3. SEKME: BİREYSEL KAYNAKLARIM & VİDEO DERSLERİM
+          ════════════════════════════════════════════════════════════ */}
+      {activeTab === 'myResources' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
+            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-color-secondary)' }}>
+              {canManageResources
+                ? 'Kendi soru bankalarını, video ders oynatma listelerini ve çalışma kaynaklarını ekleyip ilerlemeni takip edebilirsin.'
+                : '🔒 Yeni kaynak/video ekleme yetkisi koçun tarafından yönetilmektedir.'}
+            </p>
+            {canManageResources && (
+              <Button size="sm" onClick={() => setShowResModal(true)}>
+                <Plus size={14} /> + Kaynak / Video Ders Ekle
+              </Button>
+            )}
+          </div>
+
+          {myResources.length === 0 ? (
+            <Card padding="lg" style={{ textAlign: 'center', color: 'var(--text-color-secondary)' }}>
+              <p style={{ margin: 0 }}>Henüz bireysel kaynak veya video ders eklenmemiş.</p>
+            </Card>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {myResources.map((r) => {
+                const isVid = r.resourceType === 'VIDEO';
+                const pct = r.totalUnits > 0 ? Math.min(100, Math.round((r.completedUnits / r.totalUnits) * 100)) : 0;
+                return (
+                  <Card key={r.id} padding="md">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div
+                          style={{
+                            width: 36,
+                            height: 36,
+                            borderRadius: 10,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: isVid ? 'rgba(239, 68, 68, 0.12)' : 'rgba(59, 130, 246, 0.12)',
+                            color: isVid ? '#EF4444' : '#3B82F6',
+                          }}
+                        >
+                          {isVid ? <Video size={18} /> : <BookOpen size={18} />}
+                        </div>
+                        <div>
+                          <strong style={{ fontSize: '0.92rem' }}>{r.title}</strong>
+                          <div style={{ fontSize: '0.76rem', color: 'var(--text-color-muted)' }}>
+                            {isVid ? '🎬 Video Ders' : '📘 Soru Bankası / Kitap'}
+                            {r.urlOrAuthor ? ` · ${r.urlOrAuthor}` : ''}
+                            {r.totalUnits > 0 ? ` · ${r.completedUnits}/${r.totalUnits} Bölüm (%${pct})` : ''}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        {r.urlOrAuthor && r.urlOrAuthor.startsWith('http') && (
+                          <Button
+                            size="xs"
+                            variant="ghost"
+                            onClick={() => window.open(r.urlOrAuthor, '_blank', 'noopener')}
+                          >
+                            İzle / Aç <ExternalLink size={12} />
+                          </Button>
+                        )}
+                        {canManageResources && r.totalUnits > 0 && (
+                          <Button
+                            size="xs"
+                            variant="outline"
+                            onClick={() =>
+                              updateResource.mutateAsync({
+                                resourceId: r.id,
+                                completedUnits: Math.min(r.totalUnits, (r.completedUnits || 0) + 1),
+                              })
+                            }
+                          >
+                            +1 Bölüm
+                          </Button>
+                        )}
+                        {canManageResources && (
+                          <Button
+                            size="xs"
+                            variant="ghost"
+                            iconOnly
+                            onClick={() => deleteResource.mutateAsync({ resourceId: r.id })}
+                            title="Kaynağı sil"
+                          >
+                            <Trash2 size={14} />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      <Modal
+        isOpen={showResModal}
+        onClose={() => setShowResModal(false)}
+        title="Yeni Kaynak veya Video Ders Ekle"
+        maxWidth="420px"
+      >
+        <form onSubmit={handleAddResource} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.82rem', marginBottom: 4, fontWeight: 600 }}>Kaynak Türü</label>
+            <select
+              value={resType}
+              onChange={(e) => setResType(e.target.value)}
+              style={{ width: '100%', padding: '9px 12px', borderRadius: 10, border: '1px solid var(--border-color)', background: 'var(--bg-color-surface)', color: 'var(--text-color-primary)' }}
+            >
+              <option value="BOOK">📘 Soru Bankası / Kitap</option>
+              <option value="VIDEO">🎬 Video Ders / Oynatma Listesi</option>
+              <option value="OTHER">📄 Diğer Materyal</option>
+            </select>
+          </div>
+          <Input
+            label="Kaynak veya Video Serisi Adı *"
+            placeholder="Örn: 3D TYT Matematik Soru Bankası / Eyüp B. AYT Kampı"
+            value={resTitle}
+            onChange={(e) => setResTitle(e.target.value)}
+            required
+          />
+          <Input
+            label={resType === 'VIDEO' ? 'Video / YouTube Linki veya Kanal Adı' : 'Yayınevi / Yazar'}
+            placeholder={resType === 'VIDEO' ? 'https://youtube.com/...' : 'Örn: 3D Yayınları'}
+            value={resUrlOrAuthor}
+            onChange={(e) => setResUrlOrAuthor(e.target.value)}
+          />
+          <Input
+            label={resType === 'VIDEO' ? 'Toplam Video Sayısı (İsteğe Bağlı)' : 'Toplam Test / Ünite Sayısı (İsteğe Bağlı)'}
+            type="number"
+            min="0"
+            placeholder="Örn: 45"
+            value={resTotalUnits}
+            onChange={(e) => setResTotalUnits(e.target.value)}
+          />
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 6 }}>
+            <Button type="button" variant="ghost" size="sm" onClick={() => setShowResModal(false)}>
+              İptal
+            </Button>
+            <Button type="submit" variant="primary" size="sm" isLoading={createResource.isPending}>
+              Kaydet
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

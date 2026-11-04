@@ -271,4 +271,150 @@ export const downloadStudentReportPdf = async (studentId, fullName = 'ogrenci') 
   window.URL.revokeObjectURL(url);
 };
 
+// --- V20: Bağımsız Öğrenci Arama, Bağlantı İstekleri, 6'lı Yetki Matrisi, Konu ve Kaynak Yönetimi ---
+export const useSearchIndependentStudents = (q) =>
+  useQuery({
+    queryKey: ['coach', 'search-independent-students', q],
+    queryFn: async () => {
+      if (!q || q.trim().length < 2) return [];
+      return (await apiClient.get(`/students/search-independent?q=${encodeURIComponent(q.trim())}`)) || [];
+    },
+    enabled: Boolean(q && q.trim().length >= 2),
+  });
+
+export const useCoachConnectionRequests = (enabled = true) =>
+  useQuery({
+    queryKey: ['coach', 'connection-requests'],
+    queryFn: async () => (await apiClient.get('/students/connection-requests')) || [],
+    enabled,
+  });
+
+export const useSendCoachConnectionRequest = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ targetUserId, note }) =>
+      apiClient.post('/students/connection-requests', { targetUserId, note }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['coach', 'connection-requests'] });
+      qc.invalidateQueries({ queryKey: ['coach', 'search-independent-students'] });
+    },
+  });
+};
+
+export const useRespondCoachConnectionRequest = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ requestId, accept }) =>
+      apiClient.post(`/students/connection-requests/${requestId}/respond`, { accept }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['coach', 'connection-requests'] });
+      qc.invalidateQueries({ queryKey: queryKeys.coach.students() });
+    },
+  });
+};
+
+export const useUnlinkStudent = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ studentId }) => apiClient.post(`/students/${studentId}/unlink`, {}),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.coach.students() });
+      qc.invalidateQueries({ queryKey: queryKeys.coach.studentAll() });
+    },
+  });
+};
+
+export const useUpdateStudentPermissions = (studentId) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      canCompleteTopics,
+      canCompleteHomework,
+      canEditGoals,
+      canAddExamResults,
+      canManageResources,
+      canSelfAssignWork,
+    }) =>
+      apiClient.put(`/students/${studentId}/permissions`, {
+        canCompleteTopics,
+        canCompleteHomework,
+        canEditGoals,
+        canAddExamResults,
+        canManageResources,
+        canSelfAssignWork,
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.coach.student(studentId) });
+    },
+  });
+};
+
+export const useCoachToggleTopicStatus = (studentId) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ topicId, isCompleted }) =>
+      apiClient.put(`/students/${studentId}/curriculum/${topicId}/status`, { isCompleted }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['coach', 'student', studentId, 'curriculum'] });
+      qc.invalidateQueries({ queryKey: ['coach', 'program'] });
+    },
+  });
+};
+
+export const useCoachStudentResources = (studentId) =>
+  useQuery({
+    queryKey: ['coach', 'student', studentId, 'resources'],
+    queryFn: async () => (await apiClient.get(`/students/${studentId}/resources`)) || [],
+    enabled: !!studentId,
+  });
+
+export const useCreateCoachStudentResource = (studentId) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ subjectId, resourceType, title, urlOrAuthor, totalUnits, completedUnits }) =>
+      apiClient.post(`/students/${studentId}/resources`, {
+        subjectId,
+        resourceType,
+        title,
+        urlOrAuthor,
+        totalUnits,
+        completedUnits,
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['coach', 'student', studentId, 'resources'] }),
+  });
+};
+
+export const useUpdateCoachStudentResource = (studentId) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ resourceId, title, urlOrAuthor, totalUnits, completedUnits }) =>
+      apiClient.patch(`/students/${studentId}/resources/${resourceId}`, {
+        title,
+        urlOrAuthor,
+        totalUnits,
+        completedUnits,
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['coach', 'student', studentId, 'resources'] }),
+  });
+};
+
+export const useDeleteCoachStudentResource = (studentId) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ resourceId }) => apiClient.delete(`/students/${studentId}/resources/${resourceId}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['coach', 'student', studentId, 'resources'] }),
+  });
+};
+
+export const useDeleteCoachStudentExam = (studentId) => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ examId }) => apiClient.delete(`/students/${studentId}/exams/${examId}`),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.coach.student(studentId) });
+    },
+  });
+};
+
+
 
