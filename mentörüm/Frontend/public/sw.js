@@ -50,7 +50,7 @@ self.addEventListener('fetch', (event) => {
           try {
             const responseToCache = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(request, responseToCache)).catch(() => {});
-          } catch (e) {
+          } catch {
             // Yarış durumu veya reklam engelleyici kaynaklı clone hatalarını yoksay
           }
         }
@@ -60,5 +60,34 @@ self.addEventListener('fetch', (event) => {
       });
       return cached || fetchPromise;
     })
+  );
+});
+
+// Web Push / FCM olay güdümlü bildirim ve açık ekranları anında yenileme (Sürekli polling yerine)
+self.addEventListener('push', (event) => {
+  let payload = { title: 'Mentörüm', body: 'Yeni bir güncelleme var.' };
+  try {
+    if (event.data) {
+      payload = { ...payload, ...event.data.json() };
+    }
+  } catch {
+    if (event.data) {
+      payload.body = event.data.text();
+    }
+  }
+
+  event.waitUntil(
+    Promise.all([
+      self.registration.showNotification(payload.title || 'Mentörüm', {
+        body: payload.body || '',
+        icon: '/favicon.svg',
+        data: payload,
+      }),
+      self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+        clientList.forEach((client) => {
+          client.postMessage({ type: 'MENTORUM_PUSH_INVALIDATE', payload });
+        });
+      }),
+    ])
   );
 });

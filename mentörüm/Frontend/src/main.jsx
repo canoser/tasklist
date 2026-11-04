@@ -12,10 +12,29 @@ const queryClient = new QueryClient({
     queries: {
       refetchOnWindowFocus: true, // Kullanıcı sekmeye dönünce taze veriyi çek
       retry: 1, // Hata durumunda sadece 1 kez tekrar dene
-      staleTime: 1000 * 60 * 5, // Veriyi 5 dakika taze kabul et
+      staleTime: 1000 * 30, // 30 saniye (sürekli polling yapmadan sekmeye dönüşte güncel veri çekilir)
     },
   },
 });
+
+// Olay güdümlü (Web Push / Service Worker / Sekmeler arası) anlık önbellek yenileme
+if (typeof window !== 'undefined') {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      if (event.data?.type === 'MENTORUM_PUSH_INVALIDATE') {
+        queryClient.invalidateQueries();
+      }
+    });
+  }
+  if ('BroadcastChannel' in window) {
+    const syncChannel = new BroadcastChannel('mentorum_sync');
+    syncChannel.onmessage = (event) => {
+      if (event.data?.type === 'INVALIDATE_ALL') {
+        queryClient.invalidateQueries();
+      }
+    };
+  }
+}
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

@@ -26,7 +26,7 @@ USER appuser
 
 COPY --from=build /app/publish .
 
-# Fly.io PORT env değişkenini kullanır
+# Cloud Run PORT (8080) env değişkenini kullanır
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
 

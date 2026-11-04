@@ -1,4 +1,4 @@
-name: Deploy Mentorum API
+name: Deploy Mentorum API (Google Cloud Run)
 
 on:
   push:
@@ -7,6 +7,7 @@ on:
     paths:
       - 'mentörüm/Backend/**'
       - '.github/workflows/deploy-mentorum.yml'
+  workflow_dispatch:
 
 # Paralel deploy yarışını önle (aynı anda tek deploy)
 concurrency:
@@ -15,7 +16,7 @@ concurrency:
 
 jobs:
   deploy:
-    name: Deploy Backend to Fly.io
+    name: Deploy Backend to Google Cloud Run
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
@@ -23,14 +24,19 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Setup Flyctl
-        uses: superfly/flyctl-actions/setup-flyctl@v1
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Deploy to Fly.io
-        run: flyctl deploy --local-only --app mentorum-api
-        working-directory: mentörüm/Backend
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: mentorum-api
+          project_id: dersmatris-saas
+          region: europe-west1
+          source: mentörüm/Backend
+          flags: '--allow-unauthenticated --port=8080 --cpu=1 --memory=512Mi --min-instances=0 --max-instances=1 --concurrency=80 --cpu-throttling'
 
       - name: Health Check
         run: curl --fail --retry 10 --retry-delay 5 --retry-connrefused --retry-all-errors https://mentorum-api.dersmatris.com/health

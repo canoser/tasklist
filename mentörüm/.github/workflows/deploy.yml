@@ -55,10 +55,10 @@ jobs:
         working-directory: Frontend
 
   # ─────────────────────────────────────
-  # 3. Production Deploy (ONAY GEREKTİRİR)
+  # 3. Production Deploy (Google Cloud Run)
   # ─────────────────────────────────────
   deploy:
-    name: Production Deploy
+    name: Production Deploy (Cloud Run)
     needs: [backend-test, frontend-test]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment: production
@@ -66,11 +66,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Fly.io CLI
-        uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Backend Deploy (Fly.io)
-        run: flyctl deploy --remote-only --app mentorum-api
-        working-directory: Backend
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      - name: Backend Deploy (Google Cloud Run)
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: mentorum-api
+          project_id: dersmatris-saas
+          region: europe-west1
+          source: Backend
+          flags: '--allow-unauthenticated --port=8080 --cpu=1 --memory=512Mi --min-instances=0 --max-instances=1 --concurrency=80 --cpu-throttling'

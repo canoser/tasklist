@@ -8,7 +8,9 @@ export const useNotifications = () => {
       const response = await apiClient.get('/notifications');
       return response || [];
     },
-    // NOT: sürekli polling YOK — tazelik, refetchOnWindowFocus + mark-as-read invalidation ile sağlanır.
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    // NOT: sürekli polling YOK — tazelik, Web Push / SW mesajı + refetchOnWindowFocus + mark-as-read invalidation ile sağlanır.
   });
 };
 

@@ -10,6 +10,7 @@ using MentorumApi.Services;
 using MentorumApi.Services.Background;
 using MentorumApi.Middleware;
 using MentorumApi.Endpoints;
+using Microsoft.AspNetCore.HttpOverrides;
 using Npgsql;
 
 // 1. .env dosyasını yükle
@@ -41,6 +42,12 @@ try
 
     // --- SERVICES ---
     builder.Services.AddOpenApi();
+    builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    {
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        options.KnownNetworks.Clear();
+        options.KnownProxies.Clear();
+    });
     
     var corsOrigins = (Environment.GetEnvironmentVariable("CORS_ORIGINS") ?? "http://localhost:5173,https://mentorum.dersmatris.com")
         .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
@@ -146,7 +153,7 @@ try
 
     var app = builder.Build();
 
-    // Veritabanı Migration (--migrate-only komutuyla çalıştırılır)
+    // Veritabanı Migration (--migrate-only komutuyla veya Production/AUTO_MIGRATE başlangıcında çalıştırılır)
     if (args.Contains("--migrate-only"))
     {
         Log.Information("Migration modunda çalıştırılıyor...");
@@ -157,11 +164,19 @@ try
         return;
     }
 
+    if (app.Environment.IsProduction() || string.Equals(Environment.GetEnvironmentVariable("AUTO_MIGRATE"), "true", StringComparison.OrdinalIgnoreCase))
+    {
+        using var migrationScope = app.Services.CreateScope();
+        var dbFactory = migrationScope.ServiceProvider.GetRequiredService<DbConnectionFactory>();
+        MigrationRunner.Run(dbFactory);
+    }
+
     if (app.Environment.IsDevelopment())
     {
         app.MapOpenApi();
     }
 
+    app.UseForwardedHeaders();
     app.UseSerilogRequestLogging();
     app.UseHttpsRedirection();
 
@@ -293,7 +308,7 @@ try
 
     app.MapGet("/", () => "Mentorum API Auth/Authz Katmanı Devrede!");
 
-    // Fly.io Sağlık Kontrolü (Health Check)
+    // Google Cloud Run Sağlık Kontrolü (Health Check)
     app.MapGet("/health", (DbConnectionFactory db) => 
     {
         try
@@ -305,7 +320,7 @@ try
         catch (Exception ex)
         {
             Log.Error(ex, "Health check failed (DB bağlantı hatası)");
-            return Results.StatusCode(503); // 503 dönerse Fly.io deploy'u iptal eder
+            return Results.StatusCode(503);
         }
     });
 
