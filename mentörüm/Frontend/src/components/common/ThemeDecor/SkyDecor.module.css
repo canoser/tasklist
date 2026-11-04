@@ -17,11 +17,11 @@
 }
 
 .celestialLight {
-  opacity: 0.22;
+  opacity: 0.38;
 }
 
 .celestialDark {
-  opacity: 0.30;
+  opacity: 0.45;
 }
 
 /* ── MOBIL: Sağ üst gökyüzü boşluğu (Başlıkları ve sekmeleri kapatmaz) ── */
@@ -31,7 +31,7 @@
     top: 64px;
     width: 96px;
     height: 96px;
-    opacity: 0.12;
+    opacity: 0.26;
   }
 }
 

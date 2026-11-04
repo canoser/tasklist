@@ -106,7 +106,7 @@
 .studentButton {
   cursor: pointer;
   border: 1px solid var(--color-primary);
-  background: #fff;
+  background: var(--bg-color-surface);
   color: var(--color-primary);
   font-size: 0.8rem;
   font-weight: 600;

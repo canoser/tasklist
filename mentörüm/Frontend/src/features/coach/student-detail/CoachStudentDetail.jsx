@@ -179,7 +179,7 @@ const CoachStudentDetail = () => {
         </Button>
       </div>
 
-      <header className={styles.header}>
+      <Card className={styles.header} padding="md">
         <div className={styles.profileMeta}>
           <div className={styles.avatar}>{student.fullName?.charAt(0) || '?'}</div>
           <div>
@@ -200,15 +200,14 @@ const CoachStudentDetail = () => {
             <PlusCircle size={15} /> <span>Ödev Ata</span>
           </Button>
           <Button
-            variant="ghost"
-            style={{ color: 'var(--color-danger, #ef4444)', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+            variant="danger-outline"
             onClick={() => setShowDeleteConfirm(true)}
             title="Öğrenciyi Sil"
           >
             <Trash2 size={15} /> <span>Sil</span>
           </Button>
         </div>
-      </header>
+      </Card>
 
       <div style={{ marginBottom: 10 }}>
         <SegmentedTabs

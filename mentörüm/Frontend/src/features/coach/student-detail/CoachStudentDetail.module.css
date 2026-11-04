@@ -15,11 +15,6 @@
   align-items: center;
   flex-wrap: wrap;
   gap: var(--spacing-md);
-  background: linear-gradient(to right, #ffffff, #f8fafc);
-  padding: var(--spacing-lg);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
 }
 
 .profileMeta {
@@ -279,8 +274,8 @@
 }
 
 .notesWarning {
-  background-color: #fef3c7;
-  color: #d97706;
+  background-color: var(--color-warning-light);
+  color: var(--color-warning, #d97706);
   padding: var(--spacing-sm);
   border-radius: var(--radius-md);
   font-size: 0.75rem;
@@ -293,7 +288,7 @@
   padding: var(--spacing-md);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  background-color: #fafafa;
+  background-color: var(--bg-color-surface-elevated);
   font-family: inherit;
   font-size: 0.875rem;
   color: var(--text-color-main);
@@ -306,7 +301,7 @@
   outline: none;
   border-color: #f59e0b;
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
-  background-color: #fff;
+  background-color: var(--bg-color-surface);
 }
 
 .mt4 {

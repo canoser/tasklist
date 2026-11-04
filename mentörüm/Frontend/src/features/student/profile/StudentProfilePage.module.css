@@ -94,9 +94,10 @@
 .tab {
   flex: 1;
   padding: 10px;
-  border: 1px solid #e2e8f0;
-  background: #fff;
-  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-color-surface);
+  color: var(--text-color-main);
+  border-radius: var(--radius-btn, 10px);
   cursor: pointer;
   font-size: 0.9rem;
   font-weight: 500;

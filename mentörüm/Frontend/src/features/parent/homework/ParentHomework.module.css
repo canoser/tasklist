@@ -115,7 +115,7 @@
 /* Completed styles */
 .homeworkCardCompleted {
   padding: 1rem;
-  background-color: #f8fafc;
+  background-color: var(--bg-color-surface-elevated);
 }
 
 .hwTitleCompleted {

@@ -61,7 +61,7 @@
   color: var(--text-color-muted);
   padding: 8px;
   border-radius: 50%;
-  background-color: #F1F5F9;
+  background-color: var(--bg-color-surface-elevated);
   transition: all 0.2s;
   display: flex;
   align-items: center;
