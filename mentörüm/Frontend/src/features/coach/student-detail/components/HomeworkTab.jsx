@@ -8,16 +8,24 @@ import styles from '../CoachStudentDetail.module.css';
 
 export default function HomeworkTab({ studentId, student, exams = [], studentHomeworks = [], onAssignFocusHomework }) {
   const updatePermsMutation = useUpdateStudentPermissions(studentId);
+  const perms = student?.permissions || {
+    canCompleteTopics: true,
+    canCompleteHomework: true,
+    canEditGoals: true,
+    canAddExamResults: false,
+    canManageResources: false,
+    canSelfAssignWork: false,
+  };
 
   const handleTogglePerm = (key) => {
     if (!student) return;
     updatePermsMutation.mutate({
-      canCompleteTopics: !!student.canCompleteTopics,
-      canEditGoals: !!student.canEditGoals,
-      canCompleteHomework: key === 'canCompleteHomework' ? !student.canCompleteHomework : !!student.canCompleteHomework,
-      canAddExamResults: !!student.canAddExamResults,
-      canManageResources: !!student.canManageResources,
-      canSelfAssignWork: key === 'canSelfAssignWork' ? !student.canSelfAssignWork : !!student.canSelfAssignWork,
+      canCompleteTopics: Boolean(perms.canCompleteTopics),
+      canEditGoals: Boolean(perms.canEditGoals),
+      canCompleteHomework: key === 'canCompleteHomework' ? !perms.canCompleteHomework : Boolean(perms.canCompleteHomework),
+      canAddExamResults: Boolean(perms.canAddExamResults),
+      canManageResources: Boolean(perms.canManageResources),
+      canSelfAssignWork: key === 'canSelfAssignWork' ? !perms.canSelfAssignWork : Boolean(perms.canSelfAssignWork),
     });
   };
 
@@ -41,7 +49,8 @@ export default function HomeworkTab({ studentId, student, exams = [], studentHom
           <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.82rem', cursor: 'pointer' }}>
             <input
               type="checkbox"
-              checked={!!student.canCompleteHomework}
+              data-testid="quick-perm-canCompleteHomework"
+              checked={Boolean(perms.canCompleteHomework)}
               disabled={updatePermsMutation.isPending}
               onChange={() => handleTogglePerm('canCompleteHomework')}
             />
@@ -50,7 +59,8 @@ export default function HomeworkTab({ studentId, student, exams = [], studentHom
           <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.82rem', cursor: 'pointer' }}>
             <input
               type="checkbox"
-              checked={!!student.canSelfAssignWork}
+              data-testid="quick-perm-canSelfAssignWork"
+              checked={Boolean(perms.canSelfAssignWork)}
               disabled={updatePermsMutation.isPending}
               onChange={() => handleTogglePerm('canSelfAssignWork')}
             />

@@ -387,6 +387,7 @@ const StudentCoursesPage = () => {
                     {canCompleteTopics && (
                       <Button
                         size="xs"
+                        data-testid={`student-topic-toggle-${t.id}`}
                         variant={t.isCompleted ? 'outline' : 'primary'}
                         isLoading={toggleTopicStatus.isPending}
                         onClick={() => toggleTopicStatus.mutateAsync({ topicId: t.id, isCompleted: !t.isCompleted })}
@@ -414,7 +415,7 @@ const StudentCoursesPage = () => {
                 : '🔒 Yeni kaynak/video ekleme yetkisi koçun tarafından yönetilmektedir.'}
             </p>
             {canManageResources && (
-              <Button size="sm" onClick={() => setShowResModal(true)}>
+              <Button size="sm" data-testid="student-open-res-modal-btn" onClick={() => setShowResModal(true)}>
                 <Plus size={14} /> + Kaynak / Video Ders Ekle
               </Button>
             )}
@@ -471,6 +472,7 @@ const StudentCoursesPage = () => {
                           <Button
                             size="xs"
                             variant="outline"
+                            data-testid={`student-res-inc-btn-${r.id}`}
                             onClick={() =>
                               updateResource.mutateAsync({
                                 resourceId: r.id,
@@ -512,6 +514,7 @@ const StudentCoursesPage = () => {
           <div>
             <label style={{ display: 'block', fontSize: '0.82rem', marginBottom: 4, fontWeight: 600 }}>Kaynak Türü</label>
             <select
+              data-testid="student-res-type-select"
               value={resType}
               onChange={(e) => setResType(e.target.value)}
               style={{ width: '100%', padding: '9px 12px', borderRadius: 10, border: '1px solid var(--border-color)', background: 'var(--bg-color-surface)', color: 'var(--text-color-primary)' }}
@@ -522,6 +525,7 @@ const StudentCoursesPage = () => {
             </select>
           </div>
           <Input
+            data-testid="student-res-title-input"
             label="Kaynak veya Video Serisi Adı *"
             placeholder="Örn: 3D TYT Matematik Soru Bankası / Eyüp B. AYT Kampı"
             value={resTitle}
@@ -529,12 +533,14 @@ const StudentCoursesPage = () => {
             required
           />
           <Input
+            data-testid="student-res-url-input"
             label={resType === 'VIDEO' ? 'Video / YouTube Linki veya Kanal Adı' : 'Yayınevi / Yazar'}
             placeholder={resType === 'VIDEO' ? 'https://youtube.com/...' : 'Örn: 3D Yayınları'}
             value={resUrlOrAuthor}
             onChange={(e) => setResUrlOrAuthor(e.target.value)}
           />
           <Input
+            data-testid="student-res-units-input"
             label={resType === 'VIDEO' ? 'Toplam Video Sayısı (İsteğe Bağlı)' : 'Toplam Test / Ünite Sayısı (İsteğe Bağlı)'}
             type="number"
             min="0"
@@ -546,7 +552,7 @@ const StudentCoursesPage = () => {
             <Button type="button" variant="ghost" size="sm" onClick={() => setShowResModal(false)}>
               İptal
             </Button>
-            <Button type="submit" variant="primary" size="sm" isLoading={createResource.isPending}>
+            <Button type="submit" variant="primary" size="sm" data-testid="student-res-add-btn" isLoading={createResource.isPending}>
               Kaydet
             </Button>
           </div>

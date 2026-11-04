@@ -67,6 +67,7 @@ export default function SegmentedTabs({
             key={tab.id}
             type="button"
             role="tab"
+            data-testid={`segmented-tab-${tab.id}`}
             aria-selected={isActive}
             disabled={tab.disabled}
             className={btnClasses}

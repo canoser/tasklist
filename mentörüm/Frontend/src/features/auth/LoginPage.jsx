@@ -151,7 +151,7 @@ const LoginPage = () => {
           <p className={styles.slogan}>Sınavlara hazırlık sürecindeki en iyi rehberin.</p>
         </div>
 
-        <Card className={styles.loginCard} padding="lg">
+        <Card className={styles.loginCard} padding="lg" data-testid="login-card">
           <h2 className={styles.formTitle}>{isForgot ? 'Şifremi Unuttum' : isRegister ? 'Kayıt Ol' : 'Hoş Geldiniz'}</h2>
           <p className={styles.formSubtitle}>
             {isRegister ? 'Aramıza katılmak için hesap oluşturun.' : 'Hesabınıza giriş yaparak devam edin.'}
@@ -160,6 +160,7 @@ const LoginPage = () => {
           <form onSubmit={handleSubmit} className={styles.form}>
             {isRegister && (
               <Input
+                data-testid="login-fullname-input"
                 label="Ad Soyad"
                 type="text"
                 value={fullName}
@@ -171,12 +172,13 @@ const LoginPage = () => {
             )}
 
             {isRegister && (
-              <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '14px' }}>
-                Kayıt yalnızca <strong>koçlar</strong> içindir. Öğrenci, veli ve öğretmen hesabı koçunuzun davetiyle açılır.
+              <p style={{ fontSize: '13px', color: 'var(--text-color-muted)', marginBottom: '14px' }}>
+                Kaydınız oluşturulduktan sonra yönetici onayıyla <strong>Öğrenci (Bağımsız / Koçlu)</strong> veya <strong>Koç</strong> olarak hesabınız aktifleştirilir.
               </p>
             )}
 
             <Input
+              data-testid="login-email-input"
               label="E-posta Adresi"
               type="email"
               value={email}
@@ -188,6 +190,7 @@ const LoginPage = () => {
 
             {!isForgot && (
               <Input
+                data-testid="login-password-input"
                 label="Şifre"
                 type="password"
                 value={password}
@@ -198,8 +201,8 @@ const LoginPage = () => {
               />
             )}
 
-            {error && <div className={styles.errorBox}>{error}</div>}
-            {successMsg && <div className={styles.successBox} style={{ color: 'green', padding: '10px', backgroundColor: '#e6ffe6', borderRadius: '8px', fontSize: '14px', marginBottom: '15px' }}>{successMsg}</div>}
+            {error && <div className={styles.errorBox} data-testid="login-error-msg">{error}</div>}
+            {successMsg && <div className={styles.successBox} data-testid="login-success-msg" style={{ color: 'green', padding: '10px', backgroundColor: '#e6ffe6', borderRadius: '8px', fontSize: '14px', marginBottom: '15px' }}>{successMsg}</div>}
 
             {!isRegister && (
               <div className={styles.forgotPassword}>
@@ -211,6 +214,7 @@ const LoginPage = () => {
 
             <Button 
               type="submit" 
+              data-testid="login-submit-btn"
               fullWidth 
               size="lg" 
               isLoading={isLoading}
@@ -221,9 +225,9 @@ const LoginPage = () => {
 
           <div style={{ textAlign: 'center', marginTop: '15px', fontSize: '14px' }}>
             {isRegister ? (
-              <span>Zaten hesabınız var mı? <a href="#login" onClick={(e) => { e.preventDefault(); setIsRegister(false); setError(''); setSuccessMsg(''); }} style={{ color: 'var(--primary-color)', fontWeight: 'bold' }}>Giriş Yap</a></span>
+              <span>Zaten hesabınız var mı? <a href="#login" data-testid="toggle-login-link" onClick={(e) => { e.preventDefault(); setIsRegister(false); setError(''); setSuccessMsg(''); }} style={{ color: 'var(--primary-color)', fontWeight: 'bold' }}>Giriş Yap</a></span>
             ) : (
-              <span>Hesabınız yok mu? <a href="#register" onClick={(e) => { e.preventDefault(); setIsRegister(true); setError(''); setSuccessMsg(''); }} style={{ color: 'var(--primary-color)', fontWeight: 'bold' }}>Kayıt Ol</a></span>
+              <span>Hesabınız yok mu? <a href="#register" data-testid="toggle-register-link" onClick={(e) => { e.preventDefault(); setIsRegister(true); setError(''); setSuccessMsg(''); }} style={{ color: 'var(--primary-color)', fontWeight: 'bold' }}>Kayıt Ol</a></span>
             )}
           </div>
 

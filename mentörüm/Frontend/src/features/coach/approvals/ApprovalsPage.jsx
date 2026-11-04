@@ -193,7 +193,7 @@ export default function ApprovalsPage() {
       ) : (
         <div className={styles.list}>
           {approvals.map((item) => (
-            <div key={item.id} className={styles.card}>
+            <div key={item.id} className={styles.card} data-testid={`approval-card-${item.id}`}>
               <div className={styles.itemInfo}>
                 <div className={styles.itemHeader}>
                   <span className={styles.entityBadge}>
@@ -248,6 +248,7 @@ export default function ApprovalsPage() {
                   <Button 
                     variant="success"
                     size="sm"
+                    data-testid={`approval-approve-btn-${item.id}`}
                     onClick={() => handleApprove(item.id)}
                     disabled={approveMutation.isPending}
                   >

@@ -214,7 +214,7 @@ const AdminPanelPage = () => {
               <Input label="E-posta" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="ornek@email.com" />
               <div>
                 <label className={styles.selectLabel}>Rol Seçin</label>
-                <select value={newRole} onChange={(e) => setNewRole(e.target.value)} className={styles.select}>
+                <select data-testid="manual-role-select" value={newRole} onChange={(e) => setNewRole(e.target.value)} className={styles.select}>
                   <option value="Coach">Koç</option>
                   <option value="Student">Öğrenci</option>
                 </select>
@@ -223,6 +223,7 @@ const AdminPanelPage = () => {
                 <div>
                   <label className={styles.selectLabel}>Koç Ataması (İsteğe Bağlı)</label>
                   <select
+                    data-testid="manual-coach-select"
                     value={newAssignCoachId}
                     onChange={(e) => setNewAssignCoachId(e.target.value)}
                     className={styles.select}
@@ -270,12 +271,13 @@ const AdminPanelPage = () => {
                     </div>
                     <span className={styles.badgePending}>Onay Bekliyor</span>
                   </div>
-                  <div className={styles.roleRow}>
+                  <div className={styles.roleRow} data-testid={`pending-role-select-${u.id}`}>
                     <span className={styles.roleSelectLabel}>Onaylanacak Rol:</span>
                     {['Student', 'Coach'].map((r) => (
                       <label key={r} className={styles.roleRadio}>
                         <input
                           type="radio"
+                          data-testid={`pending-role-radio-${u.id}-${r}`}
                           name={`role-${u.id}`}
                           value={r}
                           checked={effectiveRole === r}
@@ -289,6 +291,7 @@ const AdminPanelPage = () => {
                     <div style={{ marginBottom: 14, display: 'flex', flexDirection: 'column', gap: 6 }}>
                       <label className={styles.selectLabel}>Öğrenci Çalışma Modu / Koç Ataması:</label>
                       <select
+                        data-testid={`pending-coach-select-${u.id}`}
                         value={assignedCoaches[u.id] || ''}
                         onChange={(e) => setAssignedCoaches({ ...assignedCoaches, [u.id]: e.target.value })}
                         className={styles.select}
@@ -303,7 +306,7 @@ const AdminPanelPage = () => {
                     </div>
                   )}
                   <div className={styles.actions}>
-                    <Button size="sm" onClick={() => handleApprove(u.id, u.role)} isLoading={approve.isPending}>
+                    <Button size="sm" data-testid={`pending-approve-btn-${u.id}`} onClick={() => handleApprove(u.id, u.role)} isLoading={approve.isPending}>
                       ✓ Onayla
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => reject.mutateAsync({ userId: u.id })} isLoading={reject.isPending}>
@@ -467,6 +470,7 @@ const AdminPanelPage = () => {
               <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 10, border: '1px solid var(--color-primary)', background: 'var(--color-primary-light)' }}>
                 <input
                   type="radio"
+                  data-testid="reg-mode-admin"
                   name="registrationMode"
                   checked={(adminSettings?.registrationMode || 'ADMIN_APPROVAL') === 'ADMIN_APPROVAL'}
                   readOnly
@@ -484,6 +488,7 @@ const AdminPanelPage = () => {
               <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 10, border: '1px solid var(--border-color)', opacity: 0.65, cursor: 'not-allowed' }}>
                 <input
                   type="radio"
+                  data-testid="reg-mode-self"
                   name="registrationMode"
                   disabled
                   checked={false}

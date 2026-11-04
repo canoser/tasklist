@@ -196,8 +196,8 @@
 ---
 
 ## 3. Doğrulama ve Kalite Kapısı (`AGENTS.md` §C3)
-- [x] `dotnet build` — 0 Uyarı, 0 Hata
-- [x] `dotnet test` — Tüm entegrasyon testleri başarılı (82/82)
-- [x] `npm run build` — Başarılı üretim paketi
-- [x] `npx oxlint src` — 0 Uyarı, 0 Hata
+- [ ] `dotnet build` — 0 Uyarı, 0 Hata
+- [ ] `dotnet test` — Tüm entegrasyon testleri başarılı
+- [ ] `npm run build` — Başarılı üretim paketi
+- [ ] `npx oxlint src` — 0 Uyarı, 0 Hata
 

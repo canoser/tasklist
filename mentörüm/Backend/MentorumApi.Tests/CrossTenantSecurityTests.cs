@@ -34,11 +34,15 @@ namespace MentorumApi.Tests
                 ? r.ToString()
                 : "Coach";
 
-            var claims = new[] 
+            var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, userId),
                 new Claim(ClaimTypes.Role, role)
             };
+            if (Request.Headers.TryGetValue("X-Test-IsAdmin", out var adm) && string.Equals(adm.ToString(), "true", StringComparison.OrdinalIgnoreCase))
+            {
+                claims.Add(new Claim("is_admin", "true"));
+            }
             var identity = new ClaimsIdentity(claims, "Test");
             var principal = new ClaimsPrincipal(identity);
             var ticket = new AuthenticationTicket(principal, DefaultScheme);

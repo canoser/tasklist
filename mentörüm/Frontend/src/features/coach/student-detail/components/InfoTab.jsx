@@ -277,6 +277,7 @@ export default function InfoTab({
             <Button
               variant="outline"
               size="xs"
+              data-testid="unlink-student-btn"
               isLoading={unlinkStudent.isPending}
               onClick={async () => {
                 if (!window.confirm(`${student.fullName} adlı öğrenciyi koçluk programınızdan ayırıp bağımsız öğrenci moduna geçirmek istediğinize emin misiniz? Öğrencinin hesabı ve geçmiş verileri silinmez.`)) return;
@@ -319,6 +320,7 @@ export default function InfoTab({
             >
               <input
                 type="checkbox"
+                data-testid={`perm-toggle-${item.key}`}
                 checked={Boolean(perms[item.key])}
                 disabled={updatePerms.isPending}
                 onChange={() => handleTogglePerm(item.key)}

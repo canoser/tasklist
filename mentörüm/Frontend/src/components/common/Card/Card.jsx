@@ -10,12 +10,14 @@ const Card = ({
   interactive = false,
   onClick,
   style,
+  ...props
 }) => {
   return (
     <div
       className={`${styles.card} ${styles[`padding-${padding}`] || styles['padding-md']} ${interactive ? styles.interactive : ''} ${className}`}
       onClick={onClick}
       style={style}
+      {...props}
     >
       {(title || action) && (
         <div className={styles.header}>

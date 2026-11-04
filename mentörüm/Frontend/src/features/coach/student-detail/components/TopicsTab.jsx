@@ -26,15 +26,24 @@ export default function TopicsTab({ studentId, student, curriculum = [], onAssig
   const createResourceMutation = useCreateCoachStudentResource(studentId);
   const deleteResourceMutation = useDeleteCoachStudentResource(studentId);
 
+  const perms = student?.permissions || {
+    canCompleteTopics: true,
+    canCompleteHomework: true,
+    canEditGoals: true,
+    canAddExamResults: false,
+    canManageResources: false,
+    canSelfAssignWork: false,
+  };
+
   const handleTogglePerm = (key) => {
     if (!student) return;
     updatePermsMutation.mutate({
-      canCompleteTopics: key === 'canCompleteTopics' ? !student.canCompleteTopics : !!student.canCompleteTopics,
-      canEditGoals: !!student.canEditGoals,
-      canCompleteHomework: !!student.canCompleteHomework,
-      canAddExamResults: !!student.canAddExamResults,
-      canManageResources: key === 'canManageResources' ? !student.canManageResources : !!student.canManageResources,
-      canSelfAssignWork: !!student.canSelfAssignWork,
+      canCompleteTopics: key === 'canCompleteTopics' ? !perms.canCompleteTopics : Boolean(perms.canCompleteTopics),
+      canEditGoals: Boolean(perms.canEditGoals),
+      canCompleteHomework: Boolean(perms.canCompleteHomework),
+      canAddExamResults: Boolean(perms.canAddExamResults),
+      canManageResources: key === 'canManageResources' ? !perms.canManageResources : Boolean(perms.canManageResources),
+      canSelfAssignWork: Boolean(perms.canSelfAssignWork),
     });
   };
 
@@ -46,9 +55,9 @@ export default function TopicsTab({ studentId, student, curriculum = [], onAssig
         subjectId: null,
         title: resTitle.trim(),
         resourceType: resType,
-        url: resUrl.trim() || null,
-        totalItems: resTotalItems ? parseInt(resTotalItems, 10) : 0,
-        notes: null,
+        urlOrAuthor: resUrl.trim() || null,
+        totalUnits: resTotalItems ? parseInt(resTotalItems, 10) : 0,
+        completedUnits: 0,
       },
       {
         onSuccess: () => {
@@ -98,7 +107,8 @@ export default function TopicsTab({ studentId, student, curriculum = [], onAssig
             <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.82rem', cursor: 'pointer' }}>
               <input
                 type="checkbox"
-                checked={!!student.canCompleteTopics}
+                data-testid="quick-perm-canCompleteTopics"
+                checked={Boolean(perms.canCompleteTopics)}
                 disabled={updatePermsMutation.isPending}
                 onChange={() => handleTogglePerm('canCompleteTopics')}
               />
@@ -107,7 +117,8 @@ export default function TopicsTab({ studentId, student, curriculum = [], onAssig
             <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.82rem', cursor: 'pointer' }}>
               <input
                 type="checkbox"
-                checked={!!student.canManageResources}
+                data-testid="quick-perm-canManageResources"
+                checked={Boolean(perms.canManageResources)}
                 disabled={updatePermsMutation.isPending}
                 onChange={() => handleTogglePerm('canManageResources')}
               />
@@ -277,9 +288,9 @@ export default function TopicsTab({ studentId, student, curriculum = [], onAssig
               style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-color)', fontSize: '0.85rem' }}
             >
               <option value="BOOK">📕 Soru Bankası / Kitap</option>
-              <option value="VIDEO_COURSE">🎬 Video Ders / Kamp</option>
+              <option value="VIDEO">🎬 Video Ders / Kamp</option>
               <option value="DOCUMENT">📄 Fasikül / Not</option>
-              <option value="OTHER">🔖 Diğer</option>
+              <option value="LINK">🔖 Diğer / Link</option>
             </select>
           </div>
           <div style={{ flex: 1, minWidth: 140 }}>
@@ -299,7 +310,7 @@ export default function TopicsTab({ studentId, student, curriculum = [], onAssig
               onChange={(e) => setResTotalItems(e.target.value)}
             />
           </div>
-          <Button type="submit" variant="primary" size="sm" disabled={createResourceMutation.isPending}>
+          <Button type="submit" variant="primary" size="sm" data-testid="coach-add-resource-btn" disabled={createResourceMutation.isPending}>
             + Kaynak Ekle
           </Button>
         </form>
@@ -313,6 +324,7 @@ export default function TopicsTab({ studentId, student, curriculum = [], onAssig
             {resources.map((r) => (
               <div
                 key={r.id}
+                data-testid={`coach-resource-row-${r.id}`}
                 style={{
                   display: 'flex',
                   justifyContent: 'space-between',
@@ -342,9 +354,9 @@ export default function TopicsTab({ studentId, student, curriculum = [], onAssig
                       👤 Öğrenci Ekledi
                     </span>
                   )}
-                  {r.url && (
+                  {r.urlOrAuthor && (
                     <a
-                      href={r.url}
+                      href={r.urlOrAuthor}
                       target="_blank"
                       rel="noreferrer"
                       style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.78rem', color: 'var(--color-primary)' }}
@@ -354,15 +366,16 @@ export default function TopicsTab({ studentId, student, curriculum = [], onAssig
                   )}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  {r.totalItems > 0 && (
+                  {r.totalUnits > 0 && (
                     <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-color-muted)' }}>
-                      İlerleme: {r.completedItems}/{r.totalItems}
+                      İlerleme: {r.completedUnits}/{r.totalUnits}
                     </span>
                   )}
                   <Button
                     variant="ghost"
                     size="xs"
                     iconOnly
+                    data-testid={`coach-delete-resource-btn-${r.id}`}
                     onClick={() => deleteResourceMutation.mutate({ resourceId: r.id })}
                     title="Kaynağı Sil"
                     style={{ color: '#ef4444' }}

@@ -1,0 +1,18 @@
+services:
+  postgres-e2e:
+    image: postgres:16-alpine
+    container_name: mentorum-e2e-pg
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mentorum_e2e
+    ports:
+      - "5433:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d mentorum_e2e"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+

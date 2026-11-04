@@ -158,6 +158,7 @@ const AddOrInviteStudentPanel = ({ showAddForm, onCloseAddForm, programs }) => {
           {formMode === 'SEARCH_INDEPENDENT' ? (
             <div className={styles.directForm}>
               <Input
+                data-testid="coach-student-search-input"
                 label="Bağımsız Öğrenci Ara (Ad Soyad, E-posta veya Telefon)"
                 placeholder="En az 2 karakter yazın (Örn: Ayşe, ayse@mail.com, 05...)"
                 value={searchQuery}
@@ -173,13 +174,14 @@ const AddOrInviteStudentPanel = ({ showAddForm, onCloseAddForm, programs }) => {
               {searchMsg && <div className={styles.inviteSuccessInline}><span>{searchMsg}</span></div>}
               {isSearching && <p style={{ fontSize: '0.85rem', color: 'var(--text-color-muted)' }}>Aranıyor...</p>}
               {!isSearching && searchQuery.trim().length >= 2 && searchResults.length === 0 && (
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-color-muted)' }}>Eşleşen bağımsız öğrenci bulunamadı.</p>
+                <p data-testid="coach-search-empty" style={{ fontSize: '0.85rem', color: 'var(--text-color-muted)' }}>Eşleşen bağımsız öğrenci bulunamadı.</p>
               )}
               {searchResults.length > 0 && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
                   {searchResults.map((cand) => (
                     <div
                       key={cand.id}
+                      data-testid={`search-result-row-${cand.id}`}
                       style={{
                         display: 'flex',
                         justifyContent: 'space-between',
@@ -201,6 +203,7 @@ const AddOrInviteStudentPanel = ({ showAddForm, onCloseAddForm, programs }) => {
                       </div>
                       <Button
                         size="sm"
+                        data-testid={`send-connect-request-btn-${cand.id}`}
                         variant={cand.hasPendingRequest ? 'outline' : 'primary'}
                         disabled={cand.hasPendingRequest || sendConnReq.isPending}
                         onClick={async () => {
@@ -426,6 +429,7 @@ const AddOrInviteStudentPanel = ({ showAddForm, onCloseAddForm, programs }) => {
                       <Button
                         size="sm"
                         variant="primary"
+                        data-testid={`accept-request-btn-${req.id}`}
                         isLoading={respondConnReq.isPending}
                         onClick={() => respondConnReq.mutateAsync({ requestId: req.id, accept: true })}
                       >

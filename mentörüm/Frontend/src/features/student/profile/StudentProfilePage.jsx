@@ -192,7 +192,7 @@ const StudentProfilePage = () => {
       </div>
 
       {/* Koç Bağlantısı & Bağımsız Öğrenci Modu */}
-      <Card className={styles.card} padding="lg">
+      <Card className={styles.card} padding="lg" data-testid="independent-student-card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <ShieldCheck size={18} color="var(--color-primary)" />
@@ -215,6 +215,7 @@ const StudentProfilePage = () => {
               <Button
                 size="sm"
                 variant="outline"
+                data-testid="student-unlink-coach-btn"
                 isLoading={unlinkCoach.isPending}
                 onClick={async () => {
                   if (!window.confirm('Koçunuzla bağlantınızı sonlandırıp bağımsız öğrenci moduna geçmek istediğinize emin misiniz? Tüm verileriniz kişisel hesabınızda korunacaktır.')) return;
@@ -262,6 +263,7 @@ const StudentProfilePage = () => {
                         <Button
                           size="sm"
                           variant="primary"
+                          data-testid={`student-accept-request-btn-${req.id}`}
                           isLoading={respondConnReq.isPending}
                           onClick={() => respondConnReq.mutateAsync({ requestId: req.id, accept: true })}
                         >
@@ -286,6 +288,7 @@ const StudentProfilePage = () => {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <Input
+                data-testid="student-coach-search-input"
                 label="Koç Ara (Ad Soyad, E-posta veya Telefon)"
                 placeholder="En az 2 karakter yazın..."
                 value={coachQuery}
@@ -299,6 +302,7 @@ const StudentProfilePage = () => {
               {coachCandidates.map((c) => (
                 <div
                   key={c.id}
+                  data-testid={`student-coach-result-${c.id}`}
                   style={{
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -318,6 +322,7 @@ const StudentProfilePage = () => {
                   </div>
                   <Button
                     size="sm"
+                    data-testid={`student-send-request-btn-${c.id}`}
                     variant={c.hasPendingRequest ? 'outline' : 'primary'}
                     disabled={c.hasPendingRequest || sendConnReq.isPending}
                     onClick={async () => {
@@ -348,10 +353,10 @@ const StudentProfilePage = () => {
           </p>
         )}
         <form onSubmit={saveGoal} className={styles.goalForm}>
-          <Input label="Hedef Üniversite" value={uni} onChange={(e) => setUni(e.target.value)} placeholder="örn. İTÜ" disabled={!canEditGoals} />
-          <Input label="Hedef Bölüm" value={dept} onChange={(e) => setDept(e.target.value)} placeholder="örn. Bilgisayar Müh." disabled={!canEditGoals} />
-          <Input label="Hedef Net" type="number" step="0.01" value={score} onChange={(e) => setScore(e.target.value)} placeholder="örn. 95.5" disabled={!canEditGoals} />
-          {canEditGoals && <Button type="submit" isLoading={updateGoal.isPending}>Kaydet</Button>}
+          <Input data-testid="goal-university-input" label="Hedef Üniversite" value={uni} onChange={(e) => setUni(e.target.value)} placeholder="örn. İTÜ" disabled={!canEditGoals} />
+          <Input data-testid="goal-department-input" label="Hedef Bölüm" value={dept} onChange={(e) => setDept(e.target.value)} placeholder="örn. Bilgisayar Müh." disabled={!canEditGoals} />
+          <Input data-testid="goal-score-input" label="Hedef Net" type="number" step="0.01" value={score} onChange={(e) => setScore(e.target.value)} placeholder="örn. 95.5" disabled={!canEditGoals} />
+          {canEditGoals && <Button type="submit" data-testid="goal-save-btn" isLoading={updateGoal.isPending}>Kaydet</Button>}
           {goalMsg && <span className={styles.msg}>{goalMsg}</span>}
         </form>
       </Card>
@@ -373,7 +378,7 @@ const StudentProfilePage = () => {
         <div>
           {canAddExamResults && (
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
-              <Button size="sm" onClick={() => setShowExamModal(true)}>
+              <Button size="sm" data-testid="student-open-exam-modal-btn" onClick={() => setShowExamModal(true)}>
                 <Plus size={14} /> + Deneme / Sınav Sonucu Ekle
               </Button>
             </div>
@@ -397,6 +402,7 @@ const StudentProfilePage = () => {
                     size="xs"
                     variant="ghost"
                     iconOnly
+                    data-testid={`student-exam-delete-btn-${e.id}`}
                     onClick={() => deleteExam.mutateAsync({ examId: e.id })}
                     title="Sınav sonucunu sil"
                   >
@@ -417,6 +423,7 @@ const StudentProfilePage = () => {
       >
         <form onSubmit={handleAddExam} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <Input
+            data-testid="student-exam-name-input"
             label="Deneme / Sınav Adı *"
             placeholder="Örn: Özdebir TYT-3"
             value={examName}
@@ -445,6 +452,7 @@ const StudentProfilePage = () => {
             required
           />
           <Input
+            data-testid="student-exam-net-input"
             label="Toplam Net *"
             type="number"
             step="0.25"
@@ -457,7 +465,7 @@ const StudentProfilePage = () => {
             <Button type="button" variant="ghost" size="sm" onClick={() => setShowExamModal(false)}>
               İptal
             </Button>
-            <Button type="submit" variant="primary" size="sm" isLoading={createExam.isPending}>
+            <Button type="submit" variant="primary" size="sm" data-testid="student-exam-add-btn" isLoading={createExam.isPending}>
               Kaydet
             </Button>
           </div>

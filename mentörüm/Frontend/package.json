@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:e2e": "playwright test"
   },
   "//_capacitor_notes": "Aşama 25'te kurulacak: npm install @capacitor/core @capacitor/cli @capacitor/ios @capacitor/android",
   "dependencies": {
@@ -36,10 +37,12 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",
     "oxlint": "^1.81.0",
+    "pg": "^8.23.1",
     "vite": "^8.3.0"
   }
 }

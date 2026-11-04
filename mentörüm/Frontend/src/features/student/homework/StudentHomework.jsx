@@ -233,6 +233,7 @@ const HomeworkCard = ({ hw, canCompleteDirect, onComplete, onRequestExtension })
 
           <Button 
             size="sm" 
+            data-testid={`hw-complete-submit-btn-${hw.id}`}
             disabled={uploadFile.isPending || hw.pendingApproval}
             onClick={() => onComplete({
               homeworkId: hw.id,
@@ -364,7 +365,7 @@ const StudentHomework = () => {
           <p className={styles.subtitle}>Sana verilen görevleri ve kendi çalışma hedeflerini buradan takip edebilirsin.</p>
         </div>
         {canSelfAssignWork && (
-          <Button size="sm" onClick={() => setShowAddModal(true)}>
+          <Button size="sm" data-testid="self-assign-hw-open-btn" onClick={() => setShowAddModal(true)}>
             <Plus size={14} /> + Kendime Çalışma / Ödev Ekle
           </Button>
         )}
@@ -434,6 +435,7 @@ const StudentHomework = () => {
       >
         <form onSubmit={handleAddSelfHomework} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <Input
+            data-testid="self-assign-hw-title-input"
             label="Çalışma / Ödev Başlığı *"
             placeholder="Örn: Paragraf 40 Soru Çözümü"
             value={selfTitle}
@@ -477,7 +479,7 @@ const StudentHomework = () => {
             <Button type="button" variant="ghost" size="sm" onClick={() => setShowAddModal(false)}>
               İptal
             </Button>
-            <Button type="submit" variant="primary" size="sm" isLoading={createSelfHw.isPending}>
+            <Button type="submit" variant="primary" size="sm" data-testid="self-assign-hw-submit-btn" isLoading={createSelfHw.isPending}>
               Ekle
             </Button>
           </div>

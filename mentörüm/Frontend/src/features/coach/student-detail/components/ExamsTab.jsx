@@ -159,16 +159,24 @@ export default function ExamsTab({ studentId, student }) {
   const addExamMutation = useAddExamResult();
   const updatePermsMutation = useUpdateStudentPermissions(studentId);
   const deleteExamMutation = useDeleteCoachStudentExam(studentId);
+  const perms = student?.permissions || {
+    canCompleteTopics: true,
+    canCompleteHomework: true,
+    canEditGoals: true,
+    canAddExamResults: false,
+    canManageResources: false,
+    canSelfAssignWork: false,
+  };
 
   const handleToggleExamPerm = () => {
     if (!student) return;
     updatePermsMutation.mutate({
-      canCompleteTopics: !!student.canCompleteTopics,
-      canEditGoals: !!student.canEditGoals,
-      canCompleteHomework: !!student.canCompleteHomework,
-      canAddExamResults: !student.canAddExamResults,
-      canManageResources: !!student.canManageResources,
-      canSelfAssignWork: !!student.canSelfAssignWork,
+      canCompleteTopics: Boolean(perms.canCompleteTopics),
+      canEditGoals: Boolean(perms.canEditGoals),
+      canCompleteHomework: Boolean(perms.canCompleteHomework),
+      canAddExamResults: !perms.canAddExamResults,
+      canManageResources: Boolean(perms.canManageResources),
+      canSelfAssignWork: Boolean(perms.canSelfAssignWork),
     });
   };
 
@@ -324,7 +332,8 @@ export default function ExamsTab({ studentId, student }) {
           <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.82rem', cursor: 'pointer' }}>
             <input
               type="checkbox"
-              checked={!!student.canAddExamResults}
+              data-testid="quick-perm-canAddExamResults"
+              checked={Boolean(perms.canAddExamResults)}
               disabled={updatePermsMutation.isPending}
               onChange={handleToggleExamPerm}
             />
