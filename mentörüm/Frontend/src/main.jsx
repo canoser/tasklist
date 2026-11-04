@@ -6,19 +6,29 @@ import App from './App.jsx';
 import './styles/globals.css';
 import './i18n'; // i18next başlat
 
-// React Query Client
+// React Query Client (Sürekli polling YOK; olay ve odaklanma güdümlü anlık yenileme)
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: true, // Kullanıcı sekmeye dönünce taze veriyi çek
+      refetchOnWindowFocus: 'always', // Sekmeye/pencereye dönüldüğünde beklemeden taze veriyi çek
       retry: 1, // Hata durumunda sadece 1 kez tekrar dene
-      staleTime: 1000 * 30, // 30 saniye (sürekli polling yapmadan sekmeye dönüşte güncel veri çekilir)
+      staleTime: 0, // 30s gecikme olmadan odaklanma ve mutasyon anında güncellensin
     },
   },
 });
 
-// Olay güdümlü (Web Push / Service Worker / Sekmeler arası) anlık önbellek yenileme
+// Olay güdümlü (Web Push / Service Worker / Sekmeler ve Pencereler arası) anlık önbellek yenileme
 if (typeof window !== 'undefined') {
+  let lastFocusInvalidate = 0;
+  const invalidateOnFocusOrEvent = () => {
+    const now = Date.now();
+    if (now - lastFocusInvalidate < 800) return;
+    lastFocusInvalidate = now;
+    if (useAuthStore.getState().accessToken) {
+      queryClient.invalidateQueries();
+    }
+  };
+
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('message', (event) => {
       if (event.data?.type === 'MENTORUM_PUSH_INVALIDATE') {
@@ -34,6 +44,18 @@ if (typeof window !== 'undefined') {
       }
     };
   }
+  window.addEventListener('storage', (event) => {
+    if (event.key === 'mentorum_sync_ts') {
+      queryClient.invalidateQueries();
+    }
+  });
+  // React Query v5 yalnızca visibilitychange dinlediği için yan yana pencereler arası geçişte window focus desteği
+  window.addEventListener('focus', invalidateOnFocusOrEvent);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      invalidateOnFocusOrEvent();
+    }
+  });
 }
 
 createRoot(document.getElementById('root')).render(

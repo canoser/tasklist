@@ -67,8 +67,28 @@ export const refreshAccessToken = () => {
   return refreshPromise;
 };
 
+const syncChannel =
+  typeof window !== 'undefined' && 'BroadcastChannel' in window
+    ? new BroadcastChannel('mentorum_sync')
+    : null;
+
 apiClient.interceptors.response.use(
   (response) => {
+    const method = response.config?.method?.toLowerCase();
+    const url = response.config?.url || '';
+    if (
+      method &&
+      ['post', 'put', 'patch', 'delete'].includes(method) &&
+      !url.includes('/auth/')
+    ) {
+      const ts = String(Date.now());
+      try {
+        syncChannel?.postMessage({ type: 'INVALIDATE_ALL', ts });
+        localStorage.setItem('mentorum_sync_ts', ts);
+      } catch {
+        // Gizli sekme veya depolama kısıtlaması hatalarını yoksay
+      }
+    }
     // Başarılı yanıttan sadece veriyi dön
     return response.data;
   },
